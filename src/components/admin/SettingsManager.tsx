@@ -257,6 +257,42 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 </div>
             </div>
 
+            {/* Website Integration Section */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
+                    <Globe className="w-5 h-5 text-gray-400" />
+                    Website Integration
+                </h3>
+
+                <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                        Copy and paste this code into your website (Wordpress, Wix, Squarespace, or custom HTML) to display your booking page.
+                    </p>
+
+                    <div className="relative">
+                        <pre className="bg-gray-900 text-gray-100 p-4 rounded-xl text-xs overflow-x-auto font-mono border border-gray-700">
+                            {`<iframe 
+  src="${typeof window !== 'undefined' ? window.location.origin : ''}/${formData.slug}" 
+  style="width: 100%; height: 700px; border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
+  title="Book Appointment"
+></iframe>`}
+                        </pre>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            className="absolute top-2 right-2 text-xs py-1 h-auto"
+                            onClick={() => {
+                                const code = `<iframe src="${window.location.origin}/${formData.slug}" style="width: 100%; height: 700px; border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" title="Book Appointment"></iframe>`;
+                                navigator.clipboard.writeText(code);
+                                alert('Code copied to clipboard!');
+                            }}
+                        >
+                            Copy Code
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
             <div className="flex justify-end">
                 <Button
                     type="submit"
