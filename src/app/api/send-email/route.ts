@@ -25,6 +25,12 @@ export async function POST(request: NextRequest) {
             to: [to],
             subject: subject,
             html: html,
+            tags: [
+                {
+                    name: 'category',
+                    value: 'confirm_email',
+                },
+            ],
         });
 
         if (data.error) {

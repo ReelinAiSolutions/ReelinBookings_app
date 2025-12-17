@@ -12,6 +12,8 @@ interface ConfirmationViewProps {
     onReset: () => void;
 }
 
+import { addMinutes } from 'date-fns';
+
 export default function ConfirmationView({
     selectedService,
     selectedStaff,
@@ -19,6 +21,27 @@ export default function ConfirmationView({
     selectedTime,
     onReset
 }: ConfirmationViewProps) {
+
+    // Generate Google Calendar Link
+    const googleCalendarLink = React.useMemo(() => {
+        if (!selectedService || !selectedDate || !selectedTime) return '#';
+
+        const [hours, minutes] = selectedTime.split(':').map(Number);
+        const startDate = new Date(selectedDate);
+        startDate.setHours(hours, minutes);
+
+        const endDate = addMinutes(startDate, selectedService.durationMinutes);
+
+        const formatGCalDate = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+        const start = formatGCalDate(startDate);
+        const end = formatGCalDate(endDate);
+
+        const details = `Appointment with ${selectedStaff?.name} for ${selectedService.name}`;
+
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(selectedService.name)}&dates=${start}/${end}&details=${encodeURIComponent(details)}`;
+    }, [selectedService, selectedStaff, selectedDate, selectedTime]);
+
     return (
         <div className="min-h-[600px] flex items-center justify-center">
             <div className="max-w-lg w-full bg-white rounded-3xl shadow-lg shadow-gray-200/50 p-12 text-center animate-in fade-in zoom-in duration-500 border border-gray-100">
@@ -37,7 +60,22 @@ export default function ConfirmationView({
                     </div>
                 </div>
 
-                <Button size="lg" onClick={onReset} className="w-full">Book Another Appointment</Button>
+                <div className="space-y-3">
+                    <Button
+                        size="lg"
+                        onClick={() => window.open(googleCalendarLink, '_blank')}
+                        className="w-full gap-2"
+                    >
+                        <CalendarIcon className="w-4 h-4" /> Add to Google Calendar
+                    </Button>
+
+                    <button
+                        onClick={onReset}
+                        className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors py-2"
+                    >
+                        Book Another Appointment
+                    </button>
+                </div>
             </div>
         </div>
     );

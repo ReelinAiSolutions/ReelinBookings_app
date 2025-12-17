@@ -7,9 +7,33 @@ import AppointmentList from '@/components/admin/AppointmentList';
 import ServiceManager from '@/components/admin/ServiceManager';
 import StaffManager from '@/components/admin/StaffManager';
 import AIGenerator from '@/components/admin/AIGenerator';
-import { getAppointments, getServices, getStaff, getCurrentUserOrganization, getOrganizationById } from '@/services/dataService';
+import SettingsManager from '@/components/admin/SettingsManager';
+import AnalyticsView from '@/components/admin/AnalyticsView';
+import WeeklyCalendar from '@/components/admin/WeeklyCalendar';
+import TodayPanel from '@/components/admin/TodayPanel';
+import RescheduleModal from '@/components/admin/RescheduleModal';
+import BlockModal from '@/components/admin/BlockModal';
+import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
+import ProfileManager from '@/components/admin/ProfileManager'; // New import
+import {
+    getCurrentUserOrganization,
+    getUserProfile, // New import
+    getAppointments,
+    getServices,
+    getStaff,
+    createAppointment,
+    createService,
+    deleteService,
+    updateService,
+    updateAppointment,
+    cancelAppointment,
+    uncancelAppointment,
+    archiveAppointment,
+    getOrganizationById
+} from '@/services/dataService';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Plus, Lock, X } from 'lucide-react';
+import { Organization, Appointment } from '@/types';
 
 const MOCK_STATS = [
     { name: 'Mon', bookings: 4, revenue: 240 },
@@ -22,41 +46,58 @@ const MOCK_STATS = [
 ];
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'services'>('overview');
+    const [activeTab, setActiveTab] = useState<'operations' | 'customers' | 'services' | 'analytics' | 'settings' | 'profile'>('operations');
     const [appointments, setAppointments] = useState<any[]>([]);
     const [stats, setStats] = useState({ totalRevenue: 0, totalBookings: 0, activeStaff: 0 });
     const [services, setServices] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
-    const [chartData, setChartData] = useState<any[]>(MOCK_STATS); // Fallback to mock for now until we write processor
-    const [currentOrgId, setCurrentOrgId] = useState<string | null>(null);
-    const [orgSlug, setOrgSlug] = useState<string | null>(null);
+    const [chartData, setChartData] = useState<any[]>(MOCK_STATS);
+    const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
+    const [currentUser, setCurrentUser] = useState<any>(null); // New state
+    const [userProfile, setUserProfile] = useState<any>(null); // New state
+
+    // Modal State
+    const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+    const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+
+    // Blocking State
+    const [isBlockingMode, setIsBlockingMode] = useState(false);
+    const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+    const [blockSelection, setBlockSelection] = useState<{ date: Date | null, time: string | null }>({ date: null, time: null });
+
+    // Staff Filter State
+    const [selectedStaffId, setSelectedStaffId] = useState<string>('ALL');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const loadDashboardData = async () => {
         const orgId = await getCurrentUserOrganization();
         if (!orgId) {
-            // Not logged in or no org, redirect to login
-            // In a real app we'd use a router push here, but doing it safely
             window.location.href = '/login?error=no_org';
             return;
         }
-        setCurrentOrgId(orgId);
 
         // Parallel fetch with scoped Org ID
-        const [fetchedApts, fetchedServices, fetchedStaff, fetchedOrg] = await Promise.all([
+        const [fetchedApts, fetchedServices, fetchedStaff, fetchedOrg, fetchedProfile] = await Promise.all([
             getAppointments(orgId),
             getServices(orgId),
             getStaff(orgId),
-            getOrganizationById(orgId)
+            getOrganizationById(orgId),
+            getUserProfile()
         ]);
 
         setAppointments(fetchedApts);
         setServices(fetchedServices);
         setStaff(fetchedStaff);
-        if (fetchedOrg) setOrgSlug(fetchedOrg.slug);
+        setCurrentOrg(fetchedOrg as Organization);
+
+        if (fetchedProfile) {
+            setCurrentUser(fetchedProfile.user);
+            setUserProfile(fetchedProfile.profile);
+        }
 
         // Calculate simple stats
         setStats({
-            totalRevenue: fetchedApts.length * 50, // Mock revenue calc: $50 per booking avg
+            totalRevenue: fetchedApts.length * 50,
             totalBookings: fetchedApts.length,
             activeStaff: fetchedStaff.length
         });
@@ -66,41 +107,284 @@ export default function AdminDashboard() {
         loadDashboardData();
     }, []);
 
+    const handleAppointmentClick = (apt: Appointment) => {
+        setSelectedAppointment(apt);
+        setIsRescheduleModalOpen(true);
+    };
+
+    const onReschedule = async (id: string, newDate: string, newTime: string) => {
+        await updateAppointment(id, { date: newDate, timeSlot: newTime });
+        await loadDashboardData();
+    };
+
+    const onCancel = async (id: string) => {
+        await cancelAppointment(id);
+        await loadDashboardData();
+    };
+
+    const [createSelection, setCreateSelection] = useState<{ date: Date | null, time: string | null }>({ date: null, time: null });
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    const handleSelectSlot = (date: Date, time: string) => {
+        if (isBlockingMode) {
+            setBlockSelection({ date, time });
+            setIsBlockModalOpen(true);
+        } else {
+            setCreateSelection({ date, time });
+            setIsCreateModalOpen(true);
+        }
+    };
+
+    const handleCreateConfirm = async (data: {
+        serviceId: string;
+        staffId: string;
+        clientName: string;
+        clientEmail: string;
+        date: string;
+        timeSlot: string;
+    }) => {
+        if (!currentOrg) return;
+
+        await createAppointment({
+            serviceId: data.serviceId,
+            staffId: data.staffId,
+            clientId: 'admin-created',
+            clientName: data.clientName,
+            clientEmail: data.clientEmail,
+            date: data.date,
+            timeSlot: data.timeSlot
+        }, currentOrg.id);
+
+        await loadDashboardData();
+    };
+
+
+    const onConfirmBlock = async (staffId: string, note: string) => {
+        if (!currentOrg || !blockSelection.date || !blockSelection.time) return;
+
+        const dateStr = blockSelection.date.toISOString().split('T')[0];
+
+        await createAppointment({
+            staffId,
+            serviceId: services[0]?.id,
+            clientName: `Blocked - ${note}`,
+            clientEmail: 'blocked@internal.system',
+            clientId: 'blocked@internal.system',
+            date: dateStr,
+            timeSlot: blockSelection.time
+        }, currentOrg.id);
+
+        setIsBlockingMode(false);
+        await loadDashboardData();
+    };
+
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center h-16 gap-4">
+                {/* Left Side: Logo & Branding */}
+                <div className="flex items-center gap-4 z-10 flex-1 min-w-0">
+                    {currentOrg?.logo_url && <img src={currentOrg.logo_url} alt="Logo" className="w-12 h-12 flex-shrink-0 object-contain rounded-xl border border-gray-200 bg-white" />}
+                    <div className="flex flex-col min-w-0">
+                        <h1 className="text-xl font-black text-gray-900 tracking-tight leading-none truncate">
+                            {currentOrg?.name || 'Dashboard'}
+                        </h1>
+                        <div className="flex items-center gap-1.5 opacity-60 mt-0.5">
+                            <img src="/reelin-icon.png" className="w-3 h-3 opacity-50 hidden" />
+                            <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500 truncate">Reelin Bookings</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Center: Tabs */}
+                <div className="hidden lg:flex gap-2 bg-white p-1 rounded-lg border border-gray-200 shadow-sm flex-shrink-0">
                     <button
-                        onClick={() => setActiveTab('overview')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'overview' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                        onClick={() => setActiveTab('operations')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'operations' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
                     >
-                        Overview
+                        Operations
                     </button>
                     <button
                         onClick={() => setActiveTab('services')}
                         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'services' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
                     >
-                        Services & AI
+                        Services & Team
                     </button>
-                    {orgSlug && (
-                        <Link
-                            href={`/${orgSlug}`}
-                            target="_blank"
-                            className="px-4 py-2 rounded-md text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
-                        >
-                            View Live Page <ExternalLink className="w-4 h-4" />
-                        </Link>
+                    <button
+                        onClick={() => setActiveTab('analytics')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'analytics' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
+                        Analytics
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'settings' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
+                        Settings
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('profile')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'profile' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
+                        Profile
+                    </button>
+
+                    {currentOrg && (
+                        <>
+                            <Link
+                                href={`/${currentOrg.slug}`}
+                                target="_blank"
+                                className="px-4 py-2 rounded-md text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1 border-l border-gray-200 ml-2 pl-4"
+                            >
+                                Live Site <ExternalLink className="w-4 h-4" />
+                            </Link>
+                        </>
                     )}
+                </div>
+
+                {/* Right Side: Spacer/Mobile Menu */}
+                <div className="flex-1 flex justify-end min-w-0">
+                    {/* Mobile Menu Button */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                        <span className="sr-only">Menu</span>
+                        {isMobileMenuOpen ? (
+                            <X className="w-6 h-6" />
+                        ) : (
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        )}
+                    </button>
                 </div>
             </div>
 
+            {/* Mobile Menu Dropdown */}
+            {isMobileMenuOpen && (
+                <div className="lg:hidden bg-white border border-gray-200 rounded-lg shadow-lg p-2 flex flex-col gap-1 mb-4 animate-in slide-in-from-top-2 duration-200">
+                    <button
+                        onClick={() => { setActiveTab('operations'); setIsMobileMenuOpen(false); }}
+                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'operations' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                    >
+                        Operations
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('services'); setIsMobileMenuOpen(false); }}
+                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'services' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                    >
+                        Services & Team
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('analytics'); setIsMobileMenuOpen(false); }}
+                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'analytics' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                    >
+                        Analytics
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('settings'); setIsMobileMenuOpen(false); }}
+                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'settings' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                    >
+                        Settings
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('profile'); setIsMobileMenuOpen(false); }}
+                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'profile' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                    >
+                        Profile
+                    </button>
+                    {currentOrg && (
+                        <div className="border-t border-gray-100 mt-1 pt-1">
+                            <Link
+                                href={`/${currentOrg.slug}`}
+                                target="_blank"
+                                className="px-4 py-3 rounded-md text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center justify-between hover:bg-primary-50 transition-colors"
+                            >
+                                Live Public Site <ExternalLink className="w-4 h-4" />
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* OPERATIONS (New Home) */}
             {
-                activeTab === 'overview' && (
+                activeTab === 'operations' && (
                     <div className="space-y-6 animate-in fade-in duration-300">
-                        <DashboardStats stats={stats} />
-                        <DashboardCharts data={chartData} />
-                        <AppointmentList appointments={appointments} />
+                        {/* Quick Actions Header */}
+                        <div className="flex justify-between items-center mb-6">
+                            {/* Staff Filter */}
+                            <div className="flex items-center gap-2 overflow-x-auto p-1.5 no-scrollbar max-w-2xl">
+                                <button
+                                    onClick={() => setSelectedStaffId('ALL')}
+                                    className={`
+                                        flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                                        ${selectedStaffId === 'ALL'
+                                            ? 'bg-gray-900 text-white ring-2 ring-gray-900 ring-offset-1'
+                                            : 'bg-white border text-gray-600 hover:bg-gray-50'
+                                        }
+                                    `}
+                                >
+                                    <span>All Team</span>
+                                </button>
+                                {staff.map(member => (
+                                    <button
+                                        key={member.id}
+                                        onClick={() => setSelectedStaffId(member.id)}
+                                        className={`
+                                            flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                                            ${selectedStaffId === member.id
+                                                ? 'bg-white text-gray-900 border-gray-900 ring-2 ring-gray-900 ring-offset-1 shadow-sm'
+                                                : 'bg-white border text-gray-600 hover:bg-gray-50'
+                                            }
+                                        `}
+                                        style={selectedStaffId === member.id ? { borderColor: 'currentColor' } : {}}
+                                    >
+                                        <div className="w-5 h-5 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                                            {member.avatar ? (
+                                                <img src={member.avatar} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[9px] font-bold text-gray-500">
+                                                    {member.name.slice(0, 1)}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span>{member.name.split(' ')[0]}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => setIsBlockingMode(!isBlockingMode)}
+                                className={`
+                                    border px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors flex-shrink-0
+                                    ${isBlockingMode
+                                        ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900 ring-offset-2'
+                                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                    }
+                                `}
+                            >
+                                {isBlockingMode ? <Lock className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                {isBlockingMode ? 'Cancel Block Mode' : 'Block Time'}
+                            </button>
+                        </div>
+
+                        {/* Hero Operations Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+                            <div className="lg:col-span-2 h-full">
+                                <WeeklyCalendar
+                                    appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
+                                    staff={staff}
+                                    services={services}
+                                    isBlockingMode={isBlockingMode}
+                                    onSelectSlot={handleSelectSlot}
+                                    onAppointmentClick={handleAppointmentClick}
+                                />
+                            </div>
+                            <div className="h-full">
+                                <TodayPanel appointments={appointments} />
+                            </div>
+                        </div>
                     </div>
                 )
             }
@@ -108,20 +392,17 @@ export default function AdminDashboard() {
             {
                 activeTab === 'services' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-300">
-                        {currentOrgId && (
+                        {currentOrg && (
                             <>
                                 <ServiceManager
                                     services={services}
-                                    orgId={currentOrgId}
+                                    orgId={currentOrg.id}
                                     onRefresh={loadDashboardData}
                                 />
-                                {/* We can put StaffManager here too, or in its own tab. 
-                                Let's put it next to services for now as they are related setup tasks. 
-                            */}
                                 <StaffManager
                                     staff={staff}
                                     services={services}
-                                    orgId={currentOrgId}
+                                    orgId={currentOrg.id}
                                     onRefresh={loadDashboardData}
                                 />
                             </>
@@ -129,6 +410,73 @@ export default function AdminDashboard() {
                     </div>
                 )
             }
+
+            {
+                activeTab === 'analytics' && (
+                    <AnalyticsView appointments={appointments} />
+                )
+            }
+
+            {
+                activeTab === 'settings' && currentOrg && (
+                    <div className="animate-in fade-in duration-300">
+                        <SettingsManager org={currentOrg} onUpdate={(updated) => {
+                            setCurrentOrg(updated);
+                        }} />
+                    </div>
+                )
+            }
+
+            {
+                activeTab === 'profile' && currentUser && (
+                    <div className="animate-in fade-in duration-300">
+                        <ProfileManager
+                            user={currentUser}
+                            profile={userProfile}
+                            onUpdate={loadDashboardData}
+                        />
+                    </div>
+                )
+            }
+
+            <RescheduleModal
+                isOpen={isRescheduleModalOpen}
+                appointment={selectedAppointment}
+                onClose={() => setIsRescheduleModalOpen(false)}
+                onReschedule={onReschedule}
+                onCancel={onCancel}
+                services={services}
+                onRestore={async (id) => {
+                    await uncancelAppointment(id);
+                    setIsRescheduleModalOpen(false);
+                    loadDashboardData();
+                }}
+                onArchive={async (id) => {
+                    await archiveAppointment(id);
+                    setIsRescheduleModalOpen(false);
+                    loadDashboardData();
+                }}
+            />
+
+            <BlockModal
+                isOpen={isBlockModalOpen}
+                date={blockSelection.date}
+                time={blockSelection.time}
+                staff={staff}
+                onClose={() => setIsBlockModalOpen(false)}
+                onConfirm={onConfirmBlock}
+            />
+
+            <CreateAppointmentModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onConfirm={handleCreateConfirm}
+                defaultDate={createSelection.date}
+                defaultTime={createSelection.time}
+                services={services}
+                staff={staff}
+                preselectedStaffId={selectedStaffId}
+            />
         </div >
     );
 }

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Service } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Plus, Trash2, X } from 'lucide-react';
-import { createService, deleteService } from '@/services/dataService';
+import { Plus, Trash2, X, Edit2 } from 'lucide-react';
+import { createService, deleteService, updateService } from '@/services/dataService';
 
 interface ServiceManagerProps {
     services: Service[];
@@ -12,6 +12,7 @@ interface ServiceManagerProps {
 
 export default function ServiceManager({ services, orgId, onRefresh }: ServiceManagerProps) {
     const [isCreating, setIsCreating] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     // Form State
@@ -22,25 +23,46 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
         description: ''
     });
 
-    const handleCreate = async () => {
+    const handleSave = async () => {
         setIsLoading(true);
         try {
-            await createService({
-                name: newService.name,
-                price: parseFloat(newService.price),
-                durationMinutes: parseInt(newService.duration),
-                description: newService.description,
-                imageUrl: ''
-            }, orgId);
+            if (editingId) {
+                await updateService(editingId, {
+                    name: newService.name,
+                    price: parseFloat(newService.price),
+                    durationMinutes: parseInt(newService.duration),
+                    description: newService.description,
+                }, orgId);
+            } else {
+                await createService({
+                    name: newService.name,
+                    price: parseFloat(newService.price),
+                    durationMinutes: parseInt(newService.duration),
+                    description: newService.description,
+                    imageUrl: ''
+                }, orgId);
+            }
             setIsCreating(false);
+            setEditingId(null);
             setNewService({ name: '', price: '', duration: '', description: '' });
             onRefresh();
         } catch (e) {
             console.error(e);
-            alert("Failed to create service");
+            alert("Failed to save service");
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const startEdit = (service: Service) => {
+        setNewService({
+            name: service.name,
+            price: service.price.toString(),
+            duration: service.durationMinutes.toString(),
+            description: service.description
+        });
+        setEditingId(service.id);
+        setIsCreating(true);
     };
 
     const handleDelete = async (id: string) => {
@@ -58,14 +80,21 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-gray-900">Service Management</h3>
-                <Button size="sm" onClick={() => setIsCreating(true)}><Plus className="w-4 h-4 mr-1" /> Add Service</Button>
+                {!isCreating && <Button size="sm" onClick={() => {
+                    setNewService({ name: '', price: '', duration: '', description: '' });
+                    setEditingId(null);
+                    setIsCreating(true);
+                }}><Plus className="w-4 h-4 mr-1" /> Add Service</Button>}
             </div>
 
             {isCreating && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3 animate-in fade-in slide-in-from-top-2">
                     <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-sm">New Service</h4>
-                        <button onClick={() => setIsCreating(false)}><X className="w-4 h-4 text-gray-500" /></button>
+                        <h4 className="font-semibold text-sm">{editingId ? 'Edit Service' : 'New Service'}</h4>
+                        <button onClick={() => {
+                            setIsCreating(false);
+                            setEditingId(null);
+                        }}><X className="w-4 h-4 text-gray-500" /></button>
                     </div>
                     <input
                         className="w-full p-2 rounded border"
@@ -99,7 +128,7 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                     <Button
                         size="sm"
                         className="w-full bg-primary-600 text-white"
-                        onClick={handleCreate}
+                        onClick={handleSave}
                         disabled={isLoading}
                     >
                         {isLoading ? 'Saving...' : 'Save Service'}
@@ -117,9 +146,14 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                             <h4 className="font-bold">{service.name}</h4>
                             <p className="text-sm text-gray-500">{service.durationMinutes} mins • ${service.price}</p>
                         </div>
-                        <Button size="sm" variant="outline" onClick={() => handleDelete(service.id)}>
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => startEdit(service)}>
+                                <Edit2 className="w-4 h-4 text-gray-500" />
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleDelete(service.id)}>
+                                <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                        </div>
                     </div>
                 ))}
             </div>

@@ -14,7 +14,8 @@ export default function SignupPage() {
         slug: '',
         email: '',
         password: '',
-        name: ''
+        name: '',
+        inviteCode: ''
     });
 
     const router = useRouter();
@@ -47,6 +48,13 @@ export default function SignupPage() {
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
+        const validCodes = (process.env.NEXT_PUBLIC_INVITE_CODE || '').split(',').map(c => c.trim());
+        if (!validCodes.includes(formData.inviteCode)) {
+            alert("Invalid Invitation Code. Please contact support.");
+            setIsLoading(false);
+            return;
+        }
 
         try {
             // 1. Sign Up User
@@ -121,6 +129,20 @@ export default function SignupPage() {
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow-xl border border-gray-100 sm:rounded-3xl sm:px-10">
                     <form className="space-y-6" onSubmit={handleSignup}>
+
+                        {/* Invite Code */}
+                        <div className="bg-primary-50 p-4 rounded-xl border border-primary-100">
+                            <label className="block text-sm font-bold text-primary-900">Invitation Code</label>
+                            <input
+                                type="text"
+                                required
+                                className="mt-1 block w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                placeholder="ENTER-CODE"
+                                value={formData.inviteCode}
+                                onChange={(e) => setFormData({ ...formData, inviteCode: e.target.value })}
+                            />
+                            <p className="mt-1 text-xs text-primary-600">Required to create an account.</p>
+                        </div>
 
                         {/* Business Info */}
                         <div>

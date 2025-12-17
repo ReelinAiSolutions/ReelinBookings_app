@@ -118,15 +118,21 @@ export default function OrganizationBookingPage({ params }: { params: Promise<{ 
                         subject: `Booking Confirmed: ${selectedService.name} at ${org.name}`,
                         html: `
                             <div style="font-family: sans-serif; color: #333;">
-                                <h1>You're Booked! 🎉</h1>
+                                <h1>Booking Confirmed</h1>
                                 <p>Hi ${formData.name.split(' ')[0]},</p>
                                 <p>Your appointment for <strong>${selectedService.name}</strong> with <strong>${selectedStaff.name}</strong> is confirmed.</p>
                                 <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                    <p style="margin: 5px 0;"><strong>📅 Date:</strong> ${selectedDate.toDateString()}</p>
-                                    <p style="margin: 5px 0;"><strong>⏰ Time:</strong> ${selectedTime}</p>
-                                    <p style="margin: 5px 0;"><strong>📍 Location:</strong> ${org.name}</p>
+                                    <p style="margin: 5px 0;"><strong>Date:</strong> ${selectedDate.toDateString()}</p>
+                                    <p style="margin: 5px 0;"><strong>Time:</strong> ${selectedTime}</p>
+                                    <p style="margin: 5px 0;"><strong>Location:</strong> ${org.name}</p>
                                 </div>
-                                <p>See you soon!</p>
+                                <div style="margin-top: 30px; text-align: center;">
+                                    <a href="${typeof window !== 'undefined' ? window.location.origin : ''}/portal?email=${encodeURIComponent(formData.email)}" 
+                                       style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                                       Manage Appointment
+                                    </a>
+                                </div>
+                                <p style="margin-top: 20px; font-size: 12px; color: #888;">Need to cancel? Click the button above.</p>
                             </div>
                         `
                     })
@@ -182,6 +188,13 @@ export default function OrganizationBookingPage({ params }: { params: Promise<{ 
         <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             {/* Hero Header */}
             <div className="text-center mb-12">
+                {org.logo_url && (
+                    <img
+                        src={org.logo_url}
+                        alt={org.name + ' Logo'}
+                        className="h-24 mx-auto mb-6 object-contain"
+                    />
+                )}
                 <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
                     {org.name}
                 </h1>
@@ -195,7 +208,17 @@ export default function OrganizationBookingPage({ params }: { params: Promise<{ 
                     <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
                 </div>
 
-                <div className="flex-1 w-full">
+                <div className="flex-1 w-full" style={{ '--primary-color': org.primary_color || '#4F46E5' } as React.CSSProperties}>
+                    {/* Public Contact Info Bar */}
+                    {(org.phone || org.email || org.address || org.website) && (
+                        <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-8 border-b border-gray-100 pb-6">
+                            {org.phone && <span>{org.phone}</span>}
+                            {org.email && <span>{org.email}</span>}
+                            {org.address && <span>{org.address}</span>}
+                            {org.website && <a href={org.website} target="_blank" rel="noopener noreferrer" className="hover:text-primary-600 hover:underline">Website</a>}
+                        </div>
+                    )}
+
                     {/* Mobile Header */}
                     <div className="lg:hidden mb-6">
                         <WizardStepIndicator currentStep={currentStep} steps={STEPS} />

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices } from '@/services/dataService';
+import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff } from '@/services/dataService';
 import { Service, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Plus, Trash2, X, Clock, ChevronDown, ChevronUp, Save, Scissors } from 'lucide-react';
+import { Plus, Trash2, X, Clock, ChevronDown, ChevronUp, Save, Scissors, User, Camera, Upload } from 'lucide-react';
+import { createBrowserClient } from '@supabase/ssr';
 
 interface StaffManagerProps {
     staff: Staff[];
@@ -24,9 +25,15 @@ const DEFAULT_SCHEDULE = [
 export default function StaffManager({ staff, services, orgId, onRefresh }: StaffManagerProps) {
     const [isCreating, setIsCreating] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [editingStaffId, setEditingStaffId] = useState<string | null>(null); // For Details Edit
 
     // New Staff Form
     const [newStaff, setNewStaff] = useState({ name: '', role: '', avatar: '' });
+
+    // Edit Staff Form
+    const [editForm, setEditForm] = useState({ name: '', role: '', avatar: '' });
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     // Expansion for Schedule Editing
     const [expandedStaffId, setExpandedStaffId] = useState<string | null>(null);
@@ -34,7 +41,11 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
 
     // Services Expansion
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
-    const [allServices, setAllServices] = useState<any[]>([]);
+
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     const handleCreate = async () => {
         setIsLoading(true);
@@ -62,6 +73,66 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
         }
     };
 
+    const startEditing = (member: Staff) => {
+        setEditingStaffId(member.id);
+        setEditForm({
+            name: member.name,
+            role: member.role || '',
+            avatar: member.avatar || ''
+        });
+        setPreviewUrl(member.avatar || null);
+        setAvatarFile(null);
+        setExpandedStaffId(null); // Close schedule if open
+    };
+
+    const handleUpdateDetails = async (id: string) => {
+        setIsLoading(true);
+        try {
+            let avatarUrl = editForm.avatar;
+
+            // Handle File Upload
+            if (avatarFile) {
+                const fileExt = avatarFile.name.split('.').pop();
+                const fileName = `${orgId}/staff/${id}-${Date.now()}.${fileExt}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('org-assets')
+                    .upload(fileName, avatarFile, { upsert: true });
+
+                if (uploadError) throw uploadError;
+
+                const { data: publicData } = supabase.storage
+                    .from('org-assets')
+                    .getPublicUrl(fileName);
+
+                avatarUrl = publicData.publicUrl;
+            }
+
+            await updateStaff(id, {
+                name: editForm.name,
+                role: editForm.role,
+                avatar: avatarUrl
+            }, orgId);
+
+            setEditingStaffId(null);
+            onRefresh();
+            alert("Staff details updated!");
+        } catch (e) {
+            console.error(e);
+            alert("Failed to update staff details");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setAvatarFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
     const toggleExpand = async (staffId: string) => {
         if (expandedStaffId === staffId) {
             setExpandedStaffId(null);
@@ -69,6 +140,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
         }
 
         setExpandedStaffId(staffId);
+        setEditingStaffId(null); // Close details edit if open
         setIsLoading(true);
 
         try {
@@ -83,10 +155,6 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
             // 2. Get Services
             const staffMember = staff.find(s => s.id === staffId);
             if (staffMember) {
-                // We need to fetch ALL services to show the checklist
-                // Assuming services list is passed as prop or we fetch it here.
-                // It is better to rely on parent passing it, but for now lets fetch or use passed logic.
-                // Wait! StaffManagerProps needs 'services' passed down from AdminDashboard!
                 setSelectedServices(staffMember.specialties);
             }
 
@@ -142,6 +210,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                         value={newStaff.role}
                         onChange={e => setNewStaff({ ...newStaff, role: e.target.value })}
                     />
+                    {/* Simplified avatar input for creation, can create then edit for upload */}
                     <input
                         className="w-full p-2 rounded border"
                         placeholder="Avatar URL (optional)"
@@ -164,7 +233,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                     <div key={member.id} className="border rounded-lg overflow-hidden">
                         <div className="p-4 flex justify-between items-center bg-white">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                                     {member.avatar ? <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" /> : <span className="text-gray-500 font-bold">{member.name[0]}</span>}
                                 </div>
                                 <div>
@@ -173,15 +242,73 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
+                                <Button size="sm" variant="outline" onClick={() => startEditing(member)}>
+                                    <User className="w-4 h-4 mr-1" />
+                                    Edit Details
+                                </Button>
                                 <Button size="sm" variant="outline" onClick={() => toggleExpand(member.id)}>
                                     <Clock className="w-4 h-4 mr-1" />
-                                    {expandedStaffId === member.id ? 'Close Schedule' : 'Edit Schedule'}
+                                    {expandedStaffId === member.id ? 'Close Schedule' : 'Schedule'}
                                 </Button>
                                 <Button size="sm" variant="outline" onClick={() => handleDelete(member.id)}>
                                     <Trash2 className="w-4 h-4 text-red-500" />
                                 </Button>
                             </div>
                         </div>
+
+                        {/* EDIT DETAILS FORM */}
+                        {editingStaffId === member.id && (
+                            <div className="p-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-4">
+                                <div className="flex justify-between items-center">
+                                    <h5 className="font-bold text-sm text-gray-700">Edit Staff Details</h5>
+                                    <button onClick={() => setEditingStaffId(null)}><X className="w-4 h-4 text-gray-400" /></button>
+                                </div>
+
+                                <div className="flex items-start gap-6">
+                                    {/* Avatar Upload */}
+                                    <div className="flex-shrink-0 text-center">
+                                        <div className="w-20 h-20 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center overflow-hidden relative group mx-auto mb-2">
+                                            {previewUrl ? (
+                                                <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <User className="w-8 h-8 text-gray-300" />
+                                            )}
+                                            <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                                <Camera className="w-5 h-5 text-white" />
+                                                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                                            </label>
+                                        </div>
+                                        <p className="text-xs text-gray-500">Change Photo</p>
+                                    </div>
+
+                                    <div className="flex-1 space-y-3">
+                                        <div>
+                                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Full Name</label>
+                                            <input
+                                                className="w-full p-2 rounded border border-gray-300 text-sm"
+                                                value={editForm.name}
+                                                onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Role / Title</label>
+                                            <input
+                                                className="w-full p-2 rounded border border-gray-300 text-sm"
+                                                value={editForm.role}
+                                                onChange={e => setEditForm({ ...editForm, role: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2 mt-2">
+                                    <Button size="sm" variant="outline" onClick={() => setEditingStaffId(null)}>Cancel</Button>
+                                    <Button size="sm" className="bg-primary-600 text-white" onClick={() => handleUpdateDetails(member.id)} disabled={isLoading}>
+                                        {isLoading ? 'Saving...' : 'Save Changes'}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Availability Editor */}
                         {expandedStaffId === member.id && (
@@ -232,7 +359,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                             </div>
                         )}
 
-                        {/* Services Editor - We can combine or keep separate. Let's add it below schedule for now */}
+                        {/* Services Editor */}
                         {expandedStaffId === member.id && (
                             <div className="p-4 bg-white border-t border-gray-100">
                                 <h5 className="font-bold text-sm mb-3 text-gray-700 flex items-center gap-2">

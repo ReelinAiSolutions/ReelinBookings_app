@@ -17,6 +17,19 @@ export const getCurrentUserOrganization = async () => {
     return profile?.org_id;
 };
 
+export const getUserProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    return { user, profile };
+};
+
 export const getOrganizationBySlug = async (slug: string) => {
     const { data, error } = await supabase
         .from('organizations')
@@ -28,10 +41,21 @@ export const getOrganizationBySlug = async (slug: string) => {
     return data;
 };
 
+// ...
 export const getOrganizationById = async (id: string) => {
     const { data, error } = await supabase
         .from('organizations')
-        .select('*')
+        .select(`
+            id,
+            slug,
+            name,
+            logo_url,
+            primary_color,
+            phone,
+            email,
+            address,
+            website
+        `)
         .eq('id', id)
         .single();
 
@@ -89,6 +113,7 @@ export const getAppointments = async (orgId?: string): Promise<Appointment[]> =>
     let query = supabase
         .from('appointments')
         .select('*')
+        .neq('status', 'ARCHIVED') // Hides "Confirm Cancelled" / Dismissed appointments
         .order('date', { ascending: false })
         .order('time_slot', { ascending: false })
         .limit(50);
@@ -169,6 +194,23 @@ export const createService = async (service: Omit<Service, 'id'>, orgId: string)
     };
 };
 
+export const updateService = async (id: string, updates: Partial<Omit<Service, 'id'>>, orgId: string) => {
+    const payload: any = {};
+    if (updates.name) payload.name = updates.name;
+    if (updates.description) payload.description = updates.description;
+    if (updates.price) payload.price = updates.price;
+    if (updates.durationMinutes) payload.duration_minutes = updates.durationMinutes;
+    if (updates.imageUrl) payload.image_url = updates.imageUrl;
+
+    const { error } = await supabase
+        .from('services')
+        .update(payload)
+        .eq('id', id)
+        .eq('org_id', orgId);
+
+    if (error) throw error;
+};
+
 export const deleteService = async (id: string, orgId: string) => {
     const { error } = await supabase
         .from('services')
@@ -204,6 +246,21 @@ export const createStaff = async (staff: Omit<Staff, 'id'>, orgId: string) => {
         avatar: staffData.avatar_url,
         specialties: []
     };
+};
+
+export const updateStaff = async (id: string, updates: Partial<Omit<Staff, 'id'>>, orgId: string) => {
+    const payload: any = {};
+    if (updates.name) payload.name = updates.name;
+    if (updates.role) payload.role = updates.role;
+    if (updates.avatar) payload.avatar_url = updates.avatar;
+
+    const { error } = await supabase
+        .from('staff')
+        .update(payload)
+        .eq('id', id)
+        .eq('org_id', orgId);
+
+    if (error) throw error;
 };
 
 export const updateStaffServices = async (staffId: string, serviceIds: string[]) => {
@@ -286,6 +343,134 @@ export const upsertAvailability = async (availabilityList: any[], staffId: strin
     return data;
 };
 
+// ...
+export const getAppointmentsByEmail = async (email: string) => {
+    const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+            *,
+            services (name),
+            staff (name)
+        `)
+        .eq('client_email', email)
+        .order('date', { ascending: true })
+        .gte('date', new Date().toISOString().split('T')[0]); // Only show today/future
+
+    if (error) {
+        console.error('Error fetching bookings:', error);
+        return [];
+    }
+
+    return data.map((item: any) => ({
+        id: item.id,
+        serviceId: item.service_id,
+        staffId: item.staff_id,
+        clientId: item.client_email,
+        clientName: item.client_name,
+        clientEmail: item.client_email,
+        date: item.date,
+        timeSlot: item.time_slot,
+        status: item.status,
+        // Optional enrichments if we updated types
+        // serviceName: item.services?.name,
+        // staffName: item.staff?.name
+    }));
+};
+
+export const cancelAppointment = async (id: string) => {
+    const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'CANCELLED' })
+        .eq('id', id);
+
+    if (error) throw error;
+};
+
+export const updateAppointment = async (id: string, updates: { date?: string; timeSlot?: string; status?: string }) => {
+    // If moving time, verify availability first (simple check)
+    if (updates.date && updates.timeSlot) {
+        // We need staffId to check conflicts. 
+        // Fetch current appointment to get staffId
+        const { data: currentApt } = await supabase
+            .from('appointments')
+            .select('staff_id')
+            .eq('id', id)
+            .single();
+
+        if (!currentApt) throw new Error('Appointment not found');
+
+        // Check for conflicts
+        const { data: conflict } = await supabase
+            .from('appointments')
+            .select('id')
+            .eq('staff_id', currentApt.staff_id)
+            .eq('date', updates.date)
+            .eq('time_slot', updates.timeSlot)
+            .neq('id', id) // Exclude self
+            .neq('status', 'CANCELLED')
+            .single();
+
+        if (conflict) {
+            throw new Error('This time slot is already booked.');
+        }
+    }
+
+    const payload: any = {};
+    if (updates.date) payload.date = updates.date;
+    if (updates.timeSlot) payload.time_slot = updates.timeSlot;
+    if (updates.status) payload.status = updates.status;
+
+    const { error } = await supabase
+        .from('appointments')
+        .update(payload)
+        .eq('id', id);
+
+    if (error) throw error;
+};
+
+export const uncancelAppointment = async (id: string) => {
+    // 1. Check for conflicts before restoring
+    const { data: currentApt } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (!currentApt) throw new Error('Appointment not found');
+
+    const { data: conflict } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('staff_id', currentApt.staff_id)
+        .eq('date', currentApt.date)
+        .eq('time_slot', currentApt.time_slot)
+        .neq('id', id)
+        .neq('status', 'CANCELLED')
+        .neq('status', 'ARCHIVED')
+        .single();
+
+    if (conflict) {
+        throw new Error('Cannot restore: Time slot is now taken.');
+    }
+
+    const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'CONFIRMED' })
+        .eq('id', id);
+
+    if (error) throw error;
+};
+
+export const archiveAppointment = async (id: string) => {
+    // We use a specific status 'ARCHIVED' to hide it from the board
+    const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'ARCHIVED' })
+        .eq('id', id);
+
+    if (error) throw error;
+};
+
 // --- Time Slot Logic ---
 
 export const getTimeSlots = async (staffId: string, date: Date): Promise<TimeSlot[]> => {
@@ -333,7 +518,7 @@ export const getTimeSlots = async (staffId: string, date: Date): Promise<TimeSlo
         .select('time_slot')
         .eq('staff_id', staffId)
         .eq('date', dateStr)
-        .in('status', ['CONFIRMED', 'PENDING']);
+        .in('status', ['CONFIRMED', 'PENDING']); // implicit: cancelled/archived are not blocking
 
     if (existingApts) {
         const bookedTimes = new Set(existingApts.map((a: any) => a.time_slot));

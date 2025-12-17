@@ -20,6 +20,7 @@ export default function AppointmentList({ appointments }: AppointmentListProps) 
                         <th className="px-6 py-3 font-medium">Service</th>
                         <th className="px-6 py-3 font-medium">Date & Time</th>
                         <th className="px-6 py-3 font-medium">Status</th>
+                        <th className="px-6 py-3 font-medium text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -36,10 +37,34 @@ export default function AppointmentList({ appointments }: AppointmentListProps) 
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-600">{apt.date} at {apt.timeSlot}</td>
                             <td className="px-6 py-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${apt.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${apt.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
+                                    apt.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                                     }`}>
                                     {apt.status.toLowerCase()}
                                 </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                                {apt.status === 'CONFIRMED' && (
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                        onClick={async () => {
+                                            if (!confirm('Cancel this appointment?')) return;
+                                            // In a real app we would pass a handler, but for MVP we direct call service
+                                            // verifying we are in a client component
+                                            try {
+                                                const { cancelAppointment } = await import('@/services/dataService');
+                                                await cancelAppointment(apt.id);
+                                                window.location.reload(); // Simple refresh to show update
+                                            } catch (e) {
+                                                alert('Failed to cancel');
+                                            }
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                )}
                             </td>
                         </tr>
                     ))}

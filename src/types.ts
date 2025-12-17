@@ -8,7 +8,8 @@ export enum AppointmentStatus {
     PENDING = 'PENDING',
     CONFIRMED = 'CONFIRMED',
     CANCELLED = 'CANCELLED',
-    COMPLETED = 'COMPLETED'
+    COMPLETED = 'COMPLETED',
+    ARCHIVED = 'ARCHIVED'
 }
 
 export interface User {
@@ -61,4 +62,16 @@ export interface Availability {
     startTime: string; // "09:00"
     endTime: string; // "17:00"
     isWorking: boolean;
+}
+
+export interface Organization {
+    id: string;
+    slug: string;
+    name: string;
+    logo_url?: string;
+    primary_color?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    website?: string;
 }
