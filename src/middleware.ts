@@ -36,13 +36,10 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // If user is accessing admin routes and not logged in
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        if (!user) {
-            console.log("Middleware: No user found for admin route, redirecting to login.");
-            return NextResponse.redirect(new URL('/?login=true', request.url));
-        } else {
-            console.log("Middleware: User found, allowing access.", user.email);
-        }
+    if (request.nextUrl.pathname.startsWith('/admin') && !user) {
+        // Redirect to home (which is the booking page) or a specific login page
+        // For now, let's redirect to home with a query param
+        return NextResponse.redirect(new URL('/?login=true', request.url));
     }
 
     return response;

@@ -152,7 +152,7 @@ function LoginForm() {
                             </div>
                             <div className="relative flex justify-center text-sm">
                                 <span className="px-2 bg-white text-gray-500">
-                                    Protected Demo Area (Gen 2.0)
+                                    Protected Demo Area
                                 </span>
                             </div>
                         </div>
