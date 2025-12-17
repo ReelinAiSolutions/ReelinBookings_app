@@ -1,0 +1,250 @@
+'use client';
+
+import React, { useState, useMemo, useEffect } from 'react';
+import { getOrganizationBySlug, getServices, getStaff, createAppointment, getTimeSlots } from '@/services/dataService';
+import { Service, Staff, TimeSlot } from '@/types';
+import { startOfToday } from 'date-fns';
+import WizardStepIndicator from '@/components/booking/WizardStepIndicator';
+import ServiceSelection from '@/components/booking/ServiceSelection';
+import StaffSelection from '@/components/booking/StaffSelection';
+import DateSelection from '@/components/booking/DateSelection';
+import BookingSummary from '@/components/booking/BookingSummary';
+import ConfirmationView from '@/components/booking/ConfirmationView';
+
+enum BookingStep {
+    SERVICE = 0,
+    STAFF = 1,
+    DATE = 2,
+    SUMMARY = 3,
+    CONFIRMATION = 4
+}
+
+const STEPS = [
+    { id: BookingStep.SERVICE, label: 'Service', desc: 'Choose a service' },
+    { id: BookingStep.STAFF, label: 'Professional', desc: 'Select staff' },
+    { id: BookingStep.DATE, label: 'Schedule', desc: 'Pick a date' },
+    { id: BookingStep.SUMMARY, label: 'Confirm', desc: 'Review booking' }
+];
+
+export default function OrganizationBookingPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = React.use(params);
+
+    const [org, setOrg] = useState<any>(null);
+    const [isLoadingOrg, setIsLoadingOrg] = useState(true);
+
+    const [currentStep, setCurrentStep] = useState<BookingStep>(BookingStep.SERVICE);
+    const [services, setServices] = useState<Service[]>([]);
+    const [staffMembers, setStaffMembers] = useState<Staff[]>([]);
+    const [realTimeSlots, setRealTimeSlots] = useState<TimeSlot[]>([]);
+
+    // Selection State
+    const [selectedService, setSelectedService] = useState<Service | null>(null);
+    const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+    const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+    const [isBooking, setIsBooking] = useState(false);
+    const [bookingComplete, setBookingComplete] = useState(false);
+
+    // Load Organization & Data
+    useEffect(() => {
+        const loadData = async () => {
+            setIsLoadingOrg(true);
+            const orgData = await getOrganizationBySlug(slug);
+
+            if (orgData) {
+                setOrg(orgData);
+                const [loadedServices, loadedStaff] = await Promise.all([
+                    getServices(orgData.id),
+                    getStaff(orgData.id)
+                ]);
+                setServices(loadedServices);
+                setStaffMembers(loadedStaff);
+            }
+            setIsLoadingOrg(false);
+        };
+        loadData();
+    }, [slug]);
+
+    // Filter staff based on selected service
+    const availableStaff = useMemo(() => {
+        if (!selectedService) return [];
+        return staffMembers.filter(staff =>
+            staff.specialties.includes(selectedService.id)
+        );
+    }, [selectedService, staffMembers]);
+
+    // Load Available Slots when Date/Staff changes
+    useEffect(() => {
+        const loadSlots = async () => {
+            if (!selectedStaff || !selectedDate) return;
+
+            // Reset time if date changes
+            setSelectedTime(null);
+
+            const slots = await getTimeSlots(selectedStaff.id, selectedDate);
+            setRealTimeSlots(slots);
+        };
+        loadSlots();
+    }, [selectedDate, selectedStaff]);
+
+    const availableTimeSlots = useMemo(() => {
+        return realTimeSlots;
+    }, [realTimeSlots]);
+
+    const handleBook = async (formData: any) => {
+        if (!selectedService || !selectedStaff || !selectedTime || !org) return;
+
+        setIsBooking(true);
+        try {
+            await createAppointment({
+                serviceId: selectedService.id,
+                staffId: selectedStaff.id,
+                clientId: 'c_temp_user',
+                clientName: formData.name,
+                clientEmail: formData.email,
+                date: selectedDate.toISOString().split('T')[0],
+                timeSlot: selectedTime,
+                status: 'CONFIRMED'
+            } as any, org.id);
+
+            // Send Confirmation Email
+            try {
+                await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: formData.email, // Use real client email
+                        subject: `Booking Confirmed: ${selectedService.name} at ${org.name}`,
+                        html: `
+                            <div style="font-family: sans-serif; color: #333;">
+                                <h1>You're Booked! 🎉</h1>
+                                <p>Hi ${formData.name.split(' ')[0]},</p>
+                                <p>Your appointment for <strong>${selectedService.name}</strong> with <strong>${selectedStaff.name}</strong> is confirmed.</p>
+                                <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                    <p style="margin: 5px 0;"><strong>📅 Date:</strong> ${selectedDate.toDateString()}</p>
+                                    <p style="margin: 5px 0;"><strong>⏰ Time:</strong> ${selectedTime}</p>
+                                    <p style="margin: 5px 0;"><strong>📍 Location:</strong> ${org.name}</p>
+                                </div>
+                                <p>See you soon!</p>
+                            </div>
+                        `
+                    })
+                });
+            } catch (emailError) {
+                console.error("Failed to send email", emailError);
+            }
+
+            setBookingComplete(true);
+        } catch (error) {
+            console.error("Booking failed", error);
+            alert("Failed to book appointment. Please try again.");
+        } finally {
+            setIsBooking(false);
+        }
+    };
+
+    const resetBooking = () => {
+        setBookingComplete(false);
+        setCurrentStep(BookingStep.SERVICE);
+        setSelectedService(null);
+        setSelectedStaff(null);
+        setSelectedDate(startOfToday());
+        setSelectedTime(null);
+    };
+
+    const handleServiceSelect = (service: Service) => {
+        setSelectedService(service);
+        setCurrentStep(BookingStep.STAFF);
+    };
+
+    if (isLoadingOrg) {
+        return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    }
+
+    if (!org) {
+        return <div className="min-h-screen flex items-center justify-center">Business not found. Check the URL.</div>;
+    }
+
+    if (bookingComplete) {
+        return (
+            <ConfirmationView
+                selectedService={selectedService}
+                selectedStaff={selectedStaff}
+                selectedDate={selectedDate}
+                selectedTime={selectedTime}
+                onReset={resetBooking}
+            />
+        );
+    }
+
+    return (
+        <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            {/* Hero Header */}
+            <div className="text-center mb-12">
+                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                    {org.name}
+                </h1>
+                <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+                    Book your next experience with us.
+                </p>
+            </div>
+
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+                <div className="hidden lg:block w-64 flex-shrink-0">
+                    <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
+                </div>
+
+                <div className="flex-1 w-full">
+                    {/* Mobile Header */}
+                    <div className="lg:hidden mb-6">
+                        <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div className="w-full bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden min-h-[600px] flex flex-col relative">
+                        {currentStep === BookingStep.SERVICE && (
+                            <ServiceSelection
+                                services={services}
+                                onSelect={handleServiceSelect}
+                            />
+                        )}
+
+                        {currentStep === BookingStep.STAFF && (
+                            <StaffSelection
+                                staffMembers={availableStaff}
+                                onSelect={(staff) => { setSelectedStaff(staff); setCurrentStep(BookingStep.DATE); }}
+                                onSelectAny={() => { setSelectedStaff({ id: 'any', name: 'Any Professional', role: '', specialties: [], avatar: '' }); setCurrentStep(BookingStep.DATE); }}
+                                onBack={() => setCurrentStep(BookingStep.SERVICE)}
+                            />
+                        )}
+
+                        {currentStep === BookingStep.DATE && (
+                            <DateSelection
+                                selectedDate={selectedDate}
+                                onSelectDate={setSelectedDate}
+                                selectedTime={selectedTime}
+                                onSelectTime={setSelectedTime}
+                                timeSlots={availableTimeSlots}
+                                onBack={() => setCurrentStep(BookingStep.STAFF)}
+                                onNext={() => setCurrentStep(BookingStep.SUMMARY)}
+                            />
+                        )}
+
+                        {currentStep === BookingStep.SUMMARY && (
+                            <BookingSummary
+                                selectedService={selectedService}
+                                selectedStaff={selectedStaff}
+                                selectedDate={selectedDate}
+                                selectedTime={selectedTime}
+                                onBack={() => setCurrentStep(BookingStep.DATE)}
+                                onConfirm={handleBook}
+                                isBooking={isBooking}
+                            />
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
