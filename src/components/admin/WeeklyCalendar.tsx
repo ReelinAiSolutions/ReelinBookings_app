@@ -166,24 +166,24 @@ export default function WeeklyCalendar({ appointments, staff, services, isBlocki
                     return (
                         <div key={day.toISOString()} className={`p-4 ${isToday ? 'bg-blue-50/30' : ''}`}>
                             {/* Day Header */}
-                            <div className="flex items-center justify-between mb-4">
+                            <div
+                                onClick={() => onSelectSlot(day, '09:00')}
+                                className="flex items-center justify-between mb-4 cursor-pointer active:opacity-70 transition-opacity"
+                            >
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center border shadow-sm ${isToday ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
-                                        <span className="text-[10px] uppercase font-bold leading-none">{format(day, 'EEE')}</span>
-                                        <span className="text-sm font-black leading-none mt-0.5">{format(day, 'd')}</span>
+                                    <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center border shadow-sm ${isToday ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
+                                        <span className="text-[10px] uppercase font-bold leading-none mb-0.5">{format(day, 'EEE')}</span>
+                                        <span className="text-lg font-black leading-none">{format(day, 'd')}</span>
                                     </div>
-                                    {dayApts.length > 0 ? (
-                                        <span className="text-xs font-medium text-gray-500">{dayApts.length} bookings</span>
-                                    ) : (
-                                        <span className="text-xs font-medium text-gray-400 italic">No bookings</span>
-                                    )}
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-gray-900">{format(day, 'MMMM')}</span>
+                                        {dayApts.length > 0 ? (
+                                            <span className="text-xs font-medium text-gray-500">{dayApts.length} bookings</span>
+                                        ) : (
+                                            <span className="text-xs font-medium text-gray-400">Tap to add +</span>
+                                        )}
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => onSelectSlot(day, '09:00')} // Default to 9am for quick add
-                                    className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                >
-                                    <Plus className="w-5 h-5" />
-                                </button>
                             </div>
 
                             {/* Appointments Grid */}
