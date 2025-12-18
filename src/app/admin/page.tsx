@@ -14,10 +14,11 @@ import TodayPanel from '@/components/admin/TodayPanel';
 import RescheduleModal from '@/components/admin/RescheduleModal';
 import BlockModal from '@/components/admin/BlockModal';
 import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
-import ProfileManager from '@/components/admin/ProfileManager'; // New import
+import ProfileManager from '@/components/admin/ProfileManager'; // Restored import
+import AdminNav from '@/components/admin/AdminNav'; // New import
 import {
     getCurrentUserOrganization,
-    getUserProfile, // New import
+    getUserProfile,
     getAppointments,
     getServices,
     getStaff,
@@ -46,7 +47,7 @@ const MOCK_STATS = [
 ];
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'operations' | 'customers' | 'services' | 'analytics' | 'settings' | 'profile'>('operations');
+    const [activeTab, setActiveTab] = useState<'operations' | 'services' | 'analytics' | 'settings' | 'profile'>('operations');
     const [appointments, setAppointments] = useState<any[]>([]);
     const [stats, setStats] = useState({ totalRevenue: 0, totalBookings: 0, activeStaff: 0 });
     const [services, setServices] = useState<any[]>([]);
@@ -67,7 +68,6 @@ export default function AdminDashboard() {
 
     // Staff Filter State
     const [selectedStaffId, setSelectedStaffId] = useState<string>('ALL');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const loadDashboardData = async () => {
         const orgId = await getCurrentUserOrganization();
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24 lg:pb-0">
             <div className="flex justify-between items-center h-16 gap-4">
                 {/* Left Side: Logo & Branding */}
                 <div className="flex items-center gap-4 z-10 flex-1 min-w-0">
@@ -195,117 +195,18 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Center: Tabs */}
-                <div className="hidden lg:flex gap-2 bg-white p-1 rounded-lg border border-gray-200 shadow-sm flex-shrink-0">
-                    <button
-                        onClick={() => setActiveTab('operations')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'operations' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                    >
-                        Operations
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('services')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'services' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                    >
-                        Services & Team
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('analytics')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'analytics' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                    >
-                        Analytics
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('settings')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'settings' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                    >
-                        Settings
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('profile')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'profile' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                    >
-                        Profile
-                    </button>
+                {/* Center: Navigation */}
+                <AdminNav
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    currentOrg={currentOrg}
+                />
 
-                    {currentOrg && (
-                        <>
-                            <Link
-                                href={`/${currentOrg.slug}`}
-                                target="_blank"
-                                className="px-4 py-2 rounded-md text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1 border-l border-gray-200 ml-2 pl-4"
-                            >
-                                Live Site <ExternalLink className="w-4 h-4" />
-                            </Link>
-                        </>
-                    )}
-                </div>
-
-                {/* Right Side: Spacer/Mobile Menu */}
-                <div className="flex-1 flex justify-end min-w-0">
-                    {/* Mobile Menu Button */}
-                    <button
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
-                    >
-                        <span className="sr-only">Menu</span>
-                        {isMobileMenuOpen ? (
-                            <X className="w-6 h-6" />
-                        ) : (
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        )}
-                    </button>
+                {/* Right Side: Spacer (Empty on mobile since nav is at bottom) */}
+                <div className="hidden lg:flex flex-1 justify-end min-w-0">
+                    {/* Placeholder for future header items if needed */}
                 </div>
             </div>
-
-            {/* Mobile Menu Dropdown */}
-            {isMobileMenuOpen && (
-                <div className="lg:hidden bg-white border border-gray-200 rounded-lg shadow-lg p-2 flex flex-col gap-1 mb-4 animate-in slide-in-from-top-2 duration-200">
-                    <button
-                        onClick={() => { setActiveTab('operations'); setIsMobileMenuOpen(false); }}
-                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'operations' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                    >
-                        Operations
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('services'); setIsMobileMenuOpen(false); }}
-                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'services' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                    >
-                        Services & Team
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('analytics'); setIsMobileMenuOpen(false); }}
-                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'analytics' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                    >
-                        Analytics
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('settings'); setIsMobileMenuOpen(false); }}
-                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'settings' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                    >
-                        Settings
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('profile'); setIsMobileMenuOpen(false); }}
-                        className={`px-4 py-3 rounded-md text-sm font-medium text-left transition-colors ${activeTab === 'profile' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                    >
-                        Profile
-                    </button>
-                    {currentOrg && (
-                        <div className="border-t border-gray-100 mt-1 pt-1">
-                            <Link
-                                href={`/${currentOrg.slug}`}
-                                target="_blank"
-                                className="px-4 py-3 rounded-md text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center justify-between hover:bg-primary-50 transition-colors"
-                            >
-                                Live Public Site <ExternalLink className="w-4 h-4" />
-                            </Link>
-                        </div>
-                    )}
-                </div>
-            )}
 
             {/* OPERATIONS (New Home) */}
             {
