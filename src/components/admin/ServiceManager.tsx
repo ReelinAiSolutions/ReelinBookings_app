@@ -3,6 +3,7 @@ import { Service } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Plus, Trash2, X, Edit2 } from 'lucide-react';
 import { createService, deleteService, updateService } from '@/services/dataService';
+import { useToast } from '@/context/ToastContext';
 
 interface ServiceManagerProps {
     services: Service[];
@@ -11,6 +12,7 @@ interface ServiceManagerProps {
 }
 
 export default function ServiceManager({ services, orgId, onRefresh }: ServiceManagerProps) {
+    const { toast } = useToast();
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -45,10 +47,12 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
             setIsCreating(false);
             setEditingId(null);
             setNewService({ name: '', price: '', duration: '', description: '' });
+            setNewService({ name: '', price: '', duration: '', description: '' });
             onRefresh();
+            toast('Service saved successfully', 'success');
         } catch (e) {
             console.error(e);
-            alert("Failed to save service");
+            toast('Failed to save service', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -69,10 +73,12 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
         if (!confirm("Are you sure?")) return;
         try {
             await deleteService(id, orgId);
+            await deleteService(id, orgId);
             onRefresh();
+            toast('Service deleted', 'success');
         } catch (e) {
             console.error(e);
-            alert("Failed to delete service");
+            toast('Failed to delete service', 'error');
         }
     };
 

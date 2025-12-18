@@ -4,6 +4,7 @@ import { Service, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Plus, Trash2, X, Clock, ChevronDown, ChevronUp, Save, Scissors, User, Camera, Upload } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
+import { useToast } from '@/context/ToastContext';
 
 interface StaffManagerProps {
     staff: Staff[];
@@ -23,6 +24,7 @@ const DEFAULT_SCHEDULE = [
 ];
 
 export default function StaffManager({ staff, services, orgId, onRefresh }: StaffManagerProps) {
+    const { toast } = useToast();
     const [isCreating, setIsCreating] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [editingStaffId, setEditingStaffId] = useState<string | null>(null); // For Details Edit
@@ -53,10 +55,12 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
             const created = await createStaff({ ...newStaff, specialties: [] }, orgId);
             setIsCreating(false);
             setNewStaff({ name: '', role: '', avatar: '' });
+            setNewStaff({ name: '', role: '', avatar: '' });
             onRefresh();
+            toast('Staff member added', 'success');
         } catch (e) {
             console.error(e);
-            alert("Failed to add staff member");
+            toast('Failed to add staff member', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -66,10 +70,12 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
         if (!confirm("Are you sure? This will remove them from online booking.")) return;
         try {
             await deleteStaff(id, orgId);
+            await deleteStaff(id, orgId);
             onRefresh();
+            toast('Staff member removed', 'success');
         } catch (e) {
             console.error(e);
-            alert("Failed to delete staff");
+            toast('Failed to delete staff', 'error');
         }
     };
 
@@ -116,10 +122,12 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
 
             setEditingStaffId(null);
             onRefresh();
-            alert("Staff details updated!");
+            setEditingStaffId(null);
+            onRefresh();
+            toast('Staff details updated!', 'success');
         } catch (e) {
             console.error(e);
-            alert("Failed to update staff details");
+            toast('Failed to update staff details', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -175,11 +183,12 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
         setIsLoading(true);
         try {
             await upsertAvailability(schedule, staffId, orgId);
-            alert("Schedule saved!");
+            await upsertAvailability(schedule, staffId, orgId);
+            toast('Schedule saved!', 'success');
             setExpandedStaffId(null);
         } catch (e) {
             console.error(e);
-            alert("Error saving schedule");
+            toast('Error saving schedule', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -389,11 +398,12 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                                         setIsLoading(true);
                                         try {
                                             await updateStaffServices(member.id, selectedServices);
-                                            alert("Services updated!");
+                                            await updateStaffServices(member.id, selectedServices);
+                                            toast('Services updated!', 'success');
                                             onRefresh(); // Refresh to update parent state if needed
                                         } catch (e) {
                                             console.error(e);
-                                            alert("Error updating services");
+                                            toast('Error updating services', 'error');
                                         } finally {
                                             setIsLoading(false);
                                         }

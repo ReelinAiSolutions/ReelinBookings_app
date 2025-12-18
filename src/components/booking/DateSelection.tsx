@@ -102,11 +102,23 @@ export default function DateSelection({
                             <p className="text-gray-500 font-medium">Select a time slot to continue</p>
                         </div>
                     ) : (
-                        <div className="mt-8 flex justify-end animate-in fade-in slide-in-from-bottom-2">
-                            <Button size="lg" onClick={onNext} className="shadow-xl shadow-primary-600/20">
-                                Continue to Review <ArrowRight className="w-5 h-5 ml-2" />
-                            </Button>
-                        </div>
+                        <>
+                            {/* Desktop Button */}
+                            <div className="hidden md:flex mt-8 justify-end animate-in fade-in slide-in-from-bottom-2">
+                                <Button size="lg" onClick={onNext} className="shadow-xl shadow-primary-600/20">
+                                    Continue to Review <ArrowRight className="w-5 h-5 ml-2" />
+                                </Button>
+                            </div>
+
+                            {/* Mobile Sticky Footer */}
+                            <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 animate-in slide-in-from-bottom-full duration-300">
+                                <Button size="lg" onClick={onNext} className="w-full shadow-xl shadow-primary-600/20">
+                                    Continue to Review <ArrowRight className="w-5 h-5 ml-2" />
+                                </Button>
+                            </div>
+                            {/* Spacer to prevent content being hidden behind footer */}
+                            <div className="md:hidden h-24"></div>
+                        </>
                     )}
                 </div>
             </div>

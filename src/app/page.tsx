@@ -1,13 +1,33 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
 import { ArrowRight, Calendar, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function LandingPage() {
+  const router = useRouter();
+
+  // Smart Entry Point: Redirect to Admin Dashboard if logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/admin');
+      }
+    };
+    checkSession();
+  }, [router]);
+
   return (
-    <div className="bg-white">
+    <div className="bg-white animate-in fade-in duration-500">
       {/* Header */}
       <header className="absolute inset-x-0 top-0 z-50">
         <nav className="flex items-center justify-between p-6 lg:px-8" aria-label="Global">

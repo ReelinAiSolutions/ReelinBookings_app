@@ -1,12 +1,28 @@
 import React from 'react';
 import { Appointment } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { CalendarX2 } from 'lucide-react'; // Empty state icon
 
 interface AppointmentListProps {
     appointments: Appointment[];
 }
 
 export default function AppointmentList({ appointments }: AppointmentListProps) {
+    if (appointments.length === 0) {
+        return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <CalendarX2 className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">No appointments found</h3>
+                <p className="text-gray-500 max-w-sm">
+                    There are no appointments scheduled for this period. Share your booking link to get started.
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -37,11 +53,7 @@ export default function AppointmentList({ appointments }: AppointmentListProps) 
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-600">{apt.date} at {apt.timeSlot}</td>
                             <td className="px-6 py-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${apt.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
-                                    apt.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
-                                    {apt.status.toLowerCase()}
-                                </span>
+                                <StatusBadge status={apt.status} />
                             </td>
                             <td className="px-6 py-4 text-right">
                                 {apt.status === 'CONFIRMED' && (

@@ -1,0 +1,17 @@
+{
+    "name": "Reelin Bookings",
+    "short_name": "Reelin",
+    "start_url": "/?source=pwa",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4F46E5",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/icon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "description": "Professional booking management for modern businesses."
+}

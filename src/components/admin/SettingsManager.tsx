@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/Button';
 import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
 import { Organization } from '@/types';
 
 interface SettingsManagerProps {
@@ -15,6 +16,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
     const [isLoading, setIsLoading] = useState(false);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(org.logo_url || null);
+    const { toast } = useToast();
 
     const [formData, setFormData] = useState({
         name: org.name,
@@ -103,11 +105,11 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
             // 3. Notify Parent
             onUpdate(data as Organization);
-            alert('Settings saved successfully!');
+            toast('Settings saved successfully!', 'success');
 
         } catch (error: any) {
             console.error('Error saving settings:', error);
-            alert('Failed to save settings: ' + error.message);
+            toast('Failed to save settings: ' + error.message, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -284,7 +286,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                             onClick={() => {
                                 const code = `<iframe src="${window.location.origin}/${formData.slug}" style="width: 100%; height: 700px; border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" title="Book Appointment"></iframe>`;
                                 navigator.clipboard.writeText(code);
-                                alert('Code copied to clipboard!');
+                                toast('Code copied to clipboard!', 'info');
                             }}
                         >
                             Copy Code
