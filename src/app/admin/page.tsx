@@ -212,82 +212,86 @@ export default function AdminDashboard() {
             {
                 activeTab === 'operations' && (
                     <div className="space-y-6 animate-in fade-in duration-300">
-                        {/* Quick Actions Header */}
-                        <div className="flex justify-between items-center mb-6">
-                            {/* Staff Filter */}
-                            <div className="flex items-center gap-2 overflow-x-auto p-1.5 no-scrollbar max-w-2xl">
-                                <button
-                                    onClick={() => setSelectedStaffId('ALL')}
-                                    className={`
-                                        flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap
-                                        ${selectedStaffId === 'ALL'
-                                            ? 'bg-gray-900 text-white ring-2 ring-gray-900 ring-offset-1'
-                                            : 'bg-white border text-gray-600 hover:bg-gray-50'
-                                        }
-                                    `}
-                                >
-                                    <span>All Team</span>
-                                </button>
-                                {staff.map(member => (
-                                    <button
-                                        key={member.id}
-                                        onClick={() => setSelectedStaffId(member.id)}
-                                        className={`
-                                            flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap
-                                            ${selectedStaffId === member.id
-                                                ? 'bg-white text-gray-900 border-gray-900 ring-2 ring-gray-900 ring-offset-1 shadow-sm'
-                                                : 'bg-white border text-gray-600 hover:bg-gray-50'
-                                            }
-                                        `}
-                                        style={selectedStaffId === member.id ? { borderColor: 'currentColor' } : {}}
-                                    >
-                                        <div className="w-5 h-5 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                                            {member.avatar ? (
-                                                <img src={member.avatar} alt="" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[9px] font-bold text-gray-500">
-                                                    {member.name.slice(0, 1)}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <span>{member.name.split(' ')[0]}</span>
-                                    </button>
-                                ))}
-                            </div>
-
-                            <button
-                                onClick={() => setIsBlockingMode(!isBlockingMode)}
-                                className={`
-                                    border px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors flex-shrink-0
+                        {/* OPERATIONS (New Home) */}
+                        {
+                            activeTab === 'operations' && (
+                                <div className="space-y-6 animate-in fade-in duration-300">
+                                    {/* Compact Mobile Header / Staff Filter */}
+                                    <div className="flex items-center gap-2 overflow-x-auto p-1.5 no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
+                                        {/* Block Time Icon Button (Compact) */}
+                                        <button
+                                            onClick={() => setIsBlockingMode(!isBlockingMode)}
+                                            className={`
+                                    w-10 h-10 rounded-full flex items-center justify-center transition-colors flex-shrink-0 shadow-sm
                                     ${isBlockingMode
-                                        ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900 ring-offset-2'
-                                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                    }
+                                                    ? 'bg-red-500 text-white ring-2 ring-red-500 ring-offset-2'
+                                                    : 'bg-white border border-gray-200 text-gray-700'
+                                                }
                                 `}
-                            >
-                                {isBlockingMode ? <Lock className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                                {isBlockingMode ? 'Cancel Block Mode' : 'Block Time'}
-                            </button>
-                        </div>
+                                        >
+                                            {isBlockingMode ? <Lock className="w-4 h-4" /> : <Lock className="w-4 h-4 opacity-70" />}
+                                        </button>
 
-                        {/* Hero Operations Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-200px)] h-auto">
-                            {/* Week View: Order 2 on Mobile, Order 1 on Desktop */}
-                            <div className="lg:col-span-2 h-full order-2 lg:order-1 min-h-[500px]">
-                                <WeeklyCalendar
-                                    appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
-                                    staff={staff}
-                                    services={services}
-                                    isBlockingMode={isBlockingMode}
-                                    onSelectSlot={handleSelectSlot}
-                                    onAppointmentClick={handleAppointmentClick}
-                                />
-                            </div>
-                            {/* Today View: Order 1 on Mobile, Order 2 on Desktop */}
-                            <div className="h-full order-1 lg:order-2">
-                                <TodayPanel appointments={appointments} />
-                            </div>
-                        </div>
+                                        <div className="w-px h-6 bg-gray-200 mx-1 flex-shrink-0"></div>
+
+                                        <button
+                                            onClick={() => setSelectedStaffId('ALL')}
+                                            className={`
+                                    px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border
+                                    ${selectedStaffId === 'ALL'
+                                                    ? 'bg-gray-900 text-white border-gray-900 shadow-md transform scale-105'
+                                                    : 'bg-white border-gray-200 text-gray-600'
+                                                }
+                                `}
+                                        >
+                                            All Team
+                                        </button>
+                                        {staff.map(member => (
+                                            <button
+                                                key={member.id}
+                                                onClick={() => setSelectedStaffId(member.id)}
+                                                className={`
+                                        flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap border
+                                        ${selectedStaffId === member.id
+                                                        ? 'bg-gray-900 text-white border-gray-900 shadow-md transform scale-105'
+                                                        : 'bg-white border-gray-200 text-gray-600'
+                                                    }
+                                    `}
+                                            >
+                                                <span>{member.name.split(' ')[0]}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Hero Operations Grid */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-200px)] h-auto">
+                                        {/* Week View: Order 2 on Mobile */}
+                                        <div className="lg:col-span-2 h-full order-2 lg:order-1 min-h-[500px]">
+                                            <WeeklyCalendar
+                                                appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
+                                                staff={staff}
+                                                services={services}
+                                                isBlockingMode={isBlockingMode}
+                                                onSelectSlot={handleSelectSlot}
+                                                onAppointmentClick={handleAppointmentClick}
+                                            />
+                                        </div>
+                                        {/* Today View: Order 1 on Mobile */}
+                                        <div className="h-full order-1 lg:order-2">
+                                            <TodayPanel appointments={appointments} staff={staff} />
+                                        </div>
+                                    </div>
+
+                                    {/* FLOATING ACTION BUTTON (Mobile Only) */}
+                                    <button
+                                        onClick={() => setIsCreateModalOpen(true)}
+                                        className="lg:hidden fixed bottom-24 right-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl flex items-center justify-center z-40 hover:bg-blue-700 active:scale-95 transition-all"
+                                    >
+                                        <Plus className="w-8 h-8" />
+                                    </button>
+                                </div>
+                            )
+                        }
                     </div>
                 )
             }
