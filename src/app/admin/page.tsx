@@ -14,6 +14,7 @@ import TodayPanel from '@/components/admin/TodayPanel';
 import RescheduleModal from '@/components/admin/RescheduleModal';
 import BlockModal from '@/components/admin/BlockModal';
 import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
+import BarberDashboard from '@/components/barber/BarberDashboard';
 import ProfileManager from '@/components/admin/ProfileManager'; // Restored import
 import AdminNav from '@/components/admin/AdminNav'; // New import
 import {
