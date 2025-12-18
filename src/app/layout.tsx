@@ -24,6 +24,7 @@ export default function RootLayout({
         className={`${plusJakarta.variable} font-sans antialiased`}
       >
         {children}
+        {children}
       </body>
     </html>
   );

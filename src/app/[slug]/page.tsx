@@ -115,6 +115,7 @@ export default function OrganizationBookingPage({ params }: { params: Promise<{ 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         to: formData.email, // Use real client email
+                        ownerEmail: org.email || 'info@reelin.ca', // The Business Owner
                         subject: `Booking Confirmed: ${selectedService.name} at ${org.name}`,
                         html: `
                             <div style="font-family: sans-serif; color: #333;">
