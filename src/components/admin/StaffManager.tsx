@@ -48,37 +48,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     };
 
     // Inside handleUpdateDetails
-    await updateStaff(id, {
-        name: editForm.name,
-        role: editForm.role,
-        avatar: avatarUrl,
-        email: editForm.email
-    }, orgId);
-    // ...
 
-    // JSX Creation Form
-                    <input
-                        className="w-full p-2 rounded border"
-                        placeholder="Email (Required for login)"
-                        value={newStaff.email}
-                        onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
-                    />
-                    <input
-                        className="w-full p-2 rounded border"
-                        placeholder="Role (e.g. Master Barber)"
-    // ...
-    
-    // JSX Edit Form
-                                        <div>
-                                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Email (Login)</label>
-                                            <input
-                                                className="w-full p-2 rounded border border-gray-300 text-sm"
-                                                value={editForm.email}
-                                                onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Role / Title</label>
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -268,6 +238,12 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                     />
                     <input
                         className="w-full p-2 rounded border"
+                        placeholder="Email (Required for login)"
+                        value={newStaff.email}
+                        onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
+                    />
+                    <input
+                        className="w-full p-2 rounded border"
                         placeholder="Role (e.g. Master Barber)"
                         value={newStaff.role}
                         onChange={e => setNewStaff({ ...newStaff, role: e.target.value })}
@@ -350,6 +326,14 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                                                 className="w-full p-2 rounded border border-gray-300 text-sm"
                                                 value={editForm.name}
                                                 onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Email (Login)</label>
+                                            <input
+                                                className="w-full p-2 rounded border border-gray-300 text-sm"
+                                                value={editForm.email}
+                                                onChange={e => setEditForm({ ...editForm, email: e.target.value })}
                                             />
                                         </div>
                                         <div>
