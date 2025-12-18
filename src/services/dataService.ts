@@ -101,10 +101,56 @@ export const getStaff = async (orgId: string): Promise<Staff[]> => {
         name: item.name,
         role: item.role,
         avatar: item.avatar_url,
+        email: item.email, // Added email
         specialties: item.staff_services.map((ss: any) => ss.service_id)
     }));
 };
 
+// ...
+
+export const createStaff = async (staff: Omit<Staff, 'id'>, orgId: string) => {
+    // 1. Create Staff Member
+    const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .insert([
+            {
+                name: staff.name,
+                role: staff.role,
+                avatar_url: staff.avatar,
+                email: staff.email, // Added email
+                org_id: orgId
+            }
+        ])
+        .select()
+        .single();
+
+    if (staffError) throw staffError;
+
+    // 2. Link Services (Many-to-Many)
+    // For MVP we skip linking services on create, can add later
+
+    return {
+        ...staffData,
+        avatar: staffData.avatar_url,
+        specialties: []
+    };
+};
+
+export const updateStaff = async (id: string, updates: Partial<Omit<Staff, 'id'>>, orgId: string) => {
+    const payload: any = {};
+    if (updates.name) payload.name = updates.name;
+    if (updates.role) payload.role = updates.role;
+    if (updates.avatar) payload.avatar_url = updates.avatar;
+    if (updates.email) payload.email = updates.email; // Added email
+
+    const { error } = await supabase
+        .from('staff')
+        .update(payload)
+        .eq('id', id)
+        .eq('org_id', orgId);
+
+    if (error) throw error;
+};
 export const getAppointments = async (orgId?: string): Promise<Appointment[]> => {
     // If orgId is provided (public/specific check), filter by it.
     // If not, relying on RLS for admin view (which looks up profile)

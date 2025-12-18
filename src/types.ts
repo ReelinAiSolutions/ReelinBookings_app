@@ -35,6 +35,7 @@ export interface Staff {
     role: string;
     specialties: string[]; // Service IDs
     avatar: string;
+    email?: string; // Optional for migration support, but intended to be populated
 }
 
 export interface Appointment {
