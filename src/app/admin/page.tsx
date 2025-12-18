@@ -271,8 +271,9 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Hero Operations Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-                            <div className="lg:col-span-2 h-full">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-200px)] h-auto">
+                            {/* Week View: Order 2 on Mobile, Order 1 on Desktop */}
+                            <div className="lg:col-span-2 h-full order-2 lg:order-1 min-h-[500px]">
                                 <WeeklyCalendar
                                     appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
                                     staff={staff}
@@ -282,7 +283,8 @@ export default function AdminDashboard() {
                                     onAppointmentClick={handleAppointmentClick}
                                 />
                             </div>
-                            <div className="h-full">
+                            {/* Today View: Order 1 on Mobile, Order 2 on Desktop */}
+                            <div className="h-full order-1 lg:order-2">
                                 <TodayPanel appointments={appointments} />
                             </div>
                         </div>

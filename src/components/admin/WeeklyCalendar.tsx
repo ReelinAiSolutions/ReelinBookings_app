@@ -49,8 +49,8 @@ export default function WeeklyCalendar({ appointments, staff, services, isBlocki
                 </div>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="flex-1 overflow-auto flex flex-col">
+            {/* Desktop Calendar Grid (Hidden on Mobile) */}
+            <div className="hidden lg:flex flex-1 overflow-auto flex-col">
                 {/* Header Row */}
                 <div className="flex border-b border-gray-200 sticky top-0 bg-white z-10 shadow-sm">
                     <div className="w-16 flex-shrink-0 border-r border-gray-200 bg-gray-50/50"></div>
@@ -94,8 +94,6 @@ export default function WeeklyCalendar({ appointments, staff, services, isBlocki
                                         {/* Render Events */}
                                         <div className="flex flex-col gap-1.5 h-full">
                                             {cellApts.map(apt => {
-                                                // Deterministic Color Generation based on Staff ID
-                                                // Uses a predefined palette of soft, professional colors
                                                 const colors = [
                                                     { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-700' },
                                                     { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-700' },
@@ -107,14 +105,11 @@ export default function WeeklyCalendar({ appointments, staff, services, isBlocki
                                                     { bg: 'bg-cyan-50', border: 'border-cyan-500', text: 'text-cyan-700' },
                                                 ];
 
-                                                // Simple hash of staff ID to pick color
-                                                // Note: apt.staffId *might* be missing in MVP mock data, fallback to 0
                                                 const staffIndex = apt.staffId
                                                     ? apt.staffId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length
                                                     : 0;
 
                                                 const staffColor = colors[staffIndex];
-
                                                 const staffMember = staff.find(s => s.id === apt.staffId);
                                                 const service = services.find(s => s.id === apt.serviceId);
 
@@ -133,25 +128,17 @@ export default function WeeklyCalendar({ appointments, staff, services, isBlocki
                                                             onAppointmentClick(apt);
                                                         }}
                                                     >
-                                                        {/* Staff Name (Top, Big, Bold) */}
                                                         <div className="font-black text-xs uppercase tracking-wider opacity-90 leading-none mb-1">
                                                             {staffMember?.name?.split(' ')[0] || 'Unassigned'}
                                                         </div>
-
-                                                        {/* Customer Name (Smaller, Under) */}
                                                         <div className="font-bold text-sm truncate opacity-90 leading-tight mb-0.5">
                                                             {apt.clientName}
                                                         </div>
-
-                                                        {/* Service Name */}
                                                         <div className="text-[10px] truncate opacity-90 font-medium italic mb-1.5 max-w-full">
                                                             {service?.name || 'Service'}
                                                         </div>
-
-                                                        {/* Status/Time Footer */}
                                                         <div className="flex items-center justify-between text-[10px] opacity-70 font-bold border-t border-black/5 pt-1.5">
                                                             <span>{apt.timeSlot}</span>
-                                                            {/* Only show status if not confirmed to save space/noise, or keep it subtle */}
                                                             {apt.status !== 'CONFIRMED' && <span className="capitalize">{apt.status.toLowerCase()}</span>}
                                                         </div>
                                                     </div>
@@ -163,6 +150,84 @@ export default function WeeklyCalendar({ appointments, staff, services, isBlocki
                             })}
                         </div>
                     ))}
+                </div>
+            </div>
+
+            {/* Mobile Vertical List View (Visible on Mobile) */}
+            <div className="lg:hidden flex flex-col divide-y divide-gray-100">
+                {weekDays.map(day => {
+                    // Get all appointments for this day
+                    const dayApts = appointments
+                        .filter(a => isSameDay(new Date(a.date), day))
+                        .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
+
+                    const isToday = isSameDay(day, new Date());
+
+                    return (
+                        <div key={day.toISOString()} className={`p-4 ${isToday ? 'bg-blue-50/30' : ''}`}>
+                            {/* Day Header */}
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center border shadow-sm ${isToday ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
+                                        <span className="text-[10px] uppercase font-bold leading-none">{format(day, 'EEE')}</span>
+                                        <span className="text-sm font-black leading-none mt-0.5">{format(day, 'd')}</span>
+                                    </div>
+                                    {dayApts.length > 0 ? (
+                                        <span className="text-xs font-medium text-gray-500">{dayApts.length} bookings</span>
+                                    ) : (
+                                        <span className="text-xs font-medium text-gray-400 italic">No bookings</span>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => onSelectSlot(day, '09:00')} // Default to 9am for quick add
+                                    className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Appointments Grid */}
+                            <div className="space-y-3">
+                                {dayApts.map(apt => {
+                                    const service = services.find(s => s.id === apt.serviceId);
+                                    const staffMember = staff.find(s => s.id === apt.staffId);
+
+                                    return (
+                                        <div
+                                            key={apt.id}
+                                            onClick={() => onAppointmentClick(apt)}
+                                            className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex items-center gap-3 active:scale-[0.98] transition-transform"
+                                        >
+                                            {/* Time Column */}
+                                            <div className="flex flex-col items-center min-w-[3.5rem] border-r border-gray-100 pr-3 mr-1">
+                                                <span className="text-lg font-bold text-gray-900 leading-none">{apt.timeSlot}</span>
+                                                <span className="text-[10px] text-gray-400 font-medium uppercase mt-1">Start</span>
+                                            </div>
+
+                                            {/* Details */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <h4 className="font-bold text-gray-900 truncate">{apt.clientName}</h4>
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${apt.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                                                        }`}>
+                                                        {apt.status === 'CONFIRMED' ? 'OK' : apt.status.slice(0, 3)}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 truncate mt-0.5">
+                                                    {service?.name || 'Service'} with {staffMember?.name.split(' ')[0] || 'Staff'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {/* Empty State / End of List message */}
+                <div className="p-8 text-center text-gray-400 text-sm">
+                    No more bookings this week.
                 </div>
             </div>
         </div>
