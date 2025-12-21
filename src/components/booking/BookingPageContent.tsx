@@ -374,8 +374,31 @@ export default function BookingPageContent({ slug }: { slug: string }) {
         );
     }
 
+    // Auto-detect parent website's theme
+    const [parentTheme, setParentTheme] = useState<'light' | 'dark'>('light');
+
+    useEffect(() => {
+        // Listen for theme messages from parent window
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data.type === 'PARENT_THEME') {
+                setParentTheme(event.data.theme);
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        // Request theme from parent
+        if (isEmbed && window.parent !== window) {
+            window.parent.postMessage({ type: 'REQUEST_THEME' }, '*');
+        }
+
+        return () => window.removeEventListener('message', handleMessage);
+    }, [isEmbed]);
+
+    const isDarkTheme = parentTheme === 'dark';
+
     return (
-        <div className="mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl transition-colors duration-500">
+        <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl transition-colors duration-500 ${isDarkTheme ? 'bg-black text-white' : ''}`}>
             {/* Hero Header - Now visible in Embed Mode to match user desire */}
             <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {org.logo_url && (
