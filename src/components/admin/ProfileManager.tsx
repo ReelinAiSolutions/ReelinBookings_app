@@ -286,42 +286,58 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                 )}
             </div>
 
-            {/* 2. SERVICES SECTION - Only show if org exists */}
-            {org && (
-                <div>
-                    <SectionHeader id="services" label="Services" icon={Briefcase} />
-                    {expandedSection === 'services' && (
-                        <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
+            {/* 2. SERVICES SECTION */}
+            <div>
+                <SectionHeader id="services" label="Services" icon={Briefcase} />
+                {expandedSection === 'services' && (
+                    <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
+                        {org ? (
                             <ServiceManager services={services} orgId={org.id} onRefresh={onRefresh} />
-                        </div>
-                    )}
-                </div>
-            )}
+                        ) : (
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+                                <p className="text-sm text-gray-500 mt-2">Loading services...</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
 
-            {/* 3. TEAM SECTION - Only show if org exists */}
-            {org && (
-                <div>
-                    <SectionHeader id="team" label="Teams" icon={Users} />
-                    {expandedSection === 'team' && (
-                        <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
+            {/* 3. TEAM SECTION */}
+            <div>
+                <SectionHeader id="team" label="Teams" icon={Users} />
+                {expandedSection === 'team' && (
+                    <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
+                        {org ? (
                             <StaffManager staff={staff} services={services} orgId={org.id} onRefresh={onRefresh} />
-                        </div>
-                    )}
-                </div>
-            )}
+                        ) : (
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+                                <p className="text-sm text-gray-500 mt-2">Loading team...</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
 
-            {/* 4. BUSINESS SETTINGS SECTION - Only show if org exists */}
-            {org && (
-                <div>
-                    <SectionHeader id="settings" label="Business Settings" icon={Building2} />
-                    {expandedSection === 'settings' && (
-                        <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-6 animate-in fade-in slide-in-from-top-2">
+            {/* 4. BUSINESS SETTINGS SECTION */}
+            <div>
+                <SectionHeader id="settings" label="Business Settings" icon={Building2} />
+                {expandedSection === 'settings' && (
+                    <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-6 animate-in fade-in slide-in-from-top-2">
+                        {org ? (
                             <SettingsManager org={org} onUpdate={onUpdateOrg} />
-                        </div>
-                    )}
-                </div>
-            )}
+                        ) : (
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+                                <p className="text-sm text-gray-500 mt-2">Loading settings...</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
 
         </div>
     );
 }
+```
