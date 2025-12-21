@@ -117,25 +117,25 @@ export default function DateSelection({
                                         </div>
                                     )}
 
+                                    {/* Continue Button - Right after time slots for this date */}
+                                    {selectedTime && (
+                                        <div className="mt-6 flex justify-center animate-in fade-in slide-in-from-bottom-4">
+                                            <Button
+                                                size="lg"
+                                                onClick={onNext}
+                                                className="w-full md:w-auto shadow-xl shadow-primary-900/20 px-8 py-6 text-lg rounded-2xl font-black"
+                                            >
+                                                Review Booking <ArrowRight className="w-6 h-6 ml-2" />
+                                            </Button>
+                                        </div>
+                                    )}
+
                                 </div>
                             )}
                         </div>
                     );
                 })}
             </div>
-
-            {/* Continue Button - Inline after time slots */}
-            {selectedTime && (
-                <div className="mt-8 flex justify-center animate-in fade-in slide-in-from-bottom-4">
-                    <Button
-                        size="lg"
-                        onClick={onNext}
-                        className="w-full md:w-auto shadow-xl shadow-primary-900/20 px-8 py-6 text-lg rounded-2xl font-black"
-                    >
-                        Review Booking <ArrowRight className="w-6 h-6 ml-2" />
-                    </Button>
-                </div>
-            )}
         </div>
     );
 }
