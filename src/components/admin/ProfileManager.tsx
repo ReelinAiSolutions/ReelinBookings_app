@@ -340,4 +340,3 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
         </div>
     );
 }
-```
