@@ -307,26 +307,38 @@ export default function AdminDashboard() {
                     }
 
                     {
-                        activeTab === 'services' && currentOrg && (
+                        activeTab === 'services' && (
                             <div className="animate-in fade-in duration-300">
-                                <ServiceManager
-                                    services={services}
-                                    orgId={currentOrg.id}
-                                    onRefresh={loadDashboardData}
-                                />
+                                {currentOrg ? (
+                                    <ServiceManager
+                                        services={services}
+                                        orgId={currentOrg.id}
+                                        onRefresh={loadDashboardData}
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-64">
+                                        <p className="text-gray-500">Loading services...</p>
+                                    </div>
+                                )}
                             </div>
                         )
                     }
 
                     {
-                        activeTab === 'team' && currentOrg && (
+                        activeTab === 'team' && (
                             <div className="animate-in fade-in duration-300">
-                                <StaffManager
-                                    staff={staff}
-                                    services={services}
-                                    orgId={currentOrg.id}
-                                    onRefresh={loadDashboardData}
-                                />
+                                {currentOrg ? (
+                                    <StaffManager
+                                        staff={staff}
+                                        services={services}
+                                        orgId={currentOrg.id}
+                                        onRefresh={loadDashboardData}
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-64">
+                                        <p className="text-gray-500">Loading team...</p>
+                                    </div>
+                                )}
                             </div>
                         )
                     }
