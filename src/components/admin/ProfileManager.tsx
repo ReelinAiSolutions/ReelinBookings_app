@@ -290,7 +290,11 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                 <SectionHeader id="services" label="Services" icon={Briefcase} />
                 {expandedSection === 'services' && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
-                        <ServiceManager services={services} orgId={org.id} onRefresh={onRefresh} />
+                        {org ? (
+                            <ServiceManager services={services} orgId={org.id} onRefresh={onRefresh} />
+                        ) : (
+                            <p className="text-sm text-gray-500">Loading organization...</p>
+                        )}
                     </div>
                 )}
             </div>
@@ -300,7 +304,11 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                 <SectionHeader id="team" label="Teams" icon={Users} />
                 {expandedSection === 'team' && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
-                        <StaffManager staff={staff} services={services} orgId={org.id} onRefresh={onRefresh} />
+                        {org ? (
+                            <StaffManager staff={staff} services={services} orgId={org.id} onRefresh={onRefresh} />
+                        ) : (
+                            <p className="text-sm text-gray-500">Loading organization...</p>
+                        )}
                     </div>
                 )}
             </div>
@@ -310,7 +318,11 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                 <SectionHeader id="settings" label="Business Settings" icon={Building2} />
                 {expandedSection === 'settings' && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-6 animate-in fade-in slide-in-from-top-2">
-                        <SettingsManager org={org} onUpdate={onUpdateOrg} />
+                        {org ? (
+                            <SettingsManager org={org} onUpdate={onUpdateOrg} />
+                        ) : (
+                            <p className="text-sm text-gray-500">Loading organization...</p>
+                        )}
                     </div>
                 )}
             </div>
