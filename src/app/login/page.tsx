@@ -55,6 +55,11 @@ function LoginForm() {
         return (
             <div className="min-h-screen bg-white flex flex-col justify-center px-6 py-12 lg:px-8">
                 <div className="sm:mx-auto sm:w-full sm:max-w-md animate-in zoom-in-95 duration-500">
+                    {/* Back to Landing Page */}
+                    <Link href="/" className="mb-8 flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">
+                        ← Back
+                    </Link>
+
                     <div className="flex justify-center mb-10">
                         <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-500/10 ring-1 ring-white/20">
                             <Zap className="w-10 h-10 text-white" />
@@ -113,7 +118,7 @@ function LoginForm() {
                     onClick={() => setView('SELECTION')}
                     className="mb-8 flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                    ← Back to Selection
+                    ← Back
                 </button>
 
                 <div className="mb-8">

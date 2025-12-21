@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Building2, User, Mail, Lock, ArrowRight } from 'lucide-react';
 
@@ -137,6 +138,11 @@ export default function SignupPage() {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                {/* Back to Landing Page */}
+                <Link href="/" className="mb-8 flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">
+                    ← Back
+                </Link>
+
                 <div className="flex justify-center mb-6">
                     <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                         <Building2 className="w-8 h-8 text-white" />

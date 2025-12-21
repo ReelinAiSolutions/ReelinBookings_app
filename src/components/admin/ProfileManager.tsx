@@ -123,9 +123,9 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
         setExpandedSection(expandedSection === section ? null : section);
     };
 
-    const SectionHeader = ({ id, label, icon: Icon }: { id: string, label: string, icon: any }) => (
+    const SectionHeader = ({ id, label, icon: Icon }: { id: 'profile' | 'settings' | 'services' | 'team', label: string, icon: any }) => (
         <button
-            onClick={() => toggleSection(id as any)}
+            onClick={() => toggleSection(id)}
             className={`w-full flex items-center justify-between p-4 bg-white border border-gray-200 ${expandedSection === id ? 'rounded-t-xl border-b-0' : 'rounded-xl shadow-sm'
                 } transition-all duration-200 hover:bg-gray-50`}
         >
