@@ -231,9 +231,14 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                                                 <div className={`flex flex-col gap-0 leading-none h-full ${apt.status === 'CONFIRMED' ? staffColor.text : 'text-gray-900'}`}>
                                                     <span className="text-[10px] font-black truncate">{apt.clientName}</span>
                                                     {heightPercent > 5 && (
-                                                        <div className="flex items-center justify-between mt-0.5">
-                                                            <span className={`text-[9px] font-medium truncate ${staffColor.sub}`}>{service?.name}</span>
-                                                        </div>
+                                                        <>
+                                                            <div className="flex items-center justify-between mt-0.5">
+                                                                <span className={`text-[9px] font-medium truncate ${staffColor.sub}`}>{service?.name}</span>
+                                                            </div>
+                                                            <div className="mt-0.5">
+                                                                <span className="text-[8px] font-bold opacity-70">{apt.timeSlot}</span>
+                                                            </div>
+                                                        </>
                                                     )}
                                                 </div>
                                             </div>
