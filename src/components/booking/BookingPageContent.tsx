@@ -59,9 +59,6 @@ export default function BookingPageContent({ slug }: { slug: string }) {
     const searchParams = useSearchParams();
     const isEmbed = searchParams.get('mode') === 'embed';
 
-    // Auto-detect parent website's theme
-    const [parentTheme, setParentTheme] = useState<'light' | 'dark'>('light');
-
     const [guestInfo, setGuestInfo] = useState<{ name: string; email: string; phone: string } | null>(null);
 
     // Initialize Date on Client Only
@@ -79,22 +76,9 @@ export default function BookingPageContent({ slug }: { slug: string }) {
         }
     }, []);
 
-    // Theme detection effect
-    useEffect(() => {
-        const handleMessage = (event: MessageEvent) => {
-            if (event.data.type === 'PARENT_THEME') {
-                setParentTheme(event.data.theme);
-            }
-        };
-
-        window.addEventListener('message', handleMessage);
-
-        if (isEmbed && window.parent !== window) {
-            window.parent.postMessage({ type: 'REQUEST_THEME' }, '*');
-        }
-
-        return () => window.removeEventListener('message', handleMessage);
-    }, [isEmbed]);
+    // Get theme from URL parameter (more reliable than postMessage)
+    const theme = searchParams.get('theme') || 'light';
+    const isDarkTheme = theme === 'dark';
 
 
     // Load Organization & Data
@@ -394,8 +378,6 @@ export default function BookingPageContent({ slug }: { slug: string }) {
             />
         );
     }
-
-    const isDarkTheme = parentTheme === 'dark';
 
     return (
         <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl transition-colors duration-500 ${isDarkTheme ? 'bg-black' : 'bg-white'
