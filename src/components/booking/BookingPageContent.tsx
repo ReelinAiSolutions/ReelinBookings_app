@@ -79,22 +79,22 @@ export default function BookingPageContent({ slug }: { slug: string }) {
         }
     }, []);
 
-    // Theme detection effect - temporarily disabled for debugging
-    // useEffect(() => {
-    //     const handleMessage = (event: MessageEvent) => {
-    //         if (event.data.type === 'PARENT_THEME') {
-    //             setParentTheme(event.data.theme);
-    //         }
-    //     };
+    // Theme detection effect
+    useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data.type === 'PARENT_THEME') {
+                setParentTheme(event.data.theme);
+            }
+        };
 
-    //     window.addEventListener('message', handleMessage);
+        window.addEventListener('message', handleMessage);
 
-    //     if (isEmbed && window.parent !== window) {
-    //         window.parent.postMessage({ type: 'REQUEST_THEME' }, '*');
-    //     }
+        if (isEmbed && window.parent !== window) {
+            window.parent.postMessage({ type: 'REQUEST_THEME' }, '*');
+        }
 
-    //     return () => window.removeEventListener('message', handleMessage);
-    // }, [isEmbed]);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [isEmbed]);
 
 
     // Load Organization & Data
@@ -398,7 +398,8 @@ export default function BookingPageContent({ slug }: { slug: string }) {
     const isDarkTheme = parentTheme === 'dark';
 
     return (
-        <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl transition-colors duration-500 ${isDarkTheme ? 'bg-black text-white' : ''}`}>
+        <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl transition-colors duration-500 ${isDarkTheme ? 'bg-black' : 'bg-white'
+            }`}>
             {/* Hero Header - Now visible in Embed Mode to match user desire */}
             <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {org.logo_url && (
@@ -411,10 +412,12 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                         />
                     </div>
                 )}
-                <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-3 tracking-tight">
+                <h1 className={`text-3xl md:text-5xl font-black mb-3 tracking-tight ${isDarkTheme ? 'text-white' : 'text-gray-900'
+                    }`}>
                     {org.name}
                 </h1>
-                <p className="text-base md:text-lg text-gray-500 max-w-xl mx-auto font-medium leading-relaxed">
+                <p className={`text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
                     Book your next premium experience.
                 </p>
 
