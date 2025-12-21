@@ -125,7 +125,6 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
 
     const SectionHeader = ({ id, label, icon: Icon }: { id: 'profile' | 'settings' | 'services' | 'team', label: string, icon: any }) => (
         <button
-            type="button"
             onClick={() => toggleSection(id)}
             className={`w-full flex items-center justify-between p-4 bg-white border border-gray-200 ${expandedSection === id ? 'rounded-t-xl border-b-0' : 'rounded-xl shadow-sm'
                 } transition-all duration-200 hover:bg-gray-50`}
@@ -289,16 +288,9 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             {/* 2. SERVICES SECTION */}
             <div>
                 <SectionHeader id="services" label="Services" icon={Briefcase} />
-                {expandedSection === 'services' && (
+                {expandedSection === 'services' && org && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
-                        {org ? (
-                            <ServiceManager services={services} orgId={org.id} onRefresh={onRefresh} />
-                        ) : (
-                            <div className="text-center py-8">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                                <p className="text-sm text-gray-500 mt-2">Loading services...</p>
-                            </div>
-                        )}
+                        <ServiceManager services={services} orgId={org.id} onRefresh={onRefresh} />
                     </div>
                 )}
             </div>
@@ -306,16 +298,9 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             {/* 3. TEAM SECTION */}
             <div>
                 <SectionHeader id="team" label="Teams" icon={Users} />
-                {expandedSection === 'team' && (
+                {expandedSection === 'team' && org && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
-                        {org ? (
-                            <StaffManager staff={staff} services={services} orgId={org.id} onRefresh={onRefresh} />
-                        ) : (
-                            <div className="text-center py-8">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                                <p className="text-sm text-gray-500 mt-2">Loading team...</p>
-                            </div>
-                        )}
+                        <StaffManager staff={staff} services={services} orgId={org.id} onRefresh={onRefresh} />
                     </div>
                 )}
             </div>
@@ -323,16 +308,9 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             {/* 4. BUSINESS SETTINGS SECTION */}
             <div>
                 <SectionHeader id="settings" label="Business Settings" icon={Building2} />
-                {expandedSection === 'settings' && (
+                {expandedSection === 'settings' && org && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-6 animate-in fade-in slide-in-from-top-2">
-                        {org ? (
-                            <SettingsManager org={org} onUpdate={onUpdateOrg} />
-                        ) : (
-                            <div className="text-center py-8">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                                <p className="text-sm text-gray-500 mt-2">Loading settings...</p>
-                            </div>
-                        )}
+                        <SettingsManager org={org} onUpdate={onUpdateOrg} />
                     </div>
                 )}
             </div>
