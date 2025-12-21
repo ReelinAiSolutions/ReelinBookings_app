@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Service } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Plus, Trash2, X, Edit2 } from 'lucide-react';
-import { createService, deleteService, updateService } from '@/services/dataService';
+import { createService, deleteService, updateService, checkActiveAppointments } from '@/services/dataService';
 import { useToast } from '@/context/ToastContext';
 
 interface ServiceManagerProps {
@@ -28,18 +28,25 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
     const handleSave = async () => {
         setIsLoading(true);
         try {
+            // Validation
+            if (!newService.name.trim()) { toast('Name is required', 'error'); setIsLoading(false); return; }
+            const p = parseFloat(newService.price);
+            const d = parseInt(newService.duration);
+            if (isNaN(p) || p < 0) { toast('Price must be 0 or greater', 'error'); setIsLoading(false); return; }
+            if (isNaN(d) || d < 1) { toast('Duration must be at least 1 minute', 'error'); setIsLoading(false); return; }
+
             if (editingId) {
                 await updateService(editingId, {
                     name: newService.name,
-                    price: parseFloat(newService.price),
-                    durationMinutes: parseInt(newService.duration),
+                    price: p,
+                    durationMinutes: d,
                     description: newService.description,
                 }, orgId);
             } else {
                 await createService({
                     name: newService.name,
-                    price: parseFloat(newService.price),
-                    durationMinutes: parseInt(newService.duration),
+                    price: p,
+                    durationMinutes: d,
                     description: newService.description,
                     imageUrl: ''
                 }, orgId);
@@ -69,11 +76,17 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
         setIsCreating(true);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure?")) return;
+    const handleDelete = async (service: Service) => {
+        if (!confirm(`Are you sure you want to delete ${service.name}?`)) return;
         try {
-            await deleteService(id, orgId);
-            await deleteService(id, orgId);
+            // 1. Check for Active Appointments
+            const activeCount = await checkActiveAppointments('service', service.id);
+            if (activeCount > 0) {
+                toast(`Cannot delete: This service has ${activeCount} active appointments.`, 'error');
+                return;
+            }
+
+            await deleteService(service.id, orgId);
             onRefresh();
             toast('Service deleted', 'success');
         } catch (e) {
@@ -156,7 +169,7 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                             <Button size="sm" variant="outline" onClick={() => startEdit(service)}>
                                 <Edit2 className="w-4 h-4 text-gray-500" />
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => handleDelete(service.id)}>
+                            <Button size="sm" variant="outline" onClick={() => handleDelete(service)}>
                                 <Trash2 className="w-4 h-4 text-red-500" />
                             </Button>
                         </div>

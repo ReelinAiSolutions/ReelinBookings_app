@@ -54,7 +54,11 @@ export const getOrganizationById = async (id: string) => {
             phone,
             email,
             address,
-            website
+            website,
+            terms_url,
+            policy_url,
+            slot_interval,
+            business_hours
         `)
         .eq('id', id)
         .single();
@@ -162,7 +166,7 @@ export const getAppointments = async (orgId?: string): Promise<Appointment[]> =>
         .neq('status', 'ARCHIVED') // Hides "Confirm Cancelled" / Dismissed appointments
         .order('date', { ascending: false })
         .order('time_slot', { ascending: false })
-        .limit(50);
+        .limit(1000); // Increased from 50 for MVP scalability
 
     if (orgId) {
         query = query.eq('org_id', orgId);
@@ -267,47 +271,7 @@ export const deleteService = async (id: string, orgId: string) => {
     if (error) throw error;
 };
 
-export const createStaff = async (staff: Omit<Staff, 'id'>, orgId: string) => {
-    // 1. Create Staff Member
-    const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .insert([
-            {
-                name: staff.name,
-                role: staff.role,
-                avatar_url: staff.avatar,
-                org_id: orgId
-            }
-        ])
-        .select()
-        .single();
 
-    if (staffError) throw staffError;
-
-    // 2. Link Services (Many-to-Many)
-    // For MVP we skip linking services on create, can add later
-
-    return {
-        ...staffData,
-        avatar: staffData.avatar_url,
-        specialties: []
-    };
-};
-
-export const updateStaff = async (id: string, updates: Partial<Omit<Staff, 'id'>>, orgId: string) => {
-    const payload: any = {};
-    if (updates.name) payload.name = updates.name;
-    if (updates.role) payload.role = updates.role;
-    if (updates.avatar) payload.avatar_url = updates.avatar;
-
-    const { error } = await supabase
-        .from('staff')
-        .update(payload)
-        .eq('id', id)
-        .eq('org_id', orgId);
-
-    if (error) throw error;
-};
 
 export const updateStaffServices = async (staffId: string, serviceIds: string[]) => {
     // 1. Delete existing links
@@ -343,6 +307,19 @@ export const deleteStaff = async (id: string, orgId: string) => {
     if (error) throw error;
 };
 
+export const checkActiveAppointments = async (type: 'staff' | 'service', id: string) => {
+    const column = type === 'staff' ? 'staff_id' : 'service_id';
+    const { count, error } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq(column, id)
+        .in('status', ['CONFIRMED', 'PENDING'])
+        .gte('date', new Date().toISOString().split('T')[0]); // Only future/today
+
+    if (error) throw error;
+    return count || 0;
+};
+
 export const getAvailability = async (staffId: string) => {
     const { data, error } = await supabase
         .from('availability')
@@ -356,6 +333,27 @@ export const getAvailability = async (staffId: string) => {
     }
 
     return data.map((item: any) => ({
+        id: item.id,
+        staffId: item.staff_id,
+        dayOfWeek: item.day_of_week,
+        startTime: item.start_time,
+        endTime: item.end_time,
+        isWorking: item.is_working
+    }));
+};
+
+export const getAllAvailability = async (orgId: string) => {
+    const { data, error } = await supabase
+        .from('availability')
+        .select('*')
+        .eq('org_id', orgId);
+
+    if (error) {
+        console.error('Error fetching all availability:', error);
+        return [];
+    }
+
+    return (data || []).map((item: any) => ({
         id: item.id,
         staffId: item.staff_id,
         dayOfWeek: item.day_of_week,
@@ -519,60 +517,203 @@ export const archiveAppointment = async (id: string) => {
 
 // --- Time Slot Logic ---
 
-export const getTimeSlots = async (staffId: string, date: Date): Promise<TimeSlot[]> => {
-    // 1. Get Day of Week (0-6)
-    const dayOfWeek = date.getDay(); // 0 = Sun, 1 = Mon
+const timeToMinutes = (time: string) => {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+};
 
-    // 2. Fetch Rule for this day
-    const { data: rule } = await supabase
+const minutesToTime = (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+};
+
+export const getTimeSlots = async (staffId: string, date: Date, serviceDuration: number, orgId: string): Promise<TimeSlot[]> => {
+    // 1. Get Day of Week & Date String
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = days[date.getDay()];
+
+    // SAFE LOCAL DATE STRING: Avoids UTC shifts
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${d}`;
+
+    // 2. Fetch Org Settings for Interval & Business Hours
+    const { data: org } = await supabase
+        .from('organizations')
+        .select('business_hours, slot_interval')
+        .eq('id', orgId)
+        .single();
+
+    if (!org) return [];
+
+    const orgHours = org.business_hours?.[dayName];
+    const interval = org.slot_interval || 60;
+
+    // Global Shop Close Check
+    if (!orgHours || !orgHours.isOpen) return [];
+
+    // 3. Fetch Staff Availability
+    // We strictly respect the Staff's availability table.
+    const { data: staffRule } = await supabase
         .from('availability')
         .select('*')
         .eq('staff_id', staffId)
-        .eq('day_of_week', dayOfWeek)
+        .eq('day_of_week', date.getDay())
         .single();
 
-    // If no rule or not working, return closed
-    if (!rule || !rule.is_working) {
-        return [];
+    if (!staffRule || !staffRule.is_working) return [];
+
+    // 4. Calculate Effective Range
+    // Staff rule defines their shift. Org hours define absolute limits.
+    const shiftStart = timeToMinutes(staffRule.start_time);
+    const shiftEnd = timeToMinutes(staffRule.end_time);
+
+    const shopOpen = timeToMinutes(orgHours.open);
+    const shopClose = timeToMinutes(orgHours.close);
+
+    // The effective start is the max of shift/shop start
+    // The effective end is the min of shift/shop end
+    let currentMinutes = Math.max(shiftStart, shopOpen);
+    const absoluteEnd = Math.min(shiftEnd, shopClose);
+
+    // --- LEAD TIME CHECK (15 Minutes) ---
+    // If "Today", ensure slots are in the future + buffer
+    const now = new Date();
+    const isToday = now.getFullYear() === y && now.getMonth() + 1 === parseInt(m) && now.getDate() === parseInt(d);
+
+    if (isToday) {
+        const MIN_NOTICE_MINUTES = 15;
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        const earliestAllowed = nowMinutes + MIN_NOTICE_MINUTES;
+        // Bump currentMinutes if it's too early
+        if (currentMinutes < earliestAllowed) {
+            // Snap to next interval if needed, but simple max is enough for start loop
+            // We also need to round up to next interval for cleanliness? 
+            // The loop increments by interval. 
+            // If currentMinutes=540 (9am) and earliest=615 (10:15am), we start at 615? 
+            // Ideally we snap to next valid slot.
+            // Let's just set start min.
+            currentMinutes = Math.max(currentMinutes, earliestAllowed);
+
+            // Round up to next interval to avoid weird times like "10:17"
+            // If interval=60. remainder = currentMinutes % 60. 
+            // if remainder > 0, add (60 - remainder).
+            const remainder = currentMinutes % interval;
+            if (remainder > 0) {
+                currentMinutes += (interval - remainder);
+            }
+        }
     }
+    // ------------------------------------
 
-    // 3. Generate Slots between Start and End
-    // Simple implementation: 60 min slots
-    const slots: TimeSlot[] = [];
-    let currentHour = parseInt(rule.start_time.split(':')[0]);
-    const endHour = parseInt(rule.end_time.split(':')[0]);
-
-    while (currentHour < endHour) {
-        const timeString = `${currentHour.toString().padStart(2, '0')}:00`;
-
-        // Check if ANY existing appointment conflicts with this time
-        // Note: Real apps do this more efficiently at the DB level, 
-        // but for MVP we will fetch existing appointments for this day.
-
-        // Only add if future or today+future time (simple "after now" check omitted for ease of testing)
-        slots.push({
-            time: timeString,
-            available: true // We'll filter taken slots in the next step
-        });
-        currentHour++;
-    }
-
-    // 4. Filter Booked Slots
-    const dateStr = date.toISOString().split('T')[0];
+    // 5. Fetch Existing Appointments (with Duration) for Collision Detection
     const { data: existingApts } = await supabase
         .from('appointments')
-        .select('time_slot')
-        .eq('staff_id', staffId)
+        .select(`
+            time_slot,
+            services ( duration_minutes )
+        `)
+        .eq('staff_id', staffId) // SCOPED: Checks ONLY this staff member
         .eq('date', dateStr)
-        .in('status', ['CONFIRMED', 'PENDING']); // implicit: cancelled/archived are not blocking
+        .in('status', ['CONFIRMED', 'PENDING']);
 
-    if (existingApts) {
-        const bookedTimes = new Set(existingApts.map((a: any) => a.time_slot));
-        return slots.map(slot => ({
-            ...slot,
-            available: !bookedTimes.has(slot.time)
-        }));
+    const busyRanges = existingApts?.map((apt: any) => ({
+        start: timeToMinutes(apt.time_slot),
+        end: timeToMinutes(apt.time_slot) + (apt.services?.duration_minutes || 60)
+    })) || [];
+
+    const slots: TimeSlot[] = [];
+
+    // 6. Generate Slots
+    while (currentMinutes + serviceDuration <= absoluteEnd) {
+        const slotStart = currentMinutes;
+        const slotEnd = currentMinutes + serviceDuration;
+
+        // Collision Check: Intersecting ranges
+        // (StartA < EndB) && (EndA > StartB)
+        const isBlocked = busyRanges.some(busy =>
+            slotStart < busy.end && slotEnd > busy.start
+        );
+
+        if (!isBlocked) {
+            slots.push({
+                time: minutesToTime(slotStart),
+                available: true
+            });
+        }
+
+        // Increment by the global interval
+        currentMinutes += interval;
     }
 
     return slots;
+};
+
+// --- Invitations ---
+
+export const getInvitations = async (orgId?: string) => {
+    // If orgId provided, we could filter. 
+    // ADMIN view: see all invites created by this user or for this org.
+    // For MVP: Fetch all valid invites.
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    // Simple policy: fetch all invitations
+    const { data, error } = await supabase
+        .from('invitations')
+        .select(`
+            *,
+            organizations (name)
+        `)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching invitations:', error);
+        return [];
+    }
+
+    return data.map((item: any) => ({
+        ...item,
+        orgName: item.organizations?.name
+    }));
+};
+
+export const createInvitation = async (code: string, role: string, orgId?: string) => {
+    // Check if code exists
+    const { data: existing } = await supabase
+        .from('invitations')
+        .select('id')
+        .eq('code', code)
+        .single();
+
+    if (existing) {
+        throw new Error('This code already exists.');
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Must be logged in");
+
+    const { data, error } = await supabase
+        .from('invitations')
+        .insert([{
+            code,
+            role,
+            org_id: orgId || null,
+            created_by: user.id
+        }])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+};
+
+export const deleteInvitation = async (id: string) => {
+    const { error } = await supabase
+        .from('invitations')
+        .delete()
+        .eq('id', id);
+    if (error) throw error;
 };

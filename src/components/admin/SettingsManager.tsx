@@ -1,9 +1,9 @@
 'use client';
 
+import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/Button';
-import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { Organization } from '@/types';
 
@@ -28,6 +28,19 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
         website: org.website || ''
     });
 
+    const [bookingSettings, setBookingSettings] = useState({
+        slot_interval: org.slot_interval || 60,
+        business_hours: org.business_hours || {
+            monday: { open: '09:00', close: '17:00', isOpen: true },
+            tuesday: { open: '09:00', close: '17:00', isOpen: true },
+            wednesday: { open: '09:00', close: '17:00', isOpen: true },
+            thursday: { open: '09:00', close: '17:00', isOpen: true },
+            friday: { open: '09:00', close: '17:00', isOpen: true },
+            saturday: { open: '10:00', close: '16:00', isOpen: true },
+            sunday: { open: '10:00', close: '16:00', isOpen: false }
+        }
+    });
+
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -43,6 +56,18 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
             email: org.email || '',
             address: org.address || '',
             website: org.website || ''
+        });
+        setBookingSettings({
+            slot_interval: org.slot_interval || 60,
+            business_hours: org.business_hours || {
+                monday: { open: '09:00', close: '17:00', isOpen: true },
+                tuesday: { open: '09:00', close: '17:00', isOpen: true },
+                wednesday: { open: '09:00', close: '17:00', isOpen: true },
+                thursday: { open: '09:00', close: '17:00', isOpen: true },
+                friday: { open: '09:00', close: '17:00', isOpen: true },
+                saturday: { open: '10:00', close: '16:00', isOpen: true },
+                sunday: { open: '10:00', close: '16:00', isOpen: false }
+            }
         });
         setPreviewUrl(org.logo_url || null);
     }, [org]);
@@ -95,7 +120,9 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                     email: formData.email,
                     address: formData.address,
                     website: formData.website,
-                    logo_url: logoUrl
+                    logo_url: logoUrl,
+                    slot_interval: bookingSettings.slot_interval,
+                    business_hours: bookingSettings.business_hours
                 })
                 .eq('id', org.id)
                 .select()
@@ -115,8 +142,24 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
         }
     };
 
+    // Helper to safely get day settings with type assertion
+    const getDaySettings = (day: string) => {
+        return (bookingSettings.business_hours as any)[day] || { open: '09:00', close: '17:00', isOpen: false };
+    };
+
     return (
         <form onSubmit={handleSave} className="space-y-8 max-w-4xl">
+            {/* Header Actions */}
+            <div className="flex justify-end items-center mb-4">
+                <Button
+                    type="submit"
+                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl shadow-lg shadow-primary-500/20"
+                    isLoading={isLoading}
+                >
+                    <Save className="w-4 h-4" />
+                    Save Settings
+                </Button>
+            </div>
 
             {/* Branding Section */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
@@ -259,52 +302,85 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 </div>
             </div>
 
-            {/* Website Integration Section */}
+            {/* Booking Preferences */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
-                    <Globe className="w-5 h-5 text-gray-400" />
-                    Website Integration
+                    <Clock className="w-5 h-5 text-gray-400" />
+                    Booking Preferences
                 </h3>
 
-                <div className="space-y-4">
-                    <p className="text-sm text-gray-600">
-                        Copy and paste this code into your website (Wordpress, Wix, Squarespace, or custom HTML) to display your booking page.
-                    </p>
-
-                    <div className="relative">
-                        <pre className="bg-gray-900 text-gray-100 p-4 rounded-xl text-xs overflow-x-auto font-mono border border-gray-700">
-                            {`<iframe 
-  src="${typeof window !== 'undefined' ? window.location.origin : ''}/${formData.slug}" 
-  style="width: 100%; height: 700px; border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
-  title="Book Appointment"
-></iframe>`}
-                        </pre>
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            className="absolute top-2 right-2 text-xs py-1 h-auto"
-                            onClick={() => {
-                                const code = `<iframe src="${window.location.origin}/${formData.slug}" style="width: 100%; height: 700px; border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" title="Book Appointment"></iframe>`;
-                                navigator.clipboard.writeText(code);
-                                toast('Code copied to clipboard!', 'info');
-                            }}
+                <div className="space-y-6">
+                    {/* Interval Selector */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Booking Interval</label>
+                        <p className="text-xs text-gray-500 mb-3">Determines how often a new appointment slot can start (e.g. 9:00, 9:15 vs 9:00, 10:00).</p>
+                        <select
+                            value={bookingSettings.slot_interval}
+                            onChange={(e) => setBookingSettings({ ...bookingSettings, slot_interval: parseInt(e.target.value) })}
+                            className="block w-full max-w-xs pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 rounded-lg border"
                         >
-                            Copy Code
-                        </Button>
+                            <option value={15}>Every 15 Minutes</option>
+                            <option value={30}>Every 30 Minutes</option>
+                            <option value={60}>Every Hour</option>
+                        </select>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-6">
+                        <label className="block text-sm font-bold text-gray-900 mb-4">Business Operating Hours</label>
+                        <div className="space-y-3">
+                            {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+                                const daySettings = getDaySettings(day);
+                                return (
+                                    <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 px-2 rounded -mx-2 transition-colors">
+                                        <div className="w-32 flex items-center gap-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={daySettings.isOpen}
+                                                onChange={(e) => {
+                                                    const newHours = { ...bookingSettings.business_hours } as any;
+                                                    newHours[day] = { ...daySettings, isOpen: e.target.checked };
+                                                    setBookingSettings({ ...bookingSettings, business_hours: newHours });
+                                                }}
+                                                className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
+                                            />
+                                            <span className="text-sm font-medium text-gray-900 capitalize">{day}</span>
+                                        </div>
+
+                                        {daySettings.isOpen ? (
+                                            <div className="flex items-center gap-3 animate-in fade-in duration-200">
+                                                <input
+                                                    type="time"
+                                                    value={daySettings.open}
+                                                    onChange={(e) => {
+                                                        const newHours = { ...bookingSettings.business_hours } as any;
+                                                        newHours[day] = { ...daySettings, open: e.target.value };
+                                                        setBookingSettings({ ...bookingSettings, business_hours: newHours });
+                                                    }}
+                                                    className="block w-32 px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500"
+                                                />
+                                                <span className="text-gray-400 font-medium text-sm">to</span>
+                                                <input
+                                                    type="time"
+                                                    value={daySettings.close}
+                                                    onChange={(e) => {
+                                                        const newHours = { ...bookingSettings.business_hours } as any;
+                                                        newHours[day] = { ...daySettings, close: e.target.value };
+                                                        setBookingSettings({ ...bookingSettings, business_hours: newHours });
+                                                    }}
+                                                    className="block w-32 px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <span className="text-sm text-gray-400 italic px-3 py-1.5 bg-gray-50 rounded border border-gray-100">Closed</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex justify-end">
-                <Button
-                    type="submit"
-                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl shadow-lg shadow-primary-500/20"
-                    isLoading={isLoading}
-                >
-                    <Save className="w-4 h-4" />
-                    Save Settings
-                </Button>
-            </div>
         </form>
     );
 }

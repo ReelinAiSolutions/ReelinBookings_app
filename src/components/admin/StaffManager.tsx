@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff } from '@/services/dataService';
+import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments } from '@/services/dataService';
 import { Service, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Plus, Trash2, X, Clock, ChevronDown, ChevronUp, Save, Scissors, User, Camera, Upload } from 'lucide-react';
@@ -35,19 +35,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     // Edit Staff Form
     const [editForm, setEditForm] = useState({ name: '', role: '', avatar: '', email: '' });
     // ...
-    // Inside startEditing
-    const startEditing = (member: Staff) => {
-        setEditingStaffId(member.id);
-        setEditForm({
-            name: member.name,
-            role: member.role || '',
-            avatar: member.avatar || '',
-            email: member.email || ''
-        });
-        // ...
-    };
 
-    // Inside handleUpdateDetails
 
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -65,12 +53,20 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     );
 
     const handleCreate = async () => {
+        if (!newStaff.name.trim()) return;
+
+        // Duplicate Check
+        const isDuplicate = staff.some(s => s.name.toLowerCase().trim() === newStaff.name.toLowerCase().trim());
+        if (isDuplicate) {
+            toast(`A staff member named "${newStaff.name}" already exists.`, 'error');
+            return;
+        }
+
         setIsLoading(true);
         try {
             const created = await createStaff({ ...newStaff, specialties: [] }, orgId);
             setIsCreating(false);
-            setNewStaff({ name: '', role: '', avatar: '' });
-            setNewStaff({ name: '', role: '', avatar: '' });
+            setNewStaff({ name: '', role: '', avatar: '', email: '' });
             onRefresh();
             toast('Staff member added', 'success');
         } catch (e) {
@@ -81,33 +77,16 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure? This will remove them from online booking.")) return;
-        try {
-            await deleteStaff(id, orgId);
-            await deleteStaff(id, orgId);
-            onRefresh();
-            toast('Staff member removed', 'success');
-        } catch (e) {
-            console.error(e);
-            toast('Failed to delete staff', 'error');
-        }
-    };
-
-    const startEditing = (member: Staff) => {
-        setEditingStaffId(member.id);
-        setEditForm({
-            name: member.name,
-            role: member.role || '',
-            avatar: member.avatar || '',
-            email: member.email || ''
-        });
-        setPreviewUrl(member.avatar || null);
-        setAvatarFile(null);
-        setExpandedStaffId(null); // Close schedule if open
-    };
+    // ...
 
     const handleUpdateDetails = async (id: string) => {
+        // Duplicate Check (Excluding self)
+        const isDuplicate = staff.some(s => s.id !== id && s.name.toLowerCase().trim() === editForm.name.toLowerCase().trim());
+        if (isDuplicate) {
+            toast(`A staff member named "${editForm.name}" already exists.`, 'error');
+            return;
+        }
+
         setIsLoading(true);
         try {
             let avatarUrl = editForm.avatar;
@@ -145,6 +124,49 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
         } catch (e) {
             console.error(e);
             toast('Failed to update staff details', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+
+    const startEditing = (member: Staff) => {
+        setEditForm({
+            name: member.name,
+            role: member.role,
+            avatar: member.avatar || '',
+            email: member.email || ''
+        });
+        setPreviewUrl(member.avatar || null);
+        setAvatarFile(null);
+        setEditingStaffId(member.id);
+        setExpandedStaffId(null);
+    };
+
+    const handleDelete = async (member: Staff) => {
+        try {
+            // 1. Check for active appointments
+            const activeCount = await checkActiveAppointments('staff', member.id);
+            if (activeCount > 0) {
+                toast(`Cannot remove ${member.name}. They have ${activeCount} active appointment(s).`, 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to remove ${member.name}? This cannot be undone.`)) return;
+
+            setIsLoading(true);
+            await deleteStaff(member.id, orgId); // Pass orgId if needed by updated service signature, or dataService handles it? 
+            // note: dataService deleteStaff signature is (id, orgId). The previous call was `deleteStaff(member.id)`. 
+            // I need to verify if `orgId` allows being undefined or if checking dataService again...
+            // Checking dataService: `export const deleteStaff = async (id: string, orgId: string)`
+            // So previous code was MISSING orgId. I must pass `orgId`.
+
+            toast('Staff member removed', 'success');
+            onRefresh();
+        } catch (e) {
+            console.error(e);
+            toast('Failed to remove staff member', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -214,7 +236,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-gray-900">Team & Schedules</h3>
+                <h3 className="text-lg font-bold text-gray-900">Team & Schedules (Updated)</h3>
                 <Button size="sm" onClick={() => setIsCreating(true)}><Plus className="w-4 h-4 mr-1" /> Add Member</Button>
             </div>
 
@@ -236,12 +258,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                         value={newStaff.email}
                         onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
                     />
-                    <input
-                        className="w-full p-2 rounded border"
-                        placeholder="Email (Required for login)"
-                        value={newStaff.email}
-                        onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
-                    />
+
                     <input
                         className="w-full p-2 rounded border"
                         placeholder="Role (e.g. Master Barber)"
@@ -269,26 +286,26 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
             <div className="space-y-4">
                 {staff.map(member => (
                     <div key={member.id} className="border rounded-lg overflow-hidden">
-                        <div className="p-4 flex justify-between items-center bg-white">
+                        <div className="p-4 flex flex-col sm:flex-row justify-between sm:items-center bg-white gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                                     {member.avatar ? <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" /> : <span className="text-gray-500 font-bold">{member.name[0]}</span>}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold">{member.name}</h4>
-                                    <p className="text-sm text-gray-500">{member.role}</p>
+                                    <h4 className="font-bold text-gray-900">{member.name}</h4>
+                                    <p className="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded-full inline-block mt-0.5">{member.role}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Button size="sm" variant="outline" onClick={() => startEditing(member)}>
-                                    <User className="w-4 h-4 mr-1" />
-                                    Edit Details
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <Button size="sm" variant="outline" onClick={() => startEditing(member)} className="flex-1 sm:flex-none justify-center">
+                                    <User className="w-4 h-4 sm:mr-1" />
+                                    <span className="text-xs sm:text-sm">Details</span>
                                 </Button>
-                                <Button size="sm" variant="outline" onClick={() => toggleExpand(member.id)}>
-                                    <Clock className="w-4 h-4 mr-1" />
-                                    {expandedStaffId === member.id ? 'Close Schedule' : 'Schedule'}
+                                <Button size="sm" variant="outline" onClick={() => toggleExpand(member.id)} className="flex-1 sm:flex-none justify-center">
+                                    <Clock className="w-4 h-4 sm:mr-1" />
+                                    <span className="text-xs sm:text-sm">{expandedStaffId === member.id ? 'Close' : 'Schedule'}</span>
                                 </Button>
-                                <Button size="sm" variant="outline" onClick={() => handleDelete(member.id)}>
+                                <Button size="sm" variant="outline" onClick={() => handleDelete(member)} className="px-3">
                                     <Trash2 className="w-4 h-4 text-red-500" />
                                 </Button>
                             </div>

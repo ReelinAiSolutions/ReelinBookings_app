@@ -4,11 +4,11 @@
     "start_url": "/?source=pwa",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#4F46E5",
+    "theme_color": "#f3f4f6",
     "orientation": "portrait",
     "icons": [
         {
-            "src": "/icon.png",
+            "src": "/icon-v9.png",
             "sizes": "512x512",
             "type": "image/png"
         }

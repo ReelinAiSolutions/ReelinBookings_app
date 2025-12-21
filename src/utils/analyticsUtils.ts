@@ -1,92 +1,268 @@
-import { Appointment } from '@/types';
-import { startOfMonth, subMonths, isAfter } from 'date-fns';
+import { Appointment, Service, Staff } from '@/types';
+import { isWithinInterval, startOfDay, endOfDay, differenceInCalendarDays, subDays } from 'date-fns';
 
-export interface AnalyticMetrics {
-    totalBookings: number;
-    completionRate: string;
-    busiestDay: string;
-    cancellationRate: string;
-    peakHours: { hour: string; count: number }[];
-    topServices: { name: string; count: number }[];
-    topStaff: { name: string; count: number }[];
+export type DateRange = { start: Date; end: Date };
+
+export interface GrowthMetric {
+    value: number | string;
+    growth: number; // Percentage change vs previous period
+    trend: 'up' | 'down' | 'neutral';
 }
 
-export const processAnalytics = (appointments: Appointment[]): AnalyticMetrics => {
-    if (!appointments.length) {
-        return {
-            totalBookings: 0,
-            completionRate: '0%',
-            busiestDay: '-',
-            cancellationRate: '0%',
-            peakHours: [],
-            topServices: [],
-            topStaff: []
-        };
-    }
+export interface AnalyticMetrics {
+    period: { start: Date; end: Date };
+    totalBookings: GrowthMetric;
+    revenue: {
+        total: GrowthMetric;
+        average: number;
+        lost: number;
+    };
+    clients: {
+        totalActive: number;
+        newCount: GrowthMetric;
+        returningCount: number;
+        returnRate: string;
+    };
+    utilization: GrowthMetric; // Based on 8-hour operational day assumption
+    busiest: {
+        day: string;
+        hour: string;
+    };
+    topServices: { name: string; count: number; revenue: number; share: number }[];
+    topStaff: { name: string; bookings: number; revenue: number; rank: number; avgTicket: number }[];
+    topClients: { name: string; email: string; spent: number; visits: number; lastVisit: Date }[];
+    heatmap: { hour: string; count: number }[];
+    cancellationRate: string;
+}
 
-    // 1. Basic Counts
-    const total = appointments.length;
-    const cancelled = appointments.filter(a => a.status === 'CANCELLED').length;
-    const completed = total - cancelled;
+// Helper to calculate percentage growth
+const calculateGrowth = (current: number, previous: number): number => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return ((current - previous) / previous) * 100;
+};
 
-    // 2. Cancellation Rate
-    const cancelRate = ((cancelled / total) * 100).toFixed(1) + '%';
-    const compRate = ((completed / total) * 100).toFixed(1) + '%';
+// Core processor for a single set of appointments (stateless)
+const calculatePeriodStats = (
+    appointments: Appointment[],
+    services: Service[],
+    staff: Staff[],
+    start: Date,
+    end: Date
+) => {
+    let revenue = 0;
+    let bookings = 0;
+    let lostRevenue = 0;
+    let cancelled = 0;
+    let serviceCounts: Record<string, { count: number, val: number }> = {};
+    let staffCounts: Record<string, { count: number, val: number }> = {};
+    let clientStats: Record<string, { name: string, email: string, spent: number, visits: number, lastVisit: Date }> = {};
+    let hourCounts: Record<string, number> = {};
+    let dayCounts: Record<string, number> = {};
+    let totalDurationMinutes = 0;
 
-    // 3. Peak Hours (Heatmap logic)
-    const hourCounts: Record<string, number> = {};
     appointments.forEach(apt => {
-        const hour = apt.timeSlot.split(':')[0] + ':00'; // "09:30" -> "09:00"
-        hourCounts[hour] = (hourCounts[hour] || 0) + 1;
-    });
-    const peakHours = Object.entries(hourCounts)
-        .map(([hour, count]) => ({ hour, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5); // Top 5 hours
+        const aptDate = new Date(apt.date);
 
-    // 4. Busiest Day of Week
-    const dayCounts: Record<string, number> = {};
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    appointments.forEach(apt => {
-        const date = new Date(apt.date);
-        const dayName = days[date.getDay()];
-        dayCounts[dayName] = (dayCounts[dayName] || 0) + 1;
-    });
-    const busiestDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+        // Filter by Date Range
+        if (!isWithinInterval(aptDate, { start, end })) return;
 
-    // 5. Top Services
-    // Note: We need serviceName. If it's not on the appointment object directly, this might fail unless we enriched it.
-    // Based on previous code, we mapped it. Let's assume clientName/serviceName are available or fallback.
-    const serviceCounts: Record<string, number> = {};
-    appointments.forEach(apt => {
-        // @ts-ignore - we know we enriched this in dataService
-        const name = apt.serviceName || 'Unknown Service';
-        serviceCounts[name] = (serviceCounts[name] || 0) + 1;
-    });
-    const topServices = Object.entries(serviceCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
+        bookings++;
+        const service = services.find(s => s.id === apt.serviceId);
+        const price = Number(service?.price || 0);
+        const duration = service?.durationMinutes || 60;
+        const member = staff.find(s => s.id === apt.staffId);
+        const staffName = member?.name || 'Unknown';
+        const serviceName = service?.name || 'Unknown';
 
-    // 6. Top Staff
-    const staffCounts: Record<string, number> = {};
-    appointments.forEach(apt => {
-        // @ts-ignore - we know we enriched this in dataService
-        const name = apt.staffName || 'Unknown Staff';
-        staffCounts[name] = (staffCounts[name] || 0) + 1;
+        // Cancellation Logic
+        if (apt.status === 'CANCELLED') {
+            cancelled++;
+            lostRevenue += price;
+            return;
+        }
+
+        // Active Stats
+        if (apt.status === 'CONFIRMED' || apt.status === 'PENDING') {
+            revenue += price;
+            totalDurationMinutes += duration;
+
+            // Client Stats
+            const cEmail = apt.clientEmail || 'anonymous';
+            const cName = apt.clientName || 'Walk-in';
+            if (!clientStats[cEmail]) clientStats[cEmail] = { name: cName, email: cEmail, spent: 0, visits: 0, lastVisit: aptDate };
+            clientStats[cEmail].spent += price;
+            clientStats[cEmail].visits++;
+            if (aptDate > clientStats[cEmail].lastVisit) clientStats[cEmail].lastVisit = aptDate;
+
+            // Service Stats
+            if (!serviceCounts[serviceName]) serviceCounts[serviceName] = { count: 0, val: 0 };
+            serviceCounts[serviceName].count++;
+            serviceCounts[serviceName].val += price;
+
+            // Staff Stats
+            if (!staffCounts[staffName]) staffCounts[staffName] = { count: 0, val: 0 };
+            staffCounts[staffName].count++;
+            staffCounts[staffName].val += price;
+
+            // Time Stats
+            if (apt.timeSlot) {
+                const hour = apt.timeSlot.split(':')[0] + ':00';
+                hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            }
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayName = days[aptDate.getDay()];
+            dayCounts[dayName] = (dayCounts[dayName] || 0) + 1;
+        }
     });
-    const topStaff = Object.entries(staffCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
+
+    // Utilization Calculation: (Total Duration) / (Staff * Days * 8 hours * 60 mins)
+    const daysInPeriod = Math.max(1, differenceInCalendarDays(end, start) + 1);
+    const capacityMinutes = (staff.length || 1) * daysInPeriod * 8 * 60;
+    const utilization = capacityMinutes > 0 ? (totalDurationMinutes / capacityMinutes) * 100 : 0;
 
     return {
-        totalBookings: total,
-        completionRate: compRate,
-        busiestDay,
-        cancellationRate: cancelRate,
-        peakHours,
+        revenue,
+        bookings,
+        lostRevenue,
+        cancelled,
+        activeClients: Object.keys(clientStats).length,
+        serviceCounts,
+        staffCounts,
+        clientStats,
+        hourCounts,
+        dayCounts,
+        utilization
+    };
+};
+
+export const processAnalytics = (
+    allAppointments: Appointment[],
+    services: Service[],
+    staff: Staff[],
+    currentRange: DateRange,
+    previousRange: DateRange
+): AnalyticMetrics => {
+
+    // 1. Process Current Period
+    const current = calculatePeriodStats(allAppointments, services, staff, currentRange.start, currentRange.end);
+
+    // 2. Process Previous Period (for trends)
+    const previous = calculatePeriodStats(allAppointments, services, staff, previousRange.start, previousRange.end);
+
+    // 3. New Client Logic (Requires looking at ALL history before start date)
+    // A "New Client" in this period is someone who appears in this period but NEVER before.
+    const historicalClients = new Set<string>();
+    allAppointments.forEach(apt => {
+        const d = new Date(apt.date);
+        if (d < currentRange.start && apt.clientEmail) {
+            historicalClients.add(apt.clientEmail);
+        }
+    });
+
+    let newClients = 0;
+    let returningClients = 0;
+
+    // Scan current period unique clients
+    Object.keys(current.clientStats).forEach(email => {
+        if (historicalClients.has(email)) {
+            returningClients++;
+        } else {
+            newClients++;
+        }
+    });
+
+    // We also need Previous New Clients count for Growth.... rough estimate: active in prev, not active before prev
+    // Or we do the same "New Client" check for the previous period.
+    const historyBeforePrev = new Set<string>();
+    allAppointments.forEach(apt => {
+        if (new Date(apt.date) < previousRange.start && apt.clientEmail) historyBeforePrev.add(apt.clientEmail);
+    });
+    let prevNewClients = 0;
+    Object.keys(previous.clientStats).forEach(email => {
+        if (!historyBeforePrev.has(email)) prevNewClients++;
+    });
+
+
+    // 4. Construct Final Metric Object
+    const busiestDay = Object.entries(current.dayCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+    // Peak Hour
+    const peakHour = Object.entries(current.hourCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+
+    // Top Staff
+    const topStaff = Object.entries(current.staffCounts)
+        .map(([name, data]) => ({
+            name,
+            bookings: data.count,
+            revenue: data.val,
+            avgTicket: data.count > 0 ? data.val / data.count : 0
+        }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .map((s, i) => ({ ...s, rank: i + 1 }))
+        .slice(0, 5);
+
+    // Top Services
+    const topServices = Object.entries(current.serviceCounts)
+        .map(([name, data]) => ({
+            name,
+            count: data.count,
+            revenue: data.val,
+            share: current.revenue > 0 ? (data.val / current.revenue) * 100 : 0
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+    // Top Clients
+    const topClients = Object.values(current.clientStats)
+        .sort((a, b) => b.spent - a.spent)
+        .slice(0, 5);
+
+    // Cancellation Rate
+    const totalOps = current.bookings + current.cancelled; // Total attempts
+    const cancelRate = totalOps > 0 ? ((current.cancelled / totalOps) * 100).toFixed(1) + '%' : '0%';
+
+    return {
+        period: currentRange,
+        totalBookings: {
+            value: current.bookings,
+            growth: calculateGrowth(current.bookings, previous.bookings),
+            trend: current.bookings >= previous.bookings ? 'up' : 'down'
+        },
+        revenue: {
+            total: {
+                value: current.revenue,
+                growth: calculateGrowth(current.revenue, previous.revenue),
+                trend: current.revenue >= previous.revenue ? 'up' : 'down'
+            },
+            average: current.bookings > 0 ? current.revenue / current.bookings : 0,
+            lost: current.lostRevenue
+        },
+        clients: {
+            totalActive: current.activeClients,
+            newCount: {
+                value: newClients,
+                growth: calculateGrowth(newClients, prevNewClients),
+                trend: newClients >= prevNewClients ? 'up' : 'down'
+            },
+            returningCount: returningClients,
+            returnRate: (newClients + returningClients) > 0
+                ? ((returningClients / (newClients + returningClients)) * 100).toFixed(0) + '%'
+                : '0%'
+        },
+        utilization: {
+            value: current.utilization.toFixed(1) + '%',
+            growth: calculateGrowth(current.utilization, previous.utilization),
+            trend: current.utilization >= previous.utilization ? 'up' : 'down'
+        },
+        busiest: {
+            day: busiestDay,
+            hour: peakHour
+        },
         topServices,
-        topStaff
+        topStaff,
+        topClients,
+        cancellationRate: cancelRate,
+        heatmap: Object.entries(current.hourCounts)
+            .map(([hour, count]) => ({ hour, count }))
+            .sort((a, b) => a.hour.localeCompare(b.hour)) // Sort by time for heatmap
     };
 };

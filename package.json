@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "invite": "ts-node scripts/generate-invite.ts"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
+    "@iframe-resizer/child": "^5.5.7",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.88.0",
     "class-variance-authority": "^0.7.1",

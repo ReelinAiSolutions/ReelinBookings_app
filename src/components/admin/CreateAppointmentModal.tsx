@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Service, Staff } from '@/types';
+import { Service, Staff, Availability } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { X, Calendar, Clock, Loader2, User, Mail, Scissors, Lock, Check } from 'lucide-react';
 
@@ -18,7 +18,8 @@ interface CreateAppointmentModalProps {
     defaultTime: string | null;
     services: Service[];
     staff: Staff[];
-    preselectedStaffId?: string;
+    appointments: any[]; // Receiving existing appointments for conflict check
+    businessHours?: any; // Organization['business_hours']
 }
 
 type Mode = 'booking' | 'blocking';
@@ -31,39 +32,128 @@ export default function CreateAppointmentModal({
     defaultTime,
     services,
     staff,
-    preselectedStaffId
+    appointments,
+    availability = [],
+    preselectedStaffId,
+    slotInterval = 60,
+    businessHours
 }: CreateAppointmentModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<Mode>('booking');
 
-    // Form State
-    const [serviceId, setServiceId] = useState('');
-    const [staffId, setStaffId] = useState('');
-    const [clientName, setClientName] = useState('');
-    const [clientEmail, setClientEmail] = useState('');
-    const [date, setDate] = useState('');
-    const [time, setTime] = useState('');
+    // ... (rest of state)
 
-    // Initialize/Reset
-    useEffect(() => {
-        if (isOpen && defaultDate && defaultTime) {
-            setDate(defaultDate.toISOString().split('T')[0]);
-            setTime(defaultTime);
-            setStaffId(preselectedStaffId && preselectedStaffId !== 'ALL' ? preselectedStaffId : (staff[0]?.id || ''));
-            setServiceId(services[0]?.id || '');
-            setClientName('');
-            setClientEmail('');
-            setMode('booking'); // Default to normal booking
+    // ... (rest of effects)
+
+    const generateTimeOptions = () => {
+        if (!date) return <option disabled>Select a date first</option>;
+
+        // 1. Get Day of Week
+        const [y, m, d] = date.split('-').map(Number);
+        const localDate = new Date(y, m - 1, d);
+        const dayName = localDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+        // 2. Get Hours
+        const hours = businessHours?.[dayName];
+        if (!hours || !hours.isOpen) {
+            return <option disabled>Closed on this day</option>;
         }
-    }, [isOpen, defaultDate, defaultTime, preselectedStaffId, staff, services]);
+
+        const toMinutes = (t: string) => {
+            const [hh, mm] = t.split(':').map(Number);
+            return hh * 60 + mm;
+        };
+
+        const startMinutes = toMinutes(hours.open);
+        const endMinutes = toMinutes(hours.close);
+
+        const options = [];
+        let currentMinutes = startMinutes;
+
+        while (currentMinutes < endMinutes) {
+            const h = Math.floor(currentMinutes / 60);
+            const m = currentMinutes % 60;
+            const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+
+            // Format 12-hour
+            const period = h >= 12 ? 'PM' : 'AM';
+            const displayH = h > 12 ? h - 12 : (h === 0 || h === 12 ? 12 : h);
+            const displayT = `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
+
+            options.push(<option key={t} value={t}>{displayT}</option>);
+            currentMinutes += (slotInterval || 60);
+        }
+        return options;
+    };
 
     if (!isOpen) return null;
 
     const handleSubmit = async () => {
         if (!serviceId || !staffId || !date || !time) {
-            alert('Please fill in Date, Time, Staff, and Service.');
+            setError('Please fill in Date, Time, Staff, and Service.');
             return;
         }
+
+        // --- CONFLICT & VALIDATION CHECK ---
+        const parseTime = (t: string) => {
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + m;
+        };
+
+        const checkService = services.find(s => s.id === serviceId);
+        const checkDuration = checkService?.durationMinutes || 60;
+
+        const newStart = parseTime(time);
+        const newEnd = newStart + checkDuration;
+
+        // 1. Off Duty Check
+        if (availability && availability.length > 0) {
+            // Parse date "YYYY-MM-DD" safely to get day of week
+            const [y, m, d] = date.split('-').map(Number);
+            const safeDate = new Date(y, m - 1, d);
+            const dayIndex = safeDate.getDay(); // 0-6 (Sun-Sat)
+
+            const rule = availability.find(r => r.staffId === staffId && r.dayOfWeek === dayIndex);
+
+            if (rule && !rule.isWorking) {
+                setError(`Staff member is OFF DUTY on this day.`);
+                return;
+            }
+        }
+
+        // 2. Business Hours Check (9 AM - 5 PM)
+        const businessOpen = 9 * 60;
+        const businessClose = 17 * 60;
+
+        if (newStart < businessOpen || newEnd > businessClose) {
+            setError(`Booking must be between 9:00 AM and 5:00 PM.`);
+            return;
+        }
+
+        // 2. Overlap Check
+        const relevantApts = appointments.filter(apt =>
+            apt.date === date &&
+            apt.staffId === staffId &&
+            apt.status !== 'CANCELLED' &&
+            apt.status !== 'ARCHIVED'
+        );
+
+        const conflict = relevantApts.find(apt => {
+            const existingStart = parseTime(apt.timeSlot);
+            const aptService = services.find(s => s.id === apt.serviceId);
+            const existingDuration = aptService?.durationMinutes || 60;
+            const existingEnd = existingStart + existingDuration;
+
+            return (newStart < existingEnd && newEnd > existingStart);
+        });
+
+        if (conflict) {
+            const staffMember = staff.find(s => s.id === staffId);
+            const conflictService = services.find(s => s.id === conflict.serviceId);
+            setError(`Conflict: ${staffMember?.name} is busy at ${conflict.timeSlot} (${conflictService?.name || 'Service'}).`);
+            return;
+        }
+        // -----------------------
 
         setIsLoading(true);
         try {
@@ -139,11 +229,7 @@ export default function CreateAppointmentModal({
                                 onChange={(e) => setTime(e.target.value)}
                                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all appearance-none"
                             >
-                                {Array.from({ length: 12 }).map((_, i) => {
-                                    const h = i + 9;
-                                    const t = `${h.toString().padStart(2, '0')}:00`;
-                                    return <option key={t} value={t}>{t}</option>;
-                                })}
+                                {generateTimeOptions()}
                             </select>
                         </div>
                     </div>
@@ -224,6 +310,14 @@ export default function CreateAppointmentModal({
 
                 {/* Footer */}
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                    {/* Error Message */}
+                    {error && (
+                        <div className="text-xs font-bold text-red-500 mb-2 flex items-center gap-1.5 animate-in slide-in-from-bottom-2 fade-in">
+                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                            {error}
+                        </div>
+                    )}
+
                     <Button
                         onClick={handleSubmit}
                         disabled={isLoading}

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Appointment, Service } from '@/types';
+import React, { useState, useMemo } from 'react';
+import { Appointment, Service, Organization } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { X, Calendar, Clock, Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface RescheduleModalProps {
     isOpen: boolean;
@@ -12,9 +13,22 @@ interface RescheduleModalProps {
     onRestore?: (id: string) => Promise<void>;
     onArchive?: (id: string) => Promise<void>;
     services: Service[];
+    slotInterval?: number;
+    businessHours?: Organization['business_hours'];
 }
 
-export default function RescheduleModal({ isOpen, appointment, onClose, onReschedule, onCancel, onRestore, onArchive, services }: RescheduleModalProps) {
+export default function RescheduleModal({
+    isOpen,
+    appointment,
+    onClose,
+    onReschedule,
+    onCancel,
+    onRestore,
+    onArchive,
+    services,
+    slotInterval = 15,
+    businessHours
+}: RescheduleModalProps) {
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -130,12 +144,51 @@ export default function RescheduleModal({ isOpen, appointment, onClose, onResche
                                     onChange={(e) => setTime(e.target.value)}
                                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 >
-                                    {/* Simple 9-5 slots for MVP */}
-                                    {Array.from({ length: 10 }).map((_, i) => {
-                                        const h = i + 9;
-                                        const t = `${h.toString().padStart(2, '0')}:00`;
-                                        return <option key={t} value={t}>{t}</option>;
-                                    })}
+                                    <option value="" disabled>Select Time</option>
+                                    {(() => {
+                                        // 1. Determine Day of Week from selected Date
+                                        if (!date) return <option disabled>Select date first</option>;
+
+                                        // Safe local parsing for Day Index
+                                        const [y, m, d] = date.split('-').map(Number);
+                                        const localDate = new Date(y, m - 1, d);
+                                        const dayName = format(localDate, 'EEEE').toLowerCase();
+
+                                        const hours = businessHours?.[dayName];
+                                        if (!hours || !hours.isOpen) {
+                                            return <option disabled>Closed on this day</option>;
+                                        }
+
+                                        // 2. Determine Start/End Minutes
+                                        const toMinutes = (t: string) => {
+                                            const [hh, mm] = t.split(':').map(Number);
+                                            return hh * 60 + mm;
+                                        };
+                                        const fromTime = (mins: number) => {
+                                            const hh = Math.floor(mins / 60);
+                                            const mm = mins % 60;
+                                            return `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
+                                        };
+
+                                        const startMins = toMinutes(hours.open);
+                                        // Round close time down to last valid slot? 
+                                        // Usually "close" is when shop shuts. Last appointment logic is tricky.
+                                        // We'll show slots up until (Close - Interval) or simple Close if 0 duration.
+                                        // For rescheduling, let's show all starts < Close.
+                                        const endMins = toMinutes(hours.close);
+                                        const interval = slotInterval || 30;
+
+                                        const options = [];
+                                        for (let m = startMins; m < endMins; m += interval) {
+                                            const tStr = fromTime(m);
+                                            options.push(
+                                                <option key={tStr} value={tStr}>
+                                                    {tStr}
+                                                </option>
+                                            );
+                                        }
+                                        return options;
+                                    })()}
                                 </select>
                             </div>
                         </div>

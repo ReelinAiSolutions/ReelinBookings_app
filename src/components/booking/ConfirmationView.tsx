@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Service, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Check, Calendar as CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { Check, Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
+import { format, addMinutes } from 'date-fns';
+import { formatTime12Hour } from '@/lib/utils';
 
 interface ConfirmationViewProps {
     selectedService: Service | null;
@@ -12,8 +13,6 @@ interface ConfirmationViewProps {
     onReset: () => void;
 }
 
-import { addMinutes } from 'date-fns';
-
 export default function ConfirmationView({
     selectedService,
     selectedStaff,
@@ -21,26 +20,63 @@ export default function ConfirmationView({
     selectedTime,
     onReset
 }: ConfirmationViewProps) {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Generate Google Calendar Link
-    const googleCalendarLink = React.useMemo(() => {
-        if (!selectedService || !selectedDate || !selectedTime) return '#';
+    // Generate Calendar Links
+    const links = React.useMemo(() => {
+        if (!selectedService || !selectedDate || !selectedTime) return null;
 
         const [hours, minutes] = selectedTime.split(':').map(Number);
         const startDate = new Date(selectedDate);
         startDate.setHours(hours, minutes);
-
         const endDate = addMinutes(startDate, selectedService.durationMinutes);
 
+        const title = `${selectedService.name} with ${selectedStaff?.name}`;
+        const description = `Appointment for ${selectedService.name} with ${selectedStaff?.name}.`;
+        const location = "Studio"; // Or dynamic org address if available
+
+        // Helpers
         const formatGCalDate = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "");
 
-        const start = formatGCalDate(startDate);
-        const end = formatGCalDate(endDate);
+        // 1. Google
+        const google = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatGCalDate(startDate)}/${formatGCalDate(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
 
-        const details = `Appointment with ${selectedStaff?.name} for ${selectedService.name}`;
+        // 2. Outlook / Office 365
+        const outlook = `https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}&subject=${encodeURIComponent(title)}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
 
-        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(selectedService.name)}&dates=${start}/${end}&details=${encodeURIComponent(details)}`;
+        // 3. Yahoo
+        const st = format(startDate, 'yyyyMMdd\'T\'HHmmss');
+        const et = format(endDate, 'yyyyMMdd\'T\'HHmmss');
+        const yahoo = `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${encodeURIComponent(title)}&st=${st}&et=${et}&desc=${encodeURIComponent(description)}&in_loc=${encodeURIComponent(location)}`;
+
+        // 4. ICS (Apple / Outlook Desktop)
+        const icsContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'BEGIN:VEVENT',
+            `DTSTART:${formatGCalDate(startDate)}`,
+            `DTEND:${formatGCalDate(endDate)}`,
+            `SUMMARY:${title}`,
+            `DESCRIPTION:${description}`,
+            `LOCATION:${location}`,
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\n');
+
+        const icsUrl = `data:text/calendar;charset=utf8,${encodeURIComponent(icsContent)}`;
+
+        return { google, outlook, yahoo, icsUrl, icsFilename: 'appointment.ics' };
     }, [selectedService, selectedStaff, selectedDate, selectedTime]);
+
+    const handleDownloadICS = () => {
+        if (!links) return;
+        const link = document.createElement('a');
+        link.href = links.icsUrl;
+        link.download = links.icsFilename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <div className="min-h-[600px] flex items-center justify-center">
@@ -56,18 +92,55 @@ export default function ConfirmationView({
                 <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
                     <div className="flex items-center justify-center gap-2 text-gray-800 font-medium">
                         <CalendarIcon className="w-5 h-5 text-primary-600" />
-                        {format(selectedDate, 'MMMM do, yyyy')} at {selectedTime}
+                        {format(selectedDate, 'MMMM do, yyyy')} at {formatTime12Hour(selectedTime)}
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    <Button
-                        size="lg"
-                        onClick={() => window.open(googleCalendarLink, '_blank')}
-                        className="w-full gap-2"
-                    >
-                        <CalendarIcon className="w-4 h-4" /> Add to Google Calendar
-                    </Button>
+                <div className="space-y-3 relative">
+                    <div className="relative">
+                        <Button
+                            size="lg"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="w-full gap-2 relative z-10"
+                        >
+                            <CalendarIcon className="w-4 h-4" /> Add to Calendar
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} />
+                        </Button>
+
+                        {isMenuOpen && links && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <button
+                                    onClick={() => window.open(links.google, '_blank')}
+                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm font-bold text-gray-700 flex items-center gap-3 border-b border-gray-50 transition-colors"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span> Google Calendar
+                                </button>
+                                <button
+                                    onClick={handleDownloadICS}
+                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm font-bold text-gray-700 flex items-center gap-3 border-b border-gray-50 transition-colors"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-gray-900"></span> Apple / Outlook (ICS)
+                                </button>
+                                <button
+                                    onClick={() => window.open(links.outlook, '_blank')}
+                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm font-bold text-gray-700 flex items-center gap-3 border-b border-gray-50 transition-colors"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-blue-400"></span> Outlook.com
+                                </button>
+                                <button
+                                    onClick={() => window.open(links.yahoo, '_blank')}
+                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm font-bold text-gray-700 flex items-center gap-3 transition-colors"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-purple-500"></span> Yahoo Calendar
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Overlay to close menu when clicking outside */}
+                        {isMenuOpen && (
+                            <div className="fixed inset-0 z-0" onClick={() => setIsMenuOpen(false)}></div>
+                        )}
+                    </div>
 
                     <button
                         onClick={onReset}

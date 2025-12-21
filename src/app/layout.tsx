@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -14,7 +15,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#4F46E5",
+  themeColor: "#f3f4f6",
 };
 
 export const metadata: Metadata = {
@@ -28,6 +29,8 @@ export const metadata: Metadata = {
   },
 };
 
+import ResizeListener from "@/components/ResizeListener";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,8 +41,11 @@ export default function RootLayout({
       <body
         className={`${plusJakarta.variable} font-sans antialiased`}
       >
+        <ResizeListener />
         <ToastProvider>
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </ToastProvider>
       </body>
     </html >

@@ -6,9 +6,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '@/context/ToastContext';
 import { getOrganizationBySlug, getServices, getStaff, createAppointment, getTimeSlots } from '@/services/dataService';
 import { Service, Staff, TimeSlot } from '@/types';
-import { startOfToday } from 'date-fns';
+import { startOfToday, format } from 'date-fns';
 import { Skeleton } from '@/components/ui/Skeleton';
 import WizardStepIndicator from '@/components/booking/WizardStepIndicator';
+import { Phone, Mail, MapPin, Globe } from 'lucide-react';
 import ServiceSelection from '@/components/booking/ServiceSelection';
 import StaffSelection from '@/components/booking/StaffSelection';
 import DateSelection from '@/components/booking/DateSelection';
@@ -42,11 +43,15 @@ export default function BookingPageContent({ slug }: { slug: string }) {
     const [realTimeSlots, setRealTimeSlots] = useState<TimeSlot[]>([]);
 
     // Selection State
+    // Selection State
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
     // Initialize to null to match server rendering (hydration fix)
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+    // Map time slots to available staff IDs for "Any Professional" logic
+    const [slotsStaffMap, setSlotsStaffMap] = useState<Record<string, string[]>>({});
 
     const [isBooking, setIsBooking] = useState(false);
     const [bookingComplete, setBookingComplete] = useState(false);
@@ -54,9 +59,21 @@ export default function BookingPageContent({ slug }: { slug: string }) {
     const searchParams = useSearchParams();
     const isEmbed = searchParams.get('mode') === 'embed';
 
+    const [guestInfo, setGuestInfo] = useState<{ name: string; email: string; phone: string } | null>(null);
+
     // Initialize Date on Client Only
     useEffect(() => {
         setSelectedDate(startOfToday());
+
+        // Check for Smart Guest Info
+        const savedGuest = localStorage.getItem('reelin_guest_info');
+        if (savedGuest) {
+            try {
+                setGuestInfo(JSON.parse(savedGuest));
+            } catch (e) {
+                console.error("Failed to parse saved guest info");
+            }
+        }
     }, []);
 
     // Load Organization & Data
@@ -90,44 +107,161 @@ export default function BookingPageContent({ slug }: { slug: string }) {
     // Filter staff based on selected service
     const availableStaff = useMemo(() => {
         if (!selectedService) return [];
-        return staffMembers.filter(staff =>
-            staff.specialties.includes(selectedService.id)
+
+        console.log("Filtering Staff:", {
+            serviceId: selectedService.id,
+            totalStaff: staffMembers.length,
+            staffSpecialties: staffMembers.map(s => ({ name: s.name, specialties: s.specialties }))
+        });
+
+        const filtered = staffMembers.filter(staff =>
+            staff.specialties?.some(sId => String(sId) === String(selectedService.id))
         );
+
+        console.log("Filtered Result:", filtered.map(s => s.name));
+        return filtered;
     }, [selectedService, staffMembers]);
+
+    const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
     // Load Available Slots when Date/Staff changes
     useEffect(() => {
         const loadSlots = async () => {
-            if (!selectedStaff || !selectedDate) return;
+            if (!selectedStaff || !selectedDate || !selectedService || !org) return;
 
             // Reset time if date changes
             setSelectedTime(null);
+            setSlotsStaffMap({});
+            setRealTimeSlots([]); // Clear stale slots immediately
+            setIsLoadingSlots(true);
 
-            const slots = await getTimeSlots(selectedStaff.id, selectedDate);
-            setRealTimeSlots(slots);
+            try {
+                // HANDLE "ANY PROFESSIONAL" SELECTION
+                if (selectedStaff.id === 'any') {
+                    // Fetch slots for ALL eligible staff in parallel
+                    const allStaffSlots = await Promise.all(
+                        availableStaff.map(async (staff) => {
+                            try {
+                                const slots = await getTimeSlots(
+                                    staff.id,
+                                    selectedDate,
+                                    selectedService.durationMinutes,
+                                    org.id
+                                );
+                                return { staffId: staff.id, slots };
+                            } catch (e) {
+                                return { staffId: staff.id, slots: [] };
+                            }
+                        })
+                    );
+
+                    // Aggregation Logic:
+                    // 1. Collect all unique time strings that are available.
+                    // 2. Map Time -> [Staff IDs]
+                    const timeMap: Record<string, string[]> = {};
+                    const uniqueTimeSlots: Set<string> = new Set();
+
+                    allStaffSlots.forEach(({ staffId, slots }) => {
+                        slots.forEach(slot => {
+                            if (slot.available) {
+                                uniqueTimeSlots.add(slot.time);
+                                if (!timeMap[slot.time]) {
+                                    timeMap[slot.time] = [];
+                                }
+                                timeMap[slot.time].push(staffId);
+                            }
+                        });
+                    });
+
+                    // Convert to TimeSlot array and sort
+                    const aggregatedSlots: TimeSlot[] = Array.from(uniqueTimeSlots)
+                        .sort()
+                        .map(time => ({ time, available: true }));
+
+                    setRealTimeSlots(aggregatedSlots);
+                    setSlotsStaffMap(timeMap);
+
+                } else {
+                    // HANDLE SPECIFIC STAFF SELECTION
+                    const slots = await getTimeSlots(
+                        selectedStaff.id,
+                        selectedDate,
+                        selectedService.durationMinutes,
+                        org.id
+                    );
+                    setRealTimeSlots(slots);
+                }
+            } catch (error) {
+                console.error("Error fetching slots", error);
+            } finally {
+                setIsLoadingSlots(false);
+            }
         };
         loadSlots();
-    }, [selectedDate, selectedStaff]);
+    }, [selectedDate, selectedStaff, selectedService, org, availableStaff]);
 
     const availableTimeSlots = useMemo(() => {
         return realTimeSlots;
     }, [realTimeSlots]);
+
+    // Scroll to top on step change - focusing on content
+    useEffect(() => {
+        const element = document.getElementById('booking-scroll-anchor');
+        if (element) {
+            // Scroll to the anchor with a slight offset for better visual alignment
+            const y = element.getBoundingClientRect().top + window.scrollY - 20;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [currentStep]);
 
     const handleBook = async (formData: any) => {
         if (!selectedService || !selectedStaff || !selectedTime || !org || !selectedDate) return;
 
         setIsBooking(true);
         try {
+            // FIX: Use format(date, 'yyyy-MM-dd') to strictly preserve the selected usage date
+            const dateString = format(selectedDate, 'yyyy-MM-dd');
+
+            // Determine final staff ID
+            let finalStaffId = selectedStaff.id;
+            let finalStaffName = selectedStaff.name;
+
+            // If "Any" was selected, pick an available staff member for this slot
+            if (selectedStaff.id === 'any') {
+                const possibleStaffIds = slotsStaffMap[selectedTime] || [];
+                if (possibleStaffIds.length === 0) {
+                    throw new Error("No staff available for this time slot.");
+                }
+                // Naive assignment: Randomly pick one to distribute load (or pick first)
+                const randomIndex = Math.floor(Math.random() * possibleStaffIds.length);
+                finalStaffId = possibleStaffIds[randomIndex];
+
+                // Find name for email/confirmation
+                const allocatedStaff = staffMembers.find(s => s.id === finalStaffId);
+                if (allocatedStaff) {
+                    finalStaffName = allocatedStaff.name;
+                }
+            }
+
             await createAppointment({
                 serviceId: selectedService.id,
-                staffId: selectedStaff.id,
+                staffId: finalStaffId,
                 clientId: 'c_temp_user',
                 clientName: formData.name,
                 clientEmail: formData.email,
-                date: selectedDate.toISOString().split('T')[0],
+                date: dateString,
                 timeSlot: selectedTime,
                 status: 'CONFIRMED'
             } as any, org.id);
+
+            // Save Smart Guest Info
+            localStorage.setItem('reelin_guest_info', JSON.stringify({
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone
+            }));
 
             // Send Confirmation Email
             try {
@@ -142,7 +276,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                             <div style="font-family: sans-serif; color: #333;">
                                 <h1>Booking Confirmed</h1>
                                 <p>Hi ${formData.name.split(' ')[0]},</p>
-                                <p>Your appointment for <strong>${selectedService.name}</strong> with <strong>${selectedStaff.name}</strong> is confirmed.</p>
+                                <p>Your appointment for <strong>${selectedService.name}</strong> with <strong>${finalStaffName}</strong> is confirmed.</p>
                                 <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
                                     <p style="margin: 5px 0;"><strong>Date:</strong> ${selectedDate.toDateString()}</p>
                                     <p style="margin: 5px 0;"><strong>Time:</strong> ${selectedTime}</p>
@@ -191,7 +325,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
         return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
     }
 
-    if (isLoadingOrg || !selectedDate) {
+    if (isLoadingOrg) {
         return (
             <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 {/* Hero Skeleton */}
@@ -233,7 +367,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
             <ConfirmationView
                 selectedService={selectedService}
                 selectedStaff={selectedStaff}
-                selectedDate={selectedDate}
+                selectedDate={selectedDate!}
                 selectedTime={selectedTime}
                 onReset={resetBooking}
             />
@@ -241,100 +375,129 @@ export default function BookingPageContent({ slug }: { slug: string }) {
     }
 
     return (
-        <div className={`mx-auto py-12 px-4 sm:px-6 lg:px-8 ${isEmbed ? 'max-w-full py-0 px-0' : 'max-w-6xl'}`}>
-            {/* Hero Header - Hidden in Embed Mode */}
-            {!isEmbed && (
-                <div className="text-center mb-12">
-                    {org.logo_url && (
+        <div className="mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl transition-colors duration-500">
+            {/* Hero Header - Now visible in Embed Mode to match user desire */}
+            <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {org.logo_url && (
+                    <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 group">
+                        <div className="absolute inset-0 bg-primary-500 blur-2xl opacity-20 rounded-full group-hover:opacity-30 transition-opacity duration-500"></div>
                         <img
                             src={org.logo_url}
                             alt={org.name + ' Logo'}
-                            className="h-24 mx-auto mb-6 object-contain"
+                            className="relative h-full w-full object-contain drop-shadow-sm"
                         />
-                    )}
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-                        {org.name}
-                    </h1>
-                    <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-                        Book your next experience with us.
-                    </p>
-                </div>
-            )}
+                    </div>
+                )}
+                <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-3 tracking-tight">
+                    {org.name}
+                </h1>
+                <p className="text-base md:text-lg text-gray-500 max-w-xl mx-auto font-medium leading-relaxed">
+                    Book your next premium experience.
+                </p>
 
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-                {/* Desktop Sidebar - Hidden in Embed if desired, but usually needed for steps. Let's keep steps. */}
-                <div className="hidden lg:block w-64 flex-shrink-0">
-                    <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
-                </div>
-
-                <div className="flex-1 w-full" style={{ '--primary-color': org.primary_color || '#4F46E5' } as React.CSSProperties}>
-                    {/* Public Contact Info Bar - Hidden in Embed Mode */}
-                    {!isEmbed && (org.phone || org.email || org.address || org.website) && (
-                        <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-8 border-b border-gray-100 pb-6">
-                            {org.phone && <span>{org.phone}</span>}
-                            {org.email && <span>{org.email}</span>}
-                            {org.address && <span>{org.address}</span>}
-                            {org.website && <a href={org.website} target="_blank" rel="noopener noreferrer" className="hover:text-primary-600 hover:underline">Website</a>}
-                        </div>
-                    )}
-
-                    {/* Mobile Header */}
-                    <div className="lg:hidden mb-6">
+                <div id="booking-scroll-anchor" className="flex flex-col lg:flex-row gap-8 items-start scroll-mt-6">
+                    {/* Desktop Sidebar - Hidden in Embed if desired, but usually needed for steps. Let's keep steps. */}
+                    <div className="hidden lg:block w-72 flex-shrink-0 sticky top-8">
                         <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
                     </div>
 
-                    {/* Main Content Area */}
-                    <div className="w-full bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden min-h-[600px] flex flex-col relative">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentStep}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                transition={{ duration: 0.3 }}
-                                className="flex-1 flex flex-col"
-                            >
-                                {currentStep === BookingStep.SERVICE && (
-                                    <ServiceSelection
-                                        services={services}
-                                        onSelect={handleServiceSelect}
-                                    />
+                    <div className="flex-1 w-full" style={{ '--primary-color': org.primary_color || '#4F46E5' } as React.CSSProperties}>
+                        {/* Public Contact Info Bar - Hidden in Embed Mode */}
+                        {!isEmbed && (org.phone || org.email || org.address || org.website) && (
+                            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-sm font-medium text-gray-500 mb-8 border-b border-gray-100 pb-8">
+                                {org.phone && (
+                                    <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                                        <Phone className="w-4 h-4 text-primary-500" />
+                                        <span>{org.phone}</span>
+                                    </div>
                                 )}
+                                {org.email && (
+                                    <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                                        <Mail className="w-4 h-4 text-primary-500" />
+                                        <span>{org.email}</span>
+                                    </div>
+                                )}
+                                {org.address && (
+                                    <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                                        <MapPin className="w-4 h-4 text-primary-500" />
+                                        <span>{org.address}</span>
+                                    </div>
+                                )}
+                                {org.website && (
+                                    <a href={org.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary-600 hover:underline transition-colors">
+                                        <Globe className="w-4 h-4 text-primary-500" />
+                                        <span>Website</span>
+                                    </a>
+                                )}
+                            </div>
+                        )}
 
-                                {currentStep === BookingStep.STAFF && (
-                                    <StaffSelection
-                                        staffMembers={availableStaff}
-                                        onSelect={(staff) => { setSelectedStaff(staff); setCurrentStep(BookingStep.DATE); }}
-                                        onSelectAny={() => { setSelectedStaff({ id: 'any', name: 'Any Professional', role: '', specialties: [], avatar: '' }); setCurrentStep(BookingStep.DATE); }}
-                                        onBack={() => setCurrentStep(BookingStep.SERVICE)}
-                                    />
-                                )}
+                        {/* Mobile Header */}
+                        <div className="lg:hidden mb-6">
+                            <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
+                        </div>
 
-                                {currentStep === BookingStep.DATE && (
-                                    <DateSelection
-                                        selectedDate={selectedDate}
-                                        onSelectDate={setSelectedDate}
-                                        selectedTime={selectedTime}
-                                        onSelectTime={setSelectedTime}
-                                        timeSlots={availableTimeSlots}
-                                        onBack={() => setCurrentStep(BookingStep.STAFF)}
-                                        onNext={() => setCurrentStep(BookingStep.SUMMARY)}
-                                    />
-                                )}
+                        {/* Main Content Area */}
+                        <div className="w-full bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-visible md:overflow-hidden min-h-[600px] flex flex-col relative transition-all duration-300">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentStep}
+                                    initial={{ opacity: 0, x: 10, filter: 'blur(4px)' }}
+                                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                                    exit={{ opacity: 0, x: -10, filter: 'blur(4px)' }}
+                                    transition={{ duration: 0.4, ease: "easeOut" }}
+                                    className="flex-1 flex flex-col p-1"
+                                >
+                                    {currentStep === BookingStep.SERVICE && (
+                                        <ServiceSelection
+                                            services={services}
+                                            onSelect={handleServiceSelect}
+                                        />
+                                    )}
 
-                                {currentStep === BookingStep.SUMMARY && (
-                                    <BookingSummary
-                                        selectedService={selectedService}
-                                        selectedStaff={selectedStaff}
-                                        selectedDate={selectedDate}
-                                        selectedTime={selectedTime}
-                                        onBack={() => setCurrentStep(BookingStep.DATE)}
-                                        onConfirm={handleBook}
-                                        isBooking={isBooking}
-                                    />
-                                )}
-                            </motion.div>
-                        </AnimatePresence>
+                                    {currentStep === BookingStep.STAFF && (
+                                        <StaffSelection
+                                            staffMembers={availableStaff}
+                                            onSelect={(staff) => { setSelectedStaff(staff); setCurrentStep(BookingStep.DATE); }}
+                                            onSelectAny={() => { setSelectedStaff({ id: 'any', name: 'Any Professional', role: '', specialties: [], avatar: '' }); setCurrentStep(BookingStep.DATE); }}
+                                            onBack={() => setCurrentStep(BookingStep.SERVICE)}
+                                        />
+                                    )}
+
+                                    {currentStep === BookingStep.DATE && (
+                                        <DateSelection
+                                            selectedDate={selectedDate}
+                                            onSelectDate={(date) => {
+                                                setSelectedDate(date);
+                                                setSelectedTime(null);
+                                            }}
+                                            selectedTime={selectedTime}
+                                            onSelectTime={setSelectedTime}
+                                            timeSlots={availableTimeSlots}
+                                            onBack={() => setCurrentStep(BookingStep.STAFF)}
+                                            onNext={() => setCurrentStep(BookingStep.SUMMARY)}
+                                            isLoading={isLoadingSlots}
+                                        />
+                                    )}
+
+                                    {currentStep === BookingStep.SUMMARY && selectedDate && (
+                                        <BookingSummary
+                                            selectedService={selectedService}
+                                            selectedStaff={selectedStaff}
+                                            selectedDate={selectedDate}
+                                            selectedTime={selectedTime}
+                                            onBack={() => setCurrentStep(BookingStep.DATE)}
+                                            onConfirm={handleBook}
+                                            isBooking={isBooking}
+                                            initialGuestData={guestInfo}
+                                            orgAddress={org.address}
+                                            termsUrl={org.terms_url}
+                                            policyUrl={org.policy_url}
+                                        />
+                                    )}
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -9,7 +9,9 @@ export enum AppointmentStatus {
     CONFIRMED = 'CONFIRMED',
     CANCELLED = 'CANCELLED',
     COMPLETED = 'COMPLETED',
-    ARCHIVED = 'ARCHIVED'
+    ARCHIVED = 'ARCHIVED',
+    ARRIVED = 'ARRIVED',
+    IN_PROGRESS = 'IN_PROGRESS'
 }
 
 export interface User {
@@ -75,4 +77,8 @@ export interface Organization {
     email?: string;
     address?: string;
     website?: string;
+    terms_url?: string;
+    policy_url?: string;
+    slot_interval?: number;
+    business_hours?: Record<string, { open: string; close: string; isOpen: boolean }>;
 }

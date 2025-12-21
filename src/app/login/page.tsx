@@ -4,7 +4,7 @@ import React, { useState, Suspense } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { Calendar, Lock, Mail, AlertCircle, User } from 'lucide-react';
+import { Calendar, Lock, Mail, AlertCircle, User, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 
@@ -54,18 +54,18 @@ function LoginForm() {
     if (view === 'SELECTION') {
         return (
             <div className="min-h-screen bg-white flex flex-col justify-center px-6 py-12 lg:px-8">
-                <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="sm:mx-auto sm:w-full sm:max-w-md animate-in zoom-in-95 duration-500">
                     <div className="flex justify-center mb-10">
-                        <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center shadow-2xl">
-                            <Calendar className="w-10 h-10 text-white" />
+                        <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-500/10 ring-1 ring-white/20">
+                            <Zap className="w-10 h-10 text-white" />
                         </div>
                     </div>
 
-                    <h2 className="text-center text-3xl font-black text-gray-900 tracking-tight mb-2">
+                    <h2 className="text-center text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
                         Welcome Back
                     </h2>
-                    <p className="text-center text-gray-500 mb-10">
-                        Select your portal to continue
+                    <p className="text-center text-gray-500 mb-10 text-lg">
+                        Choose your portal to continue
                     </p>
 
                     <div className="space-y-4">
@@ -77,7 +77,7 @@ function LoginForm() {
                             className="w-full h-16 text-lg font-bold bg-gray-900 hover:bg-black text-white rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-between px-6 group"
                         >
                             <span>Admin Login</span>
-                            <Lock className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+                            <Lock className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors ml-4" />
                         </Button>
 
                         <Button
@@ -85,28 +85,20 @@ function LoginForm() {
                                 setLoginRole('STAFF');
                                 setView('LOGIN');
                             }}
-                            className="w-full h-16 text-lg font-bold bg-white text-gray-900 border-2 border-gray-100 hover:border-gray-900 rounded-2xl transition-all flex items-center justify-between px-6 group"
+                            className="w-full h-16 text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg hover:shadow-xl shadow-blue-600/20 transition-all flex items-center justify-between px-6 group"
                         >
                             <span>Team Member Login</span>
-                            <User className="w-5 h-5 text-gray-400 group-hover:text-gray-900 transition-colors" />
+                            <User className="w-5 h-5 text-blue-200 group-hover:text-white transition-colors ml-4" />
                         </Button>
 
-                        <div className="relative py-4">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-100" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase tracking-widest ">
-                                <span className="bg-white px-4 text-gray-400 font-bold">New Here?</span>
-                            </div>
-                        </div>
 
-                        <Link href="/signup" className="block w-full">
-                            <Button
-                                className="w-full h-16 text-lg font-bold bg-primary-600 hover:bg-primary-700 text-white rounded-2xl shadow-lg hover:shadow-xl shadow-primary-600/20 transition-all flex items-center justify-center gap-2"
-                            >
-                                <span>Create Account</span>
-                            </Button>
-                        </Link>
+
+                        <div className="pt-6 text-center">
+                            <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                                Streamline your schedule. Grow your client base.<br />
+                                The professional booking platform for modern service businesses.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
