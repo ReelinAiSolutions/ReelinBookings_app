@@ -199,14 +199,21 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                                                             </div>
 
                                                             {!isDense && (
-                                                                <div className="text-[9px] truncate font-medium opacity-80 mb-0.5">
-                                                                    {service?.name || 'Service'}
-                                                                </div>
+                                                                <>
+                                                                    <div className="text-[9px] truncate font-medium opacity-80 mb-0.5">
+                                                                        {service?.name || 'Service'}
+                                                                    </div>
+                                                                    <div className="text-[8px] truncate font-bold opacity-70">
+                                                                        {apt.timeSlot}
+                                                                    </div>
+                                                                </>
                                                             )}
 
-                                                            <div className={`flex items-center justify-between font-bold opacity-80 ${isDense ? 'text-[8px] mt-0.5' : 'text-[9px] mt-0.5'}`}>
-                                                                <span>{apt.timeSlot}</span>
-                                                            </div>
+                                                            {isDense && (
+                                                                <div className="flex items-center justify-between font-bold opacity-80 text-[8px] mt-0.5">
+                                                                    <span>{apt.timeSlot}</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     );
                                                 })}

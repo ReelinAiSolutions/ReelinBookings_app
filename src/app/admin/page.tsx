@@ -247,12 +247,10 @@ export default function AdminDashboard() {
                             {currentOrg?.logo_url ? (
                                 <img src={currentOrg.logo_url} alt="Logo" className="w-10 h-10 flex-shrink-0 object-contain" />
                             ) : (
-                                <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center text-white font-bold">
-                                    {currentOrg?.name?.charAt(0) || 'R'}
-                                </div>
+                                <img src="/icon-180.png" alt="Reelin Logo" className="w-10 h-10 flex-shrink-0 object-contain rounded-lg" />
                             )}
                             <h1 className="text-xl font-bold text-gray-900 tracking-tight leading-none truncate">
-                                {currentOrg?.name || 'Dashboard'}
+                                {currentOrg?.name || 'Reelin Bookings'}
                             </h1>
                         </div>
 
