@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 
 export default function LandingPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(true);
 
   // Smart Entry Point: Redirect to Admin Dashboard if logged in
   useEffect(() => {
@@ -21,10 +22,28 @@ export default function LandingPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         router.push('/admin');
+      } else {
+        setIsLoading(false);
       }
     };
     checkSession();
   }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <img src="/icon-180.png" alt="Reelin Bookings" className="w-20 h-20 animate-pulse" />
+          <h2 className="text-xl font-bold text-gray-900">Reelin Bookings</h2>
+          <div className="flex gap-1">
+            <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white isolate animate-in fade-in duration-500">
