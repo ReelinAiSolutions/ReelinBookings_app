@@ -15,7 +15,6 @@ import BlockModal from '@/components/admin/BlockModal';
 import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
 import BarberDashboard from '@/components/barber/BarberDashboard';
 import ProfileManager from '@/components/admin/ProfileManager'; // Restored import
-import SettingsManager from '@/components/admin/SettingsManager';
 import AdminNav from '@/components/admin/AdminNav'; // New import
 import {
     getCurrentUserOrganization,
@@ -339,17 +338,6 @@ export default function AdminDashboard() {
                                 services={services}
                                 staff={staff}
                             />
-                        )
-                    }
-
-                    {
-                        activeTab === 'settings' && currentOrg && (
-                            <div className="animate-in fade-in duration-300">
-                                <SettingsManager
-                                    org={currentOrg}
-                                    onUpdate={(updated: Organization) => setCurrentOrg(updated)}
-                                />
-                            </div>
                         )
                     }
 
