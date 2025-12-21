@@ -1,6 +1,8 @@
 {
     "name": "Reelin Bookings",
-    "short_name": "Reelin",
+    "short_name": "Reelin Bookings",
+    "id": "/",
+    "scope": "/",
     "start_url": "/?source=pwa",
     "display": "standalone",
     "background_color": "#ffffff",
