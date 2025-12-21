@@ -79,24 +79,22 @@ export default function BookingPageContent({ slug }: { slug: string }) {
         }
     }, []);
 
-    // Theme detection effect
-    useEffect(() => {
-        // Listen for theme messages from parent window
-        const handleMessage = (event: MessageEvent) => {
-            if (event.data.type === 'PARENT_THEME') {
-                setParentTheme(event.data.theme);
-            }
-        };
+    // Theme detection effect - temporarily disabled for debugging
+    // useEffect(() => {
+    //     const handleMessage = (event: MessageEvent) => {
+    //         if (event.data.type === 'PARENT_THEME') {
+    //             setParentTheme(event.data.theme);
+    //         }
+    //     };
 
-        window.addEventListener('message', handleMessage);
+    //     window.addEventListener('message', handleMessage);
 
-        // Request theme from parent
-        if (isEmbed && window.parent !== window) {
-            window.parent.postMessage({ type: 'REQUEST_THEME' }, '*');
-        }
+    //     if (isEmbed && window.parent !== window) {
+    //         window.parent.postMessage({ type: 'REQUEST_THEME' }, '*');
+    //     }
 
-        return () => window.removeEventListener('message', handleMessage);
-    }, [isEmbed]);
+    //     return () => window.removeEventListener('message', handleMessage);
+    // }, [isEmbed]);
 
 
     // Load Organization & Data
