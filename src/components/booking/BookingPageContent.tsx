@@ -59,6 +59,9 @@ export default function BookingPageContent({ slug }: { slug: string }) {
     const searchParams = useSearchParams();
     const isEmbed = searchParams.get('mode') === 'embed';
 
+    // Auto-detect parent website's theme
+    const [parentTheme, setParentTheme] = useState<'light' | 'dark'>('light');
+
     const [guestInfo, setGuestInfo] = useState<{ name: string; email: string; phone: string } | null>(null);
 
     // Initialize Date on Client Only
@@ -75,6 +78,26 @@ export default function BookingPageContent({ slug }: { slug: string }) {
             }
         }
     }, []);
+
+    // Theme detection effect
+    useEffect(() => {
+        // Listen for theme messages from parent window
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data.type === 'PARENT_THEME') {
+                setParentTheme(event.data.theme);
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        // Request theme from parent
+        if (isEmbed && window.parent !== window) {
+            window.parent.postMessage({ type: 'REQUEST_THEME' }, '*');
+        }
+
+        return () => window.removeEventListener('message', handleMessage);
+    }, [isEmbed]);
+
 
     // Load Organization & Data
     useEffect(() => {
@@ -373,27 +396,6 @@ export default function BookingPageContent({ slug }: { slug: string }) {
             />
         );
     }
-
-    // Auto-detect parent website's theme
-    const [parentTheme, setParentTheme] = useState<'light' | 'dark'>('light');
-
-    useEffect(() => {
-        // Listen for theme messages from parent window
-        const handleMessage = (event: MessageEvent) => {
-            if (event.data.type === 'PARENT_THEME') {
-                setParentTheme(event.data.theme);
-            }
-        };
-
-        window.addEventListener('message', handleMessage);
-
-        // Request theme from parent
-        if (isEmbed && window.parent !== window) {
-            window.parent.postMessage({ type: 'REQUEST_THEME' }, '*');
-        }
-
-        return () => window.removeEventListener('message', handleMessage);
-    }, [isEmbed]);
 
     const isDarkTheme = parentTheme === 'dark';
 
