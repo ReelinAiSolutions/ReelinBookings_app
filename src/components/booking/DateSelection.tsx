@@ -124,13 +124,13 @@ export default function DateSelection({
                 })}
             </div>
 
-            {/* Desktop & Mobile Fixed Continue Button */}
+            {/* Continue Button - Inline after time slots */}
             {selectedTime && (
-                <div className="fixed bottom-0 md:bottom-10 left-0 right-0 md:left-auto md:right-10 z-30 p-4 md:p-0 bg-white/80 md:bg-transparent backdrop-blur-md md:backdrop-blur-none border-t border-gray-100 md:border-none animate-in fade-in slide-in-from-bottom-4">
+                <div className="mt-8 flex justify-center animate-in fade-in slide-in-from-bottom-4">
                     <Button
                         size="lg"
                         onClick={onNext}
-                        className="w-full md:w-auto shadow-2xl shadow-primary-900/20 px-8 py-6 md:py-8 text-lg md:text-xl rounded-2xl font-black"
+                        className="w-full md:w-auto shadow-xl shadow-primary-900/20 px-8 py-6 text-lg rounded-2xl font-black"
                     >
                         Review Booking <ArrowRight className="w-6 h-6 ml-2" />
                     </Button>
