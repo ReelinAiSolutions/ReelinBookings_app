@@ -288,7 +288,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             {/* 2. SERVICES SECTION */}
             <div>
                 <SectionHeader id="services" label="Services" icon={Briefcase} />
-                {expandedSection === 'services' && org && (
+                {expandedSection === 'services' && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
                         <ServiceManager services={services} orgId={org.id} onRefresh={onRefresh} />
                     </div>
@@ -298,7 +298,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             {/* 3. TEAM SECTION */}
             <div>
                 <SectionHeader id="team" label="Teams" icon={Users} />
-                {expandedSection === 'team' && org && (
+                {expandedSection === 'team' && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
                         <StaffManager staff={staff} services={services} orgId={org.id} onRefresh={onRefresh} />
                     </div>
@@ -308,7 +308,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             {/* 4. BUSINESS SETTINGS SECTION */}
             <div>
                 <SectionHeader id="settings" label="Business Settings" icon={Building2} />
-                {expandedSection === 'settings' && org && (
+                {expandedSection === 'settings' && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-6 animate-in fade-in slide-in-from-top-2">
                         <SettingsManager org={org} onUpdate={onUpdateOrg} />
                     </div>
