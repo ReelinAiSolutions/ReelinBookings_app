@@ -118,6 +118,7 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                         onClick={() => setViewMode('month')} // Week -> Month
                         className="text-lg font-bold text-gray-900 hover:bg-gray-100 px-3 py-1 rounded-md transition-colors flex items-center gap-2 group"
                     >
+                        <span className="text-gray-400 font-medium">Week •</span>
                         {format(startDate, 'MMMM yyyy')}
                         <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-900 rotate-90 transition-transform" />
                     </button>
@@ -258,6 +259,7 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                             onClick={() => setViewMode('month')} // Mobile Header -> Month View
                             className="text-lg font-bold text-blue-600 flex items-center gap-1 hover:bg-blue-50 px-2 rounded-lg transition-colors"
                         >
+                            <span className="text-blue-900/50 mr-1">Week</span>
                             {format(currentDate, 'MMMM yyyy')}
                             <ChevronRight className="w-4 h-4 text-blue-400 rotate-90" />
                         </button>

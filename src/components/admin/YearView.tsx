@@ -50,7 +50,8 @@ export default function YearView({ currentDate, onMonthSelect, onYearChange, onT
                     onClick={onTitleClick}
                     className="text-lg font-bold text-blue-600 tracking-tight hover:bg-blue-50 px-2 rounded-lg transition-colors flex items-center gap-1"
                 >
-                    {format(currentDate, 'MMMM yyyy')}
+                    <span className="text-blue-900/50 mr-1">Year</span>
+                    {format(currentDate, 'yyyy')}
                 </button>
 
                 <button

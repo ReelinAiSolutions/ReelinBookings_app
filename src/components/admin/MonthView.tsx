@@ -44,6 +44,7 @@ export default function MonthView({ currentDate, appointments, onDaySelect, onMo
                     onClick={onTitleClick}
                     className="text-lg font-bold text-blue-600 flex items-center gap-1 hover:bg-blue-50 px-2 rounded-lg transition-colors"
                 >
+                    <span className="text-blue-900/50 mr-1">Month</span>
                     {format(currentDate, 'MMMM yyyy')}
                 </button>
 
