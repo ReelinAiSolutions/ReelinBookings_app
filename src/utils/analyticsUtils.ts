@@ -29,10 +29,15 @@ export interface AnalyticMetrics {
         hour: string;
     };
     topServices: { name: string; count: number; revenue: number; share: number }[];
-    topStaff: { name: string; bookings: number; revenue: number; rank: number; avgTicket: number; hours: number; utilization: number; clients: number }[];
+    topStaff: { name: string; bookings: number; revenue: number; rank: number; avgTicket: number; hours: number; utilization: number; clients: number; rebookingRate: number; noShowRate: number }[];
     topClients: { name: string; email: string; spent: number; visits: number; lastVisit: Date }[];
     heatmap: { hour: string; count: number }[];
     cancellationRate: string;
+    noShowRate: string;
+    rebookingRate: string;
+}
+heatmap: { hour: string; count: number } [];
+cancellationRate: string;
 }
 
 // Helper to calculate percentage growth
@@ -53,12 +58,23 @@ const calculatePeriodStats = (
     let bookings = 0;
     let lostRevenue = 0;
     let cancelled = 0;
+    let noShows = 0;
+    let rebookedCount = 0;
     let serviceCounts: Record<string, { count: number, val: number }> = {};
-    let staffCounts: Record<string, { count: number, val: number, minutes: number, clients: Set<string> }> = {};
+    let staffCounts: Record<string, { count: number, val: number, minutes: number, clients: Set<string>, noShows: number, rebooked: number }> = {};
     let clientStats: Record<string, { name: string, email: string, spent: number, visits: number, lastVisit: Date }> = {};
     let hourCounts: Record<string, number> = {};
     let dayCounts: Record<string, number> = {};
     let totalDurationMinutes = 0;
+
+    // Helper to check for future bookings (Rebooking Logic)
+    const hasFutureBooking = (clientEmail: string, currentAptDate: Date) => {
+        return appointments.some(futureApt =>
+            futureApt.clientEmail === clientEmail &&
+            futureApt.status !== 'CANCELLED' &&
+            new Date(futureApt.date) > currentAptDate
+        );
+    };
 
     appointments.forEach(apt => {
         const aptDate = new Date(apt.date);
@@ -74,6 +90,18 @@ const calculatePeriodStats = (
         const staffName = member?.name || 'Unknown';
         const serviceName = service?.name || 'Unknown';
 
+        // Initialize Staff Counts
+        if (!staffCounts[staffName]) staffCounts[staffName] = { count: 0, val: 0, minutes: 0, clients: new Set<string>(), noShows: 0, rebooked: 0 };
+
+        // No-Show Logic
+        if (apt.status === 'NO_SHOW') {
+            noShows++;
+            staffCounts[staffName].noShows++;
+            // No revenue for no-show usually? Assume lost revenue.
+            lostRevenue += price;
+            return;
+        }
+
         // Cancellation Logic
         if (apt.status === 'CANCELLED') {
             cancelled++;
@@ -81,10 +109,17 @@ const calculatePeriodStats = (
             return;
         }
 
-        // Active Stats
-        if (apt.status === 'CONFIRMED' || apt.status === 'PENDING') {
+        // Active Stats (CONFIRMED/PENDING/COMPLETED/ARRIVED/IN_PROGRESS)
+        if (['CONFIRMED', 'PENDING', 'COMPLETED', 'ARRIVED', 'IN_PROGRESS'].includes(apt.status)) {
             revenue += price;
             totalDurationMinutes += duration;
+
+            // Rebooking Check
+            const isRebooked = hasFutureBooking(apt.clientEmail, aptDate);
+            if (isRebooked) {
+                rebookedCount++;
+                staffCounts[staffName].rebooked++;
+            }
 
             // Client Stats
             const cEmail = apt.clientEmail || 'anonymous';
@@ -100,7 +135,6 @@ const calculatePeriodStats = (
             serviceCounts[serviceName].val += price;
 
             // Staff Stats
-            if (!staffCounts[staffName]) staffCounts[staffName] = { count: 0, val: 0, minutes: 0, clients: new Set<string>() };
             staffCounts[staffName].count++;
             staffCounts[staffName].val += price;
             staffCounts[staffName].minutes += duration;
@@ -127,6 +161,8 @@ const calculatePeriodStats = (
         bookings,
         lostRevenue,
         cancelled,
+        noShows,
+        rebookedCount,
         activeClients: Object.keys(clientStats).length,
         serviceCounts,
         staffCounts,
@@ -201,6 +237,10 @@ export const processAnalytics = (
             const hoursBooked = data.minutes / 60;
             const utilization = capacityHours > 0 ? (hoursBooked / capacityHours) * 100 : 0;
 
+            const staffTotalOps = data.count + data.noShows; // Active bookings + No Shows
+            const staffRebookRate = data.count > 0 ? (data.rebooked / data.count) * 100 : 0;
+            const staffNoShowRate = staffTotalOps > 0 ? (data.noShows / staffTotalOps) * 100 : 0;
+
             return {
                 name,
                 bookings: data.count,
@@ -208,7 +248,9 @@ export const processAnalytics = (
                 hours: hoursBooked,
                 utilization: Math.min(100, utilization), // Cap at 100% just in case of overtime
                 clients: data.clients.size,
-                avgTicket: data.count > 0 ? data.val / data.count : 0
+                avgTicket: data.count > 0 ? data.val / data.count : 0,
+                rebookingRate: staffRebookRate,
+                noShowRate: staffNoShowRate
             };
         })
         .sort((a, b) => b.revenue - a.revenue)
@@ -231,8 +273,14 @@ export const processAnalytics = (
         .slice(0, 5);
 
     // Cancellation Rate
-    const totalOps = current.bookings + current.cancelled; // Total attempts
+    const totalOps = current.bookings + current.cancelled + current.noShows; // Total attempts
     const cancelRate = totalOps > 0 ? ((current.cancelled / totalOps) * 100).toFixed(1) + '%' : '0%';
+    const noShowRate = totalOps > 0 ? ((current.noShows / totalOps) * 100).toFixed(1) + '%' : '0%';
+
+    // Rebooking Rate (Global)
+    // Only count active bookings for denominator, as cancelled/no-show can't technically "rebook" in the same flow usually (or different stat)
+    // Actually using totalBookings (which are the active ones)
+    const rebookingRate = current.bookings > 0 ? ((current.rebookedCount / current.bookings) * 100).toFixed(1) + '%' : '0%';
 
     return {
         period: currentRange,
@@ -274,7 +322,10 @@ export const processAnalytics = (
         topServices,
         topStaff,
         topClients,
+        topClients,
         cancellationRate: cancelRate,
+        noShowRate,
+        rebookingRate,
         heatmap: Object.entries(current.hourCounts)
             .map(([hour, count]) => ({ hour, count }))
             .sort((a, b) => a.hour.localeCompare(b.hour)) // Sort by time for heatmap

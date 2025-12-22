@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { processAnalytics, DateRange } from '@/utils/analyticsUtils';
-import { Activity, Calendar, Users, AlertCircle, TrendingUp, Clock, Scissors, DollarSign, Repeat, ChevronDown, ChevronUp, Trophy, ArrowUpRight, ArrowDownRight, Filter } from 'lucide-react';
+import { Activity, Calendar, Users, AlertCircle, TrendingUp, Clock, Scissors, DollarSign, Repeat, ChevronDown, ChevronUp, Trophy, ArrowUpRight, ArrowDownRight, Filter, user, UserMinus, UserCheck } from 'lucide-react';
 import { Appointment, Service, Staff } from '@/types';
 import { startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
@@ -267,6 +267,35 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Rebooking Rate (New) */}
+                                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Rebooking</p>
+                                            <h3 className="text-2xl font-black text-gray-900 mt-1">{metrics.rebookingRate}</h3>
+                                        </div>
+                                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><Repeat className="w-5 h-5" /></div>
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        {/* Growth badge logic could be applied here if historical data existed */}
+                                        <span className="text-xs text-gray-400 font-medium">Retention</span>
+                                    </div>
+                                </div>
+
+                                {/* No-Show Rate (New) */}
+                                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">No-Shows</p>
+                                            <h3 className="text-2xl font-black text-gray-900 mt-1">{metrics.noShowRate}</h3>
+                                        </div>
+                                        <div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><UserMinus className="w-5 h-5" /></div>
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-xs text-gray-400 font-medium">Missed Opps</span>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -461,6 +490,8 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         <SortableHeader label="Rev" sortKey="revenue" align="right" mobileLabel="Rev" />
                                         <SortableHeader label="Hours" sortKey="hours" align="right" mobileLabel="Hrs" />
                                         <SortableHeader label="Util" sortKey="utilization" align="right" mobileLabel="Util" />
+                                        <SortableHeader label="Rebook" sortKey="rebookingRate" align="right" mobileLabel="Rtnt" />
+                                        <SortableHeader label="No-Show" sortKey="noShowRate" align="right" mobileLabel="NS" />
                                         <SortableHeader label="Clients" sortKey="clients" align="right" mobileLabel="Clts" />
                                         <SortableHeader label="Avg Tkt" sortKey="avgTicket" align="right" mobileLabel="Avg" />
                                     </tr>
@@ -496,7 +527,16 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                     staff.utilization > 50 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
                                                     }`}>
                                                     {staff.utilization.toFixed(0)}%
+                                                    staff.utilization > 50 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                    {staff.utilization.toFixed(0)}%
                                                 </span>
+                                            </td>
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600 font-medium">
+                                                {staff.rebookingRate.toFixed(0)}%
+                                            </td>
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600 font-medium">
+                                                {staff.noShowRate.toFixed(0)}%
                                             </td>
                                             <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
                                                 {staff.clients}

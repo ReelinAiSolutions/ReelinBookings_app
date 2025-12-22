@@ -11,7 +11,8 @@ export enum AppointmentStatus {
     COMPLETED = 'COMPLETED',
     ARCHIVED = 'ARCHIVED',
     ARRIVED = 'ARRIVED',
-    IN_PROGRESS = 'IN_PROGRESS'
+    IN_PROGRESS = 'IN_PROGRESS',
+    NO_SHOW = 'NO_SHOW'
 }
 
 export interface User {
