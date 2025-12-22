@@ -271,8 +271,16 @@ export default function AdminDashboard() {
         );
     }
 
+    // Dynamic Branding Style
+    const brandingStyle = currentOrg?.primary_color ? {
+        '--brand-primary': currentOrg.primary_color,
+    } as React.CSSProperties : {};
+
     return (
-        <div className="min-h-screen bg-gray-50/50">
+        <div
+            className="min-h-screen bg-gray-50/50"
+            style={brandingStyle}
+        >
             {/* Desktop Sidebar (Fixed) */}
             <AdminSidebar
                 activeTab={activeTab}
@@ -282,7 +290,7 @@ export default function AdminDashboard() {
 
             {/* Main Content Area (Mobile: Fixed Height App Shell, Desktop: Scrollable) */}
             <main className="lg:ml-64 lg:min-h-screen h-[100dvh] flex flex-col lg:block">
-                <div className={`flex-1 flex flex-col lg:overflow-visible lg:space-y-6 lg:p-8 pb-0 ${activeTab === 'operations' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+                <div className={`flex-1 flex flex-col lg:overflow-visible lg:space-y-6 lg:p-8 p-4 pb-24 lg:pb-0 ${activeTab === 'operations' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
                     {/* Mobile Header (Fixed Top) */}
                     <div className="lg:hidden flex-shrink-0 flex justify-between items-center h-16 gap-4 px-4 pt-2 mb-0 bg-white border-b border-gray-100 z-10">
                         {/* Left Side: Logo & Branding */}

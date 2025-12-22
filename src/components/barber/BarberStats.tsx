@@ -203,17 +203,17 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                     growth={stats.revenue.growth}
                     showGrowth={compareMode}
                     icon={DollarSign}
-                    gradient="from-blue-500 to-cyan-500"
+                    gradient="from-primary-600 to-primary-500"
                     description="Total generated income"
                 />
                 <StatCard
-                    label="My Appointments"
+                    label="Appointments"
                     value={stats.appointments.value}
                     growth={stats.appointments.growth}
                     showGrowth={compareMode}
                     icon={Calendar}
-                    gradient="from-purple-500 to-pink-500"
-                    description="Sessions completed"
+                    gradient="from-primary-700 to-primary-600"
+                    description="Successfully completed"
                 />
                 <StatCard
                     label="My Clients"

@@ -70,16 +70,20 @@
   --popover: #ffffff;
   --popover-foreground: #0f172a;
 
-  /* Primary - Reelin Blue Palette */
-  --primary-50: #eff6ff;
+  /* Branding (Overridable) */
+  --brand-primary: #2563eb;
+  --brand-primary-light: color-mix(in srgb, var(--brand-primary), white 92%);
+  --brand-primary-dark: color-mix(in srgb, var(--brand-primary), black 15%);
+
+  /* Primary Palette - Mapped to Brand */
+  --primary-50: var(--brand-primary-light);
   --primary-100: #dbeafe;
   --primary-200: #bfdbfe;
   --primary-300: #93c5fd;
   --primary-400: #60a5fa;
   --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  /* Brand Color */
-  --primary-700: #1d4ed8;
+  --primary-600: var(--brand-primary);
+  --primary-700: var(--brand-primary-dark);
   --primary-800: #1e40af;
   --primary-900: #1e3a8a;
 

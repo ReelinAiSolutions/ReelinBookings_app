@@ -103,8 +103,16 @@ export default function StaffDashboard({
         }
     };
 
+    // Dynamic Branding Style
+    const brandingStyle = currentOrg?.primary_color ? {
+        '--brand-primary': currentOrg.primary_color,
+    } as React.CSSProperties : {};
+
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col lg:block overflow-hidden">
+        <div
+            className="min-h-screen bg-gray-50 flex flex-col lg:block overflow-hidden"
+            style={brandingStyle}
+        >
             {/* Desktop Sidebar (Fixed) */}
             <StaffSidebar
                 activeTab={activeTab}
@@ -134,7 +142,7 @@ export default function StaffDashboard({
                 </div>
 
                 {/* Content Container */}
-                <div className={`flex-1 flex flex-col overflow-hidden lg:p-8 space-y-6 ${activeTab === 'schedule' ? '' : 'overflow-y-auto pb-24'}`}>
+                <div className={`flex-1 flex flex-col min-h-0 bg-gray-50 lg:p-6 px-4 py-4 lg:py-6 pb-24 lg:pb-6 space-y-6 ${activeTab === 'schedule' ? '' : 'overflow-y-auto pb-24'}`}>
 
                     {activeTab === 'schedule' && (
                         <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -222,8 +230,8 @@ export default function StaffDashboard({
 
                             {/* View Content Container */}
                             <div className={`flex-1 overflow-hidden relative ${(viewMode === 'team_week' || (viewMode === 'my_week' && isWeekTimelineView) || (viewMode === 'my_day' && isDayTimelineView))
-                                    ? 'bg-transparent'
-                                    : 'bg-white lg:rounded-b-2xl border-x lg:border-b border-gray-100 shadow-sm'
+                                ? 'bg-transparent'
+                                : 'bg-white lg:rounded-b-2xl border-x lg:border-b border-gray-100 shadow-sm'
                                 }`}>
                                 {viewMode === 'my_day' && (
                                     <div className="h-full overflow-hidden animate-in fade-in slide-in-from-left-4 duration-300">
