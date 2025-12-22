@@ -1,9 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { processAnalytics, DateRange } from '@/utils/analyticsUtils';
-import { Activity, Calendar, Users, AlertCircle, TrendingUp, Clock, Scissors, DollarSign, Repeat, ChevronDown, ChevronUp, Trophy, ArrowUpRight, ArrowDownRight, Filter, user, UserMinus, UserCheck } from 'lucide-react';
+import { Activity, Calendar, Users, AlertCircle, TrendingUp, Clock, Scissors, DollarSign, Repeat, ChevronDown, ChevronUp, Trophy, ArrowUpRight, ArrowDownRight, Filter, UserMinus, UserCheck, Crown } from 'lucide-react';
 import { Appointment, Service, Staff } from '@/types';
-import { startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears } from 'date-fns';
+import { startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
+import StatCard from './StatCard';
+import ComparisonStatCard from './ComparisonStatCard';
+import ComparisonChart from './ComparisonChart';
+import AnalyticsSectionHeader from './AnalyticsSectionHeader';
+import AnalyticsDatePicker, { DateRangePreset } from './AnalyticsDatePicker';
+import DrillDownModal from './DrillDownModal';
 
 interface AnalyticsViewProps {
     appointments: Appointment[];
@@ -11,42 +17,65 @@ interface AnalyticsViewProps {
     staff: Staff[];
 }
 
-type TimeFilter = 'this_month' | 'last_month' | 'this_year' | 'all_time';
 type ViewMode = 'business' | 'team';
+type DrillDownMetric = 'revenue' | 'utilization' | 'clients' | 'appointments' | null;
 
 export default function AnalyticsView({ appointments, services, staff }: AnalyticsViewProps) {
-    const [filter, setFilter] = useState<TimeFilter>('this_month');
     const [viewMode, setViewMode] = useState<ViewMode>('business');
+    const [compareMode, setCompareMode] = useState(false);
+    const [drillDownMetric, setDrillDownMetric] = useState<DrillDownMetric>(null);
 
-    // Calculate Date Ranges based on Filter
+    // Initialize with This Week
+    const [selectedRange, setSelectedRange] = useState<DateRange>({
+        start: startOfWeek(new Date(), { weekStartsOn: 1 }),
+        end: endOfWeek(new Date(), { weekStartsOn: 1 })
+    });
+
+    // Calculate previous period for comparison
     const ranges = useMemo(() => {
-        const now = new Date();
-        let current: DateRange;
-        let previous: DateRange;
+        const daysDiff = Math.ceil((selectedRange.end.getTime() - selectedRange.start.getTime()) / (1000 * 60 * 60 * 24));
+        const previous: DateRange = {
+            start: new Date(selectedRange.start.getTime() - (daysDiff + 1) * 24 * 60 * 60 * 1000),
+            end: new Date(selectedRange.end.getTime() - (daysDiff + 1) * 24 * 60 * 60 * 1000)
+        };
 
-        switch (filter) {
-            case 'this_month':
-                current = { start: startOfMonth(now), end: now }; // Up to now
-                previous = { start: startOfMonth(subMonths(now, 1)), end: endOfMonth(subMonths(now, 1)) };
-                break;
-            case 'last_month':
-                current = { start: startOfMonth(subMonths(now, 1)), end: endOfMonth(subMonths(now, 1)) };
-                previous = { start: startOfMonth(subMonths(now, 2)), end: endOfMonth(subMonths(now, 2)) };
-                break;
-            case 'this_year':
-                current = { start: startOfYear(now), end: now };
-                previous = { start: startOfYear(subYears(now, 1)), end: endOfYear(subYears(now, 1)) };
-                break;
-            case 'all_time':
-                // Hacky "All Time" - last 10 years
-                current = { start: subYears(now, 10), end: now };
-                previous = { start: subYears(now, 20), end: subYears(now, 10) }; // Compare to "nothing" essentially
-                break;
-        }
-        return { current, previous };
-    }, [filter]);
+        return { current: selectedRange, previous };
+    }, [selectedRange]);
 
-    const metrics = useMemo(() => processAnalytics(appointments, services, staff, ranges.current, ranges.previous), [appointments, services, staff, ranges]);
+    const handleRangeChange = (range: DateRange, preset: DateRangePreset) => {
+        setSelectedRange(range);
+    };
+
+    // Period B (Comparison Range) - for compare mode
+    const [comparisonRange, setComparisonRange] = useState<DateRange>({
+        start: startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
+        end: endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 })
+    });
+
+    const handleComparisonRangeChange = (range: DateRange, preset: DateRangePreset) => {
+        setComparisonRange(range);
+    };
+
+
+    const metrics = useMemo(() => {
+        console.log('📊 Processing Analytics - Period A:', {
+            appointmentsCount: appointments.length,
+            currentRange: ranges.current,
+            previousRange: ranges.previous
+        });
+        return processAnalytics(appointments, services, staff, ranges.current, ranges.previous);
+    }, [appointments, services, staff, ranges]);
+
+    // Metrics for Period B (when in compare mode)
+    const comparisonMetrics = useMemo(() => {
+        if (!compareMode) return null;
+        const daysDiff = Math.ceil((comparisonRange.end.getTime() - comparisonRange.start.getTime()) / (1000 * 60 * 60 * 24));
+        const prevComparison: DateRange = {
+            start: new Date(comparisonRange.start.getTime() - (daysDiff + 1) * 24 * 60 * 60 * 1000),
+            end: new Date(comparisonRange.end.getTime() - (daysDiff + 1) * 24 * 60 * 60 * 1000)
+        };
+        return processAnalytics(appointments, services, staff, comparisonRange, prevComparison);
+    }, [compareMode, appointments, services, staff, comparisonRange]);
 
     const [openSections, setOpenSections] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -78,26 +107,9 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
         setOpenSections((prev: any) => ({ ...prev, [key]: !prev[key] }));
     };
 
-    const SectionHeader = ({ title, icon: Icon, id, subtitle }: { title: string, icon: any, id: keyof typeof openSections, subtitle?: string }) => (
-        <button
-            onClick={() => toggle(id)}
-            className="w-full flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all mb-2 shadow-sm"
-        >
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-100 rounded-lg text-gray-600">
-                    <Icon className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                    <span className="font-bold text-gray-900 block">{title}</span>
-                    {subtitle && <span className="text-xs text-gray-500 font-medium">{subtitle}</span>}
-                </div>
-            </div>
-            {openSections[id] ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
-        </button>
-    );
+
 
     const GrowthBadge = ({ value, trend }: { value: number, trend: 'up' | 'down' | 'neutral' }) => {
-        if (filter === 'all_time') return null; // No growth for all time
         const isPositive = trend === 'up';
         const color = isPositive ? 'text-green-600 bg-green-50' : (trend === 'neutral' ? 'text-gray-600 bg-gray-50' : 'text-red-600 bg-red-50');
         const Icon = isPositive ? ArrowUpRight : (trend === 'neutral' ? TrendingUp : ArrowDownRight);
@@ -166,7 +178,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                     <p className="text-sm text-gray-500">Track your business growth and performance.</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <div className="flex flex-col lg:flex-row gap-4 items-center">
                     {/* View Mode Toggle */}
                     <div className="bg-gray-100 p-1 rounded-lg flex">
                         <button
@@ -183,17 +195,60 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                         </button>
                     </div>
 
-                    {/* Time Filter */}
-                    <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-                        {(['this_month', 'last_month', 'this_year', 'all_time'] as TimeFilter[]).map((f) => (
-                            <button
-                                key={f}
-                                onClick={() => setFilter(f)}
-                                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${filter === f ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                {f.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </button>
-                        ))}
+                    {/* Date Range Picker(s) */}
+                    <div className="flex flex-col gap-3 w-full lg:w-auto">
+                        {compareMode ? (
+                            <>
+                                {/* Period A */}
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg whitespace-nowrap">
+                                        Period A
+                                    </span>
+                                    <AnalyticsDatePicker
+                                        selectedRange={selectedRange}
+                                        onRangeChange={handleRangeChange}
+                                        compareMode={false}
+                                    />
+                                </div>
+                                {/* Period B */}
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg whitespace-nowrap">
+                                        Period B
+                                    </span>
+                                    <AnalyticsDatePicker
+                                        selectedRange={comparisonRange}
+                                        onRangeChange={handleComparisonRangeChange}
+                                        compareMode={false}
+                                    />
+                                </div>
+                                {/* Exit Compare Button */}
+                                <button
+                                    onClick={() => setCompareMode(false)}
+                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold text-sm transition-all"
+                                >
+                                    ✕ Exit Compare
+                                </button>
+                                {/* Appointment Count Info */}
+                                <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-200 rounded-xl text-xs space-y-1">
+                                    <p className="text-gray-700">Total Appointments: <span className="font-bold text-gray-900">{appointments.length}</span></p>
+                                    <p className="text-blue-700">Period A: <span className="font-bold">{appointments.filter(a => {
+                                        const date = new Date(a.date);
+                                        return date >= ranges.current.start && date <= ranges.current.end;
+                                    }).length}</span></p>
+                                    <p className="text-purple-700">Period B: <span className="font-bold">{appointments.filter(a => {
+                                        const date = new Date(a.date);
+                                        return date >= comparisonRange.start && date <= comparisonRange.end;
+                                    }).length}</span></p>
+                                </div>
+                            </>
+                        ) : (
+                            <AnalyticsDatePicker
+                                selectedRange={selectedRange}
+                                onRangeChange={handleRangeChange}
+                                compareMode={compareMode}
+                                onCompareModeToggle={setCompareMode}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
@@ -204,355 +259,729 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
 
                     {/* 1. BUSINESS OVERVIEW */}
                     <div>
-                        <SectionHeader title="Business Overview" subtitle="Revenue, Growth & Health" icon={Activity} id="overview" />
+                        <AnalyticsSectionHeader
+                            title="Business Overview"
+                            subtitle="Revenue, Growth & Health"
+                            icon={Activity}
+                            isOpen={openSections.overview}
+                            onToggle={() => toggle('overview')}
+                            gradient="from-blue-500 to-purple-600"
+                        />
                         {openSections.overview && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                                {/* Revenue */}
-                                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Revenue</p>
-                                            <h3 className="text-2xl font-black text-gray-900 mt-1">${Number(metrics.revenue.total.value).toLocaleString()}</h3>
-                                        </div>
-                                        <div className="p-2 bg-green-50 text-green-600 rounded-lg"><DollarSign className="w-5 h-5" /></div>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <GrowthBadge value={metrics.revenue.total.growth} trend={metrics.revenue.total.trend} />
-                                        <span className="text-xs text-gray-400 font-medium">Avg ${metrics.revenue.average.toFixed(0)}</span>
-                                    </div>
-                                </div>
-
-                                {/* Utilization */}
-                                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Utilization</p>
-                                            <h3 className="text-2xl font-black text-gray-900 mt-1">{metrics.utilization.value}</h3>
-                                        </div>
-                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Activity className="w-5 h-5" /></div>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <GrowthBadge value={metrics.utilization.growth} trend={metrics.utilization.trend} />
-                                        <span className="text-xs text-gray-400 font-medium">Occupancy</span>
-                                    </div>
-                                </div>
-
-                                {/* New Clients */}
-                                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">New Clients</p>
-                                            <h3 className="text-2xl font-black text-gray-900 mt-1">{metrics.clients.newCount.value}</h3>
-                                        </div>
-                                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Users className="w-5 h-5" /></div>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <GrowthBadge value={metrics.clients.newCount.growth} trend={metrics.clients.newCount.trend} />
-                                        <span className="text-xs text-gray-400 font-medium">{metrics.clients.returnRate} Return Rate</span>
-                                    </div>
-                                </div>
-
-                                {/* Lost Revenue */}
-                                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="text-xs font-bold text-red-400 uppercase tracking-wider">Missed</p>
-                                            <h3 className="text-2xl font-black text-gray-900 mt-1">${metrics.revenue.lost.toLocaleString()}</h3>
-                                        </div>
-                                        <div className="p-2 bg-red-50 text-red-600 rounded-lg"><AlertCircle className="w-5 h-5" /></div>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <div className="px-2 py-1 bg-gray-50 rounded-md text-xs font-bold text-gray-500">
-                                            {metrics.cancellationRate} Cancel Rate
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Rebooking Rate (New) */}
-                                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Rebooking</p>
-                                            <h3 className="text-2xl font-black text-gray-900 mt-1">{metrics.rebookingRate}</h3>
-                                        </div>
-                                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><Repeat className="w-5 h-5" /></div>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        {/* Growth badge logic could be applied here if historical data existed */}
-                                        <span className="text-xs text-gray-400 font-medium">Retention</span>
-                                    </div>
-                                </div>
-
-                                {/* No-Show Rate (New) */}
-                                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">No-Shows</p>
-                                            <h3 className="text-2xl font-black text-gray-900 mt-1">{metrics.noShowRate}</h3>
-                                        </div>
-                                        <div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><UserMinus className="w-5 h-5" /></div>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-xs text-gray-400 font-medium">Missed Opps</span>
-                                    </div>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                                {compareMode && comparisonMetrics ? (
+                                    <>
+                                        <ComparisonStatCard
+                                            title="Revenue"
+                                            periodAValue={`$${Number(metrics.revenue.total.value).toLocaleString()}`}
+                                            periodBValue={`$${Number(comparisonMetrics.revenue.total.value).toLocaleString()}`}
+                                            icon={DollarSign}
+                                            gradient="from-green-500 to-emerald-600"
+                                            delay={0}
+                                        />
+                                        <ComparisonStatCard
+                                            title="Utilization"
+                                            periodAValue={metrics.utilization.value}
+                                            periodBValue={comparisonMetrics.utilization.value}
+                                            icon={Activity}
+                                            gradient="from-blue-500 to-cyan-600"
+                                            delay={100}
+                                        />
+                                        <ComparisonStatCard
+                                            title="New Clients"
+                                            periodAValue={metrics.clients.newCount.value}
+                                            periodBValue={comparisonMetrics.clients.newCount.value}
+                                            icon={Users}
+                                            gradient="from-purple-500 to-pink-600"
+                                            delay={200}
+                                        />
+                                        <ComparisonStatCard
+                                            title="Appointments"
+                                            periodAValue={metrics.totalBookings.value}
+                                            periodBValue={comparisonMetrics.totalBookings.value}
+                                            icon={Calendar}
+                                            gradient="from-orange-500 to-red-600"
+                                            delay={300}
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <StatCard
+                                            title="Revenue"
+                                            value={`$${Number(metrics.revenue.total.value).toLocaleString()}`}
+                                            icon={DollarSign}
+                                            gradient="from-green-500 to-emerald-600"
+                                            growth={metrics.revenue.total.growth}
+                                            trend={metrics.revenue.total.trend}
+                                            subtitle={`Avg $${metrics.revenue.average.toFixed(0)}`}
+                                            delay={0}
+                                            onClick={() => setDrillDownMetric('revenue')}
+                                        />
+                                        <StatCard
+                                            title="Utilization"
+                                            value={metrics.utilization.value}
+                                            icon={Activity}
+                                            gradient="from-blue-500 to-cyan-600"
+                                            growth={metrics.utilization.growth}
+                                            trend={metrics.utilization.trend}
+                                            subtitle="Occupancy"
+                                            delay={100}
+                                            onClick={() => setDrillDownMetric('utilization')}
+                                        />
+                                        <StatCard
+                                            title="New Clients"
+                                            value={metrics.clients.newCount.value}
+                                            icon={Users}
+                                            gradient="from-purple-500 to-pink-600"
+                                            growth={metrics.clients.newCount.growth}
+                                            trend={metrics.clients.newCount.trend}
+                                            subtitle={`${metrics.clients.totalActive} total`}
+                                            delay={200}
+                                            onClick={() => setDrillDownMetric('clients')}
+                                        />
+                                        <StatCard
+                                            title="Appointments"
+                                            value={metrics.totalBookings.value}
+                                            icon={Calendar}
+                                            gradient="from-orange-500 to-red-600"
+                                            growth={metrics.totalBookings.growth}
+                                            trend={metrics.totalBookings.trend}
+                                            subtitle={`${metrics.totalBookings.value} total`}
+                                            delay={300}
+                                            onClick={() => setDrillDownMetric('appointments')}
+                                        />
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>
 
-                    {/* 2. TIME & TRENDS (Collapsible) */}
+                    {/* 2. TIME & DEMAND ANALYSIS */}
                     <div>
-                        <SectionHeader title="Time & Demand Analysis" subtitle="Peak Hours, Days & Months" icon={Calendar} id="trends" />
+                        <AnalyticsSectionHeader
+                            title="Time & Demand Analysis"
+                            subtitle="Peak Hours, Days & Patterns"
+                            icon={Clock}
+                            isOpen={openSections.trends}
+                            onToggle={() => toggle('trends')}
+                            gradient="from-orange-500 to-red-600"
+                        />
                         {openSections.trends && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                {/* Peak Times Text */}
-                                <div className="bg-white p-6 rounded-xl border border-gray-200 flex flex-col justify-center gap-4">
-                                    <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-                                        <span className="text-gray-500 font-medium">Busiest Day</span>
-                                        <span className="font-black text-xl text-gray-900">{metrics.busiest.day}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-500 font-medium">Busiest Hour</span>
-                                        <span className="font-black text-xl text-gray-900">{metrics.busiest.hour}</span>
-                                    </div>
-                                </div>
-
-                                {/* Peak Hours Chart */}
-                                <div className="bg-white p-6 rounded-xl border border-gray-200">
-                                    <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-gray-500" /> Demand Heatmap
-                                    </h4>
-                                    <div className="space-y-3">
-                                        {metrics.heatmap.slice(0, 5).map((item) => (
-                                            <div key={item.hour} className="flex items-center gap-4">
-                                                <div className="w-12 text-xs font-bold text-gray-500">{item.hour}</div>
-                                                <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                                                    <div
-                                                        className="bg-primary-600 h-full rounded-full"
-                                                        style={{ width: `${(item.count / (metrics.heatmap[0]?.count || 1)) * 100}%` }}
-                                                    ></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                {compareMode && comparisonMetrics ? (
+                                    <>
+                                        {/* Period A Peak Times */}
+                                        <div className="bg-gradient-to-br from-orange-50 to-red-50 p-6 rounded-2xl border border-orange-200 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <div className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg">
+                                                    Period A
+                                                </div>
+                                                <Clock className="w-4 h-4 text-orange-600" />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-center p-3 bg-white rounded-xl">
+                                                    <span className="text-sm font-semibold text-gray-600">Busiest Day</span>
+                                                    <span className="text-lg font-black text-gray-900">{metrics.busiest.day}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center p-3 bg-white rounded-xl">
+                                                    <span className="text-sm font-semibold text-gray-600">Busiest Hour</span>
+                                                    <span className="text-lg font-black text-gray-900">{metrics.busiest.hour}</span>
                                                 </div>
                                             </div>
-                                        ))}
-                                        {metrics.heatmap.length === 0 && <p className="text-sm text-gray-400 italic">No data available.</p>}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                                        </div>
 
-                    {/* 4. SERVICE INSIGHTS (Collapsible) - Note: Services belong in business view */}
-                    <div>
-                        <SectionHeader title="Top Services" subtitle="Highest Grossing" icon={Scissors} id="services" />
-                        {openSections.services && (
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
-                                {metrics.topServices.map((service, index) => (
-                                    <div key={service.name} className="flex items-center justify-between p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-6 h-6 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-xs font-bold">
-                                                {index + 1}
+                                        {/* Period B Peak Times */}
+                                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <div className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg">
+                                                    Period B
+                                                </div>
+                                                <Clock className="w-4 h-4 text-purple-600" />
                                             </div>
-                                            <span className="font-medium text-gray-900">{service.name}</span>
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-center p-3 bg-white rounded-xl">
+                                                    <span className="text-sm font-semibold text-gray-600">Busiest Day</span>
+                                                    <span className="text-lg font-black text-gray-900">{comparisonMetrics.busiest.day}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center p-3 bg-white rounded-xl">
+                                                    <span className="text-sm font-semibold text-gray-600">Busiest Hour</span>
+                                                    <span className="text-lg font-black text-gray-900">{comparisonMetrics.busiest.hour}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <span className="block font-bold text-gray-900">${service.revenue.toLocaleString()}</span>
-                                            <span className="text-xs text-gray-500">{service.share.toFixed(0)}% share</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* Single Period Peak Times */}
+                                        <div className="bg-gradient-to-br from-orange-50 to-red-50 p-6 rounded-2xl border border-orange-200 shadow-sm hover:shadow-lg transition-all">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <div className="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl">
+                                                    <Clock className="w-5 h-5 text-white" />
+                                                </div>
+                                                <h4 className="font-bold text-gray-900">Peak Times</h4>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-center p-3 bg-white rounded-xl">
+                                                    <span className="text-sm font-semibold text-gray-600">Busiest Day</span>
+                                                    <span className="text-lg font-black text-gray-900">{metrics.busiest.day}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center p-3 bg-white rounded-xl">
+                                                    <span className="text-sm font-semibold text-gray-600">Busiest Hour</span>
+                                                    <span className="text-lg font-black text-gray-900">{metrics.busiest.hour}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                                {metrics.topServices.length === 0 && <div className="p-8 text-center text-gray-400">No service data yet.</div>}
+
+                                        {/* Demand Heatmap */}
+                                        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <div className="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl">
+                                                    <TrendingUp className="w-5 h-5 text-white" />
+                                                </div>
+                                                <h4 className="font-bold text-gray-900">Demand Heatmap</h4>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {metrics.heatmap.slice(0, 5).map((item, index) => (
+                                                    <div key={item.hour} className="flex items-center gap-4">
+                                                        <div className="w-16 text-xs font-bold text-gray-600">{item.hour}</div>
+                                                        <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+                                                            <div
+                                                                className="bg-gradient-to-r from-orange-500 to-red-600 h-full rounded-full transition-all duration-500"
+                                                                style={{
+                                                                    width: `${(item.count / (metrics.heatmap[0]?.count || 1)) * 100}%`,
+                                                                    animationDelay: `${index * 100}ms`
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div className="w-12 text-xs font-bold text-gray-900 text-right">{item.count}</div>
+                                                    </div>
+                                                ))}
+                                                {metrics.heatmap.length === 0 && (
+                                                    <p className="text-sm text-gray-400 italic text-center py-4">No data available</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>
 
-                    {/* 5. TOP CLIENTS (Collapsible) - Keeping VIPs in Business View as they are key assets */}
+                    {/* 3. TOP SERVICES */}
                     <div>
-                        <SectionHeader title="VIP Clients" subtitle="Top Spenders & Loyalists" icon={Users} id="clients" />
+                        <AnalyticsSectionHeader
+                            title="Top Services"
+                            subtitle="Highest Grossing & Most Popular"
+                            icon={Scissors}
+                            isOpen={openSections.services}
+                            onToggle={() => toggle('services')}
+                            gradient="from-green-500 to-teal-600"
+                        />
+                        {openSections.services && (
+                            compareMode && comparisonMetrics ? (
+                                <ComparisonChart
+                                    title="Service Revenue Comparison"
+                                    periodAData={metrics.topServices}
+                                    periodBData={comparisonMetrics.topServices}
+                                    dataKey="revenue"
+                                    periodALabel="Period A"
+                                    periodBLabel="Period B"
+                                    formatValue={(val) => `$${val.toLocaleString()}`}
+                                />
+                            ) : (
+                                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all mb-6">
+                                    <div className="bg-gradient-to-r from-green-50 to-teal-50 px-6 py-3 border-b border-green-100">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-1.5 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg">
+                                                <Scissors className="w-4 h-4 text-white" />
+                                            </div>
+                                            <span className="font-bold text-gray-900">Service Rankings</span>
+                                        </div>
+                                    </div>
+                                    {metrics.topServices.map((service, index) => (
+                                        <div key={service.name} className="flex items-center justify-between p-4 border-b border-gray-100 last:border-0 hover:bg-gradient-to-r hover:from-green-50/50 hover:to-teal-50/50 transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' :
+                                                    index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-white' :
+                                                        index === 2 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white' :
+                                                            'bg-gray-100 text-gray-600'
+                                                    }`}>
+                                                    {index + 1}
+                                                </div>
+                                                <span className="font-semibold text-gray-900">{service.name}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="block font-black text-gray-900">${service.revenue.toLocaleString()}</span>
+                                                <span className="text-xs font-semibold text-green-600">{service.share.toFixed(0)}% share</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {metrics.topServices.length === 0 && (
+                                        <div className="p-12 text-center">
+                                            <Scissors className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                            <p className="text-gray-400 font-medium">No service data yet</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        )}
+                    </div>
+
+                    {/* 4. VIP CLIENTS */}
+                    <div>
+                        <AnalyticsSectionHeader
+                            title="VIP Clients"
+                            subtitle="Top Spenders & Loyalists"
+                            icon={Crown}
+                            isOpen={openSections.clients}
+                            onToggle={() => toggle('clients')}
+                            gradient="from-yellow-500 to-orange-600"
+                        />
                         {openSections.clients && (
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
-                                <div className="grid grid-cols-12 px-4 py-2 bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                    <div className="col-span-1">#</div>
-                                    <div className="col-span-11 md:col-span-5">Client</div>
-                                    <div className="col-span-3 text-right hidden md:block">Spent</div>
-                                    <div className="col-span-3 text-right hidden md:block">Visits</div>
+                            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all mb-6">
+                                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 px-6 py-3 border-b border-yellow-100">
+                                    <div className="grid grid-cols-12 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                        <div className="col-span-1">#</div>
+                                        <div className="col-span-11 md:col-span-5">Client</div>
+                                        <div className="col-span-3 text-right hidden md:block">Spent</div>
+                                        <div className="col-span-3 text-right hidden md:block">Visits</div>
+                                    </div>
                                 </div>
                                 {metrics.topClients.map((client, index) => (
-                                    <div key={client.email} className="grid grid-cols-12 items-center px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-                                        <div className="col-span-1 font-bold text-gray-400 text-xs">{index + 1}</div>
+                                    <div key={client.email} className="grid grid-cols-12 items-center px-6 py-4 border-b border-gray-100 last:border-0 hover:bg-gradient-to-r hover:from-yellow-50/30 hover:to-orange-50/30 transition-all">
+                                        <div className="col-span-1">
+                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-lg' :
+                                                index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-white shadow-md' :
+                                                    index === 2 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white shadow-md' :
+                                                        'bg-gray-100 text-gray-600'
+                                                }`}>
+                                                {index + 1}
+                                            </div>
+                                        </div>
                                         <div className="col-span-11 md:col-span-5">
-                                            <p className="font-bold text-gray-900 text-sm truncate">{client.name}</p>
+                                            <p className="font-bold text-gray-900 truncate">{client.name}</p>
                                             <p className="text-xs text-gray-500 truncate">{client.email}</p>
                                         </div>
-                                        <div className="col-span-3 text-right font-bold text-gray-900 text-sm hidden md:block">${client.spent.toLocaleString()}</div>
-                                        <div className="col-span-3 text-right text-xs text-gray-600 font-medium hidden md:block">{client.visits}</div>
+                                        <div className="col-span-3 text-right font-black text-gray-900 hidden md:block">
+                                            ${client.spent.toLocaleString()}
+                                        </div>
+                                        <div className="col-span-3 text-right hidden md:block">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold">
+                                                {client.visits} visits
+                                            </span>
+                                        </div>
                                     </div>
                                 ))}
-                                {metrics.topClients.length === 0 && <div className="p-8 text-center text-gray-400">No client data available.</div>}
+                                {metrics.topClients.length === 0 && (
+                                    <div className="p-12 text-center">
+                                        <Crown className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                        <p className="text-gray-400 font-medium">No client data available</p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
-            )}
+            )
+            }
 
 
             {/* === TEAM VIEW (NEW) === */}
-            {viewMode === 'team' && (
-                <div className="space-y-6 animate-in fade-in duration-300 w-full max-w-[90vw] mx-auto md:max-w-full">
+            {
+                viewMode === 'team' && (
+                    <div className="space-y-6 animate-in fade-in duration-300 w-full max-w-[90vw] mx-auto md:max-w-full">
 
-                    {/* Charts Row */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                        {/* Revenue Chart */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
-                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                <DollarSign className="w-5 h-5 text-green-600" /> Revenue by Staff
-                            </h4>
-                            <div className="h-64 w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={teamRevenueData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                        <XAxis
-                                            dataKey="name"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fontSize: 9, fill: '#6B7280' }}
-                                            interval={0}
-                                            dy={5}
-                                            tickFormatter={(val) => val.slice(0, 3)}
-                                        />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
-                                        <Tooltip
-                                            cursor={{ fill: '#F3F4F6' }}
-                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                        />
-                                        <Bar dataKey="revenue" fill="#3B82F6" radius={[4, 4, 0, 0]} maxBarSize={50}>
-                                            {teamRevenueData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B'][index % 4]} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
+                        {/* Performance Leaderboard - TOP SUMMARY */}
+                        <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-lg">
+                            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-yellow-50 to-orange-50">
+                                <h4 className="font-bold text-xl text-gray-900 flex items-center gap-3">
+                                    <div className="p-2 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl">
+                                        <Trophy className="w-6 h-6 text-white" />
+                                    </div>
+                                    Performance Leaderboard
+                                </h4>
+                                <p className="text-sm text-gray-600 mt-1">Team performance summary and rankings</p>
                             </div>
-                        </div>
 
-                        {/* Utilization Chart */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
-                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                <Activity className="w-5 h-5 text-blue-600" /> Utilization Rate (%)
-                            </h4>
-                            <div className="h-64 w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={teamUtilizationData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                        <XAxis
-                                            dataKey="name"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fontSize: 9, fill: '#6B7280' }}
-                                            interval={0}
-                                            dy={5}
-                                            tickFormatter={(val) => val.slice(0, 3)}
-                                        />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} domain={[0, 100]} />
-                                        <Tooltip
-                                            cursor={{ fill: '#F3F4F6' }}
-                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                            formatter={(val: number | undefined) => [val ? `${val.toFixed(1)}%` : '0%', 'Utilization']}
-                                        />
-                                        <Bar dataKey="utilization" fill="#8B5CF6" radius={[4, 4, 0, 0]} maxBarSize={50}>
-                                            {teamUtilizationData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={['#8B5CF6', '#F472B6', '#6366F1', '#EC4899'][index % 4]} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Detailed Team Table */}
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm w-full max-w-full">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                                <Trophy className="w-5 h-5 text-yellow-500" /> Performance Leaderboard
-                            </h4>
-                        </div>
-
-                        <div className="overflow-x-auto w-full">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-1 md:px-6 py-3 text-left text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider w-8 md:w-auto">
-                                            <span className="md:hidden">#</span>
-                                            <span className="hidden md:inline">Rank</span>
-                                        </th>
-                                        <SortableHeader label="Staff" sortKey="name" align="left" className="w-24 md:w-auto" />
-                                        <SortableHeader label="Rev" sortKey="revenue" align="right" mobileLabel="Rev" />
-                                        <SortableHeader label="Hours" sortKey="hours" align="right" mobileLabel="Hrs" />
-                                        <SortableHeader label="Util" sortKey="utilization" align="right" mobileLabel="Util" />
-                                        <SortableHeader label="Rebook" sortKey="rebookingRate" align="right" mobileLabel="Rtnt" />
-                                        <SortableHeader label="No-Show" sortKey="noShowRate" align="right" mobileLabel="NS" />
-                                        <SortableHeader label="Clients" sortKey="clients" align="right" mobileLabel="Clts" />
-                                        <SortableHeader label="Avg Tkt" sortKey="avgTicket" align="right" mobileLabel="Avg" />
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {sortedStaff.map((staff, index) => (
-                                        <tr key={staff.name} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap">
-                                                <div className={`w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full font-bold text-[10px] md:text-xs
-                                                    ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                                        index === 1 ? 'bg-gray-100 text-gray-600' :
-                                                            index === 2 ? 'bg-orange-100 text-orange-700' : 'text-gray-400'}
-                                                `}>
-                                                    #{index + 1}
-                                                </div>
-                                            </td>
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap max-w-[80px] md:max-w-none">
-                                                <div className="flex items-center">
-                                                    <div className="h-5 w-5 md:h-8 md:w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-1.5 md:mr-3 text-[10px] md:text-sm shrink-0">
-                                                        {staff.name.charAt(0)}
-                                                    </div>
-                                                    <div className="text-[10px] md:text-sm font-bold text-gray-900 truncate">{staff.name}</div>
-                                                </div>
-                                            </td>
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm font-bold text-gray-900">
-                                                ${staff.revenue.toLocaleString()}
-                                            </td>
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
-                                                {staff.hours.toFixed(1)}
-                                            </td>
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm">
-                                                <span className={`px-1.5 py-0.5 md:px-2 md:py-1 rounded-full text-[10px] md:text-xs font-bold ${staff.utilization > 80 ? 'bg-green-100 text-green-800' :
-                                                    staff.utilization > 50 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                                                    }`}>
-                                                    {staff.utilization.toFixed(0)}%
-                                                    staff.utilization > 50 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                                                    }`}>
-                                                    {staff.utilization.toFixed(0)}%
-                                                </span>
-                                            </td>
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600 font-medium">
-                                                {staff.rebookingRate.toFixed(0)}%
-                                            </td>
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600 font-medium">
-                                                {staff.noShowRate.toFixed(0)}%
-                                            </td>
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
-                                                {staff.clients}
-                                            </td>
-                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
-                                                ${staff.avgTicket.toFixed(0)}
-                                            </td>
+                            <div className="overflow-x-auto w-full">
+                                <table className="w-full">
+                                    <thead className="bg-gray-50 border-b-2 border-gray-200">
+                                        <tr>
+                                            <th className="px-1 md:px-6 py-3 text-left text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider w-8 md:w-auto">
+                                                <span className="md:hidden">#</span>
+                                                <span className="hidden md:inline">Rank</span>
+                                            </th>
+                                            <SortableHeader label="Staff" sortKey="name" align="left" className="w-24 md:w-auto" />
+                                            <SortableHeader label="Rev" sortKey="revenue" align="right" mobileLabel="Rev" />
+                                            <SortableHeader label="Hours" sortKey="hours" align="right" mobileLabel="Hrs" />
+                                            <SortableHeader label="Util" sortKey="utilization" align="right" mobileLabel="Util" />
+                                            <SortableHeader label="Rebook" sortKey="rebookingRate" align="right" mobileLabel="Rtnt" />
+                                            <SortableHeader label="No-Show" sortKey="noShowRate" align="right" mobileLabel="NS" />
+                                            <SortableHeader label="Clients" sortKey="clients" align="right" mobileLabel="Clts" />
+                                            <SortableHeader label="Avg Tkt" sortKey="avgTicket" align="right" mobileLabel="Avg" />
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {sortedStaff.length > 0 ? (
+                                            sortedStaff.map((staff, index) => (
+                                                <tr key={staff.name} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap">
+                                                        <div className={`w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full font-bold text-[10px] md:text-xs
+                                                        ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                                                index === 1 ? 'bg-gray-100 text-gray-600' :
+                                                                    index === 2 ? 'bg-orange-100 text-orange-700' : 'text-gray-400'}
+                                                    `}>
+                                                            #{index + 1}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap max-w-[80px] md:max-w-none">
+                                                        <div className="flex items-center">
+                                                            <div className="h-5 w-5 md:h-8 md:w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-1.5 md:mr-3 text-[10px] md:text-sm shrink-0">
+                                                                {staff.name.charAt(0)}
+                                                            </div>
+                                                            <div className="text-[10px] md:text-sm font-bold text-gray-900 truncate">{staff.name}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm font-bold text-gray-900">
+                                                        ${staff.revenue.toLocaleString()}
+                                                    </td>
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
+                                                        {staff.hours.toFixed(1)}
+                                                    </td>
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm">
+                                                        <span className={`px-1.5 py-0.5 md:px-2 md:py-1 rounded-full text-[10px] md:text-xs font-bold ${staff.utilization > 80 ? 'bg-green-100 text-green-800' :
+                                                            staff.utilization > 50 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                            {staff.utilization.toFixed(0)}%
+
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600 font-medium">
+                                                        {staff.rebookingRate.toFixed(0)}%
+                                                    </td>
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600 font-medium">
+                                                        {staff.noShowRate.toFixed(0)}%
+                                                    </td>
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
+                                                        {staff.clients}
+                                                    </td>
+                                                    <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
+                                                        ${staff.avgTicket.toFixed(0)}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={9} className="px-6 py-16 text-center">
+                                                    <div className="flex flex-col items-center gap-3">
+                                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                                            <Trophy className="w-8 h-8 text-gray-400" />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-lg font-semibold text-gray-900 mb-1">No Team Data Available</h3>
+                                                            <p className="text-sm text-gray-500">
+                                                                No appointments found for this time period.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Detailed Charts Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {compareMode && comparisonMetrics ? (
+                                <>
+                                    <ComparisonChart
+                                        title="Revenue by Staff"
+                                        periodAData={teamRevenueData}
+                                        periodBData={comparisonMetrics.topStaff.map(s => ({ name: s.name.split(' ')[0], revenue: s.revenue }))}
+                                        dataKey="revenue"
+                                        formatValue={(val) => `$${val.toLocaleString()}`}
+                                    />
+                                    <ComparisonChart
+                                        title="Utilization Rate"
+                                        periodAData={teamUtilizationData}
+                                        periodBData={comparisonMetrics.topStaff.map(s => ({ name: s.name.split(' ')[0], utilization: s.utilization }))}
+                                        dataKey="utilization"
+                                        formatValue={(val) => `${val}%`}
+                                    />
+                                    <ComparisonChart
+                                        title="Hours Worked"
+                                        periodAData={metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], hours: s.hours }))}
+                                        periodBData={comparisonMetrics.topStaff.map(s => ({ name: s.name.split(' ')[0], hours: s.hours }))}
+                                        dataKey="hours"
+                                        formatValue={(val) => `${val}h`}
+                                    />
+                                    <ComparisonChart
+                                        title="Rebooking Rate"
+                                        periodAData={metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], rebooking: s.rebookingRate }))}
+                                        periodBData={comparisonMetrics.topStaff.map(s => ({ name: s.name.split(' ')[0], rebooking: s.rebookingRate }))}
+                                        dataKey="rebooking"
+                                        formatValue={(val) => `${val}%`}
+                                    />
+                                    <ComparisonChart
+                                        title="No-Show Rate"
+                                        periodAData={metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], noShow: s.noShowRate }))}
+                                        periodBData={comparisonMetrics.topStaff.map(s => ({ name: s.name.split(' ')[0], noShow: s.noShowRate }))}
+                                        dataKey="noShow"
+                                        formatValue={(val) => `${val}%`}
+                                    />
+                                    <ComparisonChart
+                                        title="Client Count"
+                                        periodAData={metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], clients: s.clients }))}
+                                        periodBData={comparisonMetrics.topStaff.map(s => ({ name: s.name.split(' ')[0], clients: s.clients }))}
+                                        dataKey="clients"
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    {/* Revenue Chart */}
+                                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
+                                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
+                                                <DollarSign className="w-5 h-5 text-white" />
+                                            </div>
+                                            Revenue by Staff
+                                        </h4>
+                                        <div className="h-64 w-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={teamRevenueData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                        tick={{ fontSize: 9, fill: '#6B7280' }}
+                                                        interval={0}
+                                                        dy={5}
+                                                        tickFormatter={(val) => val.slice(0, 3)}
+                                                    />
+                                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
+                                                    <Tooltip
+                                                        cursor={{ fill: '#F3F4F6' }}
+                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                                    />
+                                                    <Bar dataKey="revenue" fill="#10B981" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                        {teamRevenueData.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'][index % 4]} />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
+                                    {/* Utilization Chart */}
+                                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
+                                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg">
+                                                <Activity className="w-5 h-5 text-white" />
+                                            </div>
+                                            Utilization Rate
+                                        </h4>
+                                        <div className="h-64 w-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={teamUtilizationData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                        tick={{ fontSize: 9, fill: '#6B7280' }}
+                                                        interval={0}
+                                                        dy={5}
+                                                        tickFormatter={(val) => val.slice(0, 3)}
+                                                    />
+                                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `${val}%`} />
+                                                    <Tooltip
+                                                        cursor={{ fill: '#F3F4F6' }}
+                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                                    />
+                                                    <Bar dataKey="utilization" fill="#3B82F6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                        {teamUtilizationData.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][index % 4]} />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
+                                    {/* Hours Worked Chart */}
+                                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
+                                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
+                                                <Clock className="w-5 h-5 text-white" />
+                                            </div>
+                                            Hours Worked
+                                        </h4>
+                                        <div className="h-64 w-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], hours: s.hours }))} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                        tick={{ fontSize: 9, fill: '#6B7280' }}
+                                                        interval={0}
+                                                        dy={5}
+                                                        tickFormatter={(val) => val.slice(0, 3)}
+                                                    />
+                                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} />
+                                                    <Tooltip
+                                                        cursor={{ fill: '#F3F4F6' }}
+                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                                    />
+                                                    <Bar dataKey="hours" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                        {metrics.topStaff.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B'][index % 4]} />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
+                                    {/* Rebooking Rate Chart */}
+                                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
+                                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+                                                <Repeat className="w-5 h-5 text-white" />
+                                            </div>
+                                            Rebooking Rate
+                                        </h4>
+                                        <div className="h-64 w-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], rebooking: s.rebookingRate }))} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                        tick={{ fontSize: 9, fill: '#6B7280' }}
+                                                        interval={0}
+                                                        dy={5}
+                                                        tickFormatter={(val) => val.slice(0, 3)}
+                                                    />
+                                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `${val}%`} />
+                                                    <Tooltip
+                                                        cursor={{ fill: '#F3F4F6' }}
+                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                                    />
+                                                    <Bar dataKey="rebooking" fill="#6366F1" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                        {metrics.topStaff.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={['#6366F1', '#10B981', '#F59E0B', '#3B82F6'][index % 4]} />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
+                                    {/* No-Show Rate Chart */}
+                                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
+                                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <div className="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg">
+                                                <UserMinus className="w-5 h-5 text-white" />
+                                            </div>
+                                            No-Show Rate
+                                        </h4>
+                                        <div className="h-64 w-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], noShow: s.noShowRate }))} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                        tick={{ fontSize: 9, fill: '#6B7280' }}
+                                                        interval={0}
+                                                        dy={5}
+                                                        tickFormatter={(val) => val.slice(0, 3)}
+                                                    />
+                                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `${val}%`} />
+                                                    <Tooltip
+                                                        cursor={{ fill: '#F3F4F6' }}
+                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                                    />
+                                                    <Bar dataKey="noShow" fill="#F59E0B" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                        {metrics.topStaff.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={['#F59E0B', '#EF4444', '#F97316', '#FB923C'][index % 4]} />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
+                                    {/* Client Count Chart */}
+                                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
+                                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <div className="p-2 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg">
+                                                <Users className="w-5 h-5 text-white" />
+                                            </div>
+                                            Client Count
+                                        </h4>
+                                        <div className="h-64 w-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], clients: s.clients }))} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                        tick={{ fontSize: 9, fill: '#6B7280' }}
+                                                        interval={0}
+                                                        dy={5}
+                                                        tickFormatter={(val) => val.slice(0, 3)}
+                                                    />
+                                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} />
+                                                    <Tooltip
+                                                        cursor={{ fill: '#F3F4F6' }}
+                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                                    />
+                                                    <Bar dataKey="clients" fill="#14B8A6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                        {metrics.topStaff.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={['#14B8A6', '#3B82F6', '#8B5CF6', '#10B981'][index % 4]} />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
+
+
+            {/* Drill-Down Modal */}
+            {drillDownMetric && (
+                <DrillDownModal
+                    isOpen={true}
+                    onClose={() => setDrillDownMetric(null)}
+                    title={
+                        drillDownMetric === 'revenue' ? 'Revenue Breakdown' :
+                            drillDownMetric === 'utilization' ? 'Utilization Analysis' :
+                                drillDownMetric === 'clients' ? 'Client Insights' :
+                                    'Appointment Details'
+                    }
+                    metric={drillDownMetric as 'revenue' | 'utilization' | 'clients' | 'appointments'}
+                    data={metrics}
+                    compareMode={compareMode}
+                    comparisonData={comparisonMetrics}
+                />
+            )}
         </div>
     );
 }
+

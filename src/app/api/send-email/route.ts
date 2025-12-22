@@ -11,6 +11,25 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Server Misconfiguration: RESEND_API_KEY missing." }, { status: 500 });
     }
 
+    // SECURITY: Prevent external abuse of this endpoint
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+    const host = request.headers.get('host'); // e.g. localhost:3000 or my-app.com
+
+    // We verify that the request is coming from our own domain (or localhost during dev)
+    // Allow if origin includes host, or if it's a Vercel preview deployment
+    const isAllowed =
+        (origin && origin.includes(host || '')) ||
+        (referer && referer.includes(host || '')) ||
+        (process.env.NODE_ENV === 'development') ||
+        (origin && origin.includes('vercel.app')); // Allow Vercel previews
+
+    if (!isAllowed) {
+        console.error(`Security Block: Blocked email request from ${origin || 'unknown'}`);
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+
     try {
         const body = await request.json();
         const { to, subject, html, ownerEmail } = body;

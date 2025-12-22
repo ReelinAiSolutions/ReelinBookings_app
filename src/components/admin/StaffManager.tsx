@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments } from '@/services/dataService';
 import { Service, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Plus, Trash2, X, Clock, ChevronDown, ChevronUp, Save, Scissors, User, Camera, Upload } from 'lucide-react';
+import { Plus, Search, Grid, List } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useToast } from '@/context/ToastContext';
+import StaffCard from './StaffCard';
+import StaffFormModal from './StaffFormModal';
 
 interface StaffManagerProps {
     staff: Staff[];
@@ -25,76 +27,44 @@ const DEFAULT_SCHEDULE = [
 
 export default function StaffManager({ staff, services, orgId, onRefresh }: StaffManagerProps) {
     const { toast } = useToast();
-    const [isCreating, setIsCreating] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [editingStaffId, setEditingStaffId] = useState<string | null>(null); // For Details Edit
-
-    // New Staff Form
-    const [newStaff, setNewStaff] = useState({ name: '', role: '', avatar: '', email: '' });
-
-    // Edit Staff Form
-    const [editForm, setEditForm] = useState({ name: '', role: '', avatar: '', email: '' });
-    // ...
-
-
-    const [avatarFile, setAvatarFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-    // Expansion for Schedule Editing
-    const [expandedStaffId, setExpandedStaffId] = useState<string | null>(null);
-    const [schedule, setSchedule] = useState<any[]>([]);
-
-    // Services Expansion
-    const [selectedServices, setSelectedServices] = useState<string[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [modalSchedule, setModalSchedule] = useState<any[]>([]);
+    const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    const handleCreate = async () => {
-        if (!newStaff.name.trim()) return;
+    // Filter staff
+    const filteredStaff = useMemo(() => {
+        return staff.filter(member =>
+            member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            member.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            member.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [staff, searchQuery]);
 
-        // Duplicate Check
-        const isDuplicate = staff.some(s => s.name.toLowerCase().trim() === newStaff.name.toLowerCase().trim());
-        if (isDuplicate) {
-            toast(`A staff member named "${newStaff.name}" already exists.`, 'error');
-            return;
-        }
-
-        setIsLoading(true);
+    const handleSave = async (data: Partial<Staff>, avatarFile: File | null) => {
         try {
-            const created = await createStaff({ ...newStaff, specialties: [] }, orgId);
-            setIsCreating(false);
-            setNewStaff({ name: '', role: '', avatar: '', email: '' });
-            onRefresh();
-            toast('Staff member added', 'success');
-        } catch (e) {
-            console.error(e);
-            toast('Failed to add staff member', 'error');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+            if (!data.name?.trim()) {
+                toast('Name is required', 'error');
+                return;
+            }
+            if (!data.email?.trim()) {
+                toast('Email is required', 'error');
+                return;
+            }
 
-    // ...
+            let avatarUrl = data.avatar || '';
 
-    const handleUpdateDetails = async (id: string) => {
-        // Duplicate Check (Excluding self)
-        const isDuplicate = staff.some(s => s.id !== id && s.name.toLowerCase().trim() === editForm.name.toLowerCase().trim());
-        if (isDuplicate) {
-            toast(`A staff member named "${editForm.name}" already exists.`, 'error');
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            let avatarUrl = editForm.avatar;
-
-            // Handle File Upload
+            // Handle avatar upload
             if (avatarFile) {
                 const fileExt = avatarFile.name.split('.').pop();
-                const fileName = `${orgId}/staff/${id}-${Date.now()}.${fileExt}`;
+                const fileName = `${orgId}/staff/${editingStaff?.id || 'new'}-${Date.now()}.${fileExt}`;
 
                 const { error: uploadError } = await supabase.storage
                     .from('org-assets')
@@ -109,367 +79,230 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
                 avatarUrl = publicData.publicUrl;
             }
 
-            await updateStaff(id, {
-                name: editForm.name,
-                role: editForm.role,
-                avatar: avatarUrl,
-                email: editForm.email
-            }, orgId);
+            if (editingStaff) {
+                // Update existing
+                await updateStaff(editingStaff.id, {
+                    name: data.name,
+                    role: data.role || '',
+                    avatar: avatarUrl,
+                    email: data.email
+                }, orgId);
+                toast('Team member updated successfully', 'success');
+            } else {
+                // Create new
+                await createStaff({
+                    name: data.name,
+                    role: data.role || '',
+                    avatar: avatarUrl,
+                    email: data.email,
+                    specialties: []
+                }, orgId);
+                toast('Team member added successfully', 'success');
+            }
 
-            setEditingStaffId(null);
+            setIsModalOpen(false);
+            setEditingStaff(null);
             onRefresh();
-            setEditingStaffId(null);
-            onRefresh();
-            toast('Staff details updated!', 'success');
         } catch (e) {
             console.error(e);
-            toast('Failed to update staff details', 'error');
-        } finally {
-            setIsLoading(false);
+            toast('Failed to save team member', 'error');
         }
     };
 
+    const handleEdit = async (member: Staff) => {
+        setEditingStaff(member);
 
+        // Load schedule
+        setIsLoadingSchedule(true);
+        try {
+            const existing = await getAvailability(member.id);
+            const merged = DEFAULT_SCHEDULE.map(def => {
+                const found = existing.find((e: any) => e.dayOfWeek === def.dayOfWeek);
+                return found ? { ...def, ...found } : { ...def };
+            });
+            setModalSchedule(merged);
+        } catch (e) {
+            console.error(e);
+            setModalSchedule(DEFAULT_SCHEDULE);
+        } finally {
+            setIsLoadingSchedule(false);
+        }
 
-    const startEditing = (member: Staff) => {
-        setEditForm({
-            name: member.name,
-            role: member.role,
-            avatar: member.avatar || '',
-            email: member.email || ''
-        });
-        setPreviewUrl(member.avatar || null);
-        setAvatarFile(null);
-        setEditingStaffId(member.id);
-        setExpandedStaffId(null);
+        setIsModalOpen(true);
+    };
+
+    const handleSchedule = async (member: Staff) => {
+        // Same as edit but switch to schedule tab
+        await handleEdit(member);
     };
 
     const handleDelete = async (member: Staff) => {
+        if (!confirm(`Are you sure you want to remove ${member.name} from your team?`)) return;
+
         try {
-            // 1. Check for active appointments
             const activeCount = await checkActiveAppointments('staff', member.id);
             if (activeCount > 0) {
                 toast(`Cannot remove ${member.name}. They have ${activeCount} active appointment(s).`, 'error');
                 return;
             }
 
-            if (!confirm(`Are you sure you want to remove ${member.name}? This cannot be undone.`)) return;
+            await deleteStaff(member.id, orgId);
+            onRefresh();
+            toast('Team member removed', 'success');
+        } catch (e) {
+            console.error(e);
+            toast('Failed to remove team member', 'error');
+        }
+    };
 
-            setIsLoading(true);
-            await deleteStaff(member.id, orgId); // Pass orgId if needed by updated service signature, or dataService handles it? 
-            // note: dataService deleteStaff signature is (id, orgId). The previous call was `deleteStaff(member.id)`. 
-            // I need to verify if `orgId` allows being undefined or if checking dataService again...
-            // Checking dataService: `export const deleteStaff = async (id: string, orgId: string)`
-            // So previous code was MISSING orgId. I must pass `orgId`.
+    const handleAddNew = () => {
+        setEditingStaff(null);
+        setModalSchedule(DEFAULT_SCHEDULE);
+        setIsModalOpen(true);
+    };
 
-            toast('Staff member removed', 'success');
+    const handleSaveSchedule = async (schedule: any[]) => {
+        if (!editingStaff) return;
+
+        try {
+            await upsertAvailability(schedule, editingStaff.id, orgId);
+            toast('Schedule saved successfully', 'success');
+        } catch (e) {
+            console.error(e);
+            toast('Failed to save schedule', 'error');
+            throw e;
+        }
+    };
+
+    const handleSaveServices = async (serviceIds: string[]) => {
+        if (!editingStaff) return;
+
+        try {
+            await updateStaffServices(editingStaff.id, serviceIds);
+            toast('Services updated successfully', 'success');
             onRefresh();
         } catch (e) {
             console.error(e);
-            toast('Failed to remove staff member', 'error');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setAvatarFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
-        }
-    };
-
-    const toggleExpand = async (staffId: string) => {
-        if (expandedStaffId === staffId) {
-            setExpandedStaffId(null);
-            return;
-        }
-
-        setExpandedStaffId(staffId);
-        setEditingStaffId(null); // Close details edit if open
-        setIsLoading(true);
-
-        try {
-            // 1. Get Schedule
-            const existing = await getAvailability(staffId);
-            const merged = DEFAULT_SCHEDULE.map(def => {
-                const found = existing.find((e: any) => e.dayOfWeek === def.dayOfWeek);
-                return found ? { ...def, ...found } : { ...def };
-            });
-            setSchedule(merged);
-
-            // 2. Get Services
-            const staffMember = staff.find(s => s.id === staffId);
-            if (staffMember) {
-                setSelectedServices(staffMember.specialties);
-            }
-
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const updateScheduleItem = (index: number, field: string, value: any) => {
-        const newSchedule = [...schedule];
-        newSchedule[index] = { ...newSchedule[index], [field]: value };
-        setSchedule(newSchedule);
-    };
-
-    const saveSchedule = async (staffId: string) => {
-        setIsLoading(true);
-        try {
-            await upsertAvailability(schedule, staffId, orgId);
-            await upsertAvailability(schedule, staffId, orgId);
-            toast('Schedule saved!', 'success');
-            setExpandedStaffId(null);
-        } catch (e) {
-            console.error(e);
-            toast('Error saving schedule', 'error');
-        } finally {
-            setIsLoading(false);
+            toast('Failed to update services', 'error');
+            throw e;
         }
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-gray-900">Team & Schedules (Updated)</h3>
-                <Button size="sm" onClick={() => setIsCreating(true)}><Plus className="w-4 h-4 mr-1" /> Add Member</Button>
-            </div>
-
-            {isCreating && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-                    <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-sm">New Team Member</h4>
-                        <button onClick={() => setIsCreating(false)}><X className="w-4 h-4 text-gray-500" /></button>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                        <h3 className="text-2xl font-bold text-gray-900">Team Management</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Manage your team members, schedules, and service assignments
+                        </p>
                     </div>
-                    <input
-                        className="w-full p-2 rounded border"
-                        placeholder="Name (e.g. Sarah Smith)"
-                        value={newStaff.name}
-                        onChange={e => setNewStaff({ ...newStaff, name: e.target.value })}
-                    />
-                    <input
-                        className="w-full p-2 rounded border"
-                        placeholder="Email (Required for login)"
-                        value={newStaff.email}
-                        onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
-                    />
-
-                    <input
-                        className="w-full p-2 rounded border"
-                        placeholder="Role (e.g. Master Barber)"
-                        value={newStaff.role}
-                        onChange={e => setNewStaff({ ...newStaff, role: e.target.value })}
-                    />
-                    {/* Simplified avatar input for creation, can create then edit for upload */}
-                    <input
-                        className="w-full p-2 rounded border"
-                        placeholder="Avatar URL (optional)"
-                        value={newStaff.avatar}
-                        onChange={e => setNewStaff({ ...newStaff, avatar: e.target.value })}
-                    />
                     <Button
-                        size="sm"
-                        className="w-full bg-primary-600 text-white"
-                        onClick={handleCreate}
-                        disabled={isLoading}
+                        onClick={handleAddNew}
+                        className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30"
                     >
-                        {isLoading ? 'Saving...' : 'Add Member'}
+                        <Plus className="w-5 h-5 mr-2" />
+                        Add Team Member
                     </Button>
                 </div>
-            )}
+            </div>
 
-            <div className="space-y-4">
-                {staff.map(member => (
-                    <div key={member.id} className="border rounded-lg overflow-hidden">
-                        <div className="p-4 flex flex-col sm:flex-row justify-between sm:items-center bg-white gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
-                                    {member.avatar ? <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" /> : <span className="text-gray-500 font-bold">{member.name[0]}</span>}
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-gray-900">{member.name}</h4>
-                                    <p className="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded-full inline-block mt-0.5">{member.role}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 w-full sm:w-auto">
-                                <Button size="sm" variant="outline" onClick={() => startEditing(member)} className="flex-1 sm:flex-none justify-center">
-                                    <User className="w-4 h-4 sm:mr-1" />
-                                    <span className="text-xs sm:text-sm">Details</span>
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => toggleExpand(member.id)} className="flex-1 sm:flex-none justify-center">
-                                    <Clock className="w-4 h-4 sm:mr-1" />
-                                    <span className="text-xs sm:text-sm">{expandedStaffId === member.id ? 'Close' : 'Schedule'}</span>
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => handleDelete(member)} className="px-3">
-                                    <Trash2 className="w-4 h-4 text-red-500" />
-                                </Button>
-                            </div>
+            {/* Search & Filters */}
+            <div className="p-6 border-b border-gray-200 space-y-4">
+                {/* Search Bar */}
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search team members..."
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                </div>
+
+                {/* View Toggle */}
+                <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-600">
+                        {filteredStaff.length} {filteredStaff.length === 1 ? 'team member' : 'team members'}
+                    </p>
+                    <div className="hidden md:flex gap-1 bg-gray-100 p-1 rounded-lg">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+                                }`}
+                        >
+                            <Grid className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+                                }`}
+                        >
+                            <List className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Team Grid/List */}
+            <div className="p-6">
+                {filteredStaff.length === 0 ? (
+                    <div className="text-center py-16">
+                        <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Plus className="w-12 h-12 text-gray-400" />
                         </div>
-
-                        {/* EDIT DETAILS FORM */}
-                        {editingStaffId === member.id && (
-                            <div className="p-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-4">
-                                <div className="flex justify-between items-center">
-                                    <h5 className="font-bold text-sm text-gray-700">Edit Staff Details</h5>
-                                    <button onClick={() => setEditingStaffId(null)}><X className="w-4 h-4 text-gray-400" /></button>
-                                </div>
-
-                                <div className="flex items-start gap-6">
-                                    {/* Avatar Upload */}
-                                    <div className="flex-shrink-0 text-center">
-                                        <div className="w-20 h-20 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center overflow-hidden relative group mx-auto mb-2">
-                                            {previewUrl ? (
-                                                <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <User className="w-8 h-8 text-gray-300" />
-                                            )}
-                                            <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                                <Camera className="w-5 h-5 text-white" />
-                                                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                                            </label>
-                                        </div>
-                                        <p className="text-xs text-gray-500">Change Photo</p>
-                                    </div>
-
-                                    <div className="flex-1 space-y-3">
-                                        <div>
-                                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Full Name</label>
-                                            <input
-                                                className="w-full p-2 rounded border border-gray-300 text-sm"
-                                                value={editForm.name}
-                                                onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Email (Login)</label>
-                                            <input
-                                                className="w-full p-2 rounded border border-gray-300 text-sm"
-                                                value={editForm.email}
-                                                onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Role / Title</label>
-                                            <input
-                                                className="w-full p-2 rounded border border-gray-300 text-sm"
-                                                value={editForm.role}
-                                                onChange={e => setEditForm({ ...editForm, role: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end gap-2 mt-2">
-                                    <Button size="sm" variant="outline" onClick={() => setEditingStaffId(null)}>Cancel</Button>
-                                    <Button size="sm" className="bg-primary-600 text-white" onClick={() => handleUpdateDetails(member.id)} disabled={isLoading}>
-                                        {isLoading ? 'Saving...' : 'Save Changes'}
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Availability Editor */}
-                        {expandedStaffId === member.id && (
-                            <div className="p-4 bg-gray-50 border-t border-gray-100">
-                                <h5 className="font-bold text-sm mb-3 text-gray-700">Set Weekly Hours</h5>
-                                <div className="space-y-2">
-                                    {schedule.map((day, idx) => (
-                                        <div key={day.dayOfWeek} className="flex items-center gap-2 text-sm">
-                                            <div className="w-24 font-medium">
-                                                <label className="flex items-center gap-2 cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={day.isWorking}
-                                                        onChange={(e) => updateScheduleItem(idx, 'isWorking', e.target.checked)}
-                                                        className="rounded text-primary-600"
-                                                    />
-                                                    {day.dayName}
-                                                </label>
-                                            </div>
-                                            {day.isWorking ? (
-                                                <>
-                                                    <input
-                                                        type="time"
-                                                        value={day.startTime}
-                                                        onChange={(e) => updateScheduleItem(idx, 'startTime', e.target.value)}
-                                                        className="p-1 border rounded w-28"
-                                                    />
-                                                    <span className="text-gray-400">-</span>
-                                                    <input
-                                                        type="time"
-                                                        value={day.endTime}
-                                                        onChange={(e) => updateScheduleItem(idx, 'endTime', e.target.value)}
-                                                        className="p-1 border rounded w-28"
-                                                    />
-                                                </>
-                                            ) : (
-                                                <span className="text-gray-400 italic ml-2">Day off</span>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-4 flex justify-end">
-                                    <Button onClick={() => saveSchedule(member.id)} className="bg-green-600 text-white hover:bg-green-700">
-                                        <Save className="w-4 h-4 mr-2" />
-                                        Save Schedule
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Services Editor */}
-                        {expandedStaffId === member.id && (
-                            <div className="p-4 bg-white border-t border-gray-100">
-                                <h5 className="font-bold text-sm mb-3 text-gray-700 flex items-center gap-2">
-                                    <Scissors className="w-4 h-4" /> Services Provided
-                                </h5>
-                                <div className="grid grid-cols-2 gap-2 mb-4">
-                                    {services.map(service => (
-                                        <label key={service.id} className="flex items-center gap-2 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedServices.includes(service.id)}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setSelectedServices(prev => [...prev, service.id]);
-                                                    } else {
-                                                        setSelectedServices(prev => prev.filter(id => id !== service.id));
-                                                    }
-                                                }}
-                                                className="rounded text-primary-600 focus:ring-primary-500"
-                                            />
-                                            <span className="text-sm font-medium">{service.name}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                                <div className="flex justify-end">
-                                    <Button onClick={async () => {
-                                        setIsLoading(true);
-                                        try {
-                                            await updateStaffServices(member.id, selectedServices);
-                                            await updateStaffServices(member.id, selectedServices);
-                                            toast('Services updated!', 'success');
-                                            onRefresh(); // Refresh to update parent state if needed
-                                        } catch (e) {
-                                            console.error(e);
-                                            toast('Error updating services', 'error');
-                                        } finally {
-                                            setIsLoading(false);
-                                        }
-                                    }} size="sm" variant="outline">
-                                        Save Services
-                                    </Button>
-                                </div>
-                            </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {searchQuery ? 'No team members found' : 'No team members yet'}
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                            {searchQuery
+                                ? 'Try adjusting your search'
+                                : 'Get started by adding your first team member'}
+                        </p>
+                        {!searchQuery && (
+                            <Button onClick={handleAddNew} className="bg-green-600 hover:bg-green-700 text-white">
+                                <Plus className="w-5 h-5 mr-2" />
+                                Add Your First Team Member
+                            </Button>
                         )}
                     </div>
-                ))}
+                ) : (
+                    <div className={
+                        viewMode === 'grid'
+                            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                            : 'space-y-4'
+                    }>
+                        {filteredStaff.map((member) => (
+                            <StaffCard
+                                key={member.id}
+                                staff={member}
+                                services={services}
+                                onEdit={handleEdit}
+                                onSchedule={handleSchedule}
+                                onDelete={handleDelete}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {/* Form Modal */}
+            <StaffFormModal
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setEditingStaff(null);
+                }}
+                onSave={handleSave}
+                editingStaff={editingStaff}
+                services={services}
+                onSaveSchedule={handleSaveSchedule}
+                onSaveServices={handleSaveServices}
+                initialSchedule={modalSchedule}
+            />
         </div>
     );
 }

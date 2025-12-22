@@ -42,10 +42,11 @@ export default function MonthView({ currentDate, appointments, onDaySelect, onMo
 
                 <button
                     onClick={onTitleClick}
-                    className="text-lg font-bold text-blue-600 flex items-center gap-1 hover:bg-blue-50 px-2 rounded-lg transition-colors"
+                    className="text-lg font-bold text-blue-600 flex items-center gap-1 hover:bg-blue-50 px-2 rounded-lg transition-colors group"
                 >
                     <span className="text-blue-900/50 mr-1">Month</span>
                     {format(currentDate, 'MMMM yyyy')}
+                    <ChevronRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600 rotate-90 transition-transform" />
                 </button>
 
                 <button

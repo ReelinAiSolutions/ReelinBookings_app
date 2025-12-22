@@ -10,9 +10,10 @@ interface VerticalDayTimelineProps {
     businessHours?: Organization['business_hours'];
     date?: Date | string; // New prop for context
     onAppointmentClick?: (id: string) => void;
+    colorMode?: 'staff' | 'service'; // New Prop for coloring
 }
 
-export default function VerticalDayTimeline({ appointments, staff, services, availability = [], businessHours, date, onAppointmentClick }: VerticalDayTimelineProps) {
+export default function VerticalDayTimeline({ appointments, staff, services, availability = [], businessHours, date, onAppointmentClick, colorMode = 'staff' }: VerticalDayTimelineProps) {
     const [focusedId, setFocusedId] = useState<string | null>(null);
 
     // Dynamic Business Hours Logic
@@ -62,8 +63,6 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
     // We render labels for start..end
     const hours = Array.from({ length: TOTAL_HOURS + 1 }).map((_, i) => i + START_HOUR);
 
-    // ... (rest of simple setup) ...
-
     // Deduplicate appointments by ID just in case
     const uniqueAppointments = Array.from(new Map(appointments.map(item => [item.id, item])).values());
 
@@ -102,144 +101,143 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
 
     return (
         <div className="flex flex-1 relative bg-white h-full overflow-hidden min-w-0" onClick={handleGridClick}>
-            <div className="flex w-full h-full min-w-0">
+            <div className="flex w-full h-full min-w-0 overflow-auto pb-32">
+                <div className="flex w-full h-full relative min-h-full">
 
-                {/* Time Column */}
-                <div className="relative z-30 bg-white border-r border-gray-200 flex-shrink-0 w-14 shadow-sm h-full flex flex-col">
-                    {/* Corner Spacer */}
-                    <div className="h-14 bg-white z-40 border-b border-gray-200 flex items-center justify-center flex-shrink-0">
-                        <Clock className="w-4 h-4 text-gray-400" />
+                    {/* Time Column - Compact */}
+                    <div className="relative z-[60] bg-white border-r border-gray-100 flex-shrink-0 w-10 flex flex-col sticky left-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+                        {/* Corner Spacer */}
+                        <div className="h-10 bg-white z-[60] border-b border-gray-100 flex items-center justify-center flex-shrink-0 sticky top-0">
+                            <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        </div>
+                        {/* Time Slots */}
+                        <div className="relative flex-1 w-full bg-white min-h-full mt-2">
+                            {hours.map((hour, i) => {
+                                const topPercent = (i / TOTAL_HOURS) * 100;
+                                return (
+                                    <div key={hour} className="absolute w-full text-center" style={{
+                                        top: `${topPercent}%`,
+                                        transform: 'translateY(-50%)'
+                                    }}>
+                                        {i !== hours.length && (
+                                            <span className="text-[10px] font-bold text-gray-400 leading-none block">
+                                                {hour > 12 ? hour - 12 : hour}
+                                                <span className="text-[8px] font-normal text-gray-300 ml-0.5">{hour >= 12 ? 'p' : 'a'}</span>
+                                            </span>
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
-                    {/* Time Slots (Flex/Percentage) */}
-                    <div className="relative flex-1 w-full">
-                        {hours.map((hour, i) => {
-                            const topPercent = (i / TOTAL_HOURS) * 100;
+
+                    {/* Staff Columns - Compact */}
+                    <div className="flex flex-1 relative h-full divide-x divide-gray-100">
+                        {Array.from(new Set(staff.map(s => s.name.toLowerCase()))).map((normalizedName, index) => {
+                            const staffGroup = staff.filter(s => s.name.toLowerCase() === normalizedName);
+                            const primaryStaff = staffGroup[0];
+                            const staffIds = staffGroup.map(s => s.id);
+                            const memberAppointments = renderAppointments.filter(apt => staffIds.includes(apt.staffId));
+
+                            const memberRule = availability.find(r => r.staffId === primaryStaff.id && r.dayOfWeek === todayDayOfWeek);
+                            const showOffDuty = memberRule && !memberRule.isWorking;
+
                             return (
-                                <div key={hour} className="absolute w-full text-center" style={{
-                                    top: `${topPercent}%`,
-                                    transform: i === 0 ? 'translateY(2px)' : i === hours.length - 1 ? 'translateY(-100%)' : 'translateY(-50%)'
-                                }}>
-                                    <span className="text-[10px] font-bold text-gray-500">{hour > 12 ? hour - 12 : hour} {hour >= 12 ? 'PM' : 'AM'}</span>
+                                <div key={primaryStaff.id} className="flex-1 min-w-[9rem] relative flex flex-col h-full bg-white first:border-l-0">
+                                    {/* Staff Header - Compact */}
+                                    <div className="h-10 flex-shrink-0 bg-white z-[50] border-b border-gray-100 flex items-center justify-center gap-1.5 p-1 shadow-sm sticky top-0">
+                                        <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-600 border border-gray-200 overflow-hidden">
+                                            {primaryStaff.avatar ? <img src={primaryStaff.avatar} alt={primaryStaff.name} className="w-full h-full object-cover" /> : primaryStaff.name.charAt(0)}
+                                        </div>
+                                        <span className="text-[10px] font-bold text-gray-900 truncate max-w-[5rem] uppercase tracking-tight">{primaryStaff.name.split(' ')[0]}</span>
+                                    </div>
+
+                                    {/* Vertical Timeline Lane */}
+                                    <div className={`relative flex-1 w-full mt-2 ${showOffDuty ? 'bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMTlMMTkgMU0wIDIwTDIwIDAiIHN0cm9rZT0iI2YzZjRmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+")] opacity-60' : ''}`}>
+
+                                        {/* Grid Lines */}
+                                        {hours.map((hour, i) => (
+                                            <div key={`bg-${hour}`} className="absolute w-full border-t border-gray-50" style={{ top: `${(i / TOTAL_HOURS) * 100}%` }}></div>
+                                        ))}
+
+                                        {/* Half-Hour Guidelines (Subtle) */}
+                                        {hours.map((hour, i) => i < hours.length - 1 && (
+                                            <div key={`half-${hour}`} className="absolute w-full border-t border-dashed border-gray-50/50" style={{ top: `${((i + 0.5) / TOTAL_HOURS) * 100}%` }}></div>
+                                        ))}
+
+                                        {showOffDuty && (
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                                                <span className="text-[9px] font-bold text-gray-300 bg-white/80 px-2 py-0.5 rounded border border-gray-100 uppercase tracking-widest">
+                                                    Off
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {currentTimeTopPercent !== -1 && (
+                                            <div className="absolute w-full flex items-center z-40 pointer-events-none" style={{ top: `${currentTimeTopPercent}%` }}>
+                                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full -ml-0.5 shadow-sm"></div>
+                                                <div className="h-px bg-red-400 w-full opacity-40"></div>
+                                            </div>
+                                        )}
+
+                                        {memberAppointments.map(apt => {
+                                            const [h, m] = apt.timeSlot.split(':').map(Number);
+                                            const aptStartMins = (h - START_HOUR) * 60 + m;
+                                            const service = services?.find(s => s.id === apt.serviceId);
+                                            const durationMins = service?.durationMinutes || 60;
+                                            const topPercent = (aptStartMins / TOTAL_MINUTES) * 100;
+                                            const heightPercent = (durationMins / TOTAL_MINUTES) * 100;
+                                            const isFocused = false;
+
+                                            const colors = [
+                                                { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-900', sub: 'text-blue-700' },
+                                                { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-900', sub: 'text-purple-700' },
+                                                { bg: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-900', sub: 'text-emerald-700' },
+                                                { bg: 'bg-orange-50', border: 'border-orange-500', text: 'text-orange-900', sub: 'text-orange-700' },
+                                                { bg: 'bg-pink-50', border: 'border-pink-500', text: 'text-pink-900', sub: 'text-pink-700' },
+                                                { bg: 'bg-cyan-50', border: 'border-cyan-500', text: 'text-cyan-900', sub: 'text-cyan-700' },
+                                                { bg: 'bg-rose-50', border: 'border-rose-500', text: 'text-rose-900', sub: 'text-rose-700' },
+                                                { bg: 'bg-amber-50', border: 'border-amber-500', text: 'text-amber-900', sub: 'text-amber-700' },
+                                                { bg: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-900', sub: 'text-indigo-700' },
+                                                { bg: 'bg-lime-50', border: 'border-lime-500', text: 'text-lime-900', sub: 'text-lime-700' },
+                                                { bg: 'bg-teal-50', border: 'border-teal-500', text: 'text-teal-900', sub: 'text-teal-700' },
+                                                { bg: 'bg-fuchsia-50', border: 'border-fuchsia-500', text: 'text-fuchsia-900', sub: 'text-fuchsia-700' },
+                                            ];
+
+                                            let colorIndex = 0;
+                                            if (colorMode === 'service') {
+                                                const service = services?.find(s => s.id === apt.serviceId);
+                                                const hash = service?.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) || 0;
+                                                colorIndex = hash % colors.length;
+                                            } else {
+                                                const sortedStaff = [...staff].sort((a, b) => a.name.localeCompare(b.name));
+                                                const staffIdx = sortedStaff.findIndex(s => s.id === apt.staffId);
+                                                colorIndex = staffIdx >= 0 ? staffIdx % colors.length : 0;
+                                            }
+                                            const staffColor = colors[colorIndex];
+
+                                            return (
+                                                <div
+                                                    key={apt.id}
+                                                    onClick={(e) => handleCardClick(e, apt.id)}
+                                                    className={`absolute left-0.5 right-0.5 rounded border-l-2 px-1 py-0.5 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-md
+                                                        ${isFocused ? 'z-50 shadow-xl ring-2 ring-black bg-white h-auto' : `z-10 ${apt.status === 'CONFIRMED' ? `${staffColor.bg} ${staffColor.border}` : 'bg-gray-50 border-gray-400'}`}
+                                                    `}
+                                                    style={{ top: `${topPercent}%`, height: `${heightPercent}%`, minHeight: '2rem' }}
+                                                >
+                                                    <div className={`flex flex-col leading-none h-full ${apt.status === 'CONFIRMED' ? staffColor.text : 'text-gray-900'}`}>
+                                                        <span className="text-[9px] font-bold line-clamp-1">{apt.clientName}</span>
+                                                        <span className={`text-[8px] font-medium opacity-90 line-clamp-1`}>{service?.name || 'Service'}</span>
+                                                        <span className="text-[8px] font-semibold opacity-70 mt-auto">{apt.timeSlot}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            )
+                            );
                         })}
                     </div>
-                </div>
-
-                {/* Staff Columns (Scrollable) */}
-                <div className="flex flex-1 relative h-full w-full overflow-x-auto overflow-y-hidden divide-x divide-gray-200">
-
-
-                    {Array.from(new Set(staff.map(s => s.name.toLowerCase()))).map((normalizedName, index) => {
-                        const staffGroup = staff.filter(s => s.name.toLowerCase() === normalizedName);
-                        const primaryStaff = staffGroup[0];
-                        const staffIds = staffGroup.map(s => s.id);
-                        const memberAppointments = renderAppointments.filter(apt => staffIds.includes(apt.staffId));
-
-                        // Check Availability
-                        // Use calculated todayDayOfWeek from useMemo
-                        const memberRule = availability.find(r => r.staffId === primaryStaff.id && r.dayOfWeek === todayDayOfWeek);
-                        const isWorking = memberRule ? memberRule.isWorking : true; // Default to TRUE if no rule found? Or logic audit says default to true/false?
-                        // Usually availability records are "exclusions" or "specifics". If data is "Weekly Hours", missing record might mean default hours.
-                        // But looking at screenshots, unchecked = Day Off.
-                        // If "Monday" is checked, we get a record isWorking=true.
-                        // If "Tuesday" is unchecked, we get isWorking=false OR no record?
-                        // If the user's DB saves ALL days, then finding the record is reliable.
-                        // If it only saves "Working" days, then missing = off?
-                        // Let's assume the previous logic: `const isWorking = memberRule?.isWorking;`
-                        // If memberRule is undefined (no record), isWorking is undefined -> falsy?
-                        // In previous code: `!isWorking` was used to show "Off Duty".
-                        // If isWorking is undefined, !undefined is TRUE. So missing record = Off Duty.
-                        // This seems risky if records aren't fully populated.
-                        // However, let's stick to the explicit rule found.
-
-                        const showOffDuty = memberRule && !memberRule.isWorking; // Only explicit OFF is OFF?
-                        // Or implicit off? The screenshot implies it thinks it found a record.
-
-                        return (
-                            <div key={primaryStaff.id} className="flex-1 min-w-[10rem] md:min-w-[12rem] relative flex flex-col h-full bg-white first:border-l-0">
-                                {/* Staff Header - Darker border */}
-                                <div className="h-14 flex-shrink-0 bg-white z-20 border-b border-gray-300 flex flex-col items-center justify-center p-1 shadow-sm">
-                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-700 border border-gray-200 mb-0.5 overflow-hidden">
-                                        {primaryStaff.avatar ? <img src={primaryStaff.avatar} alt={primaryStaff.name} className="w-full h-full object-cover" /> : primaryStaff.name.charAt(0)}
-                                    </div>
-                                    <span className="text-[11px] font-bold text-gray-900 truncate max-w-full leading-none mt-1 uppercase tracking-tight">{primaryStaff.name.split(' ')[0]}</span>
-                                </div>
-
-                                {/* Vertical Timeline Lane (Dynamic Height) */}
-                                <div className={`relative flex-1 w-full bg-white ${showOffDuty ? 'bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMTlMMTkgMU0wIDIwTDIwIDAiIHN0cm9rZT0iI2YzZjRmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+")]' : ''}`}>
-
-                                    {showOffDuty && (
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 flex-col gap-1">
-                                            <span className="text-[10px] font-bold text-gray-400 bg-white/80 px-2 py-0.5 rounded border border-gray-200 uppercase tracking-widest text-center mx-2">
-                                                Off Duty
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    {/* Solid Grid Lines for cleaner look */}
-                                    {hours.map((hour, i) => (
-                                        <div key={`bg-${hour}`} className="absolute w-full border-t border-gray-200" style={{ top: `${(i / TOTAL_HOURS) * 100}%` }}></div>
-                                    ))}
-
-                                    {/* Red Line Correction: Inside lane */}
-
-
-
-                                    {/* Appointments */}
-                                    {memberAppointments.map(apt => {
-                                        const [h, m] = apt.timeSlot.split(':').map(Number);
-                                        const aptStartMins = (h - START_HOUR) * 60 + m;
-
-                                        const service = services?.find(s => s.id === apt.serviceId);
-                                        const durationMins = service?.durationMinutes || 60;
-
-                                        const topPercent = (aptStartMins / TOTAL_MINUTES) * 100;
-                                        const heightPercent = (durationMins / TOTAL_MINUTES) * 100;
-
-                                        const isFocused = false;
-
-                                        const colors = [
-                                            { bg: 'bg-blue-50', border: 'border-blue-600', text: 'text-blue-900', sub: 'text-blue-700' },
-                                            { bg: 'bg-purple-50', border: 'border-purple-600', text: 'text-purple-900', sub: 'text-purple-700' },
-                                            { bg: 'bg-emerald-50', border: 'border-emerald-600', text: 'text-emerald-900', sub: 'text-emerald-700' },
-                                            { bg: 'bg-orange-50', border: 'border-orange-600', text: 'text-orange-900', sub: 'text-orange-700' },
-                                            { bg: 'bg-pink-50', border: 'border-pink-600', text: 'text-pink-900', sub: 'text-pink-700' },
-                                        ];
-
-                                        const staffIndex = apt.staffId
-                                            ? apt.staffId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length
-                                            : 0;
-                                        const staffColor = colors[staffIndex];
-
-                                        return (
-                                            <div
-                                                key={apt.id}
-                                                className={`absolute left-0.5 right-0.5 rounded border px-1.5 py-1 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm
-                                                    ${isFocused
-                                                        ? 'z-50 shadow-xl ring-2 ring-black bg-white h-auto'
-                                                        : `z-10 ${apt.status === 'CONFIRMED' ? `${staffColor.bg} ${staffColor.border}` : 'bg-gray-50 border-gray-400'}`
-                                                    }
-                                                `}
-                                                style={{
-                                                    top: `${topPercent}%`,
-                                                    height: `${heightPercent}%`,
-                                                    minHeight: '3.5rem' // Increased minimum height to fit all info
-                                                }}
-                                                onClick={(e) => handleCardClick(e, apt.id)}
-                                            >
-                                                <div className={`flex flex-col gap-0.5 leading-tight h-full ${apt.status === 'CONFIRMED' ? staffColor.text : 'text-gray-900'}`}>
-                                                    <span className="text-[10px] font-black line-clamp-1">{apt.clientName}</span>
-                                                    <span className={`text-[9px] font-medium line-clamp-1 ${staffColor.sub}`}>{service?.name || 'Service'}</span>
-                                                    <span className="text-[8px] font-bold opacity-70">{apt.timeSlot}</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        );
-                    })}
                 </div>
             </div>
         </div>

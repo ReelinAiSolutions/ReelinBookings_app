@@ -1,7 +1,7 @@
 import React from 'react';
 import { Appointment, Service, Availability } from '@/types';
 import { format, addDays, startOfWeek, isSameDay, parseISO } from 'date-fns';
-import { Calendar, Clock, MapPin, Video, Scissors, Coffee } from 'lucide-react';
+import { Calendar, Clock, MapPin, Video, Briefcase, Coffee } from 'lucide-react';
 
 interface PersonalWeeklyViewProps {
     appointments: Appointment[];
@@ -85,7 +85,7 @@ export default function PersonalWeeklyView({ appointments, services, currentDate
                                                 <h4 className={`font-bold text-gray-900 ${apt.status === 'COMPLETED' ? 'line-through opacity-50' : ''}`}>{apt.clientName}</h4>
                                                 <div className="flex items-center gap-2 mt-0.5">
                                                     <span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded-md">
-                                                        <Scissors className="w-3 h-3" />
+                                                        <Briefcase className="w-3 h-3" />
                                                         {service?.name || 'Service'}
                                                     </span>
                                                     {apt.status === 'COMPLETED' && <span className="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">Done</span>}

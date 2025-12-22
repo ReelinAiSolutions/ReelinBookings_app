@@ -60,7 +60,7 @@ export default function TodayPanel({ appointments, staff, services, availability
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
                 <div>
                     <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        Today's Pulse <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        Today's Catch <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                     </h3>
                     <p className="text-sm text-gray-500 font-medium">{format(new Date(), 'EEEE, MMMM do')}</p>
                 </div>

@@ -13,9 +13,10 @@ import TodayPanel from '@/components/admin/TodayPanel';
 import RescheduleModal from '@/components/admin/RescheduleModal';
 import BlockModal from '@/components/admin/BlockModal';
 import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
-import BarberDashboard from '@/components/barber/BarberDashboard';
+import StaffDashboard from '@/components/barber/BarberDashboard';
 import ProfileManager from '@/components/admin/ProfileManager'; // Restored import
 import AdminNav from '@/components/admin/AdminNav'; // New import
+import { useRouter } from 'next/navigation';
 import {
     getCurrentUserOrganization,
     getUserProfile,
@@ -48,7 +49,7 @@ const MOCK_STATS = [
 ];
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'operations' | 'analytics' | 'settings' | 'profile' | 'invites'>('operations');
+    const [activeTab, setActiveTab] = useState<'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team'>('operations');
     const [appointments, setAppointments] = useState<any[]>([]);
     const [stats, setStats] = useState({ totalRevenue: 0, totalBookings: 0, activeStaff: 0 });
     const [services, setServices] = useState<any[]>([]);
@@ -58,6 +59,7 @@ export default function AdminDashboard() {
     const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null); // New state
     const [userProfile, setUserProfile] = useState<any>(null); // New state
+    const router = useRouter();
 
     // Modal State
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -221,25 +223,51 @@ export default function AdminDashboard() {
     }, []);
 
     // --- ROLE BASED VIEW ---
-    // If the user is NOT an owner/admin OR if Debug Mode is active
-    if (isDebugStaffView || (userProfile && (userProfile.role !== 'owner' && userProfile.role !== 'admin' && userProfile.role !== 'ADMIN'))) {
-        // Find matching staff record by email
-        const matchedStaff = currentUser?.email ? staff.find(s => s.email === currentUser.email) : null;
+    // Instead of a hard redirect (which causes React errors when done during render),
+    // we show a secure overlay if the role doesn't match.
+    const isUnauthorized = userProfile &&
+        userProfile.role !== 'owner' &&
+        userProfile.role !== 'admin' &&
+        userProfile.role !== 'ADMIN';
 
-        // In Debug Mode, if no matching staff for the Admin's email, use the first staff member to show data
-        const displayStaffId = matchedStaff?.id || (isDebugStaffView ? staff[0]?.id : undefined);
-
+    if (isUnauthorized) {
         return (
-            <BarberDashboard
-                appointments={appointments}
-                currentUser={currentUser || { id: 'loading' }}
-                currentStaffId={displayStaffId}
-                services={services}
-                staff={staff}
-                availability={availability} // Pass availability data
-                businessHours={currentOrg?.business_hours}
-                onStatusUpdate={onStatusUpdate}
-            />
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6 text-white overflow-hidden relative">
+                {/* Background Glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+                <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl relative z-10 text-center animate-in zoom-in-95 duration-500">
+                    <div className="w-20 h-20 bg-primary-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary-500/20 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
+                        <Lock className="w-10 h-10 text-primary-400" />
+                    </div>
+
+                    <h2 className="text-3xl font-black mb-4 tracking-tight">Access Restricted</h2>
+                    <p className="text-gray-400 font-medium mb-10 leading-relaxed">
+                        You are currently logged in as <span className="text-white font-bold">{currentUser?.email}</span>.
+                        This account does not have Admin permissions.
+                    </p>
+
+                    <div className="grid gap-4">
+                        <Link
+                            href="/staff"
+                            className="bg-white text-gray-900 h-14 rounded-2xl flex items-center justify-center font-black text-sm uppercase tracking-widest hover:bg-primary-50 transition-all shadow-xl active:scale-95"
+                        >
+                            Go to Team Portal
+                        </Link>
+                        <button
+                            onClick={async () => {
+                                const { createClient } = await import('@/lib/supabase');
+                                const supabase = createClient();
+                                await supabase.auth.signOut();
+                                window.location.href = '/login';
+                            }}
+                            className="h-14 rounded-2xl border border-white/10 text-white font-black text-sm uppercase tracking-widest hover:bg-white/5 transition-all active:scale-95"
+                        >
+                            Sign out of this session
+                        </button>
+                    </div>
+                </div>
+            </div>
         );
     }
 
@@ -254,17 +282,17 @@ export default function AdminDashboard() {
 
             {/* Main Content Area (Mobile: Fixed Height App Shell, Desktop: Scrollable) */}
             <main className="lg:ml-64 lg:min-h-screen h-[100dvh] flex flex-col lg:block">
-                <div className={`flex-1 flex flex-col lg:overflow-visible lg:space-y-6 lg:p-8 ${activeTab === 'operations' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+                <div className={`flex-1 flex flex-col lg:overflow-visible lg:space-y-6 lg:p-8 pb-0 ${activeTab === 'operations' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
                     {/* Mobile Header (Fixed Top) */}
-                    <div className="lg:hidden flex-shrink-0 flex justify-between items-center h-16 gap-4 px-4 pt-2 mb-2">
+                    <div className="lg:hidden flex-shrink-0 flex justify-between items-center h-16 gap-4 px-4 pt-2 mb-0 bg-white border-b border-gray-100 z-10">
                         {/* Left Side: Logo & Branding */}
                         <div className="flex items-center gap-3 z-10 flex-1 min-w-0">
                             {currentOrg?.logo_url ? (
-                                <img src={currentOrg.logo_url} alt="Logo" className="w-10 h-10 flex-shrink-0 object-contain" />
+                                <img src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 flex-shrink-0 object-contain" />
                             ) : (
-                                <img src="/icon-180.png" alt="Reelin Logo" className="w-10 h-10 flex-shrink-0 object-contain rounded-lg" />
+                                <img src="/icon-180.png" alt="Reelin Logo" className="w-8 h-8 flex-shrink-0 object-contain rounded-lg" />
                             )}
-                            <h1 className="text-xl font-bold text-gray-900 tracking-tight leading-none truncate">
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none truncate">
                                 {currentOrg?.name || 'Reelin Bookings'}
                             </h1>
                         </div>
@@ -282,21 +310,34 @@ export default function AdminDashboard() {
                         activeTab === 'operations' && (
                             <div className="flex-1 flex flex-col min-h-0 lg:block lg:min-h-auto animate-in fade-in duration-300">
                                 {/* Hero Operations Layout - Dense Stacked */}
-                                <div className="flex flex-col gap-4 h-full lg:h-auto">
-                                    {/* Today's Pulse (Top) */}
+                                <div className="flex flex-col h-full lg:h-auto lg:gap-4">
+                                    {/* Today's Catch (Top) */}
                                     <div className="w-full hidden lg:block">
-                                        <TodayPanel
-                                            appointments={appointments}
-                                            staff={staff}
-                                            services={services}
-                                            availability={availability}
-                                            businessHours={currentOrg?.business_hours}
-                                            onAppointmentClick={handleAppointmentClick}
-                                        />
+                                        {isDebugStaffView ? (
+                                            <StaffDashboard
+                                                appointments={appointments}
+                                                currentUser={currentUser || { id: 'loading' }}
+                                                currentStaffId={selectedStaffId === 'ALL' ? undefined : selectedStaffId}
+                                                services={services}
+                                                staff={staff}
+                                                availability={availability}
+                                                currentOrg={currentOrg}
+                                                onStatusUpdate={onStatusUpdate}
+                                            />
+                                        ) : (
+                                            <TodayPanel
+                                                appointments={appointments}
+                                                staff={staff}
+                                                services={services}
+                                                availability={availability}
+                                                businessHours={currentOrg?.business_hours}
+                                                onAppointmentClick={handleAppointmentClick}
+                                            />
+                                        )}
                                     </div>
 
                                     {/* Weekly Calendar (Bottom) */}
-                                    <div className="w-full h-full lg:h-auto bg-white lg:rounded-xl lg:border border-gray-200 lg:shadow-sm overflow-hidden flex flex-col">
+                                    <div className="w-full h-full lg:h-auto bg-white lg:rounded-xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden flex flex-col">
                                         <WeeklyCalendar
                                             appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
                                             staff={staff}
@@ -306,6 +347,7 @@ export default function AdminDashboard() {
                                             isBlockingMode={isBlockingMode}
                                             onSelectSlot={handleSelectSlot}
                                             onAppointmentClick={handleAppointmentClick}
+                                            colorMode={currentOrg?.settings?.color_mode || 'staff'}
                                         />
                                     </div>
                                 </div>
@@ -326,6 +368,31 @@ export default function AdminDashboard() {
 
 
                     {
+                        activeTab === 'services' && (
+                            <div className="animate-in fade-in duration-300">
+                                <ServiceManager
+                                    services={services}
+                                    orgId={currentOrg?.id || ''}
+                                    onRefresh={loadDashboardData}
+                                />
+                            </div>
+                        )
+                    }
+
+                    {
+                        activeTab === 'team' && (
+                            <div className="animate-in fade-in duration-300">
+                                <StaffManager
+                                    staff={staff}
+                                    services={services}
+                                    orgId={currentOrg?.id || ''}
+                                    onRefresh={loadDashboardData}
+                                />
+                            </div>
+                        )
+                    }
+
+                    {
                         activeTab === 'analytics' && (
                             <AnalyticsView
                                 appointments={appointments}
@@ -344,9 +411,6 @@ export default function AdminDashboard() {
                                     onUpdate={loadDashboardData}
                                     org={currentOrg}
                                     onUpdateOrg={(updated) => setCurrentOrg(updated)}
-                                    services={services}
-                                    staff={staff}
-                                    onRefresh={loadDashboardData}
                                 />
                             </div>
                         )

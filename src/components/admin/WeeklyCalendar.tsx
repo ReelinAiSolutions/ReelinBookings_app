@@ -15,9 +15,10 @@ interface WeeklyCalendarProps {
     isBlockingMode?: boolean;
     onSelectSlot: (date: Date, time: string) => void;
     onAppointmentClick: (appointment: Appointment) => void;
+    colorMode?: 'staff' | 'service'; // New Prop
 }
 
-export default function WeeklyCalendar({ appointments, staff, services, availability = [], businessHours, isBlockingMode = false, onSelectSlot, onAppointmentClick }: WeeklyCalendarProps) {
+export default function WeeklyCalendar({ appointments, staff, services, availability = [], businessHours, isBlockingMode = false, onSelectSlot, onAppointmentClick, colorMode = 'staff' }: WeeklyCalendarProps) {
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [viewMode, setViewMode] = React.useState<'week' | 'month' | 'year'>('week');
 
@@ -188,15 +189,31 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                                             <div className={`h-full ${cellApts.length > 2 ? 'grid grid-cols-2 gap-0.5 content-start' : 'flex flex-col gap-0.5'}`}>
                                                 {cellApts.map(apt => {
                                                     const isDense = cellApts.length > 2;
+
+                                                    // Dynamic Coloring Logic
                                                     const colors = [
                                                         { bg: 'bg-blue-50', border: 'border-blue-600', text: 'text-blue-900' },
                                                         { bg: 'bg-purple-50', border: 'border-purple-600', text: 'text-purple-900' },
                                                         { bg: 'bg-emerald-50', border: 'border-emerald-600', text: 'text-emerald-900' },
                                                         { bg: 'bg-orange-50', border: 'border-orange-600', text: 'text-orange-900' },
                                                         { bg: 'bg-pink-50', border: 'border-pink-600', text: 'text-pink-900' },
+                                                        { bg: 'bg-cyan-50', border: 'border-cyan-600', text: 'text-cyan-900' },
+                                                        { bg: 'bg-rose-50', border: 'border-rose-600', text: 'text-rose-900' },
+                                                        { bg: 'bg-amber-50', border: 'border-amber-600', text: 'text-amber-900' },
                                                     ];
-                                                    const staffIndex = apt.staffId ? apt.staffId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length : 0;
-                                                    const staffColor = colors[staffIndex];
+
+                                                    let colorIndex = 0;
+                                                    if (colorMode === 'service') {
+                                                        const service = services.find(s => s.id === apt.serviceId);
+                                                        // Hash string to number
+                                                        const hash = service?.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) || 0;
+                                                        colorIndex = hash % colors.length;
+                                                    } else {
+                                                        // Default: Color by Staff
+                                                        colorIndex = apt.staffId ? apt.staffId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length : 0;
+                                                    }
+
+                                                    const staffColor = colors[colorIndex];
                                                     const staffMember = staff.find(s => s.id === apt.staffId);
                                                     const service = services.find(s => s.id === apt.serviceId);
 
@@ -248,7 +265,7 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
             </div>
 
             {/* MOBILE iOS STYLE VIEW */}
-            <div className="md:hidden flex flex-col h-full bg-white pb-[5.5rem]">
+            <div className="md:hidden flex flex-col h-full bg-white">
                 <div className="flex flex-col border-b border-gray-200 bg-white sticky top-0 z-20 shadow-sm">
                     <div className="flex items-center justify-between px-2 py-2">
                         <button onClick={() => setCurrentDate(addDays(currentDate, -7))} className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors">
@@ -304,6 +321,7 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                             const apt = appointments.find(a => a.id === id);
                             if (apt) onAppointmentClick(apt);
                         }}
+                        colorMode={colorMode} // Pass through
                     />
                 </div>
             </div>

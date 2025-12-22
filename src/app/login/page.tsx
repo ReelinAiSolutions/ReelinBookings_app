@@ -65,7 +65,22 @@ function LoginForm() {
             }
 
             // Successful login
-            router.push('/admin');
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile?.role === 'owner' || profile?.role === 'admin' || profile?.role === 'ADMIN') {
+                    router.push('/admin');
+                } else {
+                    router.push('/staff');
+                }
+            } else {
+                router.push('/admin');
+            }
             router.refresh();
         } catch (err: any) {
             setError(err.message || 'Failed to sign in');

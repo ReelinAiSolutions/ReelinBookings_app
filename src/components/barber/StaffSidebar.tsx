@@ -1,21 +1,19 @@
 import React from 'react';
-import { Calendar, Users, BarChart3, Settings, User, ExternalLink, Key, Briefcase } from 'lucide-react';
+import { Calendar, BarChart3, User, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { Organization } from '@/types';
 
-interface AdminSidebarProps {
-    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team';
-    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team') => void;
+interface StaffSidebarProps {
+    activeTab: 'schedule' | 'performance' | 'profile';
+    setActiveTab: (tab: 'schedule' | 'performance' | 'profile') => void;
     currentOrg: Organization | null;
 }
 
-export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: AdminSidebarProps) {
+export default function StaffSidebar({ activeTab, setActiveTab, currentOrg }: StaffSidebarProps) {
     const navItems = [
-        { id: 'operations', label: 'Operations', icon: Calendar },
-        { id: 'services', label: 'Services', icon: Briefcase },
-        { id: 'team', label: 'Team', icon: Users },
-        { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-        { id: 'profile', label: 'Profile', icon: User },
+        { id: 'schedule', label: 'My Schedule', icon: Calendar },
+        { id: 'performance', label: 'My Performance', icon: BarChart3 },
+        { id: 'profile', label: 'My Profile', icon: User },
     ] as const;
 
     return (

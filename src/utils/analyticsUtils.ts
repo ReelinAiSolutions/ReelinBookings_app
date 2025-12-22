@@ -36,9 +36,6 @@ export interface AnalyticMetrics {
     noShowRate: string;
     rebookingRate: string;
 }
-heatmap: { hour: string; count: number } [];
-cancellationRate: string;
-}
 
 // Helper to calculate percentage growth
 const calculateGrowth = (current: number, previous: number): number => {
@@ -322,7 +319,7 @@ export const processAnalytics = (
         topServices,
         topStaff,
         topClients,
-        topClients,
+
         cancellationRate: cancelRate,
         noShowRate,
         rebookingRate,

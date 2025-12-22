@@ -4,14 +4,16 @@ import Link from 'next/link';
 import { Organization } from '@/types';
 
 interface AdminNavProps {
-    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites';
-    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites') => void;
+    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team';
+    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team') => void;
     currentOrg: Organization | null;
 }
 
 export default function AdminNav({ activeTab, setActiveTab, currentOrg }: AdminNavProps) {
     const navItems = [
         { id: 'operations', label: 'Operations', icon: Calendar, mobileLabel: 'Calendar' },
+        { id: 'services', label: 'Services', icon: Briefcase, mobileLabel: 'Services' },
+        { id: 'team', label: 'Team', icon: Users, mobileLabel: 'Team' },
         { id: 'analytics', label: 'Analytics', icon: BarChart3, mobileLabel: 'Stats' },
         { id: 'profile', label: 'Profile', icon: User, mobileLabel: 'Profile' },
     ] as const;

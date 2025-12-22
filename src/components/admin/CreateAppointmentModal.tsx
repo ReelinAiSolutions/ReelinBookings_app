@@ -20,6 +20,9 @@ interface CreateAppointmentModalProps {
     staff: Staff[];
     appointments: any[]; // Receiving existing appointments for conflict check
     businessHours?: any; // Organization['business_hours']
+    availability?: Availability[]; // Added prop
+    preselectedStaffId?: string; // Added prop
+    slotInterval?: number; // Added prop
 }
 
 type Mode = 'booking' | 'blocking';
@@ -41,9 +44,25 @@ export default function CreateAppointmentModal({
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<Mode>('booking');
 
-    // ... (rest of state)
+    const [date, setDate] = useState<string>(defaultDate ? (typeof defaultDate === 'string' ? defaultDate : defaultDate.toISOString().split('T')[0]) : new Date().toISOString().split('T')[0]);
+    const [time, setTime] = useState<string>(defaultTime || '');
+    const [staffId, setStaffId] = useState<string>(preselectedStaffId || staff[0]?.id || '');
+    const [serviceId, setServiceId] = useState<string>(services[0]?.id || '');
+    const [clientName, setClientName] = useState('');
+    const [clientEmail, setClientEmail] = useState('');
+    const [error, setError] = useState<string | null>(null);
 
-    // ... (rest of effects)
+    useEffect(() => {
+        if (isOpen) {
+            // Reset form on open
+            if (defaultDate) setDate(typeof defaultDate === 'string' ? defaultDate : defaultDate.toISOString().split('T')[0]);
+            if (defaultTime) setTime(defaultTime);
+            if (preselectedStaffId) setStaffId(preselectedStaffId);
+            setError(null);
+            setClientName('');
+            setClientEmail('');
+        }
+    }, [isOpen, defaultDate, defaultTime, preselectedStaffId]);
 
     const generateTimeOptions = () => {
         if (!date) return <option disabled>Select a date first</option>;

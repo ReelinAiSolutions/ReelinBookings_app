@@ -578,35 +578,42 @@ export const getTimeSlots = async (staffId: string, date: Date, serviceDuration:
     let currentMinutes = Math.max(shiftStart, shopOpen);
     const absoluteEnd = Math.min(shiftEnd, shopClose);
 
-    // --- LEAD TIME CHECK (15 Minutes) ---
-    // If "Today", ensure slots are in the future + buffer
+    // 5. Timezone & "Today" Logic
+    // We must calculate "Now" in the Organization's Timezone to determine if a slot is in the past.
+    // If org has no timezone, default to 'America/New_York' (or system default, but consistent).
+    const orgTimezone = (org as any).timezone || 'America/New_York';
+
+    // Get "Now" in Org Timezone
+    // We use a simple trick: formatting "now" into the target timezone, then parsing it back as local components
     const now = new Date();
-    const isToday = now.getFullYear() === y && now.getMonth() + 1 === parseInt(m) && now.getDate() === parseInt(d);
+    const nowInOrgStr = now.toLocaleString('en-US', { timeZone: orgTimezone, hour12: false });
+    const nowInOrg = new Date(nowInOrgStr);
 
-    if (isToday) {
-        const MIN_NOTICE_MINUTES = 15;
-        const nowMinutes = now.getHours() * 60 + now.getMinutes();
-        const earliestAllowed = nowMinutes + MIN_NOTICE_MINUTES;
-        // Bump currentMinutes if it's too early
-        if (currentMinutes < earliestAllowed) {
-            // Snap to next interval if needed, but simple max is enough for start loop
-            // We also need to round up to next interval for cleanliness? 
-            // The loop increments by interval. 
-            // If currentMinutes=540 (9am) and earliest=615 (10:15am), we start at 615? 
-            // Ideally we snap to next valid slot.
-            // Let's just set start min.
-            currentMinutes = Math.max(currentMinutes, earliestAllowed);
+    // Check if the requested date (YYYY-MM-DD from client) is "Today" in Org Time
+    // safe date creation from YYYY-MM-DD
+    const [reqY, reqM, reqD] = dateStr.split('-').map(Number);
+    const isTodayInOrg = (
+        nowInOrg.getFullYear() === reqY &&
+        (nowInOrg.getMonth() + 1) === reqM &&
+        nowInOrg.getDate() === reqD
+    );
 
-            // Round up to next interval to avoid weird times like "10:17"
-            // If interval=60. remainder = currentMinutes % 60. 
-            // if remainder > 0, add (60 - remainder).
-            const remainder = currentMinutes % interval;
-            if (remainder > 0) {
-                currentMinutes += (interval - remainder);
-            }
+    // If it's today, we need to block past slots + lead time
+    let startLimit = currentMinutes;
+    if (isTodayInOrg) {
+        const MIN_NOTICE_MINUTES = 60; // Increased to 1 hour for safety
+        const currentOrgMinutes = nowInOrg.getHours() * 60 + nowInOrg.getMinutes();
+        startLimit = Math.max(startLimit, currentOrgMinutes + MIN_NOTICE_MINUTES);
+
+        // Snap to next interval
+        const remainder = startLimit % interval;
+        if (remainder > 0) {
+            startLimit += (interval - remainder);
         }
     }
-    // ------------------------------------
+
+    // Use the calculated limit
+    currentMinutes = Math.max(currentMinutes, startLimit);
 
     // 5. Fetch Existing Appointments (with Duration) for Collision Detection
     const { data: existingApts } = await supabase

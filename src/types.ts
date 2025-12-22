@@ -30,6 +30,30 @@ export interface Service {
     durationMinutes: number;
     price: number;
     imageUrl?: string;
+    category?: string;
+    categoryColor?: string;
+    isVisible?: boolean;
+    bufferTimeMinutes?: number;
+    depositRequired?: boolean;
+    depositAmount?: number;
+    cancellationHours?: number;
+    maxCapacity?: number;
+    displayOrder?: number;
+}
+
+export interface ServicePricingTier {
+    id: string;
+    serviceId: string;
+    tierName: string;
+    price: number;
+}
+
+export interface ServiceAddon {
+    id: string;
+    serviceId: string;
+    addonName: string;
+    addonPrice: number;
+    durationMinutes: number;
 }
 
 export interface Staff {
@@ -82,4 +106,7 @@ export interface Organization {
     policy_url?: string;
     slot_interval?: number;
     business_hours?: Record<string, { open: string; close: string; isOpen: boolean }>;
+    settings?: {
+        color_mode?: 'staff' | 'service';
+    };
 }

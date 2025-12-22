@@ -300,6 +300,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 });
             } catch (emailError) {
                 console.error("Failed to send email", emailError);
+                toast("Booking confirmed, but email failed to send. Please save your confirmation details.", "error"); // Using error style for visibility
             }
 
             setBookingComplete(true);
