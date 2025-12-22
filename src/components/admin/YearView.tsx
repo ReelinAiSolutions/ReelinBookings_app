@@ -6,10 +6,10 @@ interface YearViewProps {
     currentDate: Date;
     onMonthSelect: (date: Date) => void;
     onYearChange: (date: Date) => void;
-    onBack: () => void;
+    onTitleClick: () => void;
 }
 
-export default function YearView({ currentDate, onMonthSelect, onYearChange, onBack }: YearViewProps) {
+export default function YearView({ currentDate, onMonthSelect, onYearChange, onTitleClick }: YearViewProps) {
     const yearStart = startOfYear(currentDate);
     const year = currentDate.getFullYear();
     const today = new Date();
@@ -47,11 +47,10 @@ export default function YearView({ currentDate, onMonthSelect, onYearChange, onB
                 </button>
 
                 <button
-                    onClick={onBack}
-                    className="text-xl font-bold text-blue-600 tracking-tight hover:bg-blue-50 px-2 rounded-lg transition-colors flex items-center gap-1"
+                    onClick={onTitleClick}
+                    className="text-lg font-bold text-blue-600 tracking-tight hover:bg-blue-50 px-2 rounded-lg transition-colors flex items-center gap-1"
                 >
                     {format(currentDate, 'MMMM yyyy')}
-                    <ChevronRight className="w-5 h-5 text-blue-400 rotate-270" />
                 </button>
 
                 <button

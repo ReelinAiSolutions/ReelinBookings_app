@@ -8,10 +8,10 @@ interface MonthViewProps {
     appointments: Appointment[];
     onDaySelect: (date: Date) => void;
     onMonthChange: (date: Date) => void;
-    onBack: () => void; // Go to Year View
+    onTitleClick: () => void;
 }
 
-export default function MonthView({ currentDate, appointments, onDaySelect, onMonthChange, onBack }: MonthViewProps) {
+export default function MonthView({ currentDate, appointments, onDaySelect, onMonthChange, onTitleClick }: MonthViewProps) {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(monthStart);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday
@@ -32,33 +32,26 @@ export default function MonthView({ currentDate, appointments, onDaySelect, onMo
     return (
         <div className="flex flex-col h-full bg-white animate-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white z-10 shrink-0">
+            <div className="flex items-center justify-between px-2 py-2 border-b border-gray-100 bg-white z-10 shrink-0">
                 <button
                     onClick={() => onMonthChange(addMonths(currentDate, -1))}
                     className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
                 >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-5 h-5" />
                 </button>
 
                 <button
-                    onClick={onBack}
-                    className="text-lg font-bold text-blue-600 hover:bg-blue-50 px-3 py-1 rounded-lg transition-colors flex items-center gap-1 group"
+                    onClick={onTitleClick}
+                    className="text-lg font-bold text-blue-600 flex items-center gap-1 hover:bg-blue-50 px-2 rounded-lg transition-colors"
                 >
-                    <ChevronLeft className="w-5 h-5 text-blue-500 -ml-1" />
-                    {format(currentDate, 'yyyy')}
+                    {format(currentDate, 'MMMM yyyy')}
                 </button>
-
-                <div className="flex-1 text-center pointer-events-none -ml-14 font-black text-gray-900 text-lg uppercase tracking-wide">
-                    {format(currentDate, 'MMMM')}
-                </div>
-
-                <div className="w-6"></div> {/* Spacer for balance if needed, or Next arrow */}
 
                 <button
                     onClick={() => onMonthChange(addMonths(currentDate, 1))}
-                    className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors -ml-6"
+                    className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
                 >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-5 h-5" />
                 </button>
             </div>
 

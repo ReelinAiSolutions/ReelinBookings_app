@@ -92,7 +92,7 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                 currentDate={currentDate}
                 onMonthSelect={handleMonthSelect}
                 onYearChange={setCurrentDate}
-                onBack={() => setViewMode('month')} // Back from Year goes to Month? Actually usually Year is top. But if we want symmetry... let's keep it safe. Actually navigation: Week->Month->Year. So Year back goes to Month? No, Year is top.
+                onTitleClick={() => setViewMode('week')} // Click Title -> Go to Week (Cycle Complete)
             />
         );
     }
@@ -104,7 +104,7 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                 appointments={appointments}
                 onDaySelect={handleDaySelect}
                 onMonthChange={setCurrentDate}
-                onBack={() => setViewMode('year')} // "Zoom out" to Year
+                onTitleClick={() => setViewMode('year')} // Click Title -> Go to Year (Step 2 of Cycle)
             />
         );
     }
