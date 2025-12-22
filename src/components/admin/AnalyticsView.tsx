@@ -159,7 +159,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
         <div className="space-y-6 animate-in fade-in duration-300 max-w-7xl mx-auto pb-24 w-full overflow-x-hidden">
 
             {/* Header & Controls */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4 md:space-y-0 md:flex md:items-center md:justify-between">
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4 md:space-y-0 md:flex md:items-center md:justify-between w-full max-w-[90vw] mx-auto md:max-w-full">
                 <div>
                     <h2 className="text-xl font-black text-gray-900">Analytics Dashboard</h2>
                     <p className="text-sm text-gray-500">Track your business growth and performance.</p>
@@ -199,7 +199,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
 
             {/* === BUSINESS VIEW === */}
             {viewMode === 'business' && (
-                <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="space-y-6 animate-in fade-in duration-300 w-full max-w-[90vw] mx-auto md:max-w-full">
 
                     {/* 1. BUSINESS OVERVIEW */}
                     <div>
@@ -367,13 +367,13 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
 
             {/* === TEAM VIEW (NEW) === */}
             {viewMode === 'team' && (
-                <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="space-y-6 animate-in fade-in duration-300 w-full max-w-[90vw] mx-auto md:max-w-full">
 
                     {/* Charts Row */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                         {/* Revenue Chart */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0 max-w-[90vw] md:max-w-full">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
                             <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                                 <DollarSign className="w-5 h-5 text-green-600" /> Revenue by Staff
                             </h4>
@@ -406,7 +406,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                         </div>
 
                         {/* Utilization Chart */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0 max-w-[90vw] md:max-w-full">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
                             <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                                 <Activity className="w-5 h-5 text-blue-600" /> Utilization Rate (%)
                             </h4>
@@ -441,7 +441,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                     </div>
 
                     {/* Detailed Team Table */}
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm w-full max-w-[90vw] md:max-w-full">
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm w-full max-w-full">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                             <h4 className="font-bold text-gray-900 flex items-center gap-2">
                                 <Trophy className="w-5 h-5 text-yellow-500" /> Performance Leaderboard
