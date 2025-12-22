@@ -290,10 +290,16 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                 <SectionHeader id="services" label="Services" icon={Briefcase} />
                 {expandedSection === 'services' && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
-                        {org ? (
-                            <ServiceManager services={services} orgId={org.id} onRefresh={onRefresh} />
+                        {org || (profile && profile.org_id) ? (
+                            <ServiceManager
+                                services={services}
+                                orgId={org?.id || profile?.org_id}
+                                onRefresh={onRefresh}
+                            />
                         ) : (
-                            <p className="text-sm text-gray-500">Loading organization...</p>
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <p className="text-gray-500">Organization data not found.</p>
+                            </div>
                         )}
                     </div>
                 )}
@@ -304,10 +310,18 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                 <SectionHeader id="team" label="Teams" icon={Users} />
                 {expandedSection === 'team' && (
                     <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl p-4 animate-in fade-in slide-in-from-top-2">
-                        {org ? (
-                            <StaffManager staff={staff} services={services} orgId={org.id} onRefresh={onRefresh} />
+                        {org || (profile && profile.org_id) ? (
+                            <StaffManager
+                                staff={staff}
+                                services={services}
+                                orgId={org?.id || profile?.org_id}
+                                onRefresh={onRefresh}
+                            />
                         ) : (
-                            <p className="text-sm text-gray-500">Loading organization...</p>
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <p className="text-gray-500 mb-2">Organization data not found.</p>
+                                <p className="text-xs text-gray-400">Please contact support or try refreshing.</p>
+                            </div>
                         )}
                     </div>
                 )}
@@ -321,7 +335,10 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                         {org ? (
                             <SettingsManager org={org} onUpdate={onUpdateOrg} />
                         ) : (
-                            <p className="text-sm text-gray-500">Loading organization...</p>
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <p className="text-gray-500 mb-2">Business settings unavailable.</p>
+                                <p className="text-xs text-gray-400">Organization profile could not be loaded.</p>
+                            </div>
                         )}
                     </div>
                 )}

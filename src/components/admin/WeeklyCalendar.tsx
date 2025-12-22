@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { Appointment, Staff, Service, Organization } from '@/types';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import VerticalDayTimeline from './VerticalDayTimeline';
-import { addDays, format, startOfWeek, addHours, startOfDay, isSameDay } from 'date-fns';
+import { addDays, format, startOfWeek, addHours, startOfDay, isSameDay, addYears } from 'date-fns';
+import YearView from './YearView';
 
 interface WeeklyCalendarProps {
     appointments: Appointment[];
@@ -17,6 +18,8 @@ interface WeeklyCalendarProps {
 
 export default function WeeklyCalendar({ appointments, staff, services, availability = [], businessHours, isBlockingMode = false, onSelectSlot, onAppointmentClick }: WeeklyCalendarProps) {
     const [currentDate, setCurrentDate] = React.useState(new Date());
+    const [viewMode, setViewMode] = React.useState<'week' | 'year'>('week');
+
     const startDate = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday start
 
     // Generate week days
@@ -74,14 +77,34 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
         return apt.date === selectedDateString;
     }).sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
 
+    const handleMonthSelect = (date: Date) => {
+        setCurrentDate(date);
+        setViewMode('week');
+    };
+
+    if (viewMode === 'year') {
+        return (
+            <YearView
+                currentDate={currentDate}
+                onMonthSelect={handleMonthSelect}
+                onYearChange={setCurrentDate}
+                onBack={() => setViewMode('week')}
+            />
+        );
+    }
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
             {/* Desktop Calendar Header (Visible only on Desktop) */}
             <div className="hidden md:flex p-4 border-b border-gray-200 justify-between items-center">
                 <div className="flex items-center gap-4">
-                    <h2 className="text-lg font-bold text-gray-900">
+                    <button
+                        onClick={() => setViewMode('year')}
+                        className="text-lg font-bold text-gray-900 hover:bg-gray-100 px-3 py-1 rounded-md transition-colors flex items-center gap-2 group"
+                    >
                         {format(startDate, 'MMMM yyyy')}
-                    </h2>
+                        <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-900 rotate-90 transition-transform" />
+                    </button>
                     <div className="flex items-center rounded-md border border-gray-200 bg-white">
                         <button onClick={() => setCurrentDate(addDays(currentDate, -7))} className="p-1 hover:bg-gray-50"><ChevronLeft className="w-5 h-5 text-gray-500" /></button>
                         <button onClick={() => setCurrentDate(addDays(currentDate, 7))} className="p-1 hover:bg-gray-50"><ChevronRight className="w-5 h-5 text-gray-500" /></button>
@@ -231,12 +254,28 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
             <div className="md:hidden flex flex-col h-full bg-white pb-[5.5rem]">
                 {/* Date Strip Header */}
                 <div className="flex flex-col border-b border-gray-200 bg-white sticky top-0 z-20 shadow-sm">
-                    <div className="flex items-center justify-between px-4 py-3">
-                        <h2 className="text-lg font-bold text-gray-900">{format(currentDate, 'MMMM yyyy')}</h2>
-                        <div className="flex gap-2">
-                            <button onClick={() => setCurrentDate(addDays(currentDate, -7))} className="p-1"><ChevronLeft className="w-5 h-5 text-gray-600" /></button>
-                            <button onClick={() => setCurrentDate(addDays(currentDate, 7))} className="p-1"><ChevronRight className="w-5 h-5 text-gray-600" /></button>
-                        </div>
+                    <div className="flex items-center justify-between px-2 py-2">
+                        <button
+                            onClick={() => setCurrentDate(addDays(currentDate, -7))}
+                            className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+
+                        <button
+                            onClick={() => setViewMode('year')}
+                            className="text-lg font-bold text-blue-600 flex items-center gap-1 hover:bg-blue-50 px-2 rounded-lg transition-colors"
+                        >
+                            {format(currentDate, 'MMMM yyyy')}
+                            <ChevronRight className="w-4 h-4 text-blue-400 rotate-90" />
+                        </button>
+
+                        <button
+                            onClick={() => setCurrentDate(addDays(currentDate, 7))}
+                            className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
                     </div>
 
                     <div className="flex justify-between px-2 pb-3 overflow-x-auto no-scrollbar">

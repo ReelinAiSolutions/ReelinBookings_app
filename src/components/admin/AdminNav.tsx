@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { Organization } from '@/types';
 
 interface AdminNavProps {
-    activeTab: 'operations' | 'services' | 'team' | 'analytics' | 'settings' | 'profile' | 'invites';
-    setActiveTab: (tab: 'operations' | 'services' | 'team' | 'analytics' | 'settings' | 'profile' | 'invites') => void;
+    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites';
+    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites') => void;
     currentOrg: Organization | null;
 }
 

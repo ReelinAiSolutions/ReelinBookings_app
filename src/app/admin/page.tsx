@@ -48,7 +48,7 @@ const MOCK_STATS = [
 ];
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'operations' | 'services' | 'team' | 'analytics' | 'settings' | 'profile' | 'invites'>('operations');
+    const [activeTab, setActiveTab] = useState<'operations' | 'analytics' | 'settings' | 'profile' | 'invites'>('operations');
     const [appointments, setAppointments] = useState<any[]>([]);
     const [stats, setStats] = useState({ totalRevenue: 0, totalBookings: 0, activeStaff: 0 });
     const [services, setServices] = useState<any[]>([]);
@@ -81,25 +81,40 @@ export default function AdminDashboard() {
                 return;
             }
 
-            // Parallel fetch with scoped Org ID
-            const [fetchedApts, fetchedServices, fetchedStaff, fetchedAvailability, fetchedOrg, fetchedProfile] = await Promise.all([
+            // 1. Fetch Core Data (Parallel)
+            // We use Promise.allSettled where available, or just separate critical from non-critical.
+            // Critical: Appointments, Services, Staff (Operations)
+            // Non-Critical: Org Metadata (if it fails, we just show default branding)
+
+            // Core Fetch
+            const [fetchedApts, fetchedServices, fetchedStaff, fetchedAvailability] = await Promise.all([
                 getAppointments(orgId),
                 getServices(orgId),
                 getStaff(orgId),
-                getAllAvailability(orgId),
-                getOrganizationById(orgId),
-                getUserProfile()
+                getAllAvailability(orgId)
             ]);
 
             setAppointments(fetchedApts || []);
             setServices(fetchedServices || []);
             setStaff(fetchedStaff || []);
             setAvailability(fetchedAvailability || []);
-            setCurrentOrg(fetchedOrg as Organization);
 
-            if (fetchedProfile) {
-                setCurrentUser(fetchedProfile.user);
-                setUserProfile(fetchedProfile.profile);
+            // 2. Fetch Metadata (Parallel but isolated catch)
+            try {
+                const [fetchedOrg, fetchedProfile] = await Promise.all([
+                    getOrganizationById(orgId),
+                    getUserProfile()
+                ]);
+
+                setCurrentOrg(fetchedOrg as Organization);
+
+                if (fetchedProfile) {
+                    setCurrentUser(fetchedProfile.user);
+                    setUserProfile(fetchedProfile.profile);
+                }
+            } catch (metaError) {
+                console.error("Metadata Load Error (Non-Critical):", metaError);
+                // We continue, so the dashboard still works even if org details fail
             }
 
             // Calculate simple stats
@@ -306,42 +321,9 @@ export default function AdminDashboard() {
                         )
                     }
 
-                    {
-                        activeTab === 'services' && (
-                            <div className="animate-in fade-in duration-300">
-                                {currentOrg ? (
-                                    <ServiceManager
-                                        services={services}
-                                        orgId={currentOrg.id}
-                                        onRefresh={loadDashboardData}
-                                    />
-                                ) : (
-                                    <div className="flex items-center justify-center h-64">
-                                        <p className="text-gray-500">Loading services...</p>
-                                    </div>
-                                )}
-                            </div>
-                        )
-                    }
 
-                    {
-                        activeTab === 'team' && (
-                            <div className="animate-in fade-in duration-300">
-                                {currentOrg ? (
-                                    <StaffManager
-                                        staff={staff}
-                                        services={services}
-                                        orgId={currentOrg.id}
-                                        onRefresh={loadDashboardData}
-                                    />
-                                ) : (
-                                    <div className="flex items-center justify-center h-64">
-                                        <p className="text-gray-500">Loading team...</p>
-                                    </div>
-                                )}
-                            </div>
-                        )
-                    }
+
+
 
                     {
                         activeTab === 'analytics' && (

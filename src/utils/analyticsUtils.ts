@@ -29,7 +29,7 @@ export interface AnalyticMetrics {
         hour: string;
     };
     topServices: { name: string; count: number; revenue: number; share: number }[];
-    topStaff: { name: string; bookings: number; revenue: number; rank: number; avgTicket: number }[];
+    topStaff: { name: string; bookings: number; revenue: number; rank: number; avgTicket: number; hours: number; utilization: number; clients: number }[];
     topClients: { name: string; email: string; spent: number; visits: number; lastVisit: Date }[];
     heatmap: { hour: string; count: number }[];
     cancellationRate: string;
@@ -54,7 +54,7 @@ const calculatePeriodStats = (
     let lostRevenue = 0;
     let cancelled = 0;
     let serviceCounts: Record<string, { count: number, val: number }> = {};
-    let staffCounts: Record<string, { count: number, val: number }> = {};
+    let staffCounts: Record<string, { count: number, val: number, minutes: number, clients: Set<string> }> = {};
     let clientStats: Record<string, { name: string, email: string, spent: number, visits: number, lastVisit: Date }> = {};
     let hourCounts: Record<string, number> = {};
     let dayCounts: Record<string, number> = {};
@@ -100,9 +100,11 @@ const calculatePeriodStats = (
             serviceCounts[serviceName].val += price;
 
             // Staff Stats
-            if (!staffCounts[staffName]) staffCounts[staffName] = { count: 0, val: 0 };
+            if (!staffCounts[staffName]) staffCounts[staffName] = { count: 0, val: 0, minutes: 0, clients: new Set<string>() };
             staffCounts[staffName].count++;
             staffCounts[staffName].val += price;
+            staffCounts[staffName].minutes += duration;
+            if (apt.clientEmail) staffCounts[staffName].clients.add(apt.clientEmail);
 
             // Time Stats
             if (apt.timeSlot) {
@@ -188,17 +190,29 @@ export const processAnalytics = (
     // Peak Hour
     const peakHour = Object.entries(current.hourCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
 
-    // Top Staff
+    // Top Staff with Enhanced Metrics
     const topStaff = Object.entries(current.staffCounts)
-        .map(([name, data]) => ({
-            name,
-            bookings: data.count,
-            revenue: data.val,
-            avgTicket: data.count > 0 ? data.val / data.count : 0
-        }))
+        .map(([name, data]) => {
+            // Utilization: Hours Booked / (Days in Period * 8 hours)
+            // This is a rough estimate assuming 8 hour days.
+            // In a real app we'd map against actual availability schedules.
+            const daysInPeriod = Math.max(1, differenceInCalendarDays(currentRange.end, currentRange.start) + 1);
+            const capacityHours = daysInPeriod * 8;
+            const hoursBooked = data.minutes / 60;
+            const utilization = capacityHours > 0 ? (hoursBooked / capacityHours) * 100 : 0;
+
+            return {
+                name,
+                bookings: data.count,
+                revenue: data.val,
+                hours: hoursBooked,
+                utilization: Math.min(100, utilization), // Cap at 100% just in case of overtime
+                clients: data.clients.size,
+                avgTicket: data.count > 0 ? data.val / data.count : 0
+            };
+        })
         .sort((a, b) => b.revenue - a.revenue)
-        .map((s, i) => ({ ...s, rank: i + 1 }))
-        .slice(0, 5);
+        .map((s, i) => ({ ...s, rank: i + 1 }));
 
     // Top Services
     const topServices = Object.entries(current.serviceCounts)
