@@ -196,7 +196,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
             </div>
 
             {/* Performance Metric Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <StatCard
                     label="My Revenue"
                     value={`$${stats.revenue.value}`}
@@ -238,7 +238,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
             {/* Comparison Insights & Personal Goals */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Insights Panel */}
-                <div className="lg:col-span-2 bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 p-10 overflow-hidden relative">
+                <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 p-6 md:p-10 overflow-hidden relative">
                     <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary-50 rounded-full opacity-50 blur-3xl"></div>
 
                     <div className="relative flex items-center justify-between mb-8">
@@ -316,7 +316,7 @@ function StatCard({ label, value, growth, showGrowth, icon: Icon, gradient, desc
     const isPositive = growth >= 0;
 
     return (
-        <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-xl shadow-gray-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-white rounded-2xl md:rounded-[2rem] p-4 md:p-8 border border-gray-100 shadow-xl shadow-gray-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-[0.03] -mr-8 -mt-8 rounded-full group-hover:scale-125 transition-transform duration-500`}></div>
 
             <div className="flex justify-between items-start mb-6">
@@ -334,7 +334,7 @@ function StatCard({ label, value, growth, showGrowth, icon: Icon, gradient, desc
 
             <div className="space-y-1 relative">
                 <h4 className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{label}</h4>
-                <div className="text-4xl font-black text-gray-900 tracking-tighter">{value}</div>
+                <div className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter">{value}</div>
                 <p className="text-gray-400 text-[10px] font-bold mt-2">{description}</p>
             </div>
         </div>
@@ -345,7 +345,7 @@ function InsightRow({ label, curr, growth, showGrowth, isCurrency = false, isPer
     const isPositive = growth >= 0;
 
     return (
-        <div className="flex items-center justify-between p-6 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300">
+        <div className="flex items-center justify-between p-4 md:p-6 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300">
             <div className="flex flex-col">
                 <span className="text-sm font-black text-gray-900 uppercase tracking-widest">{label}</span>
                 <span className="text-xs text-gray-500 font-bold mt-0.5">Performance Trend</span>
