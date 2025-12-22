@@ -136,16 +136,17 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
         return sortableItems;
     }, [metrics.topStaff, sortConfig]);
 
-    const SortableHeader = ({ label, sortKey, align = 'right' }: { label: string, sortKey: string, align?: 'left' | 'right' }) => (
+    const SortableHeader = ({ label, sortKey, align = 'right', className = '', mobileLabel }: { label: string, sortKey: string, align?: 'left' | 'right', className?: string, mobileLabel?: string }) => (
         <th
-            className={`px-6 py-3 text-${align} text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hover:text-gray-700 transition-colors select-none group`}
+            className={`px-1 md:px-6 py-3 text-${align} text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hover:text-gray-700 transition-colors select-none group ${className}`}
             onClick={() => handleSort(sortKey)}
         >
-            <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : 'justify-start'}`}>
-                {label}
+            <div className={`flex items-center gap-0.5 md:gap-1 ${align === 'right' ? 'justify-end' : 'justify-start'}`}>
+                <span className={mobileLabel ? "hidden md:inline" : ""}>{label}</span>
+                {mobileLabel && <span className="md:hidden">{mobileLabel}</span>}
                 <div className="flex flex-col opacity-0 group-hover:opacity-50 data-[active=true]:opacity-100" data-active={sortConfig.key === sortKey}>
-                    <ChevronUp className={`w-3 h-3 ${sortConfig.key === sortKey && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <ChevronDown className={`w-3 h-3 -mt-1 ${sortConfig.key === sortKey && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <ChevronUp className={`w-2 h-2 md:w-3 md:h-3 ${sortConfig.key === sortKey && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <ChevronDown className={`w-2 h-2 md:w-3 md:h-3 -mt-0.5 md:-mt-1 ${sortConfig.key === sortKey && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} />
                 </div>
             </div>
         </th>
@@ -452,20 +453,23 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Rank</th>
-                                        <SortableHeader label="Staff Member" sortKey="name" align="left" />
-                                        <SortableHeader label="Revenue" sortKey="revenue" align="right" />
-                                        <SortableHeader label="Hours" sortKey="hours" align="right" />
-                                        <SortableHeader label="Utilization" sortKey="utilization" align="right" />
-                                        <SortableHeader label="Clients" sortKey="clients" align="right" />
-                                        <SortableHeader label="Avg Ticket" sortKey="avgTicket" align="right" />
+                                        <th className="px-1 md:px-6 py-3 text-left text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider w-8 md:w-auto">
+                                            <span className="md:hidden">#</span>
+                                            <span className="hidden md:inline">Rank</span>
+                                        </th>
+                                        <SortableHeader label="Staff" sortKey="name" align="left" className="w-24 md:w-auto" />
+                                        <SortableHeader label="Rev" sortKey="revenue" align="right" mobileLabel="Rev" />
+                                        <SortableHeader label="Hours" sortKey="hours" align="right" mobileLabel="Hrs" />
+                                        <SortableHeader label="Util" sortKey="utilization" align="right" mobileLabel="Util" />
+                                        <SortableHeader label="Clients" sortKey="clients" align="right" mobileLabel="Clts" />
+                                        <SortableHeader label="Avg Tkt" sortKey="avgTicket" align="right" mobileLabel="Avg" />
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {sortedStaff.map((staff, index) => (
                                         <tr key={staff.name} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-xs
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap">
+                                                <div className={`w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full font-bold text-[10px] md:text-xs
                                                     ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
                                                         index === 1 ? 'bg-gray-100 text-gray-600' :
                                                             index === 2 ? 'bg-orange-100 text-orange-700' : 'text-gray-400'}
@@ -473,42 +477,35 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                     #{index + 1}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap max-w-[80px] md:max-w-none">
                                                 <div className="flex items-center">
-                                                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3">
+                                                    <div className="h-5 w-5 md:h-8 md:w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-1.5 md:mr-3 text-[10px] md:text-sm shrink-0">
                                                         {staff.name.charAt(0)}
                                                     </div>
-                                                    <div className="text-sm font-bold text-gray-900">{staff.name}</div>
+                                                    <div className="text-[10px] md:text-sm font-bold text-gray-900 truncate">{staff.name}</div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm font-bold text-gray-900">
                                                 ${staff.revenue.toLocaleString()}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
-                                                {staff.hours.toFixed(1)}h
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
+                                                {staff.hours.toFixed(1)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${staff.utilization > 80 ? 'bg-green-100 text-green-800' :
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm">
+                                                <span className={`px-1.5 py-0.5 md:px-2 md:py-1 rounded-full text-[10px] md:text-xs font-bold ${staff.utilization > 80 ? 'bg-green-100 text-green-800' :
                                                     staff.utilization > 50 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
                                                     }`}>
                                                     {staff.utilization.toFixed(0)}%
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
                                                 {staff.clients}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                            <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm text-gray-600">
                                                 ${staff.avgTicket.toFixed(0)}
                                             </td>
                                         </tr>
                                     ))}
-                                    {metrics.topStaff.length === 0 && (
-                                        <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
-                                                No team performance data available for this period.
-                                            </td>
-                                        </tr>
-                                    )}
                                 </tbody>
                             </table>
                         </div>
