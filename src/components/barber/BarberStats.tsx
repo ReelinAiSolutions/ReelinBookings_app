@@ -13,7 +13,11 @@ import {
     Filter,
     HelpCircle,
     Activity,
-    Target
+    Target,
+    Trophy,
+    Star,
+    Award,
+    Zap
 } from 'lucide-react';
 import {
     startOfWeek, endOfWeek,
@@ -277,34 +281,61 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                     </div>
                 </div>
 
-                {/* Motivational Achievement Card */}
-                <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-[2rem] p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between">
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
-                        <TrendingUp className="w-32 h-32" />
+                {/* Elite Performance Hub */}
+                <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-[2rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between group">
+                    {/* Background Decorative Element */}
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                        <Trophy className="w-32 h-32" />
                     </div>
 
                     <div className="relative">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-400 text-gray-900 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border-b-2 border-yellow-600">
-                            Performance Badge
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border-b-2 border-amber-600 shadow-lg shadow-yellow-500/20">
+                            <Zap className="w-3 h-3" />
+                            Elite Performance
                         </div>
-                        <h4 className="text-3xl font-black mb-4 leading-tight tracking-tight">You're Rising Above!</h4>
-                        <p className="text-gray-400 font-medium leading-relaxed">
+                        <h4 className="text-3xl font-black mb-4 leading-tight tracking-tight">Leveling Up!</h4>
+                        <p className="text-gray-400 font-medium leading-relaxed mb-8">
                             {stats.revenue.growth >= 0
                                 ? "Your numbers are looking strong. Keep up this momentum to hit your next personal records!"
                                 : "Consistency is key to growth. Focus on re-bookings and the numbers will follow."
                             }
                         </p>
+
+                        {/* Achievement Badges */}
+                        <div className="flex gap-4 mb-8">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-yellow-400 shadow-inner group-hover:bg-white/10 transition-all">
+                                    <Trophy className="w-6 h-6" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">MVP</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-blue-400 group-hover:bg-white/10 transition-all">
+                                    <Star className="w-6 h-6" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">LOYALTY</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-emerald-400 group-hover:bg-white/10 transition-all opacity-40 grayscale">
+                                    <Award className="w-6 h-6" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest opacity-40">STREAK</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
-                        <div className="flex -space-x-3">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-gray-900 bg-gray-700 flex items-center justify-center text-xs font-bold">
-                                    {String.fromCharCode(64 + i)}
-                                </div>
-                            ))}
+                    {/* Progress to Next Achievement */}
+                    <div className="mt-4 pt-6 border-t border-white/5 space-y-3">
+                        <div className="flex justify-between items-end">
+                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Monthly Target</span>
+                            <span className="text-xs font-black text-yellow-500">85% Achieved</span>
                         </div>
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">+5 Achievements</span>
+                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                            <div
+                                className="h-full bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all duration-1000"
+                                style={{ width: '85%' }}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
