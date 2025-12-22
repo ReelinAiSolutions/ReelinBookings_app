@@ -156,7 +156,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
     const teamUtilizationData = metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], utilization: s.utilization }));
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-300 max-w-7xl mx-auto pb-24">
+        <div className="space-y-6 animate-in fade-in duration-300 max-w-7xl mx-auto pb-24 w-full overflow-x-hidden">
 
             {/* Header & Controls */}
             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4 md:space-y-0 md:flex md:items-center md:justify-between">
@@ -199,13 +199,13 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
 
             {/* === BUSINESS VIEW === */}
             {viewMode === 'business' && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                <div className="space-y-6 animate-in fade-in duration-300">
 
                     {/* 1. BUSINESS OVERVIEW */}
                     <div>
                         <SectionHeader title="Business Overview" subtitle="Revenue, Growth & Health" icon={Activity} id="overview" />
                         {openSections.overview && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-in slide-in-from-top-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                                 {/* Revenue */}
                                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-36">
                                     <div className="flex justify-between items-start">
@@ -274,7 +274,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                     <div>
                         <SectionHeader title="Time & Demand Analysis" subtitle="Peak Hours, Days & Months" icon={Calendar} id="trends" />
                         {openSections.trends && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 animate-in slide-in-from-top-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 {/* Peak Times Text */}
                                 <div className="bg-white p-6 rounded-xl border border-gray-200 flex flex-col justify-center gap-4">
                                     <div className="flex justify-between items-center border-b border-gray-100 pb-4">
@@ -315,7 +315,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                     <div>
                         <SectionHeader title="Top Services" subtitle="Highest Grossing" icon={Scissors} id="services" />
                         {openSections.services && (
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6 animate-in slide-in-from-top-2">
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
                                 {metrics.topServices.map((service, index) => (
                                     <div key={service.name} className="flex items-center justify-between p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
                                         <div className="flex items-center gap-3">
@@ -339,22 +339,22 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                     <div>
                         <SectionHeader title="VIP Clients" subtitle="Top Spenders & Loyalists" icon={Users} id="clients" />
                         {openSections.clients && (
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6 animate-in slide-in-from-top-2">
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
                                 <div className="grid grid-cols-12 px-4 py-2 bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     <div className="col-span-1">#</div>
-                                    <div className="col-span-5">Client</div>
-                                    <div className="col-span-3 text-right">Spent</div>
-                                    <div className="col-span-3 text-right">Visits</div>
+                                    <div className="col-span-11 md:col-span-5">Client</div>
+                                    <div className="col-span-3 text-right hidden md:block">Spent</div>
+                                    <div className="col-span-3 text-right hidden md:block">Visits</div>
                                 </div>
                                 {metrics.topClients.map((client, index) => (
                                     <div key={client.email} className="grid grid-cols-12 items-center px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
                                         <div className="col-span-1 font-bold text-gray-400 text-xs">{index + 1}</div>
-                                        <div className="col-span-5">
+                                        <div className="col-span-11 md:col-span-5">
                                             <p className="font-bold text-gray-900 text-sm truncate">{client.name}</p>
                                             <p className="text-xs text-gray-500 truncate">{client.email}</p>
                                         </div>
-                                        <div className="col-span-3 text-right font-bold text-gray-900 text-sm">${client.spent.toLocaleString()}</div>
-                                        <div className="col-span-3 text-right text-xs text-gray-600 font-medium">{client.visits}</div>
+                                        <div className="col-span-3 text-right font-bold text-gray-900 text-sm hidden md:block">${client.spent.toLocaleString()}</div>
+                                        <div className="col-span-3 text-right text-xs text-gray-600 font-medium hidden md:block">{client.visits}</div>
                                     </div>
                                 ))}
                                 {metrics.topClients.length === 0 && <div className="p-8 text-center text-gray-400">No client data available.</div>}
@@ -367,13 +367,13 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
 
             {/* === TEAM VIEW (NEW) === */}
             {viewMode === 'team' && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="space-y-6 animate-in fade-in duration-300">
 
                     {/* Charts Row */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                         {/* Revenue Chart */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0 max-w-[90vw] md:max-w-full">
                             <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                                 <DollarSign className="w-5 h-5 text-green-600" /> Revenue by Staff
                             </h4>
@@ -406,7 +406,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                         </div>
 
                         {/* Utilization Chart */}
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0 max-w-[90vw] md:max-w-full">
                             <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                                 <Activity className="w-5 h-5 text-blue-600" /> Utilization Rate (%)
                             </h4>
@@ -441,14 +441,14 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                     </div>
 
                     {/* Detailed Team Table */}
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm w-full max-w-[90vw] md:max-w-full">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                             <h4 className="font-bold text-gray-900 flex items-center gap-2">
                                 <Trophy className="w-5 h-5 text-yellow-500" /> Performance Leaderboard
                             </h4>
                         </div>
 
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto w-full">
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
