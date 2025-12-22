@@ -100,16 +100,39 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
             const service = services.find(s => s.id === apt.serviceId);
             return sum + (service?.price || 0);
         }, 0);
+        const lifetimeBookings = myAppointments.length;
 
-        const getRankInfo = (totalRev: number) => {
-            if (totalRev >= 1000000) return { name: 'LEGEND', color: 'text-purple-400', bg: 'bg-purple-500/10', next: null, target: 1000000 };
-            if (totalRev >= 500000) return { name: 'MASTER', color: 'text-emerald-400', bg: 'bg-emerald-500/10', next: 'LEGEND', target: 1000000 };
-            if (totalRev >= 100000) return { name: 'ELITE', color: 'text-blue-400', bg: 'bg-blue-500/10', next: 'MASTER', target: 500000 };
-            if (totalRev >= 10000) return { name: 'PRO', color: 'text-amber-400', bg: 'bg-amber-500/10', next: 'ELITE', target: 100000 };
-            return { name: 'RISING STAR', color: 'text-gray-400', bg: 'bg-gray-500/10', next: 'PRO', target: 10000 };
+        const getRankInfo = (totalRev: number, totalApts: number) => {
+            const tiers = [
+                { name: 'LEGEND', rev: 1000000, apts: 10000, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                { name: 'MASTER', rev: 500000, apts: 5000, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                { name: 'ELITE', rev: 100000, apts: 1000, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                { name: 'PRO', rev: 10000, apts: 100, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                { name: 'RISING STAR', rev: 0, apts: 0, color: 'text-gray-400', bg: 'bg-gray-500/10' }
+            ];
+
+            let currentTierIndex = tiers.length - 1;
+            for (let i = 0; i < tiers.length - 1; i++) {
+                if (totalRev >= tiers[i].rev && totalApts >= tiers[i].apts) {
+                    currentTierIndex = i;
+                    break;
+                }
+            }
+
+            const currentTier = tiers[currentTierIndex];
+            const nextTier = currentTierIndex > 0 ? tiers[currentTierIndex - 1] : null;
+
+            return {
+                name: currentTier.name,
+                color: currentTier.color,
+                bg: currentTier.bg,
+                next: nextTier,
+                revProgress: nextTier ? Math.min(100, Math.round((totalRev / nextTier.rev) * 100)) : 100,
+                aptProgress: nextTier ? Math.min(100, Math.round((totalApts / nextTier.apts) * 100)) : 100
+            };
         };
 
-        const rank = getRankInfo(lifetimeRevenue);
+        const rank = getRankInfo(lifetimeRevenue, lifetimeBookings);
 
         return {
             revenue: { value: currRev, growth: getGrowth(currRev, prevRev) },
@@ -120,7 +143,8 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                 growth: getGrowth(currRev / (currAptCount || 1), prevRev / (prevAptCount || 1))
             },
             rank,
-            lifetimeRevenue
+            lifetimeRevenue,
+            lifetimeBookings
         };
     }, [myAppointments, services, selectedRange, comparisonRange]);
 
@@ -317,54 +341,86 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                         </div>
 
                         <h4 className="text-3xl font-black mb-4 leading-tight tracking-tight">
-                            {stats.rank.name === 'LEGEND' ? 'The Million Dollar Legend' : 'The Road to $1,000,000'}
+                            {stats.rank.name === 'LEGEND' ? 'Peak of the Industry' : 'The Path to Greatness'}
                         </h4>
                         <p className="text-gray-400 font-medium leading-relaxed mb-8">
                             {stats.rank.next
-                                ? `You need $${(stats.rank.target - stats.lifetimeRevenue).toLocaleString()} more in lifetime revenue to unlock ${stats.rank.next} status.`
-                                : "You've crossed $1,000,000. You're an industry legend. The floor is yours."
+                                ? `Unlock ${stats.rank.next.name} status by hitting both career milestones below.`
+                                : "You've reached LEGEND status. Your name is etched into the floor of this shop."
                             }
                         </p>
 
                         {/* Achievement Badges */}
                         <div className="flex gap-4 mb-8">
                             <div className="flex flex-col items-center gap-2">
-                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.lifetimeRevenue >= 10000 ? 'text-yellow-400 shadow-lg shadow-yellow-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
+                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.rank.name !== 'RISING STAR' ? 'text-yellow-400 shadow-lg shadow-yellow-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
                                     <Trophy className="w-6 h-6" />
                                 </div>
-                                <span className={`text-[10px] font-bold ${stats.lifetimeRevenue >= 10000 ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>PRO</span>
+                                <span className={`text-[10px] font-bold ${stats.rank.name !== 'RISING STAR' ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>PRO</span>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.lifetimeRevenue >= 100000 ? 'text-blue-400 shadow-lg shadow-blue-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
+                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${['ELITE', 'MASTER', 'LEGEND'].includes(stats.rank.name) ? 'text-blue-400 shadow-lg shadow-blue-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
                                     <Star className="w-6 h-6" />
                                 </div>
-                                <span className={`text-[10px] font-bold ${stats.lifetimeRevenue >= 100000 ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>ELITE</span>
+                                <span className={`text-[10px] font-bold ${['ELITE', 'MASTER', 'LEGEND'].includes(stats.rank.name) ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>ELITE</span>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.lifetimeRevenue >= 1000000 ? 'text-purple-400 shadow-lg shadow-purple-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
+                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.rank.name === 'LEGEND' ? 'text-purple-400 shadow-lg shadow-purple-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
                                     <Award className="w-6 h-6" />
                                 </div>
-                                <span className={`text-[10px] font-bold ${stats.lifetimeRevenue >= 1000000 ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>LEGEND</span>
+                                <span className={`text-[10px] font-bold ${stats.rank.name === 'LEGEND' ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>LEGEND</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Progress to Next Rank */}
-                    <div className="mt-4 pt-6 border-t border-white/5 space-y-3">
-                        <div className="flex justify-between items-end">
-                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                {stats.rank.next ? `Career Milestone: $${stats.rank.target.toLocaleString()}` : 'Maximum Level Achieved'}
-                            </span>
-                            <span className="text-xs font-black text-yellow-500">
-                                {Math.min(100, Math.round((stats.lifetimeRevenue / stats.rank.target) * 100))}%
-                            </span>
-                        </div>
-                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                            <div
-                                className={`h-full bg-gradient-to-r ${stats.rank.name === 'LEGEND' ? 'from-purple-500 via-indigo-500 to-transparent animate-pulse' : 'from-yellow-500 via-amber-500 to-orange-500'} transition-all duration-1000`}
-                                style={{ width: `${Math.min(100, Math.round((stats.lifetimeRevenue / stats.rank.target) * 100))}%` }}
-                            />
-                        </div>
+                    <div className="mt-4 pt-6 border-t border-white/5 space-y-6">
+                        {stats.rank.next && (
+                            <>
+                                {/* Revenue Progress */}
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                            Revenue Target: ${stats.rank.next.rev.toLocaleString()}
+                                        </span>
+                                        <span className="text-xs font-black text-amber-500">
+                                            ${stats.lifetimeRevenue.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-1000"
+                                            style={{ width: `${stats.rank.revProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Booking Progress */}
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                            Booking Target: {stats.rank.next.apts.toLocaleString()}
+                                        </span>
+                                        <span className="text-xs font-black text-blue-500">
+                                            {stats.lifetimeBookings.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000"
+                                            style={{ width: `${stats.rank.aptProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                        {!stats.rank.next && (
+                            <div className="py-4 text-center">
+                                <div className="text-[10px] font-black text-purple-400 uppercase tracking-[0.3em] animate-pulse">
+                                    LEGENDARY STATUS ACTIVE
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
