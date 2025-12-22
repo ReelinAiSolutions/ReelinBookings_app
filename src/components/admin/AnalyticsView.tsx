@@ -373,13 +373,13 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                         {/* Revenue Chart */}
-                        <div className="bg-white p-2 md:p-6 rounded-xl border border-gray-200 shadow-sm overflow-hidden min-w-0">
-                            <h4 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
+                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                                 <DollarSign className="w-5 h-5 text-green-600" /> Revenue by Staff
                             </h4>
                             <div className="h-64 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={teamRevenueData}>
+                                    <BarChart data={teamRevenueData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                         <XAxis
                                             dataKey="name"
@@ -387,15 +387,15 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                             tickLine={false}
                                             tick={{ fontSize: 9, fill: '#6B7280' }}
                                             interval={0}
-                                            dy={10}
-                                            tickFormatter={(val) => val.slice(0, 4) + '..'}
+                                            dy={5}
+                                            tickFormatter={(val) => val.slice(0, 3)}
                                         />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
                                         <Tooltip
                                             cursor={{ fill: '#F3F4F6' }}
                                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                         />
-                                        <Bar dataKey="revenue" fill="#3B82F6" radius={[4, 4, 0, 0]}>
+                                        <Bar dataKey="revenue" fill="#3B82F6" radius={[4, 4, 0, 0]} maxBarSize={50}>
                                             {teamRevenueData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B'][index % 4]} />
                                             ))}
@@ -406,13 +406,13 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                         </div>
 
                         {/* Utilization Chart */}
-                        <div className="bg-white p-2 md:p-6 rounded-xl border border-gray-200 shadow-sm overflow-hidden min-w-0">
-                            <h4 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
+                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                                 <Activity className="w-5 h-5 text-blue-600" /> Utilization Rate (%)
                             </h4>
                             <div className="h-64 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={teamUtilizationData}>
+                                    <BarChart data={teamUtilizationData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                         <XAxis
                                             dataKey="name"
@@ -420,16 +420,16 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                             tickLine={false}
                                             tick={{ fontSize: 9, fill: '#6B7280' }}
                                             interval={0}
-                                            dy={10}
-                                            tickFormatter={(val) => val.slice(0, 4) + '..'}
+                                            dy={5}
+                                            tickFormatter={(val) => val.slice(0, 3)}
                                         />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6B7280' }} domain={[0, 100]} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} domain={[0, 100]} />
                                         <Tooltip
                                             cursor={{ fill: '#F3F4F6' }}
                                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                            formatter={(val: number) => `${val.toFixed(1)}%`}
+                                            formatter={(val: number | undefined) => [val ? `${val.toFixed(1)}%` : '0%', 'Utilization']}
                                         />
-                                        <Bar dataKey="utilization" fill="#8B5CF6" radius={[4, 4, 0, 0]}>
+                                        <Bar dataKey="utilization" fill="#8B5CF6" radius={[4, 4, 0, 0]} maxBarSize={50}>
                                             {teamUtilizationData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={['#8B5CF6', '#F472B6', '#6366F1', '#EC4899'][index % 4]} />
                                             ))}
