@@ -96,6 +96,16 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
             return Math.round(((curr - prev) / prev) * 100);
         };
 
+        const getRankInfo = (clientCount: number) => {
+            if (clientCount >= 100) return { name: 'LEGEND', color: 'text-purple-400', bg: 'bg-purple-500/10', next: null, target: 100 };
+            if (clientCount >= 60) return { name: 'MASTER', color: 'text-emerald-400', bg: 'bg-emerald-500/10', next: 'LEGEND', target: 100 };
+            if (clientCount >= 30) return { name: 'ELITE', color: 'text-blue-400', bg: 'bg-blue-500/10', next: 'MASTER', target: 60 };
+            if (clientCount >= 10) return { name: 'PRO', color: 'text-amber-400', bg: 'bg-amber-500/10', next: 'ELITE', target: 30 };
+            return { name: 'RISING STAR', color: 'text-gray-400', bg: 'bg-gray-500/10', next: 'PRO', target: 10 };
+        };
+
+        const rank = getRankInfo(currClients);
+
         return {
             revenue: { value: currRev, growth: getGrowth(currRev, prevRev) },
             appointments: { value: currAptCount, growth: getGrowth(currAptCount, prevAptCount) },
@@ -103,7 +113,8 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
             avgTicket: {
                 value: currAptCount > 0 ? Math.round(currRev / currAptCount) : 0,
                 growth: getGrowth(currRev / (currAptCount || 1), prevRev / (prevAptCount || 1))
-            }
+            },
+            rank
         };
     }, [myAppointments, services, selectedRange, comparisonRange]);
 
@@ -289,51 +300,63 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                     </div>
 
                     <div className="relative">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border-b-2 border-amber-600 shadow-lg shadow-yellow-500/20">
-                            <Zap className="w-3 h-3" />
-                            Elite Performance
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 rounded-full text-[10px] font-black uppercase tracking-widest border-b-2 border-amber-600 shadow-lg shadow-yellow-500/20">
+                                <Zap className="w-3 h-3" />
+                                Elite Performance
+                            </div>
+                            <div className={`px-4 py-1.5 rounded-xl ${stats.rank.bg} ${stats.rank.color} border border-white/10 text-[10px] font-black tracking-[0.2em]`}>
+                                {stats.rank.name}
+                            </div>
                         </div>
-                        <h4 className="text-3xl font-black mb-4 leading-tight tracking-tight">Leveling Up!</h4>
+
+                        <h4 className="text-3xl font-black mb-4 leading-tight tracking-tight">
+                            {stats.rank.name === 'LEGEND' ? 'The Apex Performer' : 'Climbing the Ranks'}
+                        </h4>
                         <p className="text-gray-400 font-medium leading-relaxed mb-8">
-                            {stats.revenue.growth >= 0
-                                ? "Your numbers are looking strong. Keep up this momentum to hit your next personal records!"
-                                : "Consistency is key to growth. Focus on re-bookings and the numbers will follow."
+                            {stats.rank.next
+                                ? `You need ${stats.rank.target - stats.clients.value} more clients this period to unlock ${stats.rank.next} status.`
+                                : "You've reached the highest tier! You're dominating the floor. Keep it up, Legend."
                             }
                         </p>
 
                         {/* Achievement Badges */}
                         <div className="flex gap-4 mb-8">
                             <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-yellow-400 shadow-inner group-hover:bg-white/10 transition-all">
+                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.clients.value >= 10 ? 'text-yellow-400' : 'text-gray-600 opacity-20'} shadow-inner group-hover:bg-white/10 transition-all`}>
                                     <Trophy className="w-6 h-6" />
                                 </div>
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">MVP</span>
+                                <span className={`text-[10px] font-bold ${stats.clients.value >= 10 ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>PRO</span>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-blue-400 group-hover:bg-white/10 transition-all">
+                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.clients.value >= 30 ? 'text-blue-400' : 'text-gray-600 opacity-20'} group-hover:bg-white/10 transition-all`}>
                                     <Star className="w-6 h-6" />
                                 </div>
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">LOYALTY</span>
+                                <span className={`text-[10px] font-bold ${stats.clients.value >= 30 ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>ELITE</span>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-emerald-400 group-hover:bg-white/10 transition-all opacity-40 grayscale">
+                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.clients.value >= 100 ? 'text-purple-400' : 'text-gray-600 opacity-20'} group-hover:bg-white/10 transition-all`}>
                                     <Award className="w-6 h-6" />
                                 </div>
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest opacity-40">STREAK</span>
+                                <span className={`text-[10px] font-bold ${stats.clients.value >= 100 ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>LEGEND</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Progress to Next Achievement */}
+                    {/* Progress to Next Rank */}
                     <div className="mt-4 pt-6 border-t border-white/5 space-y-3">
                         <div className="flex justify-between items-end">
-                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Monthly Target</span>
-                            <span className="text-xs font-black text-yellow-500">85% Achieved</span>
+                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                {stats.rank.next ? `Progress to ${stats.rank.next}` : 'Peak Performance'}
+                            </span>
+                            <span className="text-xs font-black text-yellow-500">
+                                {Math.min(100, Math.round((stats.clients.value / stats.rank.target) * 100))}%
+                            </span>
                         </div>
                         <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                             <div
-                                className="h-full bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all duration-1000"
-                                style={{ width: '85%' }}
+                                className={`h-full bg-gradient-to-r ${stats.rank.name === 'LEGEND' ? 'from-purple-500 to-indigo-500' : 'from-yellow-500 via-amber-500 to-orange-500'} shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all duration-1000`}
+                                style={{ width: `${Math.min(100, Math.round((stats.clients.value / stats.rank.target) * 100))}%` }}
                             />
                         </div>
                     </div>
