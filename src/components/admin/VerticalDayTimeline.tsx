@@ -10,7 +10,7 @@ interface VerticalDayTimelineProps {
     businessHours?: Organization['business_hours'];
     date?: Date | string; // New prop for context
     onAppointmentClick?: (id: string) => void;
-    colorMode?: 'staff' | 'service'; // New Prop for coloring
+    colorMode?: 'staff' | 'service';
 }
 
 export default function VerticalDayTimeline({ appointments, staff, services, availability = [], businessHours, date, onAppointmentClick, colorMode = 'staff' }: VerticalDayTimelineProps) {
@@ -105,9 +105,9 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                 <div className="flex w-full h-full relative min-h-full">
 
                     {/* Time Column - Compact */}
-                    <div className="relative z-[60] bg-white border-r border-gray-100 flex-shrink-0 w-10 flex flex-col sticky left-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+                    <div className="relative z-30 bg-white border-r border-gray-100 flex-shrink-0 w-10 flex flex-col sticky left-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
                         {/* Corner Spacer */}
-                        <div className="h-10 bg-white z-[60] border-b border-gray-100 flex items-center justify-center flex-shrink-0 sticky top-0">
+                        <div className="h-10 bg-white z-30 border-b border-gray-100 flex items-center justify-center flex-shrink-0 sticky top-0">
                             <Clock className="w-3.5 h-3.5 text-gray-400" />
                         </div>
                         {/* Time Slots */}

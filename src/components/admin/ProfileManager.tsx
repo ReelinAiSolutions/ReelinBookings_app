@@ -115,101 +115,99 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
     return (
         <div className="max-w-5xl mx-auto space-y-6 pb-24 animate-in fade-in duration-500">
 
-            {/* Hero Section with Avatar */}
-            <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 overflow-hidden shadow-2xl">
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+            {/* Premium Hero Section */}
+            <div className="relative group animate-in fade-in slide-in-from-top-4 duration-700">
+                <div
+                    className="absolute inset-0 rounded-[2.5rem] shadow-xl shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow duration-500"
+                    style={{
+                        background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #4f46e5 100%)', // Hardcoded blue gradient
+                    }}
+                />
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 rounded-[2.5rem] mix-blend-overlay"></div>
 
-                <div className="relative flex flex-col md:flex-row items-center gap-8">
-                    {/* Avatar */}
-                    <div className="relative group">
-                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 flex items-center justify-center bg-white/10 overflow-hidden relative shadow-2xl backdrop-blur-sm">
+                <div className="relative p-10 md:p-16 flex flex-col items-center text-center">
+                    <div className="relative mb-8 group/avatar">
+                        <div className="absolute -inset-1 bg-white/20 rounded-full blur group-hover/avatar:bg-white/40 transition-colors"></div>
+                        <div className="relative w-32 h-32 md:w-40 md:h-40 bg-white/10 backdrop-blur-md rounded-full border-4 border-white/30 flex items-center justify-center overflow-hidden shadow-2xl">
                             {previewUrl ? (
-                                <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                <img src={previewUrl} alt="Target Avatar" className="w-full h-full object-cover" />
                             ) : (
                                 <UserIcon className="w-16 h-16 md:w-20 md:h-20 text-white/50" />
                             )}
-                            <label className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer">
-                                <Camera className="w-8 h-8 text-white mb-2" />
-                                <span className="text-white text-sm font-bold">Change Photo</span>
+                            <label className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all cursor-pointer backdrop-blur-sm">
+                                <Camera className="w-8 h-8 text-white mb-1" />
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Update Photo</span>
                                 <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                             </label>
                         </div>
-                        {/* Glow Effect */}
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-300 -z-10" />
                     </div>
 
-                    {/* User Info */}
-                    <div className="flex-1 text-center md:text-left">
-                        <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
-                            {formData.fullName || 'Welcome'}
-                        </h1>
-                        <p className="text-blue-100 text-lg flex items-center gap-2 justify-center md:justify-start">
-                            <Mail className="w-5 h-5" />
-                            {formData.email}
-                        </p>
-                        <div className="mt-4 flex items-center gap-2 justify-center md:justify-start">
-                            <div className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-bold">
-                                Admin
-                            </div>
-                        </div>
+                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">
+                        {formData.fullName || 'Welcome Admin'}
+                    </h1>
+                    <p className="text-white/80 font-medium text-lg mb-4">{formData.email}</p>
+                    <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                        <span className="text-white/90 font-black text-[10px] tracking-widest uppercase">Admin Portal Active</span>
                     </div>
                 </div>
             </div>
 
             <form onSubmit={handleSave} className="space-y-6">
                 {/* Personal Information Card */}
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 animate-in slide-in-from-bottom-4" style={{ animationDelay: '100ms' }}>
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 border-b border-gray-200">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
-                                <UserIcon className="w-6 h-6 text-white" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-black text-gray-900">Personal Information</h2>
-                                <p className="text-sm text-gray-600">Update your personal details</p>
-                            </div>
+                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                        <div>
+                            <h3 className="text-xl font-black text-gray-900 tracking-tight">Personal Details</h3>
+                            <p className="text-sm text-gray-500 font-medium">Update your administrative profile.</p>
+                        </div>
+                        <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-primary-600">
+                            <UserIcon className="w-6 h-6" />
                         </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-6 space-y-6">
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
-                            <input
-                                type="text"
-                                value={formData.fullName}
-                                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 font-medium"
-                                placeholder="Your Name"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
-                            <div className="relative">
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    disabled
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500 font-medium cursor-not-allowed"
-                                />
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                    <Shield className="w-5 h-5 text-gray-400" />
+                    <div className="p-8 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <UserIcon className="h-5 w-5 text-gray-300 group-focus-within:text-primary-500 transition-colors" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formData.fullName}
+                                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                        className="block w-full pl-11 pr-4 py-4 bg-gray-50/50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                        placeholder="Admin Name"
+                                    />
                                 </div>
                             </div>
-                            <p className="text-xs text-gray-500 mt-2">Email cannot be changed for security reasons</p>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                                <div className="relative opacity-60">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Mail className="h-5 w-5 text-gray-300" />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        disabled
+                                        className="block w-full pl-11 pr-4 py-4 bg-gray-100 border-2 border-transparent rounded-[1.25rem] cursor-not-allowed font-bold text-gray-500"
+                                    />
+                                </div>
+                                <p className="text-[10px] text-gray-400 font-medium ml-2 mt-1">Managed by organization settings</p>
+                            </div>
                         </div>
 
-                        {/* Save Button */}
-                        <div className="pt-4 border-t border-gray-200">
+                        {/* Quick Save Button inside section for better UX */}
+                        <div className="flex justify-end pt-4">
                             <Button
                                 type="submit"
-                                className="w-full md:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-3 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5"
+                                className="bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-8 py-6 font-black uppercase tracking-widest text-xs shadow-lg shadow-primary-600/20"
                                 isLoading={isLoading}
                             >
-                                <Save className="w-5 h-5" />
+                                <Save className="w-4 h-4 mr-2" />
                                 Save Changes
                             </Button>
                         </div>
@@ -217,67 +215,79 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                 </div>
 
                 {/* Security Card */}
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 animate-in slide-in-from-bottom-4" style={{ animationDelay: '200ms' }}>
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-b border-gray-200">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
-                                <Lock className="w-6 h-6 text-white" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-black text-gray-900">Security</h2>
-                                <p className="text-sm text-gray-600">Manage your password and security settings</p>
-                            </div>
+                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                        <div>
+                            <h3 className="text-xl font-black text-gray-900 tracking-tight">Security</h3>
+                            <p className="text-sm text-gray-500 font-medium">Protect your admin account.</p>
+                        </div>
+                        <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-purple-600">
+                            <Lock className="w-6 h-6" />
                         </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-6">
+                    <div className="p-8">
                         {!showChangePassword ? (
-                            <Button
+                            <button
                                 type="button"
-                                variant="outline"
                                 onClick={() => setShowChangePassword(true)}
-                                className="flex items-center gap-2 border-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 font-bold px-6 py-3 rounded-xl transition-all duration-200"
+                                className="w-full flex items-center justify-between p-6 bg-gray-50/50 hover:bg-white rounded-2xl border border-gray-100 transition-all group shadow-sm hover:shadow-md"
                             >
-                                <Lock className="w-5 h-5" />
-                                Change Password
-                            </Button>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-400 group-hover:text-purple-600 transition-colors">
+                                        <Lock className="w-5 h-5" />
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="font-black text-gray-900 uppercase tracking-widest text-xs">Update Password</div>
+                                        <div className="text-xs text-gray-500 font-medium">Manage your login credentials</div>
+                                    </div>
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
+                                    <SettingsIcon className="w-4 h-4" />
+                                </div>
+                            </button>
                         ) : (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
+                            <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">New Password</label>
                                         <input
                                             type="password"
                                             value={formData.password}
                                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-gray-900 font-medium"
-                                            placeholder="Enter new password"
+                                            className="block w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:border-primary-500 transition-all font-bold"
+                                            placeholder="••••••••"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Confirm Password</label>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Confirm Password</label>
                                         <input
                                             type="password"
                                             value={formData.confirmPassword}
                                             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-gray-900 font-medium"
-                                            placeholder="Confirm new password"
+                                            className="block w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:border-primary-500 transition-all font-bold"
+                                            placeholder="••••••••"
                                         />
                                     </div>
                                 </div>
-                                <div className="flex gap-3">
+                                <div className="flex gap-4">
                                     <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="outline"
                                         onClick={() => {
                                             setShowChangePassword(false);
                                             setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
                                         }}
-                                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 font-bold px-6 py-2 rounded-xl"
+                                        className="flex-1 rounded-2xl border-2 py-4 h-auto font-black uppercase tracking-widest text-xs"
                                     >
                                         Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl py-4 h-auto font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-600/20"
+                                        isLoading={isLoading}
+                                    >
+                                        Update Password
                                     </Button>
                                 </div>
                             </div>
@@ -287,22 +297,18 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             </form>
 
             {/* Business Settings Card */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 animate-in slide-in-from-bottom-4" style={{ animationDelay: '300ms' }}>
-                {/* Header */}
-                <div className="bg-gradient-to-r from-green-50 to-teal-50 p-6 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl shadow-lg">
-                            <Building2 className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-black text-gray-900">Business Settings</h2>
-                            <p className="text-sm text-gray-600">Configure your business details and preferences</p>
-                        </div>
+            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
+                <div className="bg-gradient-to-r from-teal-50 to-emerald-50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-xl font-black text-gray-900 tracking-tight">Business Configuration</h3>
+                        <p className="text-sm text-gray-500 font-medium">Manage your organization details.</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-teal-600">
+                        <Building2 className="w-6 h-6" />
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-6">
+                <div className="p-8">
                     {org ? (
                         <SettingsManager org={org} onUpdate={onUpdateOrg} />
                     ) : (
@@ -318,22 +324,20 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             </div>
 
             {/* Sign Out Section */}
-            <div className="bg-white rounded-2xl border-2 border-red-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 animate-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
-                <div className="p-6">
-                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
-                        <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Sign Out</h3>
-                            <p className="text-sm text-gray-600">End your current session</p>
-                        </div>
-                        <Button
-                            type="button"
-                            onClick={handleSignOut}
-                            className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 rounded-xl shadow-lg shadow-red-500/30 font-bold transition-all duration-200 hover:shadow-xl hover:shadow-red-500/40"
-                        >
-                            <LogOut className="w-5 h-5" />
-                            Sign Out
-                        </Button>
+            <div className="pt-8 border-t border-gray-200">
+                <div className="bg-rose-50 rounded-[2rem] border border-rose-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                        <h4 className="text-xl font-black text-rose-900 tracking-tight">End Session</h4>
+                        <p className="text-sm text-rose-600 font-medium">Sign out securely from your admin account.</p>
                     </div>
+                    <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex items-center gap-2 px-8 py-4 bg-rose-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 active:scale-95 transition-all"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        Sign Out
+                    </button>
                 </div>
             </div>
 

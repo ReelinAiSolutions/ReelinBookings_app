@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Service } from '@/types';
 import { X, Upload, Image as ImageIcon, DollarSign, Clock, Tag, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { createBrowserClient } from '@supabase/ssr';
 
 interface ServiceFormModalProps {
     isOpen: boolean;
@@ -22,6 +23,12 @@ const CATEGORY_PRESETS = [
 export default function ServiceFormModal({ isOpen, onClose, onSave, editingService }: ServiceFormModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [imagePreview, setImagePreview] = useState<string>('');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     const [formData, setFormData] = useState({
         name: '',
@@ -80,19 +87,39 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const result = reader.result as string;
-                setImagePreview(result);
-                setFormData({ ...formData, imageUrl: result });
-            };
-            reader.readAsDataURL(file);
+            // Create a preview URL
+            const objectUrl = URL.createObjectURL(file);
+            setImagePreview(objectUrl);
+            setSelectedFile(file);
+
+            // Clean up memory
+            return () => URL.revokeObjectURL(objectUrl);
         }
     };
 
     const handleSubmit = async () => {
         setIsLoading(true);
         try {
+            let finalImageUrl = formData.imageUrl;
+
+            if (selectedFile) {
+                const fileExt = selectedFile.name.split('.').pop();
+                const fileName = `service_${Date.now()}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('service-assets')
+                    .upload(filePath, selectedFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: publicData } = supabase.storage
+                    .from('service-assets')
+                    .getPublicUrl(filePath);
+
+                finalImageUrl = publicData.publicUrl;
+            }
+
             await onSave({
                 name: formData.name,
                 price: parseFloat(formData.price),
@@ -100,7 +127,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                 description: formData.description,
                 category: formData.category,
                 categoryColor: formData.categoryColor,
-                imageUrl: formData.imageUrl,
+                imageUrl: finalImageUrl,
                 isVisible: formData.isVisible,
                 bufferTimeMinutes: parseInt(formData.bufferTimeMinutes),
                 depositRequired: formData.depositRequired,
@@ -111,6 +138,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
             onClose();
         } catch (error) {
             console.error('Save error:', error);
+            alert('Failed to save service. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -244,8 +272,8 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     key={preset.name}
                                     onClick={() => setFormData({ ...formData, category: preset.name, categoryColor: preset.color })}
                                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${formData.category === preset.name
-                                            ? 'ring-2 ring-offset-2'
-                                            : 'hover:bg-gray-100'
+                                        ? 'ring-2 ring-offset-2'
+                                        : 'hover:bg-gray-100'
                                         }`}
                                     style={{
                                         backgroundColor: formData.category === preset.name ? `${preset.color}20` : 'transparent',

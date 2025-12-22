@@ -28,6 +28,7 @@ import {
     format, startOfToday, endOfToday
 } from 'date-fns';
 import AnalyticsDatePicker, { DateRange, DateRangePreset } from '../admin/AnalyticsDatePicker';
+import StatCard from '../admin/StatCard';
 
 interface StaffStatsProps {
     appointments: Appointment[];
@@ -151,88 +152,73 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
     return (
         <div className="space-y-8 pb-24 px-4 lg:px-0">
             {/* Header Section */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        <Activity className="w-8 h-8 text-primary-600" />
-                        My Performance
-                    </h1>
-                    <p className="text-gray-500 font-medium mt-1">Track your personal growth and impact.</p>
+            <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2 md:gap-3">
+                            <div className="p-2 bg-primary-50 rounded-xl">
+                                <Activity className="w-6 h-6 md:w-8 md:h-8 text-primary-600" />
+                            </div>
+                            My Performance
+                        </h1>
+                        <p className="text-gray-500 text-xs md:text-sm font-medium mt-1">Track your personal growth and impact.</p>
+                    </div>
                 </div>
 
-                {/* Range Selectors */}
-                <div className="flex flex-col gap-4 items-end">
+                {/* Range Selectors - Mobile Optimized */}
+                <div className="w-full">
                     {compareMode ? (
-                        <div className="flex flex-col gap-3 w-full lg:w-auto">
+                        <div className="flex flex-col gap-3">
                             {/* Period A */}
                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-black text-blue-600 bg-blue-50 px-4 py-2 rounded-xl whitespace-nowrap uppercase tracking-widest">
-                                    Period A
-                                </span>
+                                <div className="text-[10px] font-black text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg whitespace-nowrap uppercase tracking-widest border border-blue-100">
+                                    P. A
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <AnalyticsDatePicker
+                                        selectedRange={selectedRange}
+                                        onRangeChange={handleRangeChange}
+                                        compareMode={false}
+                                    />
+                                </div>
+                            </div>
+                            {/* Period B */}
+                            <div className="flex items-center gap-2">
+                                <div className="text-[10px] font-black text-purple-600 bg-purple-50 px-2.5 py-1.5 rounded-lg whitespace-nowrap uppercase tracking-widest border border-purple-100">
+                                    P. B
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <AnalyticsDatePicker
+                                        selectedRange={comparisonRange}
+                                        onRangeChange={handleComparisonRangeChange}
+                                        compareMode={false}
+                                    />
+                                </div>
+                            </div>
+                            {/* Exit Compare Button */}
+                            <button
+                                onClick={() => setCompareMode(false)}
+                                className="w-full mt-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2"
+                            >
+                                <TrendingUp className="w-3.5 h-3.5" />
+                                Exit Comparison
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="flex-1 min-w-0">
                                 <AnalyticsDatePicker
                                     selectedRange={selectedRange}
                                     onRangeChange={handleRangeChange}
                                     compareMode={false}
                                 />
                             </div>
-                            {/* Period B */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs font-black text-purple-600 bg-purple-50 px-4 py-2 rounded-xl whitespace-nowrap uppercase tracking-widest">
-                                    Period B
-                                </span>
-                                <AnalyticsDatePicker
-                                    selectedRange={comparisonRange}
-                                    onRangeChange={handleComparisonRangeChange}
-                                    compareMode={false}
-                                />
-                            </div>
-                            {/* Exit Compare Button */}
-                            <button
-                                onClick={() => setCompareMode(false)}
-                                className="w-full px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2"
-                            >
-                                <TrendingUp className="w-4 h-4" />
-                                Exit Compare
-                            </button>
-                            {/* Appointment Count Detail Detail */}
-                            <div className="w-full p-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm space-y-1 font-bold">
-                                <div className="text-gray-900">
-                                    Total Appointments: <span className="font-black text-gray-900">{myAppointments.length}</span>
-                                </div>
-                                <div className="text-blue-600">
-                                    Period A: <span className="font-black">{
-                                        myAppointments.filter(a => isWithinInterval(parseISO(a.date), {
-                                            start: selectedRange.start,
-                                            end: selectedRange.end
-                                        })).length
-                                    }</span>
-                                </div>
-                                <div className="text-purple-600">
-                                    Period B: <span className="font-black">{
-                                        myAppointments.filter(a => isWithinInterval(parseISO(a.date), {
-                                            start: comparisonRange.start,
-                                            end: comparisonRange.end
-                                        })).length
-                                    }</span>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col lg:flex-row gap-4">
-                            <AnalyticsDatePicker
-                                selectedRange={selectedRange}
-                                onRangeChange={handleRangeChange}
-                                compareMode={false}
-                                onCompareModeToggle={setCompareMode}
-                            />
                             {/* Quick Compare Button */}
                             <button
-                                onClick={() => {
-                                    setCompareMode(true);
-                                }}
-                                className="px-6 py-3 bg-white border-2 border-gray-100 text-gray-400 hover:text-gray-600 hover:border-gray-200 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2"
+                                onClick={() => setCompareMode(true)}
+                                className="sm:w-auto px-6 py-3 bg-white border-2 border-gray-100 text-gray-400 hover:text-gray-600 hover:border-gray-200 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2"
                             >
-                                <TrendingUp className="w-4 h-4 opacity-50" />
+                                <TrendingUp className="w-3.5 h-3.5 opacity-50" />
                                 Compare
                             </button>
                         </div>
@@ -240,71 +226,75 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                 </div>
             </div>
 
-            {/* Performance Metric Cards */}
+            {/* Performance Metric Cards - Using Shared StatCard for Color Pop */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <StatCard
-                    label="My Revenue"
+                    title="My Revenue"
                     value={`$${stats.revenue.value}`}
                     growth={stats.revenue.growth}
-                    showGrowth={compareMode}
+                    trend={stats.revenue.growth >= 0 ? 'up' : 'down'}
                     icon={DollarSign}
-                    gradient="from-primary-600 to-primary-500"
-                    description="Total generated income"
+                    color="green"
+                    delay={100}
                 />
                 <StatCard
-                    label="Appointments"
+                    title="Appointments"
                     value={stats.appointments.value}
                     growth={stats.appointments.growth}
-                    showGrowth={compareMode}
+                    trend={stats.appointments.growth >= 0 ? 'up' : 'down'}
                     icon={Calendar}
-                    gradient="from-primary-700 to-primary-600"
-                    description="Successfully completed"
+                    color="indigo"
+                    delay={200}
                 />
                 <StatCard
-                    label="My Clients"
+                    title="My Clients"
                     value={stats.clients.value}
                     growth={stats.clients.growth}
-                    showGrowth={compareMode}
+                    trend={stats.clients.growth >= 0 ? 'up' : 'down'}
                     icon={Users}
-                    gradient="from-orange-500 to-amber-500"
-                    description="Unique customers served"
+                    color="blue"
+                    delay={300}
                 />
                 <StatCard
-                    label="Avg. Session Value"
+                    title="Avg. Session"
                     value={`$${stats.avgTicket.value}`}
                     growth={stats.avgTicket.growth}
-                    showGrowth={compareMode}
+                    trend={stats.avgTicket.growth >= 0 ? 'up' : 'down'}
                     icon={TrendingUp}
-                    gradient="from-emerald-500 to-teal-500"
-                    description="Average revenue per visit"
+                    color="emerald"
+                    delay={400}
                 />
             </div>
 
             {/* Comparison Insights & Personal Goals */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Insights Panel */}
-                <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 p-6 md:p-10 overflow-hidden relative">
-                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary-50 rounded-full opacity-50 blur-3xl"></div>
+                <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 p-6 md:p-10 overflow-hidden relative group">
+                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary-50 rounded-full opacity-50 blur-3xl group-hover:scale-110 transition-transform duration-500"></div>
 
                     <div className="relative flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-2xl font-black text-gray-900 tracking-tight">Period Insights</h3>
-                            <p className="text-gray-500 text-sm font-medium">
+                            <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                                <TrendingUp className="w-6 h-6 text-primary-600" />
+                                Period Insights
+                            </h3>
+                            <p className="text-gray-500 text-xs md:text-sm font-medium">
                                 {compareMode ? `How you're trending compared to Period B.` : `Your performance summary for the selected period.`}
                             </p>
                         </div>
-                        <div className="p-3 bg-primary-50 text-primary-600 rounded-2xl">
+                        <div className="p-3 bg-primary-50 text-primary-600 rounded-2xl shadow-inner">
                             <Target className="w-6 h-6" />
                         </div>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4 md:space-y-6">
                         <InsightRow
                             label="Revenue Velocity"
                             curr={stats.revenue.value}
                             growth={stats.revenue.growth}
                             showGrowth={compareMode}
                             isCurrency={true}
+                            color="green"
                         />
                         <InsightRow
                             label="Client Retention"
@@ -312,18 +302,27 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                             growth={stats.clients.growth}
                             showGrowth={compareMode}
                             isPercentage={false}
+                            color="blue"
                         />
                         <InsightRow
                             label="Session Frequency"
                             curr={stats.appointments.value}
                             growth={stats.appointments.growth}
                             showGrowth={compareMode}
+                            color="emerald"
                         />
                     </div>
                 </div>
 
                 {/* Elite Performance Hub */}
                 <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-[2rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between group">
+                    {/* Background Dynamic Glow - Color Pop */}
+                    <div className={`absolute -top-24 -right-24 w-64 h-64 rounded-full blur-[100px] opacity-30 transition-all duration-1000 ${stats.rank.name === 'LEGEND' ? 'bg-purple-600'
+                        : stats.rank.name === 'MASTER' ? 'bg-blue-600'
+                            : stats.rank.name === 'ELITE' ? 'bg-emerald-600'
+                                : 'bg-yellow-600'
+                        }`} />
+
                     {/* Background Decorative Element */}
                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
                         <Trophy className="w-32 h-32" />
@@ -335,7 +334,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                                 <Zap className="w-3 h-3" />
                                 Elite Performance
                             </div>
-                            <div className={`px-4 py-1.5 rounded-xl ${stats.rank.bg} ${stats.rank.color} border border-white/10 text-[10px] font-black tracking-[0.2em]`}>
+                            <div className={`px-4 py-1.5 rounded-xl ${stats.rank.bg} ${stats.rank.color} border border-white/10 text-[10px] font-black tracking-[0.2em] shadow-lg`}>
                                 {stats.rank.name}
                             </div>
                         </div>
@@ -343,71 +342,90 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                         <h4 className="text-3xl font-black mb-4 leading-tight tracking-tight">
                             {stats.rank.name === 'LEGEND' ? 'Peak of the Industry' : 'The Path to Greatness'}
                         </h4>
-                        <p className="text-gray-400 font-medium leading-relaxed mb-8">
+                        <p className="text-gray-400 text-sm font-medium leading-relaxed mb-8">
                             {stats.rank.next
                                 ? `Unlock ${stats.rank.next.name} status by hitting both career milestones below.`
                                 : "You've reached LEGEND status. Your name is etched into the floor of this shop."
                             }
                         </p>
 
-                        {/* Achievement Badges */}
+                        {/* Achievement Badges - More Vibrant */}
                         <div className="flex gap-4 mb-8">
                             <div className="flex flex-col items-center gap-2">
-                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.rank.name !== 'RISING STAR' ? 'text-yellow-400 shadow-lg shadow-yellow-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
-                                    <Trophy className="w-6 h-6" />
+                                <div className={`w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all ${stats.rank.name !== 'RISING STAR'
+                                    ? 'text-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.3)] border-yellow-400/50 scale-110 bg-yellow-400/10'
+                                    : 'text-gray-600 opacity-20'
+                                    }`}>
+                                    <Trophy className="w-7 h-7" />
                                 </div>
                                 <span className={`text-[10px] font-bold ${stats.rank.name !== 'RISING STAR' ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>PRO</span>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${['ELITE', 'MASTER', 'LEGEND'].includes(stats.rank.name) ? 'text-blue-400 shadow-lg shadow-blue-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
-                                    <Star className="w-6 h-6" />
+                                <div className={`w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all ${['ELITE', 'MASTER', 'LEGEND'].includes(stats.rank.name)
+                                    ? 'text-blue-400 shadow-[0_0_20px_rgba(96,165,250,0.3)] border-blue-400/50 scale-110 bg-blue-400/10'
+                                    : 'text-gray-600 opacity-20'
+                                    }`}>
+                                    <Star className="w-7 h-7" />
                                 </div>
                                 <span className={`text-[10px] font-bold ${['ELITE', 'MASTER', 'LEGEND'].includes(stats.rank.name) ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>ELITE</span>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${stats.rank.name === 'LEGEND' ? 'text-purple-400 shadow-lg shadow-purple-500/20' : 'text-gray-600 opacity-20'} transition-all`}>
-                                    <Award className="w-6 h-6" />
+                                <div className={`w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all ${stats.rank.name === 'LEGEND'
+                                    ? 'text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.3)] border-purple-400/50 scale-110 bg-purple-400/10'
+                                    : 'text-gray-600 opacity-20'
+                                    }`}>
+                                    <Award className="w-7 h-7" />
                                 </div>
                                 <span className={`text-[10px] font-bold ${stats.rank.name === 'LEGEND' ? 'text-gray-300' : 'text-gray-600'} uppercase tracking-widest`}>LEGEND</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Progress to Next Rank */}
-                    <div className="mt-4 pt-6 border-t border-white/5 space-y-6">
+                    {/* Progress to Next Rank - Vibrant Bars */}
+                    <div className="mt-4 pt-6 border-t border-white/10 space-y-6">
                         {stats.rank.next && (
                             <>
                                 {/* Revenue Progress */}
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     <div className="flex justify-between items-end">
-                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                            Revenue Target: ${stats.rank.next.rev.toLocaleString()}
-                                        </span>
-                                        <span className="text-xs font-black text-amber-500">
-                                            ${stats.lifetimeRevenue.toLocaleString()}
-                                        </span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                                                Revenue Target: ${stats.rank.next.rev.toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-xl font-black text-amber-500 shadow-amber-500/20">
+                                                ${stats.lifetimeRevenue.toLocaleString()}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-gray-500">/ ${stats.rank.next.rev.toLocaleString()}</span>
+                                        </div>
                                     </div>
-                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                                         <div
-                                            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-1000"
+                                            className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 shadow-[0_0_10px_rgba(245,158,11,0.5)] transition-all duration-1000"
                                             style={{ width: `${stats.rank.revProgress}%` }}
                                         />
                                     </div>
                                 </div>
 
                                 {/* Booking Progress */}
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     <div className="flex justify-between items-end">
-                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                            Booking Target: {stats.rank.next.apts.toLocaleString()}
-                                        </span>
-                                        <span className="text-xs font-black text-blue-500">
-                                            {stats.lifetimeBookings.toLocaleString()}
-                                        </span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                                                Booking Target: {stats.rank.next.apts.toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-xl font-black text-blue-500 shadow-blue-500/20">
+                                                {stats.lifetimeBookings.toLocaleString()}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-gray-500">/ {stats.rank.next.apts.toLocaleString()}</span>
+                                        </div>
                                     </div>
-                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                                         <div
-                                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000"
+                                            className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-1000"
                                             style={{ width: `${stats.rank.aptProgress}%` }}
                                         />
                                     </div>
@@ -415,10 +433,11 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                             </>
                         )}
                         {!stats.rank.next && (
-                            <div className="py-4 text-center">
-                                <div className="text-[10px] font-black text-purple-400 uppercase tracking-[0.3em] animate-pulse">
+                            <div className="py-6 text-center bg-purple-500/5 rounded-[2rem] border border-purple-500/20">
+                                <div className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em] animate-pulse">
                                     LEGENDARY STATUS ACTIVE
                                 </div>
+                                <p className="text-xs text-gray-500 font-medium mt-2 italic">You have conquered the industry.</p>
                             </div>
                         )}
                     </div>
@@ -428,54 +447,36 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
     );
 }
 
-function StatCard({ label, value, growth, showGrowth, icon: Icon, gradient, description }: any) {
+
+function InsightRow({ label, curr, growth, showGrowth, isCurrency = false, isPercentage = false, color = 'blue' }: any) {
     const isPositive = growth >= 0;
 
-    return (
-        <div className="bg-white rounded-2xl md:rounded-[2rem] p-4 md:p-8 border border-gray-100 shadow-xl shadow-gray-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-[0.03] -mr-8 -mt-8 rounded-full group-hover:scale-125 transition-transform duration-500`}></div>
+    const colors: any = {
+        blue: 'text-blue-600 bg-blue-50 border-blue-100',
+        indigo: 'text-indigo-600 bg-indigo-50 border-indigo-100',
+        emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+        orange: 'text-orange-600 bg-orange-50 border-orange-100'
+    };
 
-            <div className="flex justify-between items-start mb-6">
-                <div className={`p-4 rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg shadow-gray-200/20`}>
-                    <Icon className="w-6 h-6" />
-                </div>
-                {showGrowth && (
-                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
-                        }`}>
-                        {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                        {Math.abs(growth)}%
-                    </div>
-                )}
-            </div>
-
-            <div className="space-y-1 relative">
-                <h4 className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{label}</h4>
-                <div className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter">{value}</div>
-                <p className="text-gray-400 text-[10px] font-bold mt-2">{description}</p>
-            </div>
-        </div>
-    );
-}
-
-function InsightRow({ label, curr, growth, showGrowth, isCurrency = false, isPercentage = false }: any) {
-    const isPositive = growth >= 0;
+    const activeColor = colors[color] || colors.blue;
 
     return (
-        <div className="flex items-center justify-between p-4 md:p-6 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300">
+        <div className="flex items-center justify-between p-4 md:p-6 bg-white rounded-2xl border border-gray-100 hover:border-primary-200 hover:shadow-lg transition-all duration-300 relative group/row">
+            <div className={`absolute inset-y-2 left-0 w-1 bg-current rounded-full opacity-0 group-hover/row:opacity-100 transition-opacity ${activeColor.split(' ')[0]}`} />
             <div className="flex flex-col">
-                <span className="text-sm font-black text-gray-900 uppercase tracking-widest">{label}</span>
-                <span className="text-xs text-gray-500 font-bold mt-0.5">Performance Trend</span>
+                <span className="text-xs md:text-sm font-black text-gray-900 uppercase tracking-widest">{label}</span>
+                <span className="text-[10px] text-gray-400 font-bold mt-0.5">Performance Trend</span>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 md:gap-6">
                 <div className="text-right">
-                    <div className="text-xl font-black text-gray-900">
-                        {isCurrency ? `$${Math.round(curr)}` : curr}{isPercentage ? '%' : ''}
+                    <div className="text-lg md:text-xl font-black text-gray-900">
+                        {isCurrency ? `$${Math.round(curr).toLocaleString()}` : curr}{isPercentage ? '%' : ''}
                     </div>
                 </div>
                 {showGrowth && (
-                    <div className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                    <div className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${isPositive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'
                         }`}>
-                        {isPositive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                        {isPositive ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
                         {Math.abs(growth)}%
                     </div>
                 )}

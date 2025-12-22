@@ -5,7 +5,7 @@ interface StatCardProps {
     title: string;
     value: string | number;
     icon: LucideIcon;
-    gradient: string;
+    color?: 'green' | 'blue' | 'purple' | 'orange' | 'yellow' | 'teal' | 'indigo' | 'pink' | 'emerald';
     growth?: number;
     trend?: 'up' | 'down' | 'neutral';
     subtitle?: string;
@@ -13,25 +13,81 @@ interface StatCardProps {
     onClick?: () => void;
 }
 
+const colorMap = {
+    green: {
+        gradientStyle: { background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)' },
+        glowVal: '34, 197, 94', // #22c55e
+        fallback: 'bg-[#22c55e]'
+    },
+    blue: {
+        gradientStyle: { background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)' },
+        glowVal: '59, 130, 246', // #3b82f6
+        fallback: 'bg-[#3b82f6]'
+    },
+    purple: {
+        gradientStyle: { background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)' },
+        glowVal: '168, 85, 247', // #a855f7
+        fallback: 'bg-[#a855f7]'
+    },
+    orange: {
+        gradientStyle: { background: 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)' },
+        glowVal: '249, 115, 22', // #f97316
+        fallback: 'bg-[#f97316]'
+    },
+    yellow: {
+        gradientStyle: { background: 'linear-gradient(135deg, #eab308 0%, #f97316 100%)' },
+        glowVal: '234, 179, 8', // #eab308
+        fallback: 'bg-[#eab308]'
+    },
+    teal: {
+        gradientStyle: { background: 'linear-gradient(135deg, #2dd4bf 0%, #10b981 100%)' },
+        glowVal: '45, 212, 191', // #2dd4bf
+        fallback: 'bg-[#2dd4bf]'
+    },
+    indigo: {
+        gradientStyle: { background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)' },
+        glowVal: '99, 102, 241', // #6366f1
+        fallback: 'bg-[#6366f1]'
+    },
+    pink: {
+        gradientStyle: { background: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)' },
+        glowVal: '236, 72, 153', // #ec4899
+        fallback: 'bg-[#ec4899]'
+    },
+    emerald: {
+        gradientStyle: { background: 'linear-gradient(135deg, #10b981 0%, #0d9488 100%)' },
+        glowVal: '16, 185, 129', // #10b981
+        fallback: 'bg-[#10b981]'
+    }
+};
+
 export default function StatCard({
     title,
     value,
     icon: Icon,
-    gradient,
+    color = 'blue',
     growth,
     trend,
     subtitle,
     delay = 0,
     onClick
 }: StatCardProps) {
+    const config = colorMap[color] || colorMap.blue;
+    const { gradientStyle, glowVal, fallback } = config;
+
+    // Use inline style for shadow to support older mobile browsers that might fail on Tailwind opacity syntax
+    const shadowStyle = {
+        boxShadow: `0 10px 15px -3px rgba(${glowVal}, 0.2), 0 4px 6px -2px rgba(${glowVal}, 0.1)`
+    };
+
     const getTrendColor = () => {
         if (!trend) return '';
-        return trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-600';
+        return trend === 'up' ? 'text-[#16a34a]' : trend === 'down' ? 'text-[#dc2626]' : 'text-[#4b5563]'; // green-600, red-600, gray-600
     };
 
     const getTrendBg = () => {
         if (!trend) return '';
-        return trend === 'up' ? 'bg-green-50' : trend === 'down' ? 'bg-red-50' : 'bg-gray-50';
+        return trend === 'up' ? 'bg-[#f0fdf4]' : trend === 'down' ? 'bg-[#fef2f2]' : 'bg-[#f9fafb]'; // green-50, red-50, gray-50
     };
 
     return (
@@ -41,10 +97,16 @@ export default function StatCard({
             style={{ animationDelay: `${delay}ms` }}
         >
             {/* Gradient Background */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5 group-hover:opacity-10 transition-opacity`} />
+            <div
+                className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity"
+                style={gradientStyle}
+            />
 
             {/* Decorative Circle */}
-            <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${gradient} opacity-10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`} />
+            <div
+                className="absolute -right-8 -top-8 w-32 h-32 opacity-10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"
+                style={gradientStyle}
+            />
 
             {/* Content */}
             <div className="relative p-6 space-y-4">
@@ -55,8 +117,20 @@ export default function StatCard({
                             {title}
                         </p>
                     </div>
-                    <div className={`p-3 bg-gradient-to-br ${gradient} rounded-xl shadow-lg`}>
-                        <Icon className="w-6 h-6 text-white" />
+                    <div className="relative group/icon flex-shrink-0">
+                        {/* Glow Layer */}
+                        <div
+                            className="absolute inset-[-6px] rounded-xl blur-xl opacity-30 group-hover:opacity-60 transition-opacity duration-500"
+                            style={gradientStyle}
+                        />
+
+                        {/* Icon Container with Fallback Background and Colored Shadow */}
+                        <div
+                            className={`relative p-3 ${fallback} rounded-xl border border-white/20 transition-transform duration-300 group-hover/icon:scale-110`}
+                            style={{ ...shadowStyle, ...gradientStyle }}
+                        >
+                            <Icon className="w-6 h-6 text-white" />
+                        </div>
                     </div>
                 </div>
 

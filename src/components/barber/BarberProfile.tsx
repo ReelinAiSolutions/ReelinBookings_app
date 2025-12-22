@@ -128,7 +128,7 @@ export default function StaffProfile({ currentUser }: StaffProfileProps) {
         <div className="space-y-12 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Premium Hero Section */}
             <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-indigo-600 to-purple-600 rounded-[2.5rem] shadow-2xl shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-600 rounded-[2.5rem] shadow-2xl shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow duration-500"></div>
                 <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 rounded-[2.5rem]"></div>
 
                 <div className="relative p-10 md:p-16 flex flex-col items-center text-center">
@@ -209,12 +209,12 @@ export default function StaffProfile({ currentUser }: StaffProfileProps) {
 
                 {/* Security Card */}
                 <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                    <div className="bg-gradient-to-r from-primary-50 to-indigo-50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
                         <div>
                             <h3 className="text-xl font-black text-gray-900 tracking-tight">Security & Privacy</h3>
                             <p className="text-sm text-gray-500 font-medium">Keep your account protected.</p>
                         </div>
-                        <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-purple-600">
+                        <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-primary-600">
                             <ShieldCheck className="w-6 h-6" />
                         </div>
                     </div>
@@ -227,7 +227,7 @@ export default function StaffProfile({ currentUser }: StaffProfileProps) {
                                 className="w-full flex items-center justify-between p-6 bg-gray-50/50 hover:bg-white rounded-2xl border border-gray-100 transition-all group shadow-sm hover:shadow-md"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-400 group-hover:text-purple-600 transition-colors">
+                                    <div className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-400 group-hover:text-primary-600 transition-colors">
                                         <Lock className="w-5 h-5" />
                                     </div>
                                     <div className="text-left">

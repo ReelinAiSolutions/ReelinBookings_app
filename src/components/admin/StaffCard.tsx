@@ -15,24 +15,27 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
     const hasAvatar = staff.avatar && staff.avatar.trim() !== '';
     const specialtyServices = services.filter(s => staff.specialties.includes(s.id));
 
-    // Generate gradient based on name for consistency
-    const getGradient = (name: string) => {
+    // Generate gradient based on name for consistency (using explicit HEX for mobile safety)
+    const getGradientStyle = (name: string) => {
         const gradients = [
-            'from-blue-500 to-purple-600',
-            'from-green-500 to-teal-600',
-            'from-orange-500 to-pink-600',
-            'from-indigo-500 to-blue-600',
-            'from-red-500 to-orange-600',
-            'from-purple-500 to-pink-600',
+            'linear-gradient(135deg, #3b82f6 0%, #9333ea 100%)', // blue-500 to purple-600
+            'linear-gradient(135deg, #22c55e 0%, #0d9488 100%)', // green-500 to teal-600
+            'linear-gradient(135deg, #f97316 0%, #db2777 100%)', // orange-500 to pink-600
+            'linear-gradient(135deg, #6366f1 0%, #2563eb 100%)', // indigo-500 to blue-600
+            'linear-gradient(135deg, #ef4444 0%, #ea580c 100%)', // red-500 to orange-600
+            'linear-gradient(135deg, #a855f7 0%, #db2777 100%)', // purple-500 to pink-600
         ];
         const index = name.charCodeAt(0) % gradients.length;
-        return gradients[index];
+        return { background: gradients[index] };
     };
 
     return (
         <div className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
             {/* Header with Avatar */}
-            <div className={`relative h-32 bg-gradient-to-br ${getGradient(staff.name)}`}>
+            <div
+                className="relative h-32"
+                style={getGradientStyle(staff.name)}
+            >
                 {/* Decorative Pattern */}
                 <div className="absolute inset-0 opacity-10" style={{
                     backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
@@ -45,7 +48,10 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                         {hasAvatar ? (
                             <img src={staff.avatar} alt={staff.name} className="w-full h-full object-cover" />
                         ) : (
-                            <div className={`w-full h-full bg-gradient-to-br ${getGradient(staff.name)} flex items-center justify-center`}>
+                            <div
+                                className="w-full h-full flex items-center justify-center"
+                                style={getGradientStyle(staff.name)}
+                            >
                                 <span className="text-3xl font-bold text-white">
                                     {staff.name.charAt(0).toUpperCase()}
                                 </span>

@@ -12,6 +12,13 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
     const hasImage = service.imageUrl && service.imageUrl.trim() !== '';
     const categoryColor = service.categoryColor || '#3B82F6';
 
+    const hexToRgba = (hex: string, alpha: number) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
     return (
         <div className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
             {/* Image or Gradient Header */}
@@ -26,7 +33,7 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
                     <div
                         className="w-full h-full flex items-center justify-center"
                         style={{
-                            background: `linear-gradient(135deg, ${categoryColor}dd, ${categoryColor}66)`
+                            background: `linear-gradient(135deg, ${hexToRgba(categoryColor, 0.9)}, ${hexToRgba(categoryColor, 0.4)})`
                         }}
                     >
                         <ImageIcon className="w-16 h-16 text-white/30" />
@@ -40,7 +47,7 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
                 {service.category && (
                     <div
                         className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm"
-                        style={{ backgroundColor: `${categoryColor}dd` }}
+                        style={{ backgroundColor: hexToRgba(categoryColor, 0.9) }}
                     >
                         {service.category}
                     </div>

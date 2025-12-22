@@ -15,7 +15,8 @@ import {
     TrendingUp,
     Layout,
     Globe,
-    Scissors
+    Scissors,
+    DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import StaffStats from './BarberStats';
@@ -24,6 +25,9 @@ import VerticalDayTimeline from '../admin/VerticalDayTimeline';
 import WeeklyCalendar from '../admin/WeeklyCalendar';
 import PersonalWeeklyView from './PersonalWeeklyView';
 import StaffSidebar from './StaffSidebar';
+import RescheduleModal from '../admin/RescheduleModal';
+import { updateAppointment, cancelAppointment, uncancelAppointment, archiveAppointment } from '@/services/dataService';
+import BrandingInjector from '../BrandingInjector';
 
 interface StaffDashboardProps {
     appointments: Appointment[];
@@ -35,6 +39,7 @@ interface StaffDashboardProps {
     businessHours?: Organization['business_hours'];
     currentOrg?: Organization | null;
     onStatusUpdate: (appointmentId: string, status: string) => Promise<void>;
+    onRefresh?: () => Promise<void>;
 }
 
 export default function StaffDashboard({
@@ -46,7 +51,8 @@ export default function StaffDashboard({
     availability = [],
     businessHours,
     currentOrg,
-    onStatusUpdate
+    onStatusUpdate,
+    onRefresh
 }: StaffDashboardProps) {
     const [activeTab, setActiveTab] = useState<'schedule' | 'performance' | 'profile'>('schedule');
     const [viewMode, setViewMode] = useState<'my_day' | 'my_week' | 'team_week'>('my_day');
@@ -55,6 +61,33 @@ export default function StaffDashboard({
     const [isWeekTimelineView, setIsWeekTimelineView] = useState(true); // Default to grid for week
     const [todayStr, setTodayStr] = useState<string>('');
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
+    const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+
+    const handleAppointmentClick = (apt: Appointment) => {
+        setSelectedAppointment(apt);
+    };
+
+    const handleReschedule = async (id: string, date: string, time: string, staffId: string) => {
+        await updateAppointment(id, { date, timeSlot: time, staffId });
+        if (onRefresh) await onRefresh();
+        // Also trigger status update prop if just to be safe, though separate
+    };
+
+    const handleCancel = async (id: string) => {
+        await cancelAppointment(id);
+        if (onRefresh) await onRefresh();
+    };
+
+    const handleRestore = async (id: string) => {
+        await uncancelAppointment(id);
+        if (onRefresh) await onRefresh();
+    };
+
+    const handleArchive = async (id: string) => {
+        await archiveAppointment(id);
+        if (onRefresh) await onRefresh();
+        setSelectedAppointment(null);
+    };
 
     useEffect(() => {
         setTodayStr(format(new Date(), 'yyyy-MM-dd'));
@@ -103,6 +136,7 @@ export default function StaffDashboard({
         }
     };
 
+
     // Dynamic Branding Style
     const brandingStyle = currentOrg?.primary_color ? {
         '--brand-primary': currentOrg.primary_color,
@@ -113,6 +147,7 @@ export default function StaffDashboard({
             className="min-h-screen bg-gray-50 flex flex-col lg:block overflow-hidden"
             style={brandingStyle}
         >
+            <BrandingInjector primaryColor={currentOrg?.primary_color} />
             {/* Desktop Sidebar (Fixed) */}
             <StaffSidebar
                 activeTab={activeTab}
@@ -244,7 +279,10 @@ export default function StaffDashboard({
                                                     availability={availability}
                                                     businessHours={currentOrg?.business_hours}
                                                     date={currentTime || new Date()}
-                                                    onAppointmentClick={() => { }}
+                                                    onAppointmentClick={(id) => {
+                                                        const apt = appointments.find(a => a.id === id);
+                                                        if (apt) handleAppointmentClick(apt);
+                                                    }}
                                                 />
                                             </div>
                                         ) : (
@@ -381,7 +419,7 @@ export default function StaffDashboard({
                                                     availability={availability}
                                                     businessHours={currentOrg?.business_hours}
                                                     onSelectSlot={() => { }}
-                                                    onAppointmentClick={() => { }}
+                                                    onAppointmentClick={handleAppointmentClick}
                                                     colorMode={currentOrg?.settings?.color_mode || 'staff'}
                                                 />
                                             </div>
@@ -404,8 +442,9 @@ export default function StaffDashboard({
                                                 staff={staff}
                                                 services={services}
                                                 availability={availability}
+                                                businessHours={currentOrg?.business_hours}
                                                 onSelectSlot={() => { }}
-                                                onAppointmentClick={() => { }}
+                                                onAppointmentClick={handleAppointmentClick}
                                             />
                                         </div>
                                     </div>
@@ -431,6 +470,20 @@ export default function StaffDashboard({
                             />
                         </div>
                     )}
+
+                    <RescheduleModal
+                        isOpen={!!selectedAppointment}
+                        appointment={selectedAppointment}
+                        onClose={() => setSelectedAppointment(null)}
+                        onReschedule={handleReschedule}
+                        onCancel={handleCancel}
+                        onRestore={handleRestore}
+                        onArchive={handleArchive}
+                        services={services}
+                        staff={staff}
+                        slotInterval={currentOrg?.slot_interval}
+                        businessHours={currentOrg?.business_hours}
+                    />
                 </div>
 
                 {/* Mobile Navigation */}
@@ -446,8 +499,8 @@ export default function StaffDashboard({
                         onClick={() => setActiveTab('performance')}
                         className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'performance' ? 'text-primary-600 scale-110' : 'text-gray-400'}`}
                     >
-                        <BarChart3 className="w-6 h-6" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Stats</span>
+                        <DollarSign className="w-6 h-6" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Revenue</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('profile')}

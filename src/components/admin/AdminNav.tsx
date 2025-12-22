@@ -1,5 +1,4 @@
-import React from 'react';
-import { Calendar, Users, BarChart3, Settings, User, ExternalLink, Key, Briefcase } from 'lucide-react';
+import { Calendar, Users, BarChart3, Settings, User, ExternalLink, Key, Briefcase, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { Organization } from '@/types';
 
@@ -14,7 +13,7 @@ export default function AdminNav({ activeTab, setActiveTab, currentOrg }: AdminN
         { id: 'operations', label: 'Operations', icon: Calendar, mobileLabel: 'Calendar' },
         { id: 'services', label: 'Services', icon: Briefcase, mobileLabel: 'Services' },
         { id: 'team', label: 'Team', icon: Users, mobileLabel: 'Team' },
-        { id: 'analytics', label: 'Analytics', icon: BarChart3, mobileLabel: 'Stats' },
+        { id: 'analytics', label: 'Analytics', icon: DollarSign, mobileLabel: 'Revenue' },
         { id: 'profile', label: 'Profile', icon: User, mobileLabel: 'Profile' },
     ] as const;
 

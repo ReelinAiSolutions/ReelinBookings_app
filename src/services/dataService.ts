@@ -430,32 +430,36 @@ export const cancelAppointment = async (id: string) => {
     if (error) throw error;
 };
 
-export const updateAppointment = async (id: string, updates: { date?: string; timeSlot?: string; status?: string }) => {
-    // If moving time, verify availability first (simple check)
-    if (updates.date && updates.timeSlot) {
-        // We need staffId to check conflicts. 
-        // Fetch current appointment to get staffId
+export const updateAppointment = async (id: string, updates: { date?: string; timeSlot?: string; status?: string; staffId?: string }) => {
+    // If moving time OR changing staff, verify availability first
+    if (updates.date || updates.timeSlot || updates.staffId) {
+        // Fetch current appointment to get current details (fallback)
         const { data: currentApt } = await supabase
             .from('appointments')
-            .select('staff_id')
+            .select('staff_id, date, time_slot')
             .eq('id', id)
             .single();
 
         if (!currentApt) throw new Error('Appointment not found');
 
-        // Check for conflicts
+        // Determine target values
+        const targetStaffId = updates.staffId || currentApt.staff_id;
+        const targetDate = updates.date || currentApt.date;
+        const targetTime = updates.timeSlot || currentApt.time_slot;
+
+        // Check for conflicts on the TARGET staff's schedule
         const { data: conflict } = await supabase
             .from('appointments')
             .select('id')
-            .eq('staff_id', currentApt.staff_id)
-            .eq('date', updates.date)
-            .eq('time_slot', updates.timeSlot)
+            .eq('staff_id', targetStaffId)
+            .eq('date', targetDate)
+            .eq('time_slot', targetTime)
             .neq('id', id) // Exclude self
             .neq('status', 'CANCELLED')
             .single();
 
         if (conflict) {
-            throw new Error('This time slot is already booked.');
+            throw new Error('This time slot is already booked for the selected staff member.');
         }
     }
 
@@ -463,6 +467,7 @@ export const updateAppointment = async (id: string, updates: { date?: string; ti
     if (updates.date) payload.date = updates.date;
     if (updates.timeSlot) payload.time_slot = updates.timeSlot;
     if (updates.status) payload.status = updates.status;
+    if (updates.staffId) payload.staff_id = updates.staffId;
 
     const { error } = await supabase
         .from('appointments')

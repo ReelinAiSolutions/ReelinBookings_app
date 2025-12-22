@@ -72,8 +72,10 @@
 
   /* Branding (Overridable) */
   --brand-primary: #2563eb;
-  --brand-primary-light: color-mix(in srgb, var(--brand-primary), white 92%);
-  --brand-primary-dark: color-mix(in srgb, var(--brand-primary), black 15%);
+  /* 92% white calculation: 2563eb mix white 92% -> #eef2ff approx, let's use a standard slate/blue tint */
+  --brand-primary-light: #eff6ff;
+  /* 15% black calculation: 2563eb mix black 15% -> #1e40af approx */
+  --brand-primary-dark: #1e3a8a;
 
   /* Primary Palette - Mapped to Brand */
   --primary-50: var(--brand-primary-light);
@@ -99,7 +101,8 @@
   --accent: #f0f9ff;
   --accent-foreground: #0284c7;
 
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: #ef4444;
+  /* red-500 */
   /* Keeping default for errors */
 
   --border: #e2e8f0;

@@ -190,12 +190,12 @@ export default function AnalyticsDatePicker({
                     key={day}
                     onClick={() => handleDateClick(date)}
                     className={`h-8 w-8 rounded-lg text-sm font-medium transition-all ${isStart || isEnd
-                            ? 'bg-blue-600 text-white'
-                            : isInRange
-                                ? 'bg-blue-100 text-blue-900'
-                                : isToday
-                                    ? 'bg-gray-200 text-gray-900'
-                                    : 'hover:bg-gray-100 text-gray-700'
+                        ? 'bg-blue-600 text-white'
+                        : isInRange
+                            ? 'bg-blue-100 text-blue-900'
+                            : isToday
+                                ? 'bg-gray-200 text-gray-900'
+                                : 'hover:bg-gray-100 text-gray-700'
                         }`}
                 >
                     {day}
@@ -213,7 +213,7 @@ export default function AnalyticsDatePicker({
                 {/* Previous Period Button */}
                 <button
                     onClick={() => navigatePeriod('prev')}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-1.5 md:p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
                     title="Previous period"
                 >
                     <ChevronLeft className="w-4 h-4 text-gray-600" />
@@ -222,26 +222,26 @@ export default function AnalyticsDatePicker({
                 {/* Date Range Display */}
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center gap-3 px-4 py-2.5 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-all shadow-sm min-w-[280px]"
+                    className="flex flex-1 items-center gap-2 md:gap-3 px-3 md:px-4 py-2 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-all shadow-sm min-w-0 md:min-w-[280px]"
                 >
-                    <div className="p-1.5 bg-blue-50 rounded-lg">
-                        <Calendar className="w-4 h-4 text-blue-600" />
+                    <div className="hidden xs:flex p-1 md:p-1.5 bg-blue-50 rounded-lg shrink-0">
+                        <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600" />
                     </div>
-                    <div className="flex-1 text-left">
-                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                            {presets.find(p => p.id === activePreset)?.label || 'Custom Range'}
+                    <div className="flex-1 text-left min-w-0">
+                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">
+                            {presets.find(p => p.id === activePreset)?.label || 'Custom'}
                         </div>
-                        <div className="text-sm font-bold text-gray-900">
+                        <div className="text-xs md:text-sm font-black text-gray-900 truncate">
                             {formatDateRange()}
                         </div>
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Next Period Button */}
                 <button
                     onClick={() => navigatePeriod('next')}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-1.5 md:p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
                     title="Next period"
                 >
                     <ChevronRight className="w-4 h-4 text-gray-600" />
@@ -252,8 +252,8 @@ export default function AnalyticsDatePicker({
                     <button
                         onClick={() => onCompareModeToggle(!compareMode)}
                         className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${compareMode
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                     >
                         {compareMode ? '✓ Comparing' : 'Compare'}
@@ -290,8 +290,8 @@ export default function AnalyticsDatePicker({
                                             key={preset.id}
                                             onClick={() => handlePresetClick(preset)}
                                             className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activePreset === preset.id
-                                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                                                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                                 }`}
                                         >
                                             {preset.label}
@@ -398,8 +398,8 @@ export default function AnalyticsDatePicker({
                                     onClick={applyCustomRange}
                                     disabled={!customStart || !customEnd}
                                     className={`w-full px-4 py-3 rounded-xl font-semibold transition-all ${customStart && customEnd
-                                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
-                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
+                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                         }`}
                                 >
                                     Apply Custom Range

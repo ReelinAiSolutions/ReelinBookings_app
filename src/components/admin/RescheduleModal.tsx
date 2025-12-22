@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Appointment, Service, Organization } from '@/types';
+import { Appointment, Service, Organization, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { X, Calendar, Clock, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -8,11 +8,12 @@ interface RescheduleModalProps {
     isOpen: boolean;
     appointment: Appointment | null;
     onClose: () => void;
-    onReschedule: (id: string, newDate: string, newTime: string) => Promise<void>;
+    onReschedule: (id: string, newDate: string, newTime: string, newStaffId: string) => Promise<void>;
     onCancel: (id: string) => Promise<void>;
     onRestore?: (id: string) => Promise<void>;
     onArchive?: (id: string) => Promise<void>;
     services: Service[];
+    staff: Staff[];
     slotInterval?: number;
     businessHours?: Organization['business_hours'];
 }
@@ -27,10 +28,12 @@ export default function RescheduleModal({
     onArchive,
     services,
     slotInterval = 15,
-    businessHours
+    businessHours,
+    staff
 }: RescheduleModalProps) {
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
+    const [staffId, setStaffId] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     // Initialize state when opening
@@ -38,6 +41,7 @@ export default function RescheduleModal({
         if (appointment) {
             setDate(appointment.date);
             setTime(appointment.timeSlot);
+            setStaffId(appointment.staffId);
         }
     }, [appointment]);
 
@@ -46,7 +50,7 @@ export default function RescheduleModal({
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            await onReschedule(appointment.id, date, time);
+            await onReschedule(appointment.id, date, time, staffId);
             onClose();
         } catch (error) {
             alert('Failed to reschedule: ' + (error as Error).message);
@@ -98,7 +102,7 @@ export default function RescheduleModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
@@ -122,27 +126,36 @@ export default function RescheduleModal({
                         </div>
                     </div>
 
-                    <div className="flex gap-4">
-                        <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">New Date</label>
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-500 uppercase">Assigned Staff</label>
+                            <select
+                                value={staffId}
+                                onChange={(e) => setStaffId(e.target.value)}
+                                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all appearance-none"
+                            >
+                                {staff.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 uppercase">New Date</label>
                                 <input
                                     type="date"
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                                 />
                             </div>
-                        </div>
-                        <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">New Time</label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 uppercase">New Time</label>
                                 <select
                                     value={time}
                                     onChange={(e) => setTime(e.target.value)}
-                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all appearance-none"
                                 >
                                     <option value="" disabled>Select Time</option>
                                     {(() => {
@@ -192,45 +205,45 @@ export default function RescheduleModal({
                                 </select>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg">
-                        <strong>Note:</strong> Moving this appointment will free up the original slot. Use "Block Time" if you want to keep both closed.
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-3">
-                    {appointment.status === 'CANCELLED' ? (
-                        <div className="flex justify-between w-full">
-                            <button
-                                onClick={handleArchiveApt}
-                                className="text-gray-600 text-sm font-medium hover:text-gray-800 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
-                                disabled={isLoading}
-                            >
-                                Confirm Cancel (Hide)
-                            </button>
-                            <Button onClick={handleRestoreApt} disabled={isLoading} className="bg-green-600 hover:bg-green-700 text-white">
-                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Uncancel Booking'}
-                            </Button>
+                        <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg">
+                            <strong>Note:</strong> Moving this appointment will free up the original slot. Use "Block Time" if you want to keep both closed.
                         </div>
-                    ) : (
-                        <div className="flex justify-between w-full items-center">
-                            <button
-                                onClick={handleCancelApt}
-                                className="text-red-600 text-sm font-medium hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
-                                disabled={isLoading}
-                            >
-                                Cancel Booking
-                            </button>
-                            <div className="flex gap-3">
-                                <Button variant="outline" onClick={onClose} disabled={isLoading}>Close</Button>
-                                <Button onClick={handleSave} disabled={isLoading}>
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Move'}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-3">
+                        {appointment.status === 'CANCELLED' ? (
+                            <div className="flex justify-between w-full">
+                                <button
+                                    onClick={handleArchiveApt}
+                                    className="text-gray-600 text-sm font-medium hover:text-gray-800 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
+                                    disabled={isLoading}
+                                >
+                                    Confirm Cancel (Hide)
+                                </button>
+                                <Button onClick={handleRestoreApt} disabled={isLoading} className="bg-green-600 hover:bg-green-700 text-white">
+                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Uncancel Booking'}
                                 </Button>
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="flex justify-between w-full items-center">
+                                <button
+                                    onClick={handleCancelApt}
+                                    className="text-red-600 text-sm font-medium hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
+                                    disabled={isLoading}
+                                >
+                                    Cancel Booking
+                                </button>
+                                <div className="flex gap-3">
+                                    <Button variant="outline" onClick={onClose} disabled={isLoading}>Close</Button>
+                                    <Button onClick={handleSave} disabled={isLoading}>
+                                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Move'}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

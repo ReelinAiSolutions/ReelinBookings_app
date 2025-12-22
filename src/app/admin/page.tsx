@@ -16,6 +16,7 @@ import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
 import StaffDashboard from '@/components/barber/BarberDashboard';
 import ProfileManager from '@/components/admin/ProfileManager'; // Restored import
 import AdminNav from '@/components/admin/AdminNav'; // New import
+import BrandingInjector from '@/components/BrandingInjector';
 import { useRouter } from 'next/navigation';
 import {
     getCurrentUserOrganization,
@@ -140,8 +141,8 @@ export default function AdminDashboard() {
         setIsRescheduleModalOpen(true);
     };
 
-    const onReschedule = async (id: string, newDate: string, newTime: string) => {
-        await updateAppointment(id, { date: newDate, timeSlot: newTime });
+    const onReschedule = async (id: string, newDate: string, newTime: string, newStaffId: string) => {
+        await updateAppointment(id, { date: newDate, timeSlot: newTime, staffId: newStaffId });
         await loadDashboardData();
     };
 
@@ -281,6 +282,7 @@ export default function AdminDashboard() {
             className="min-h-screen bg-gray-50/50"
             style={brandingStyle}
         >
+            <BrandingInjector primaryColor={currentOrg?.primary_color} />
             {/* Desktop Sidebar (Fixed) */}
             <AdminSidebar
                 activeTab={activeTab}
@@ -363,7 +365,7 @@ export default function AdminDashboard() {
                                 {/* FLOATING ACTION BUTTON (Mobile Only) */}
                                 <button
                                     onClick={() => setIsCreateModalOpen(true)}
-                                    className="lg:hidden fixed bottom-24 right-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl flex items-center justify-center z-40 hover:bg-blue-700 active:scale-95 transition-all"
+                                    className="lg:hidden fixed bottom-24 right-4 w-14 h-14 bg-primary-600 text-white rounded-full shadow-xl flex items-center justify-center z-40 hover:bg-primary-700 active:scale-95 transition-all"
                                 >
                                     <Plus className="w-8 h-8" />
                                 </button>
@@ -443,6 +445,7 @@ export default function AdminDashboard() {
                             setSelectedAppointment(null);
                         }}
                         services={services}
+                        staff={staff}
                         slotInterval={currentOrg?.slot_interval}
                         businessHours={currentOrg?.business_hours}
                     />

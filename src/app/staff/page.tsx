@@ -99,6 +99,7 @@ export default function StaffPage() {
             availability={availability}
             currentOrg={currentOrg}
             onStatusUpdate={onStatusUpdate}
+            onRefresh={loadStaffData}
         />
     );
 }

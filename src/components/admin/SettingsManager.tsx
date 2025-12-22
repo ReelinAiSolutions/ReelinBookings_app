@@ -94,13 +94,13 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 const fileName = `${org.id}/logo.${fileExt}`;
 
                 const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('organization-assets')
+                    .from('org-assets')
                     .upload(fileName, logoFile, { upsert: true });
 
                 if (uploadError) throw uploadError;
 
                 const { data: publicData } = supabase.storage
-                    .from('organization-assets')
+                    .from('org-assets')
                     .getPublicUrl(fileName);
 
                 logoUrl = publicData.publicUrl;
