@@ -96,11 +96,14 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
             <div className="flex w-full h-full min-w-0 overflow-auto pb-32">
                 <div className="flex w-full relative" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
 
-                    {/* Time Column */}
-                    <div className="relative z-30 bg-white border-r border-gray-100 flex-shrink-0 w-10 flex flex-col sticky left-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
-                        {/* RESTORED HEADER TO FIX ALIGNMENT */}
-                        <div className="h-10 bg-white z-30 border-b border-gray-100 flex items-center justify-center flex-shrink-0 sticky top-0">
-                            <Clock className="w-3.5 h-3.5 text-gray-400" />
+                    {/* Static Time Column - LOCKED LEFT */}
+                    <div
+                        className="relative z-[100] bg-white border-r border-gray-200/80 flex-shrink-0 w-12 flex flex-col sticky left-0 shadow-[4px_0_20px_rgba(0,0,0,0.06)]"
+                        style={{ height: `${TOTAL_HEIGHT_PX}px` }}
+                    >
+                        {/* ROCK SOLID TOP-LEFT HEADER */}
+                        <div className="h-10 bg-white z-[110] border-b border-gray-100 flex items-center justify-center flex-shrink-0 sticky top-0 shadow-sm">
+                            <Clock className="w-3.5 h-3.5 text-gray-500" />
                         </div>
                         <div className="relative w-full h-full">
                             {hours.map((hour, i) => {
