@@ -163,7 +163,7 @@ export default function StaffDashboard({
 
     return (
         <div
-            className="min-h-screen bg-gray-50 flex flex-col lg:block overflow-hidden"
+            className="min-h-screen bg-gray-50 flex flex-col lg:block overflow-x-hidden"
             style={brandingStyle}
         >
             <BrandingInjector primaryColor={currentOrg?.primary_color} />
@@ -175,9 +175,9 @@ export default function StaffDashboard({
             />
 
             {/* Main Content Area */}
-            <main className="lg:ml-64 lg:min-h-screen h-[100dvh] flex flex-col lg:block overflow-hidden relative">
+            <main className="lg:ml-64 lg:min-h-screen flex flex-col lg:block relative min-h-screen">
 
-                {/* Mobile Header (Fixed Top) */}
+                {/* Mobile Header (Scrolls Away) */}
                 <div className="lg:hidden flex-shrink-0 flex justify-between items-center h-16 px-4 bg-white border-b border-gray-100 z-50">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                         {currentOrg?.logo_url ? (

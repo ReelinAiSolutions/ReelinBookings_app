@@ -294,7 +294,7 @@ export default function AdminDashboard() {
             <main className="lg:ml-64 lg:min-h-screen h-[100dvh] flex flex-col lg:block">
                 <div className={`flex-1 flex flex-col lg:overflow-visible lg:space-y-6 lg:p-8 p-4 pb-24 lg:pb-0 ${activeTab === 'operations' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
                     {/* Mobile Header (Glassy iOS) */}
-                    <div className="lg:hidden flex-shrink-0 bg-white/70 backdrop-blur-2xl border-b border-gray-200/50 px-6 flex items-center justify-between sticky top-0 z-40 h-16">
+                    <div className="lg:hidden flex-shrink-0 bg-white/70 backdrop-blur-2xl border-b border-gray-200/50 px-6 flex items-center justify-between h-16">
                         {/* Left: Organization Logo & Name */}
                         <div className="flex items-center gap-3 min-w-0">
                             <div className="p-1 bg-white rounded-lg shadow-sm border border-gray-100">
