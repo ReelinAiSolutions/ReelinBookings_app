@@ -56,7 +56,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
     const START_HOUR = startHour;
     const END_HOUR = endHour;
     const TOTAL_HOURS = END_HOUR - START_HOUR;
-    const BOTTOM_BUFFER = 200; // Extra space to prevent bottom cutoff on mobile
+    const BOTTOM_BUFFER = 120; // Enough space for FAB but no "useless white space"
     const TOTAL_HEIGHT_PX = (TOTAL_HOURS * HOUR_HEIGHT) + BOTTOM_BUFFER;
 
     const todayDayOfWeek = viewDayIndex;
@@ -94,7 +94,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
 
     return (
         <div className="flex flex-1 relative bg-white h-full overflow-hidden min-w-0" onClick={handleGridClick}>
-            <div className="flex w-full h-full min-w-0 overflow-auto pb-32">
+            <div className="flex w-full h-full min-w-0 overflow-auto pb-10">
                 <div className="flex w-full relative" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
 
                     {/* Static Time Column - LOCKED LEFT */}
