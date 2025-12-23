@@ -290,11 +290,11 @@ export default function AdminDashboard() {
                 currentOrg={currentOrg}
             />
 
-            {/* Main Content Area (Mobile: Fixed Height App Shell, Desktop: Scrollable) */}
-            <main className="lg:ml-64 lg:min-h-screen h-[100dvh] flex flex-col lg:block">
-                <div className={`flex-1 flex flex-col lg:overflow-visible lg:space-y-6 lg:p-8 p-4 pb-24 lg:pb-0 ${activeTab === 'operations' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
-                    {/* Mobile Header (Glassy iOS) */}
-                    <div className="lg:hidden flex-shrink-0 bg-white/70 backdrop-blur-2xl border-b border-gray-200/50 px-6 flex items-center justify-between h-16">
+            {/* Main Content Area (Mobile: Fixed Height App Shell for Ops, Scrollable Body for others) */}
+            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh]' : 'block min-h-screen'}`}>
+                <div className={`p-4 pb-24 lg:p-8 lg:pb-0 ${activeTab === 'operations' ? 'flex-1 flex flex-col overflow-hidden space-y-4' : 'lg:space-y-6'}`}>
+                    {/* Mobile Header (Scrolls Away) */}
+                    <div className="lg:hidden flex-shrink-0 bg-white border-b border-gray-200/50 px-6 flex items-center justify-between h-16 -mx-4 -mt-4 mb-6">
                         {/* Left: Organization Logo & Name */}
                         <div className="flex items-center gap-3 min-w-0">
                             <div className="p-1 bg-white rounded-lg shadow-sm border border-gray-100">
@@ -312,13 +312,7 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/* Right: tiny status badge */}
-                        <div className="flex items-center gap-4">
-                            <div className="px-2 py-1 bg-primary-50 rounded-full border border-primary-100 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></div>
-                                <span className="text-[9px] font-black text-primary-700 uppercase tracking-widest">Live</span>
-                            </div>
-                        </div>
+
                     </div>
 
 

@@ -175,28 +175,27 @@ export default function StaffDashboard({
             />
 
             {/* Main Content Area */}
-            <main className="lg:ml-64 lg:min-h-screen flex flex-col lg:block relative min-h-screen">
-
-                {/* Mobile Header (Scrolls Away) */}
-                <div className="lg:hidden flex-shrink-0 flex justify-between items-center h-16 px-4 bg-white border-b border-gray-100 z-50">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {currentOrg?.logo_url ? (
-                            <img suppressHydrationWarning src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 rounded-lg object-contain bg-gray-50 border border-gray-100" />
-                        ) : (
-                            <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center text-white flex-shrink-0">
-                                <Globe className="w-4 h-4" />
-                            </div>
-                        )}
-                        <div className="flex flex-col min-w-0">
-                            <h1 className="text-lg font-black text-gray-900 tracking-tight truncate leading-tight">
-                                {currentOrg?.name || 'Staff View'}
-                            </h1>
-                        </div>
-                    </div>
-                </div>
+            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'schedule' ? 'flex flex-col h-[100dvh]' : 'block min-h-screen'}`}>
 
                 {/* Content Container */}
-                <div className={`flex-1 flex flex-col min-h-0 bg-gray-50 ${activeTab === 'schedule' ? 'lg:p-6' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 lg:pb-6 space-y-6 overflow-y-auto pb-24'}`}>
+                <div className={` min-h-0 bg-gray-50 ${activeTab === 'schedule' ? 'flex-1 flex flex-col lg:p-6 pb-24' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
+                    {/* Mobile Header (Scrolls Away) */}
+                    <div className="lg:hidden flex-shrink-0 flex justify-between items-center h-16 px-4 bg-white border-b border-gray-100 z-50 -mx-4 -mt-4 mb-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {currentOrg?.logo_url ? (
+                                <img suppressHydrationWarning src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 rounded-lg object-contain bg-gray-50 border border-gray-100" />
+                            ) : (
+                                <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center text-white flex-shrink-0">
+                                    <Globe className="w-4 h-4" />
+                                </div>
+                            )}
+                            <div className="flex flex-col min-w-0">
+                                <h1 className="text-lg font-black text-gray-900 tracking-tight truncate leading-tight">
+                                    {currentOrg?.name || 'Staff View'}
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
 
                     {activeTab === 'schedule' && (
                         <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
