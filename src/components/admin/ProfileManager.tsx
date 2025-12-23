@@ -117,7 +117,10 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
 
             {/* Premium Hero Section */}
             <div className="relative group animate-in fade-in slide-in-from-top-4 duration-700">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-600 rounded-[2.5rem] shadow-2xl shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow duration-500"></div>
+                {/* Fallback bg-slate-900 in case gradient fails or is light */}
+                <div className="absolute inset-0 bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow duration-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-600 opacity-90"></div>
+                </div>
                 <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 rounded-[2.5rem]"></div>
 
                 <div className="relative p-10 md:p-16 flex flex-col items-center text-center">
@@ -145,13 +148,13 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                         </div>
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">
+                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2 drop-shadow-md">
                         {formData.fullName || 'Welcome Admin'}
                     </h1>
                     <p className="text-white/80 font-medium text-lg mb-4">{formData.email}</p>
-                    <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
-                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                        <span className="text-white/90 font-black text-[10px] tracking-widest uppercase">Admin Portal Active</span>
+                    <div className="flex items-center gap-2 px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-full border border-white/20">
+                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse box-shadow-glow"></div>
+                        <span className="text-white font-black text-[10px] tracking-widest uppercase drop-shadow-sm">Admin Portal Active</span>
                     </div>
                 </div>
             </div>
