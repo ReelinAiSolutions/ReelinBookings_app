@@ -56,7 +56,8 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
     const START_HOUR = startHour;
     const END_HOUR = endHour;
     const TOTAL_HOURS = END_HOUR - START_HOUR;
-    const TOTAL_HEIGHT_PX = TOTAL_HOURS * HOUR_HEIGHT;
+    const BOTTOM_BUFFER = 200; // Extra space to prevent bottom cutoff on mobile
+    const TOTAL_HEIGHT_PX = (TOTAL_HOURS * HOUR_HEIGHT) + BOTTOM_BUFFER;
 
     const todayDayOfWeek = viewDayIndex;
     const hours = Array.from({ length: TOTAL_HOURS + 1 }).map((_, i) => i + START_HOUR);
