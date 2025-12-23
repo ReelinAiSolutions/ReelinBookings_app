@@ -109,7 +109,13 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                                     <span className={`text-[10px] uppercase font-bold mb-1 transition-colors ${isSelected ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`}>
                                         {format(day, 'EEE')}
                                     </span>
-                                    <div className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all shadow-sm ${isSelected ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-blue-200 scale-110' : isToday ? 'text-blue-600 bg-blue-50 border border-blue-100' : 'text-gray-900 hover:bg-gray-50'}`}>
+                                    <div
+                                        className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all shadow-sm ${isSelected ? 'scale-110 shadow-blue-200' : isToday ? 'text-blue-600 bg-blue-50 border border-blue-100' : 'text-gray-900 hover:bg-gray-50'}`}
+                                        style={isSelected ? {
+                                            background: 'linear-gradient(to bottom right, #2563eb, #4f46e5)',
+                                            color: '#ffffff',
+                                        } : {}}
+                                    >
                                         {format(day, 'd')}
                                     </div>
                                     {isToday && !isSelected && <div className="w-1 h-1 bg-blue-600 rounded-full mt-1"></div>}
