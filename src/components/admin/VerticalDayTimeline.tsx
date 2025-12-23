@@ -50,13 +50,14 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
         // If s=9, 9+12 = 21 (9pm). If e=17 (5pm), we force e to 21.
         const e = Math.max(closeTime, s + 12);
 
-        return { startHour: s, endHour: e, viewDayIndex: dayIndex };
+        // Add +1 to endHour to create a clean "bottom row" past the last label
+        return { startHour: s, endHour: e + 1, viewDayIndex: dayIndex };
     }, [businessHours, date]);
 
     const START_HOUR = startHour;
     const END_HOUR = endHour;
     const TOTAL_HOURS = END_HOUR - START_HOUR;
-    const BOTTOM_BUFFER = 40; // Precise space for half of the last hour label
+    const BOTTOM_BUFFER = 10; // Tight finish now that we have a full extra hour slot
     const TOTAL_HEIGHT_PX = (TOTAL_HOURS * HOUR_HEIGHT) + BOTTOM_BUFFER;
 
     const todayDayOfWeek = viewDayIndex;
