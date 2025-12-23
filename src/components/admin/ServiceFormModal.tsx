@@ -147,18 +147,18 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 border border-white/20">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-gray-900">
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
+                    <h2 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
                         {editingService ? 'Edit Service' : 'New Service'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
                     >
-                        <X className="w-5 h-5 text-gray-500" />
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -266,24 +266,34 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                             <Tag className="w-4 h-4 inline mr-1" />
                             Category
                         </label>
-                        <div className="grid grid-cols-3 gap-2 mb-3">
-                            {CATEGORY_PRESETS.map((preset) => (
-                                <button
-                                    key={preset.name}
-                                    onClick={() => setFormData({ ...formData, category: preset.name, categoryColor: preset.color })}
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${formData.category === preset.name
-                                        ? 'ring-2 ring-offset-2'
-                                        : 'hover:bg-gray-100'
-                                        }`}
-                                    style={{
-                                        backgroundColor: formData.category === preset.name ? `${preset.color}20` : 'transparent',
-                                        color: preset.color,
-                                        ringColor: preset.color,
-                                    }}
-                                >
-                                    {preset.name}
-                                </button>
-                            ))}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                            {CATEGORY_PRESETS.map((preset) => {
+                                const isSelected = formData.category === preset.name;
+                                return (
+                                    <button
+                                        key={preset.name}
+                                        onClick={() => setFormData({ ...formData, category: preset.name, categoryColor: preset.color })}
+                                        className={`group relative px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 border-2 ${isSelected
+                                            ? 'shadow-lg -translate-y-0.5'
+                                            : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200 hover:text-gray-600 hover:-translate-y-0.5'
+                                            }`}
+                                        style={{
+                                            backgroundColor: isSelected ? 'white' : undefined,
+                                            borderColor: isSelected ? preset.color : undefined,
+                                            color: isSelected ? preset.color : undefined,
+                                            boxShadow: isSelected ? `0 10px 15px -3px ${preset.color}20` : undefined
+                                        }}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div
+                                                className={`w-2 h-2 rounded-full transition-transform duration-300 ${isSelected ? 'scale-125' : 'scale-100'}`}
+                                                style={{ backgroundColor: preset.color }}
+                                            />
+                                            {preset.name}
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
                         <input
                             type="text"
@@ -305,10 +315,10 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                             </div>
                             <button
                                 onClick={() => setFormData({ ...formData, isVisible: !formData.isVisible })}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.isVisible ? 'bg-blue-600' : 'bg-gray-300'
+                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isVisible ? 'bg-blue-600' : 'bg-gray-200'
                                     }`}
                             >
-                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.isVisible ? 'translate-x-6' : 'translate-x-1'
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${formData.isVisible ? 'translate-x-6' : 'translate-x-1'
                                     }`} />
                             </button>
                         </div>

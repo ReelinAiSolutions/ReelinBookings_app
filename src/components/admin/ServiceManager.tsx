@@ -114,37 +114,34 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            {/* Header */}
-            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="bg-white/80 backdrop-blur-md rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-white/40 flex flex-col h-full relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 z-50"></div>
+
+            {/* Header & Controls */}
+            <div className="p-6 border-b border-indigo-50/50 bg-white/40 space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h3 className="text-2xl font-bold text-gray-900">Service Catalog</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                            Manage your services with photos, categories, and pricing
-                        </p>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                            Service Menu <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        </h2>
+                        <p className="text-sm text-gray-500 font-medium">Manage your offerings and pricing</p>
                     </div>
-                    <Button
-                        onClick={handleAddNew}
-                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
-                    >
+                    <Button onClick={handleAddNew} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30 rounded-full transition-all hover:scale-105 active:scale-95">
                         <Plus className="w-5 h-5 mr-2" />
-                        Add Service
+                        New Service
                     </Button>
                 </div>
-            </div>
 
-            {/* Filters & Search */}
-            <div className="p-6 border-b border-gray-200 space-y-4">
                 {/* Search Bar */}
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-blue-200/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors z-10" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search services..."
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-12 pr-4 py-3.5 bg-white/80 border border-indigo-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all shadow-sm group-hover:shadow-md relative z-0"
                     />
                 </div>
 
@@ -154,15 +151,15 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                         <button
                             key={category}
                             onClick={() => setSelectedCategory(category ?? 'All')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === category
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all border ${selectedCategory === category
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
+                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
                                 }`}
                         >
                             {category}
                             {category !== 'All' && (
-                                <span className="ml-2 text-xs opacity-75">
-                                    ({services.filter(s => s.category === category).length})
+                                <span className={`ml-2 text-[10px] py-0.5 px-1.5 rounded-full ${selectedCategory === category ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                    {services.filter(s => s.category === category).length}
                                 </span>
                             )}
                         </button>

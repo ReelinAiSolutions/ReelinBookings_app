@@ -39,6 +39,7 @@ export const metadata: Metadata = {
   },
 };
 
+import AuthProvider from "@/components/AuthProvider";
 import ResizeListener from "@/components/ResizeListener";
 
 export default function RootLayout({
@@ -54,7 +55,9 @@ export default function RootLayout({
         <ResizeListener />
         <ToastProvider>
           <ErrorBoundary>
-            {children}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
           </ErrorBoundary>
         </ToastProvider>
       </body>

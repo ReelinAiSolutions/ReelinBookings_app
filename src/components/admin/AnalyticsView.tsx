@@ -298,8 +298,8 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                     />
                                     <ComparisonStatCard
                                         title="Utilization"
-                                        periodAValue={`${metrics.utilization.value}%`}
-                                        periodBValue={`${comparisonMetrics.utilization.value}%`}
+                                        periodAValue={metrics.utilization.value}
+                                        periodBValue={comparisonMetrics.utilization.value}
                                         icon={Activity}
                                         color="orange"
                                         delay={400}
@@ -339,7 +339,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                     />
                                     <StatCard
                                         title="Utilization"
-                                        value={`${metrics.utilization.value}%`}
+                                        value={metrics.utilization.value}
                                         growth={metrics.utilization.growth}
                                         trend={metrics.utilization.trend}
                                         icon={Activity}
@@ -754,31 +754,40 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                             </div>
                                             Revenue by Staff
                                         </h4>
-                                        <div className="h-64 w-full">
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart data={teamRevenueData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                                    <XAxis
-                                                        dataKey="name"
-                                                        axisLine={false}
-                                                        tickLine={false}
-                                                        tick={{ fontSize: 9, fill: '#6B7280' }}
-                                                        interval={0}
-                                                        dy={5}
-                                                        tickFormatter={(val) => val.slice(0, 3)}
-                                                    />
-                                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
-                                                    <Tooltip
-                                                        cursor={{ fill: '#F3F4F6' }}
-                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                                    />
-                                                    <Bar dataKey="revenue" fill="#10B981" radius={[8, 8, 0, 0]} maxBarSize={50}>
-                                                        {teamRevenueData.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'][index % 4]} />
-                                                        ))}
-                                                    </Bar>
-                                                </BarChart>
-                                            </ResponsiveContainer>
+                                        <div className="h-64 overflow-x-auto no-scrollbar">
+                                            <div className="h-full min-w-[300px]">
+                                                {teamRevenueData.length > 0 ? (
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <BarChart data={teamRevenueData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                                            <XAxis
+                                                                dataKey="name"
+                                                                axisLine={false}
+                                                                tickLine={false}
+                                                                tick={{ fontSize: 9, fill: '#6B7280' }}
+                                                                interval={0}
+                                                                dy={5}
+                                                                tickFormatter={(val) => val.slice(0, 3)}
+                                                            />
+                                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
+                                                            <Tooltip
+                                                                cursor={{ fill: '#F3F4F6' }}
+                                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                                            />
+                                                            <Bar dataKey="revenue" fill="#10B981" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                                {teamRevenueData.map((entry, index) => (
+                                                                    <Cell key={`cell-${index}`} fill={['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'][index % 4]} />
+                                                                ))}
+                                                            </Bar>
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                ) : (
+                                                    <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                                                        <DollarSign className="w-8 h-8 opacity-20 mb-2" />
+                                                        <span className="text-xs font-medium">No revenue data</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -790,31 +799,40 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                             </div>
                                             Utilization Rate
                                         </h4>
-                                        <div className="h-64 w-full">
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart data={teamUtilizationData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                                    <XAxis
-                                                        dataKey="name"
-                                                        axisLine={false}
-                                                        tickLine={false}
-                                                        tick={{ fontSize: 9, fill: '#6B7280' }}
-                                                        interval={0}
-                                                        dy={5}
-                                                        tickFormatter={(val) => val.slice(0, 3)}
-                                                    />
-                                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `${val}%`} />
-                                                    <Tooltip
-                                                        cursor={{ fill: '#F3F4F6' }}
-                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                                    />
-                                                    <Bar dataKey="utilization" fill="#3B82F6" radius={[8, 8, 0, 0]} maxBarSize={50}>
-                                                        {teamUtilizationData.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][index % 4]} />
-                                                        ))}
-                                                    </Bar>
-                                                </BarChart>
-                                            </ResponsiveContainer>
+                                        <div className="h-64 overflow-x-auto no-scrollbar">
+                                            <div className="h-full min-w-[300px]">
+                                                {teamUtilizationData.length > 0 ? (
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <BarChart data={teamUtilizationData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                                            <XAxis
+                                                                dataKey="name"
+                                                                axisLine={false}
+                                                                tickLine={false}
+                                                                tick={{ fontSize: 9, fill: '#6B7280' }}
+                                                                interval={0}
+                                                                dy={5}
+                                                                tickFormatter={(val) => val.slice(0, 3)}
+                                                            />
+                                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#6B7280' }} tickFormatter={(val) => `${val}%`} />
+                                                            <Tooltip
+                                                                cursor={{ fill: '#F3F4F6' }}
+                                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                                            />
+                                                            <Bar dataKey="utilization" fill="#3B82F6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                                {teamUtilizationData.map((entry, index) => (
+                                                                    <Cell key={`cell-${index}`} fill={['#3B82F6', '#06B6D4', '#2DD4BF', '#10B981'][index % 4]} />
+                                                                ))}
+                                                            </Bar>
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                ) : (
+                                                    <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                                                        <Activity className="w-8 h-8 opacity-20 mb-2" />
+                                                        <span className="text-xs font-medium">No utilization data</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
 

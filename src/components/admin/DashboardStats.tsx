@@ -9,20 +9,21 @@ interface DashboardStatsProps {
     }
 }
 
+// "Gradient Rescue" Color Maps -> Explicit HEX for mobile reliability
 const colorMap = {
     green: {
-        gradient: 'from-green-500 to-emerald-600',
-        glow: 'bg-green-500',
+        gradientStyle: { background: 'linear-gradient(135deg, #22c55e 0%, #059669 100%)' }, // green-500 -> emerald-600
+        glowColor: 'rgba(34, 197, 94, 0.4)', // green-500
         fallback: 'bg-green-600'
     },
     blue: {
-        gradient: 'from-blue-500 to-cyan-600',
-        glow: 'bg-blue-500',
+        gradientStyle: { background: 'linear-gradient(135deg, #3b82f6 0%, #0891b2 100%)' }, // blue-500 -> cyan-600
+        glowColor: 'rgba(59, 130, 246, 0.4)', // blue-500
         fallback: 'bg-blue-600'
     },
     orange: {
-        gradient: 'from-orange-500 to-red-600',
-        glow: 'bg-orange-500',
+        gradientStyle: { background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)' }, // orange-500 -> red-600
+        glowColor: 'rgba(249, 115, 22, 0.4)', // orange-500
         fallback: 'bg-orange-600'
     }
 };
@@ -34,8 +35,14 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
         return (
             <div className="bg-white p-6 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 relative overflow-hidden group transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-gray-300/60 cursor-default">
                 {/* Background Glow Layer */}
-                <div className={`absolute inset-[-6px] ${colors.glow} rounded-[32px] blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300`} />
-                <div className={`absolute inset-[-2px] ${colors.glow} rounded-[24px] blur-sm opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                <div
+                    className="absolute inset-[-6px] rounded-[32px] blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"
+                    style={{ backgroundColor: colors.glowColor }}
+                />
+                <div
+                    className="absolute inset-[-2px] rounded-[24px] blur-sm opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"
+                    style={{ backgroundColor: colors.glowColor }}
+                />
 
                 {/* Shine Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 skew-x-12" />
@@ -48,8 +55,14 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
                         </div>
                         <div className="relative group/icon">
                             {/* Robust Background for Mobile Visibility */}
-                            <div className={`absolute inset-0 ${colors.fallback} rounded-xl blur-md opacity-20 group-hover:opacity-50 transition-opacity duration-300`} />
-                            <div className={`relative p-3 bg-gradient-to-br ${colors.gradient} rounded-xl shadow-lg group-hover:rotate-6 transition-transform duration-300`}>
+                            <div
+                                className="absolute inset-0 rounded-xl blur-md opacity-20 group-hover:opacity-50 transition-opacity duration-300"
+                                style={{ backgroundColor: colors.glowColor }}
+                            />
+                            <div
+                                className="relative p-3 rounded-xl shadow-lg group-hover:rotate-6 transition-transform duration-300"
+                                style={colors.gradientStyle}
+                            >
                                 <Icon className="w-5 h-5 text-white" />
                             </div>
                         </div>

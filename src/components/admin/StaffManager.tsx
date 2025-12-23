@@ -189,37 +189,34 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            {/* Header */}
-            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="bg-white/80 backdrop-blur-md rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-white/40 flex flex-col h-full relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 z-50"></div>
+
+            {/* Header & Controls */}
+            <div className="p-6 border-b border-indigo-50/50 bg-white/40 space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h3 className="text-2xl font-bold text-gray-900">Team Management</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                            Manage your team members, schedules, and service assignments
-                        </p>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                            Team Roster <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        </h2>
+                        <p className="text-sm text-gray-500 font-medium">Manage staff and schedules</p>
                     </div>
-                    <Button
-                        onClick={handleAddNew}
-                        className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30"
-                    >
+                    <Button onClick={handleAddNew} size="lg" className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30 rounded-full transition-all hover:scale-105 active:scale-95">
                         <Plus className="w-5 h-5 mr-2" />
-                        Add Team Member
+                        Add Member
                     </Button>
                 </div>
-            </div>
 
-            {/* Search & Filters */}
-            <div className="p-6 border-b border-gray-200 space-y-4">
                 {/* Search Bar */}
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-green-200/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors z-10" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search team members..."
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full pl-12 pr-4 py-3.5 bg-white/80 border border-indigo-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all shadow-sm group-hover:shadow-md relative z-0"
                     />
                 </div>
 

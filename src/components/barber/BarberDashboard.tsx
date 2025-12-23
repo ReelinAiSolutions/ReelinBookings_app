@@ -16,7 +16,8 @@ import {
     Layout,
     Globe,
     Scissors,
-    DollarSign
+    DollarSign,
+    Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import StaffStats from './BarberStats';
@@ -26,7 +27,8 @@ import WeeklyCalendar from '../admin/WeeklyCalendar';
 import PersonalWeeklyView from './PersonalWeeklyView';
 import StaffSidebar from './StaffSidebar';
 import RescheduleModal from '../admin/RescheduleModal';
-import { updateAppointment, cancelAppointment, uncancelAppointment, archiveAppointment } from '@/services/dataService';
+import CreateAppointmentModal from '../admin/CreateAppointmentModal';
+import { updateAppointment, cancelAppointment, uncancelAppointment, archiveAppointment, createAppointment } from '@/services/dataService';
 import BrandingInjector from '../BrandingInjector';
 
 interface StaffDashboardProps {
@@ -62,6 +64,23 @@ export default function StaffDashboard({
     const [todayStr, setTodayStr] = useState<string>('');
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [createSelection, setCreateSelection] = useState<{ date: Date | null, time: string | null }>({ date: null, time: null });
+
+    const handleSelectSlot = (date: Date, time: string) => {
+        setCreateSelection({ date, time });
+        setIsCreateModalOpen(true);
+    };
+
+    const handleCreateConfirm = async (data: any) => {
+        if (!currentOrg) return;
+        await createAppointment({
+            ...data,
+            clientId: 'staff-created'
+        }, currentOrg.id);
+        if (onRefresh) await onRefresh();
+        setIsCreateModalOpen(false);
+    };
 
     const handleAppointmentClick = (apt: Appointment) => {
         setSelectedAppointment(apt);
@@ -177,91 +196,93 @@ export default function StaffDashboard({
                 </div>
 
                 {/* Content Container */}
-                <div className={`flex-1 flex flex-col min-h-0 bg-gray-50 lg:p-6 px-4 py-4 lg:py-6 pb-24 lg:pb-6 space-y-6 ${activeTab === 'schedule' ? '' : 'overflow-y-auto pb-24'}`}>
+                <div className={`flex-1 flex flex-col min-h-0 bg-gray-50 ${activeTab === 'schedule' ? 'lg:p-6' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 lg:pb-6 space-y-6 overflow-y-auto pb-24'}`}>
 
                     {activeTab === 'schedule' && (
                         <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            {/* Premium Header / Sub-navigation */}
-                            <div className="bg-white px-6 py-6 border-b border-gray-100 lg:rounded-t-2xl flex flex-shrink-0 justify-between items-center z-30 relative bg-gradient-to-r from-indigo-50 to-blue-50">
-                                <div>
-                                    <button
-                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                        className="flex items-center gap-2 group"
-                                    >
-                                        <h2 className="text-2xl font-black text-gray-900 transition-colors group-hover:text-primary-600 tracking-tight">
-                                            {getViewLabel()}
-                                        </h2>
-                                        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                                    </button>
-                                    <p className="text-sm text-gray-500 font-medium mt-1">{format(new Date(), 'EEEE, MMMM do')}</p>
+                            {/* Premium Header / Sub-navigation - HIDDEN ON TEAM VIEW TO MATCH ADMIN */}
+                            {viewMode !== 'team_week' && (
+                                <div className="bg-white px-6 py-6 border-b border-gray-100 lg:rounded-t-2xl flex flex-shrink-0 justify-between items-center z-30 relative bg-gradient-to-r from-indigo-50 to-blue-50">
+                                    <div>
+                                        <button
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                            className="flex items-center gap-2 group"
+                                        >
+                                            <h2 className="text-2xl font-black text-gray-900 transition-colors group-hover:text-primary-600 tracking-tight">
+                                                {getViewLabel()}
+                                            </h2>
+                                            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        <p className="text-sm text-gray-500 font-medium mt-1">{format(new Date(), 'EEEE, MMMM do')}</p>
 
-                                    {/* Dropdown Menu */}
-                                    {isDropdownOpen && (
-                                        <>
-                                            <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
-                                            <div className="absolute top-full left-6 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-200">
-                                                <div className="text-[10px] uppercase font-black text-gray-400 px-4 py-2 tracking-widest">Personal View</div>
-                                                <button
-                                                    onClick={() => { setViewMode('my_day'); setIsDropdownOpen(false); }}
-                                                    className={`flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl transition-all ${viewMode === 'my_day' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                                                >
-                                                    <Layout className="w-4 h-4" /> My Day
-                                                </button>
-                                                <button
-                                                    onClick={() => { setViewMode('my_week'); setIsDropdownOpen(false); }}
-                                                    className={`flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl transition-all ${viewMode === 'my_week' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                                                >
-                                                    <CalendarIcon className="w-4 h-4" /> My Week
-                                                </button>
+                                        {/* Dropdown Menu */}
+                                        {isDropdownOpen && (
+                                            <>
+                                                <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
+                                                <div className="absolute top-full left-6 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-200">
+                                                    <div className="text-[10px] uppercase font-black text-gray-400 px-4 py-2 tracking-widest">Personal View</div>
+                                                    <button
+                                                        onClick={() => { setViewMode('my_day'); setIsDropdownOpen(false); }}
+                                                        className={`flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl transition-all ${viewMode === 'my_day' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                                                    >
+                                                        <Layout className="w-4 h-4" /> My Day
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setViewMode('my_week'); setIsDropdownOpen(false); }}
+                                                        className={`flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl transition-all ${viewMode === 'my_week' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                                                    >
+                                                        <CalendarIcon className="w-4 h-4" /> My Week
+                                                    </button>
 
-                                                <div className="h-px bg-gray-100 my-2 mx-2"></div>
+                                                    <div className="h-px bg-gray-100 my-2 mx-2"></div>
 
-                                                <div className="text-[10px] uppercase font-black text-gray-400 px-4 py-2 tracking-widest">Team View</div>
-                                                <button
-                                                    onClick={() => { setViewMode('team_week'); setIsDropdownOpen(false); }}
-                                                    className={`flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl transition-all ${viewMode === 'team_week' ? 'bg-purple-50 text-purple-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                                                >
-                                                    <Users className="w-4 h-4" /> Team Schedule
-                                                </button>
-                                            </div>
-                                        </>
+                                                    <div className="text-[10px] uppercase font-black text-gray-400 px-4 py-2 tracking-widest">Team View</div>
+                                                    <button
+                                                        onClick={() => { setViewMode('team_week'); setIsDropdownOpen(false); }}
+                                                        className="flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl transition-all text-gray-600 hover:bg-gray-50"
+                                                    >
+                                                        <Users className="w-4 h-4" /> Team Schedule
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {viewMode === 'my_day' && (
+                                        <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white shadow-sm self-center lg:self-auto">
+                                            <button
+                                                onClick={() => setIsDayTimelineView(false)}
+                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isDayTimelineView ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                            >
+                                                Cards
+                                            </button>
+                                            <button
+                                                onClick={() => setIsDayTimelineView(true)}
+                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDayTimelineView ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                            >
+                                                Timeline
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {viewMode === 'my_week' && (
+                                        <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white shadow-sm self-center lg:self-auto">
+                                            <button
+                                                onClick={() => setIsWeekTimelineView(false)}
+                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isWeekTimelineView ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                            >
+                                                Cards
+                                            </button>
+                                            <button
+                                                onClick={() => setIsWeekTimelineView(true)}
+                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isWeekTimelineView ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                            >
+                                                Timeline
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
-
-                                {viewMode === 'my_day' && (
-                                    <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white shadow-sm self-center lg:self-auto">
-                                        <button
-                                            onClick={() => setIsDayTimelineView(false)}
-                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isDayTimelineView ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                                        >
-                                            Cards
-                                        </button>
-                                        <button
-                                            onClick={() => setIsDayTimelineView(true)}
-                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDayTimelineView ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                                        >
-                                            Timeline
-                                        </button>
-                                    </div>
-                                )}
-
-                                {viewMode === 'my_week' && (
-                                    <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white shadow-sm self-center lg:self-auto">
-                                        <button
-                                            onClick={() => setIsWeekTimelineView(false)}
-                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isWeekTimelineView ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                                        >
-                                            Cards
-                                        </button>
-                                        <button
-                                            onClick={() => setIsWeekTimelineView(true)}
-                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isWeekTimelineView ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                                        >
-                                            Timeline
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+                            )}
 
                             {/* View Content Container */}
                             <div className={`flex-1 overflow-hidden relative ${(viewMode === 'team_week' || (viewMode === 'my_week' && isWeekTimelineView) || (viewMode === 'my_day' && isDayTimelineView))
@@ -435,7 +456,7 @@ export default function StaffDashboard({
                                 )}
 
                                 {viewMode === 'team_week' && (
-                                    <div className="h-full animate-in fade-in slide-in-from-right-4 duration-300 overflow-hidden pb-20 lg:pb-0 px-4 lg:px-0">
+                                    <div className="h-full animate-in fade-in slide-in-from-right-4 duration-300 overflow-hidden pb-10 lg:pb-0 px-0 lg:px-0">
                                         <div className="h-full bg-white lg:rounded-xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden flex flex-col">
                                             <WeeklyCalendar
                                                 appointments={appointments.filter((a: Appointment) => a.status !== 'CANCELLED')}
@@ -443,11 +464,20 @@ export default function StaffDashboard({
                                                 services={services}
                                                 availability={availability}
                                                 businessHours={currentOrg?.business_hours}
-                                                onSelectSlot={() => { }}
+                                                onSelectSlot={handleSelectSlot}
                                                 onAppointmentClick={handleAppointmentClick}
                                             />
                                         </div>
                                     </div>
+                                )}
+
+                                {viewMode === 'team_week' && activeTab === 'schedule' && (
+                                    <button
+                                        onClick={() => setIsCreateModalOpen(true)}
+                                        className="lg:hidden fixed bottom-24 right-4 w-14 h-14 bg-primary-600 text-white rounded-full shadow-xl flex items-center justify-center z-40 hover:bg-primary-700 active:scale-95 transition-all animate-in zoom-in duration-300"
+                                    >
+                                        <Plus className="w-8 h-8" />
+                                    </button>
                                 )}
                             </div>
                         </div>
@@ -481,6 +511,20 @@ export default function StaffDashboard({
                         onArchive={handleArchive}
                         services={services}
                         staff={staff}
+                        slotInterval={currentOrg?.slot_interval}
+                        businessHours={currentOrg?.business_hours}
+                    />
+
+                    <CreateAppointmentModal
+                        isOpen={isCreateModalOpen}
+                        onClose={() => setIsCreateModalOpen(false)}
+                        onConfirm={handleCreateConfirm}
+                        defaultDate={createSelection.date}
+                        defaultTime={createSelection.time}
+                        services={services}
+                        staff={staff}
+                        appointments={appointments}
+                        availability={availability}
                         slotInterval={currentOrg?.slot_interval}
                         businessHours={currentOrg?.business_hours}
                     />

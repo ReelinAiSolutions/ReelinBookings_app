@@ -127,18 +127,18 @@ export default function StaffFormModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 border border-white/20">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        {editingStaff ? `Edit ${editingStaff.name}` : 'New Team Member'}
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
+                    <h2 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                        {editingStaff ? 'Edit Team Member' : 'New Team Member'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
                     >
-                        <X className="w-5 h-5 text-gray-500" />
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -147,8 +147,8 @@ export default function StaffFormModal({
                     <button
                         onClick={() => setActiveTab('details')}
                         className={`flex-1 px-6 py-3 text-sm font-semibold transition-colors ${activeTab === 'details'
-                                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                                : 'text-gray-600 hover:text-gray-900'
+                            ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                            : 'text-gray-600 hover:text-gray-900'
                             }`}
                     >
                         <User className="w-4 h-4 inline mr-2" />
@@ -159,8 +159,8 @@ export default function StaffFormModal({
                             <button
                                 onClick={() => setActiveTab('schedule')}
                                 className={`flex-1 px-6 py-3 text-sm font-semibold transition-colors ${activeTab === 'schedule'
-                                        ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                                    : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
                                 <Clock className="w-4 h-4 inline mr-2" />
@@ -169,8 +169,8 @@ export default function StaffFormModal({
                             <button
                                 onClick={() => setActiveTab('services')}
                                 className={`flex-1 px-6 py-3 text-sm font-semibold transition-colors ${activeTab === 'services'
-                                        ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                                    : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
                                 <Scissors className="w-4 h-4 inline mr-2" />
@@ -328,8 +328,8 @@ export default function StaffFormModal({
                                     <label
                                         key={service.id}
                                         className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedServices.includes(service.id)
-                                                ? 'border-blue-500 bg-blue-50'
-                                                : 'border-gray-200 hover:border-gray-300'
+                                            ? 'border-blue-500 bg-blue-50'
+                                            : 'border-gray-200 hover:border-gray-300'
                                             }`}
                                     >
                                         <input

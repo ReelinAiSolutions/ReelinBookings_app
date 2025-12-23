@@ -130,7 +130,15 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                         <div className="absolute -inset-1 bg-white/20 rounded-full blur group-hover/avatar:bg-white/40 transition-colors"></div>
                         <div className="relative w-32 h-32 md:w-40 md:h-40 bg-white/10 backdrop-blur-md rounded-full border-4 border-white/30 flex items-center justify-center overflow-hidden shadow-2xl">
                             {previewUrl ? (
-                                <img src={previewUrl} alt="Target Avatar" className="w-full h-full object-cover" />
+                                <img
+                                    src={previewUrl}
+                                    alt="Admin Avatar"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                        setPreviewUrl(null); // Fallback to icon
+                                    }}
+                                />
                             ) : (
                                 <UserIcon className="w-16 h-16 md:w-20 md:h-20 text-white/50" />
                             )}
