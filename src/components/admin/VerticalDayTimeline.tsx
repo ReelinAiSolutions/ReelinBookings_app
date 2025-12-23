@@ -56,7 +56,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
     const START_HOUR = startHour;
     const END_HOUR = endHour;
     const TOTAL_HOURS = END_HOUR - START_HOUR;
-    const BOTTOM_BUFFER = 120; // Enough space for FAB but no "useless white space"
+    const BOTTOM_BUFFER = 40; // Precise space for half of the last hour label
     const TOTAL_HEIGHT_PX = (TOTAL_HOURS * HOUR_HEIGHT) + BOTTOM_BUFFER;
 
     const todayDayOfWeek = viewDayIndex;
@@ -94,12 +94,12 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
 
     return (
         <div className="flex flex-1 relative bg-white h-full overflow-hidden min-w-0" onClick={handleGridClick}>
-            <div className="flex w-full h-full min-w-0 overflow-auto pb-10">
+            <div className="flex w-full h-full min-w-0 overflow-auto">
                 <div className="flex w-full relative" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
 
                     {/* Static Time Column - LOCKED LEFT */}
                     <div
-                        className="relative z-[100] bg-white border-r border-gray-200/80 flex-shrink-0 w-12 flex flex-col sticky left-0 shadow-[4px_0_20px_rgba(0,0,0,0.06)]"
+                        className="relative z-[100] bg-white border-r border-b border-gray-200/80 flex-shrink-0 w-12 flex flex-col sticky left-0 shadow-[4px_0_20px_rgba(0,0,0,0.06)]"
                         style={{ height: `${TOTAL_HEIGHT_PX}px` }}
                     >
                         {/* ROCK SOLID TOP-LEFT HEADER */}
@@ -124,7 +124,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                     </div>
 
                     {/* Staff Columns */}
-                    <div className="flex flex-1 relative h-full divide-x divide-gray-100" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
+                    <div className="flex flex-1 relative h-full divide-x divide-gray-100 border-b border-gray-100" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
                         {Array.from(new Set(staff.map(s => s.name.toLowerCase()))).map((normalizedName) => {
                             const staffGroup = staff.filter(s => s.name.toLowerCase() === normalizedName);
                             const primaryStaff = staffGroup[0];
