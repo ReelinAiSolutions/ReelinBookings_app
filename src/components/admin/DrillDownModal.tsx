@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ArrowLeft } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface DrillDownModalProps {
@@ -141,9 +141,9 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                         <div key={client.email} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' :
-                                        index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-white' :
-                                            index === 2 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white' :
-                                                'bg-gray-200 text-gray-600'
+                                    index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-white' :
+                                        index === 2 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white' :
+                                            'bg-gray-200 text-gray-600'
                                     }`}>
                                     {index + 1}
                                 </div>
@@ -227,24 +227,46 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
     );
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+        <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-0 md:p-4 animate-in fade-in duration-300"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white md:rounded-3xl shadow-2xl max-w-6xl w-full h-full md:h-auto md:max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-300"
+                onClick={e => e.stopPropagation()}
+            >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 flex items-center justify-between">
-                    <div>
-                        <h2 className="text-2xl font-black text-white">{title}</h2>
-                        <p className="text-blue-100 text-sm mt-1">Detailed breakdown and insights</p>
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-5 md:p-6 flex items-center justify-between sticky top-0 z-10 shadow-lg">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onClose}
+                            className="md:hidden p-2 -ml-2 hover:bg-white/20 rounded-xl transition-colors flex items-center gap-1 text-white font-bold"
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                            <span>Back</span>
+                        </button>
+                        <div>
+                            <h2 className="text-xl md:text-2xl font-black text-white">{title}</h2>
+                            <p className="text-blue-100 text-xs md:text-sm mt-0.5">Detailed breakdown and insights</p>
+                        </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-white/20 rounded-xl transition-colors"
+                        className="p-2 hover:bg-white/20 rounded-xl transition-colors hidden md:block"
                     >
                         <X className="w-6 h-6 text-white" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
+                <div className="p-5 md:p-6 overflow-y-auto h-[calc(100vh-80px)] md:max-h-[calc(90vh-100px)]">
+                    <button
+                        onClick={onClose}
+                        className="mb-6 flex items-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors group"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to Dashboard
+                    </button>
                     {metric === 'revenue' && renderRevenueCharts()}
                     {metric === 'utilization' && renderUtilizationCharts()}
                     {metric === 'clients' && renderClientsCharts()}
