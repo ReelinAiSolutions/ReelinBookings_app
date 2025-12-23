@@ -381,131 +381,146 @@ export default function BookingPageContent({ slug }: { slug: string }) {
     }
 
     return (
-        <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl transition-colors duration-500 ${isDarkTheme ? 'bg-black' : 'bg-white'
-            }`}>
-            {/* Hero Header - Now visible in Embed Mode to match user desire */}
-            <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {org.logo_url && (
-                    <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 group">
-                        <div className="absolute inset-0 bg-primary-500 blur-2xl opacity-20 rounded-full group-hover:opacity-30 transition-opacity duration-500"></div>
-                        <img
-                            src={org.logo_url}
-                            alt={org.name + ' Logo'}
-                            className="relative h-full w-full object-contain drop-shadow-sm"
-                        />
-                    </div>
-                )}
-                <h1 className={`text-3xl md:text-5xl font-black mb-3 tracking-tight ${isDarkTheme ? 'text-white' : 'text-gray-900'
-                    }`}>
-                    {org.name}
-                </h1>
-                <p className={`text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                    Book your next premium experience.
-                </p>
+        <div className={`min-h-screen w-full relative transition-colors duration-500 selection:bg-primary-500/30 ${isDarkTheme ? 'bg-black' : 'bg-gray-50/50'}`}>
 
-                <div id="booking-scroll-anchor" className="flex flex-col lg:flex-row gap-8 items-start scroll-mt-6">
-                    {/* Desktop Sidebar - Hidden in Embed if desired, but usually needed for steps. Let's keep steps. */}
-                    <div className="hidden lg:block w-72 flex-shrink-0 sticky top-8">
-                        <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
-                    </div>
+            {/* Ambient Background Mesh Gradient */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary-200/40 rounded-full blur-[100px] mix-blend-multiply animate-blob"></div>
+                <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-indigo-200/40 rounded-full blur-[100px] mix-blend-multiply animate-blob animation-delay-2000"></div>
+                <div className="absolute -bottom-32 left-1/3 w-[500px] h-[500px] bg-pink-200/40 rounded-full blur-[100px] mix-blend-multiply animate-blob animation-delay-4000"></div>
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03]"></div>
+            </div>
 
-                    <div className="flex-1 w-full" style={{ '--primary-color': org.primary_color || '#4F46E5' } as React.CSSProperties}>
-                        {/* Public Contact Info Bar - Hidden in Embed Mode */}
-                        {!isEmbed && (org.phone || org.email || org.address || org.website) && (
-                            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-sm font-medium text-gray-500 mb-8 border-b border-gray-100 pb-8">
-                                {org.phone && (
-                                    <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
-                                        <Phone className="w-4 h-4 text-primary-500" />
-                                        <span>{org.phone}</span>
-                                    </div>
-                                )}
-                                {org.email && (
-                                    <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
-                                        <Mail className="w-4 h-4 text-primary-500" />
-                                        <span>{org.email}</span>
-                                    </div>
-                                )}
-                                {org.address && (
-                                    <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
-                                        <MapPin className="w-4 h-4 text-primary-500" />
-                                        <span>{org.address}</span>
-                                    </div>
-                                )}
-                                {org.website && (
-                                    <a href={org.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary-600 hover:underline transition-colors">
-                                        <Globe className="w-4 h-4 text-primary-500" />
-                                        <span>Website</span>
-                                    </a>
-                                )}
-                            </div>
-                        )}
+            <div className="mx-auto py-12 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
+                {/* Hero Header - Now visible in Embed Mode to match user desire */}
+                <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    {org.logo_url && (
+                        <div className="relative w-24 h-24 md:w-32 md:h-32 mx-auto mb-8 group perspective-1000">
+                            {/* Core Glow */}
+                            <div className="absolute inset-0 bg-primary-500 blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700 animate-pulse"></div>
 
-                        {/* Mobile Header */}
-                        <div className="lg:hidden mb-6">
+                            {/* Secondary Ring Glow */}
+                            <div className="absolute -inset-4 bg-gradient-to-tr from-primary-500 to-purple-500 rounded-full blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-700"></div>
+
+                            <img
+                                src={org.logo_url}
+                                alt={org.name + ' Logo'}
+                                className="relative h-full w-full object-contain drop-shadow-2xl transform transition-transform duration-700 group-hover:scale-110"
+                            />
+                        </div>
+                    )}
+                    <h1 className={`text-4xl md:text-6xl font-black mb-4 tracking-tight drop-shadow-sm ${isDarkTheme ? 'text-white' : 'text-gray-900'
+                        }`}>
+                        {org.name}
+                    </h1>
+                    <p className={`text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
+                        Book your next premium experience.
+                    </p>
+
+                    <div id="booking-scroll-anchor" className="flex flex-col lg:flex-row gap-8 items-start scroll-mt-6">
+                        {/* Desktop Sidebar - Hidden in Embed if desired, but usually needed for steps. Let's keep steps. */}
+                        <div className="hidden lg:block w-72 flex-shrink-0 sticky top-8">
                             <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
                         </div>
 
-                        {/* Main Content Area */}
-                        <div className="w-full bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-visible md:overflow-hidden min-h-[600px] flex flex-col relative transition-all duration-300">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={currentStep}
-                                    initial={{ opacity: 0, x: 10, filter: 'blur(4px)' }}
-                                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                                    exit={{ opacity: 0, x: -10, filter: 'blur(4px)' }}
-                                    transition={{ duration: 0.4, ease: "easeOut" }}
-                                    className="flex-1 flex flex-col p-1"
-                                >
-                                    {currentStep === BookingStep.SERVICE && (
-                                        <ServiceSelection
-                                            services={services}
-                                            onSelect={handleServiceSelect}
-                                        />
+                        <div className="flex-1 w-full" style={{ '--primary-color': org.primary_color || '#4F46E5' } as React.CSSProperties}>
+                            {/* Public Contact Info Bar - Hidden in Embed Mode */}
+                            {!isEmbed && (org.phone || org.email || org.address || org.website) && (
+                                <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-sm font-medium text-gray-500 mb-8 border-b border-gray-100 pb-8">
+                                    {org.phone && (
+                                        <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                                            <Phone className="w-4 h-4 text-primary-500" />
+                                            <span>{org.phone}</span>
+                                        </div>
                                     )}
+                                    {org.email && (
+                                        <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                                            <Mail className="w-4 h-4 text-primary-500" />
+                                            <span>{org.email}</span>
+                                        </div>
+                                    )}
+                                    {org.address && (
+                                        <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                                            <MapPin className="w-4 h-4 text-primary-500" />
+                                            <span>{org.address}</span>
+                                        </div>
+                                    )}
+                                    {org.website && (
+                                        <a href={org.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary-600 hover:underline transition-colors">
+                                            <Globe className="w-4 h-4 text-primary-500" />
+                                            <span>Website</span>
+                                        </a>
+                                    )}
+                                </div>
+                            )}
 
-                                    {currentStep === BookingStep.STAFF && (
-                                        <StaffSelection
-                                            staffMembers={availableStaff}
-                                            onSelect={(staff) => { setSelectedStaff(staff); setCurrentStep(BookingStep.DATE); }}
-                                            onSelectAny={() => { setSelectedStaff({ id: 'any', name: 'Any Professional', role: '', specialties: [], avatar: '' }); setCurrentStep(BookingStep.DATE); }}
-                                            onBack={() => setCurrentStep(BookingStep.SERVICE)}
-                                        />
-                                    )}
+                            {/* Mobile Header */}
+                            <div className="lg:hidden mb-6">
+                                <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
+                            </div>
 
-                                    {currentStep === BookingStep.DATE && (
-                                        <DateSelection
-                                            selectedDate={selectedDate}
-                                            onSelectDate={(date) => {
-                                                setSelectedDate(date);
-                                                setSelectedTime(null);
-                                            }}
-                                            selectedTime={selectedTime}
-                                            onSelectTime={setSelectedTime}
-                                            timeSlots={availableTimeSlots}
-                                            onBack={() => setCurrentStep(BookingStep.STAFF)}
-                                            onNext={() => setCurrentStep(BookingStep.SUMMARY)}
-                                            isLoading={isLoadingSlots}
-                                        />
-                                    )}
+                            {/* Main Content Area - Glassmorphism */}
+                            <div className="w-full bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-gray-900/5 border border-white/50 overflow-visible md:overflow-hidden min-h-[600px] flex flex-col relative transition-all duration-300 ring-1 ring-gray-900/5">
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={currentStep}
+                                        initial={{ opacity: 0, x: 10, filter: 'blur(4px)' }}
+                                        animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                                        exit={{ opacity: 0, x: -10, filter: 'blur(4px)' }}
+                                        transition={{ duration: 0.4, ease: "easeOut" }}
+                                        className="flex-1 flex flex-col p-1"
+                                    >
+                                        {currentStep === BookingStep.SERVICE && (
+                                            <ServiceSelection
+                                                services={services}
+                                                onSelect={handleServiceSelect}
+                                            />
+                                        )}
 
-                                    {currentStep === BookingStep.SUMMARY && selectedDate && (
-                                        <BookingSummary
-                                            selectedService={selectedService}
-                                            selectedStaff={selectedStaff}
-                                            selectedDate={selectedDate}
-                                            selectedTime={selectedTime}
-                                            onBack={() => setCurrentStep(BookingStep.DATE)}
-                                            onConfirm={handleBook}
-                                            isBooking={isBooking}
-                                            initialGuestData={guestInfo}
-                                            orgAddress={org.address}
-                                            termsUrl={org.terms_url}
-                                            policyUrl={org.policy_url}
-                                        />
-                                    )}
-                                </motion.div>
-                            </AnimatePresence>
+                                        {currentStep === BookingStep.STAFF && (
+                                            <StaffSelection
+                                                staffMembers={availableStaff}
+                                                onSelect={(staff) => { setSelectedStaff(staff); setCurrentStep(BookingStep.DATE); }}
+                                                onSelectAny={() => { setSelectedStaff({ id: 'any', name: 'Any Professional', role: '', specialties: [], avatar: '' }); setCurrentStep(BookingStep.DATE); }}
+                                                onBack={() => setCurrentStep(BookingStep.SERVICE)}
+                                            />
+                                        )}
+
+                                        {currentStep === BookingStep.DATE && (
+                                            <DateSelection
+                                                selectedDate={selectedDate}
+                                                onSelectDate={(date) => {
+                                                    setSelectedDate(date);
+                                                    setSelectedTime(null);
+                                                }}
+                                                selectedTime={selectedTime}
+                                                onSelectTime={setSelectedTime}
+                                                timeSlots={availableTimeSlots}
+                                                onBack={() => setCurrentStep(BookingStep.STAFF)}
+                                                onNext={() => setCurrentStep(BookingStep.SUMMARY)}
+                                                isLoading={isLoadingSlots}
+                                            />
+                                        )}
+
+                                        {currentStep === BookingStep.SUMMARY && selectedDate && (
+                                            <BookingSummary
+                                                selectedService={selectedService}
+                                                selectedStaff={selectedStaff}
+                                                selectedDate={selectedDate}
+                                                selectedTime={selectedTime}
+                                                onBack={() => setCurrentStep(BookingStep.DATE)}
+                                                onConfirm={handleBook}
+                                                isBooking={isBooking}
+                                                initialGuestData={guestInfo}
+                                                orgAddress={org.address}
+                                                termsUrl={org.terms_url}
+                                                policyUrl={org.policy_url}
+                                            />
+                                        )}
+                                    </motion.div>
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </div>
                 </div>

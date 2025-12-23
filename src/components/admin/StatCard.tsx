@@ -109,11 +109,11 @@ export default function StatCard({
             />
 
             {/* Content */}
-            <div className="relative p-6 space-y-4">
+            <div className="relative p-5 md:p-6 space-y-4">
                 {/* Header */}
-                <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider truncate">
                             {title}
                         </p>
                     </div>
@@ -126,10 +126,10 @@ export default function StatCard({
 
                         {/* Icon Container with Fallback Background and Colored Shadow */}
                         <div
-                            className={`relative p-3 ${fallback} rounded-xl border border-white/20 transition-transform duration-300 group-hover/icon:scale-110`}
+                            className={`relative p-2.5 md:p-3 ${fallback} rounded-xl border border-white/20 transition-transform duration-300 group-hover/icon:scale-110`}
                             style={{ ...shadowStyle, ...gradientStyle }}
                         >
-                            <Icon className="w-6 h-6 text-white" />
+                            <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                         </div>
                     </div>
                 </div>

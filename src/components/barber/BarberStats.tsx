@@ -216,9 +216,9 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                             {/* Quick Compare Button */}
                             <button
                                 onClick={() => setCompareMode(true)}
-                                className="sm:w-auto px-6 py-3 bg-white border-2 border-gray-100 text-gray-400 hover:text-gray-600 hover:border-gray-200 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2"
+                                className="sm:w-auto px-6 py-3 bg-white border-2 border-gray-200 text-gray-600 hover:text-primary-600 hover:border-primary-200 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
                             >
-                                <TrendingUp className="w-3.5 h-3.5 opacity-50" />
+                                <TrendingUp className="w-3.5 h-3.5" />
                                 Compare
                             </button>
                         </div>
@@ -315,7 +315,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                 </div>
 
                 {/* Elite Performance Hub */}
-                <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-[2rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between group">
+                <div className={`bg-gray-900 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-[2rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between group`}>
                     {/* Background Dynamic Glow - Color Pop */}
                     <div className={`absolute -top-24 -right-24 w-64 h-64 rounded-full blur-[100px] opacity-30 transition-all duration-1000 ${stats.rank.name === 'LEGEND' ? 'bg-purple-600'
                         : stats.rank.name === 'MASTER' ? 'bg-blue-600'
