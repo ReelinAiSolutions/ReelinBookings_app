@@ -200,7 +200,7 @@ export default function StaffDashboard({
                     {activeTab === 'schedule' && (
                         <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Premium Header / Sub-navigation */}
-                            <div className="bg-white px-6 py-4 border-b border-gray-100 lg:rounded-t-2xl flex flex-shrink-0 justify-between items-center z-30 relative bg-gradient-to-r from-indigo-50 to-blue-50">
+                            <div className="bg-white px-6 py-4 border-b border-gray-100 lg:rounded-t-2xl flex flex-shrink-0 justify-between items-center z-[150] relative bg-gradient-to-r from-indigo-50 to-blue-50">
                                 <div>
                                     <button
                                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
