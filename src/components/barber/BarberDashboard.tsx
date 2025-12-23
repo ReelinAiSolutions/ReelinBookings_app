@@ -175,10 +175,10 @@ export default function StaffDashboard({
             />
 
             {/* Main Content Area */}
-            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'schedule' ? 'flex flex-col h-[100dvh]' : 'block min-h-screen'}`}>
+            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'schedule' ? 'lg:flex lg:flex-col lg:h-[100dvh] block min-h-screen' : 'block min-h-screen'}`}>
 
                 {/* Content Container */}
-                <div className={` min-h-0 bg-gray-50 ${activeTab === 'schedule' ? 'flex-1 flex flex-col lg:p-6 pb-24 px-4 py-4' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
+                <div className={` min-h-0 bg-gray-50 ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col lg:p-6 pb-24 px-4 py-4 min-h-0' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
                     {/* Mobile Header (Scrolls Away) */}
                     <div className="lg:hidden flex-shrink-0 bg-white border-b border-gray-200/50 px-6 flex items-center justify-between h-16 -mx-4 -mt-4 mb-6">
                         <div className="flex items-center gap-3 min-w-0">
@@ -201,7 +201,7 @@ export default function StaffDashboard({
                     </div>
 
                     {activeTab === 'schedule' && (
-                        <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="lg:flex-1 lg:flex lg:flex-col lg:overflow-hidden block animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Standardized Header (Matches Stats/Profile) */}
                             <div className="flex flex-col gap-6 mb-6 flex-shrink-0">
                                 <div className="flex items-center justify-between">
