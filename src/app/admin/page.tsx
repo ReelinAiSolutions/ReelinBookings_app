@@ -293,27 +293,34 @@ export default function AdminDashboard() {
             {/* Main Content Area (Mobile: Fixed Height App Shell, Desktop: Scrollable) */}
             <main className="lg:ml-64 lg:min-h-screen h-[100dvh] flex flex-col lg:block">
                 <div className={`flex-1 flex flex-col lg:overflow-visible lg:space-y-6 lg:p-8 p-4 pb-24 lg:pb-0 ${activeTab === 'operations' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
-                    {/* Mobile Header (Fixed Top) */}
-                    <div className="lg:hidden flex-shrink-0 flex justify-between items-center h-16 gap-4 px-4 pt-2 mb-0 bg-white border-b border-gray-100 z-10">
-                        {/* Left Side: Logo & Branding */}
-                        <div className="flex items-center gap-3 z-10 flex-1 min-w-0">
-                            {currentOrg?.logo_url ? (
-                                <img src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 flex-shrink-0 object-contain" />
-                            ) : (
-                                <img src="/icon-180.png" alt="Reelin Logo" className="w-8 h-8 flex-shrink-0 object-contain rounded-lg" />
-                            )}
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none truncate">
-                                {currentOrg?.name || 'Reelin Bookings'}
-                            </h1>
+                    {/* Mobile Header (Glassy iOS) */}
+                    <div className="lg:hidden flex-shrink-0 bg-white/70 backdrop-blur-2xl border-b border-gray-200/50 px-6 flex items-center justify-between sticky top-0 z-40 h-16">
+                        {/* Left: Organization Logo & Name */}
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-1 bg-white rounded-lg shadow-sm border border-gray-100">
+                                {currentOrg?.logo_url ? (
+                                    <img src={currentOrg.logo_url} alt="Logo" className="w-7 h-7 flex-shrink-0 object-contain" />
+                                ) : (
+                                    <img src="/icon-180.png" alt="Reelin Logo" className="w-7 h-7 flex-shrink-0 object-contain rounded-md" />
+                                )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[10px] font-black text-primary-600/60 uppercase tracking-widest leading-none mb-0.5">Admin Portal</span>
+                                <h1 className="text-sm font-black text-gray-900 tracking-tight leading-none truncate">
+                                    {currentOrg?.name || 'Reelin Bookings'}
+                                </h1>
+                            </div>
                         </div>
 
-                        {/* Center: Navigation (Mobile Bottom Bar handled internally by AdminNav) */}
-                        <AdminNav
-                            activeTab={activeTab}
-                            setActiveTab={setActiveTab}
-                            currentOrg={currentOrg}
-                        />
+                        {/* Right: tiny status badge */}
+                        <div className="flex items-center gap-4">
+                            <div className="px-2 py-1 bg-primary-50 rounded-full border border-primary-100 flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></div>
+                                <span className="text-[9px] font-black text-primary-700 uppercase tracking-widest">Live</span>
+                            </div>
+                        </div>
                     </div>
+
 
                     {/* OPERATIONS (New Home) */}
                     {
@@ -474,6 +481,12 @@ export default function AdminDashboard() {
                     />
                 </div>
             </main >
+
+            <AdminNav
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                currentOrg={currentOrg}
+            />
         </div >
     );
 }

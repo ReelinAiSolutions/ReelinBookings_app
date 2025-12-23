@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2 } from 'lucide-react';
+import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2, Tag } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/Button';
@@ -150,9 +150,9 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
             {/* Brand Appearance Section */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-gray-200" style={{ background: 'linear-gradient(to right, #fdf2f8, #faf5ff)' }}>
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl shadow-lg">
+                        <div className="p-3 rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)' }}>
                             <Palette className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -166,7 +166,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Logo Upload */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-3">Company Logo</label>
+                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Company Logo</label>
                             <div className="flex items-center gap-4">
                                 <div className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative group">
                                     {previewUrl ? (
@@ -188,7 +188,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
                         {/* Color Picker */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-3">Primary Brand Color</label>
+                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Primary Brand Color</label>
                             <div className="flex items-center gap-4">
                                 <input
                                     type="color"
@@ -213,9 +213,9 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
             {/* Business Details Section */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-gray-200" style={{ background: 'linear-gradient(to right, #eff6ff, #eef2ff)' }}>
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                        <div className="p-3 rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)' }}>
                             <Building2 className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -227,20 +227,25 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
                 <div className="p-6 space-y-6">
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Business Name</label>
-                        <input
-                            type="text"
-                            required
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 font-medium"
-                            placeholder="Your Business Name"
-                        />
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Business Name</label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <Tag className="h-5 w-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+                            </div>
+                            <input
+                                type="text"
+                                required
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                placeholder="Your Business Name"
+                            />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">Phone</label>
+                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Phone Number</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <Phone className="h-5 w-5 text-gray-400" />
@@ -249,14 +254,14 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 font-medium"
+                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900"
                                     placeholder="(555) 123-4567"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <Mail className="h-5 w-5 text-gray-400" />
@@ -265,7 +270,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 font-medium"
+                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900"
                                     placeholder="contact@business.com"
                                 />
                             </div>
@@ -273,7 +278,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Address</label>
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Office Address</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <MapPin className="h-5 w-5 text-gray-400" />
@@ -282,14 +287,14 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                 type="text"
                                 value={formData.address}
                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 font-medium"
+                                className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900"
                                 placeholder="123 Main St, City, State 12345"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Website</label>
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Business Website</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <Globe className="h-5 w-5 text-gray-400" />
@@ -298,7 +303,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                 type="url"
                                 value={formData.website}
                                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                                className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 font-medium"
+                                className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900"
                                 placeholder="https://yourbusiness.com"
                             />
                         </div>
@@ -308,9 +313,9 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
             {/* Booking Preferences Section */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-gray-200" style={{ background: 'linear-gradient(to right, #f0fdf4, #ecfdf5)' }}>
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
+                        <div className="p-3 rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, #22c55e 0%, #059669 100%)' }}>
                             <Clock className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -323,17 +328,22 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 <div className="p-6 space-y-6">
                     {/* Interval Selector */}
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Booking Interval</label>
-                        <p className="text-xs text-gray-500 mb-3">How often new appointment slots can start</p>
-                        <select
-                            value={bookingSettings.slot_interval}
-                            onChange={(e) => setBookingSettings({ ...bookingSettings, slot_interval: parseInt(e.target.value) })}
-                            className="block w-full max-w-xs px-4 py-3 border-2 border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-xl font-bold text-gray-900 transition-all duration-200"
-                        >
-                            <option value={15}>Every 15 Minutes</option>
-                            <option value={30}>Every 30 Minutes</option>
-                            <option value={60}>Every Hour</option>
-                        </select>
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Booking Interval</label>
+                        <p className="text-xs text-gray-400 mb-3 ml-1">Frequency of available appointment slots</p>
+                        <div className="relative group max-w-xs">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <Clock className="h-5 w-5 text-gray-300 group-focus-within:text-green-500 transition-colors" />
+                            </div>
+                            <select
+                                value={bookingSettings.slot_interval}
+                                onChange={(e) => setBookingSettings({ ...bookingSettings, slot_interval: parseInt(e.target.value) })}
+                                className="block w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all font-bold text-gray-900 appearance-none"
+                            >
+                                <option value={15}>Every 15 Minutes</option>
+                                <option value={30}>Every 30 Minutes</option>
+                                <option value={60}>Every Hour</option>
+                            </select>
+                        </div>
                     </div>
 
                     {/* Business Hours */}
@@ -395,9 +405,9 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
             {/* Calendar Options Section */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-gray-200" style={{ background: 'linear-gradient(to right, #fff7ed, #fffbeb)' }}>
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl shadow-lg">
+                        <div className="p-3 rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, #f97316 0%, #d97706 100%)' }}>
                             <Palette className="w-5 h-5 text-white" />
                         </div>
                         <div>

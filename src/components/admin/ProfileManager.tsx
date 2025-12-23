@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/Button';
-import { User, Camera, Save, Lock, User as UserIcon, Building2, LogOut, Mail, Shield, Settings as SettingsIcon } from 'lucide-react';
+import { User, Camera, Save, Lock, User as UserIcon, Building2, LogOut, Mail, Shield, Settings as SettingsIcon, Key } from 'lucide-react';
 import SettingsManager from './SettingsManager';
 import { Organization } from '@/types';
 
@@ -164,7 +164,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             <form onSubmit={handleSave} className="space-y-6">
                 {/* Personal Information Card */}
                 <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                    <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #f9fafb, #f3f4f6)' }}>
                         <div>
                             <h3 className="text-xl font-black text-gray-900 tracking-tight">Personal Details</h3>
                             <p className="text-sm text-gray-500 font-medium">Update your administrative profile.</p>
@@ -177,7 +177,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                     <div className="p-8 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <UserIcon className="h-5 w-5 text-gray-300 group-focus-within:text-primary-500 transition-colors" />
@@ -192,7 +192,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
                                 <div className="relative opacity-60">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <Mail className="h-5 w-5 text-gray-300" />
@@ -204,7 +204,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                                         className="block w-full pl-11 pr-4 py-4 bg-gray-100 border-2 border-transparent rounded-[1.25rem] cursor-not-allowed font-bold text-gray-500"
                                     />
                                 </div>
-                                <p className="text-[10px] text-gray-400 font-medium ml-2 mt-1">Managed by organization settings</p>
+                                <p className="text-xs text-gray-400 font-medium ml-2 mt-1">Managed by organization settings</p>
                             </div>
                         </div>
 
@@ -224,7 +224,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
 
                 {/* Security Card */}
                 <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                    <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #faf5ff, #fdf2f8)' }}>
                         <div>
                             <h3 className="text-xl font-black text-gray-900 tracking-tight">Security</h3>
                             <p className="text-sm text-gray-500 font-medium">Protect your admin account.</p>
@@ -258,24 +258,34 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                             <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">New Password</label>
-                                        <input
-                                            type="password"
-                                            value={formData.password}
-                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            className="block w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:border-primary-500 transition-all font-bold"
-                                            placeholder="••••••••"
-                                        />
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">New Password</label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <Key className="h-5 w-5 text-gray-300 group-focus-within:text-primary-500 transition-colors" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                value={formData.password}
+                                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                                placeholder="••••••••"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Confirm Password</label>
-                                        <input
-                                            type="password"
-                                            value={formData.confirmPassword}
-                                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                            className="block w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:border-primary-500 transition-all font-bold"
-                                            placeholder="••••••••"
-                                        />
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Confirm Password</label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <Key className="h-5 w-5 text-gray-300 group-focus-within:text-primary-500 transition-colors" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                value={formData.confirmPassword}
+                                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                                placeholder="••••••••"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex gap-4">
@@ -306,7 +316,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
 
             {/* Business Settings Card */}
             <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
-                <div className="bg-gradient-to-r from-teal-50 to-emerald-50 px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #f0fdfa, #ecfdf5)' }}>
                     <div>
                         <h3 className="text-xl font-black text-gray-900 tracking-tight">Business Configuration</h3>
                         <p className="text-sm text-gray-500 font-medium">Manage your organization details.</p>

@@ -12,7 +12,7 @@ interface StaffSidebarProps {
 export default function StaffSidebar({ activeTab, setActiveTab, currentOrg }: StaffSidebarProps) {
     const navItems = [
         { id: 'schedule', label: 'My Schedule', icon: Calendar },
-        { id: 'performance', label: 'My Performance', icon: BarChart3 },
+        { id: 'performance', label: 'My Stats', icon: BarChart3 },
         { id: 'profile', label: 'My Profile', icon: User },
     ] as const;
 

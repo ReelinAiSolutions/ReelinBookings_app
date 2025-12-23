@@ -543,8 +543,8 @@ export default function StaffDashboard({
                         onClick={() => setActiveTab('performance')}
                         className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'performance' ? 'text-primary-600 scale-110' : 'text-gray-400'}`}
                     >
-                        <DollarSign className="w-6 h-6" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Revenue</span>
+                        <BarChart3 className="w-6 h-6" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Stats</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('profile')}

@@ -159,7 +159,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                             <div className="p-2 bg-primary-50 rounded-xl">
                                 <Activity className="w-6 h-6 md:w-8 md:h-8 text-primary-600" />
                             </div>
-                            My Performance
+                            My Stats
                         </h1>
                         <p className="text-gray-500 text-xs md:text-sm font-medium mt-1">Track your personal growth and impact.</p>
                     </div>

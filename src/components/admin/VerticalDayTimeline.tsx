@@ -57,8 +57,9 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
     const START_HOUR = startHour;
     const END_HOUR = endHour;
     const TOTAL_HOURS = END_HOUR - START_HOUR;
-    const BOTTOM_BUFFER = 100; // Professional runway past the last hour
-    const TOTAL_HEIGHT_PX = (TOTAL_HOURS * HOUR_HEIGHT) + BOTTOM_BUFFER;
+    const TOP_PADDING = 20; // Pro space before the first hour
+    const BOTTOM_BUFFER = 100;
+    const TOTAL_HEIGHT_PX = (TOTAL_HOURS * HOUR_HEIGHT) + TOP_PADDING + BOTTOM_BUFFER;
 
     const todayDayOfWeek = viewDayIndex;
     const hours = Array.from({ length: TOTAL_HOURS + 1 }).map((_, i) => i + START_HOUR);
@@ -81,7 +82,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
 
     if (currentHour >= START_HOUR && currentHour < END_HOUR) {
         const minutesSinceStart = (currentHour - START_HOUR) * 60 + currentMinute;
-        currentTimeTopPx = (minutesSinceStart / 60) * HOUR_HEIGHT;
+        currentTimeTopPx = ((minutesSinceStart / 60) * HOUR_HEIGHT) + TOP_PADDING;
     }
 
     const handleCardClick = (e: React.MouseEvent, id: string) => {
@@ -109,7 +110,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                         </div>
                         <div className="relative w-full h-full">
                             {hours.map((hour, i) => {
-                                const topPx = i * HOUR_HEIGHT;
+                                const topPx = (i * HOUR_HEIGHT) + TOP_PADDING;
                                 return (
                                     <div key={hour} className={`absolute w-full text-center ${i === 0 ? '' : 'transform -translate-y-1/2'}`} style={{ top: `${topPx}px` }}>
                                         {i !== hours.length && (
@@ -144,16 +145,16 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                                         <span className="text-[10px] font-bold text-gray-900 truncate max-w-[5rem] uppercase tracking-tight">{primaryStaff.name.split(' ')[0]}</span>
                                     </div>
 
-                                    <div className={`relative w-full flex-1 ${showOffDuty ? 'bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMTlMMTkgMU0wIDIwTDIwIDAiIHN0cm9rZT0iI2YzZjRmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+")] opacity-60' : ''}`} style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
+                                    <div className={`relative w-full flex-1 ${showOffDuty ? 'bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAyIiBoZWlnaHQ9IjIwMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMSAxOUwxOSAxTTAgMjBMMjAgMCIgc3Ryb2tlPSIjZjNmNGY2IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=")] opacity-60' : ''}`} style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
 
                                         {/* FULL WIDTH GRID LINES */}
                                         {hours.map((hour, i) => (
-                                            <div key={`bg-${hour}`} className="absolute w-full border-t border-gray-200 z-0" style={{ top: `${i * HOUR_HEIGHT}px` }}></div>
+                                            <div key={`bg-${hour}`} className="absolute w-full border-t border-gray-200 z-0" style={{ top: `${(i * HOUR_HEIGHT) + TOP_PADDING}px` }}></div>
                                         ))}
 
                                         {/* Half-Hour Guidelines */}
                                         {hours.map((hour, i) => i < hours.length - 1 && (
-                                            <div key={`half-${hour}`} className="absolute w-full border-t border-dashed border-gray-100 z-0" style={{ top: `${(i + 0.5) * HOUR_HEIGHT}px` }}></div>
+                                            <div key={`half-${hour}`} className="absolute w-full border-t border-dashed border-gray-100 z-0" style={{ top: `${((i + 0.5) * HOUR_HEIGHT) + TOP_PADDING}px` }}></div>
                                         ))}
 
                                         {showOffDuty && (
@@ -175,7 +176,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                                             const service = services?.find(s => s.id === apt.serviceId);
                                             const durationMins = service?.durationMinutes || 60;
 
-                                            const topPx = (aptStartMins / 60) * HOUR_HEIGHT;
+                                            const topPx = (aptStartMins / 60) * HOUR_HEIGHT + TOP_PADDING;
                                             const heightPx = (durationMins / 60) * HOUR_HEIGHT;
 
                                             const colors = [

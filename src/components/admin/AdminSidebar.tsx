@@ -14,7 +14,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
         { id: 'operations', label: 'Operations', icon: Calendar },
         { id: 'services', label: 'Services', icon: Briefcase },
         { id: 'team', label: 'Team', icon: Users },
-        { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+        { id: 'analytics', label: 'Stats', icon: BarChart3 },
         { id: 'profile', label: 'Profile', icon: User },
     ] as const;
 
