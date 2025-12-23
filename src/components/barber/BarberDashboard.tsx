@@ -180,18 +180,21 @@ export default function StaffDashboard({
                 {/* Content Container */}
                 <div className={` min-h-0 bg-gray-50 ${activeTab === 'schedule' ? 'flex-1 flex flex-col lg:p-6 pb-24' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
                     {/* Mobile Header (Scrolls Away) */}
-                    <div className="lg:hidden flex-shrink-0 flex justify-between items-center h-16 px-4 bg-white border-b border-gray-100 z-50 -mx-4 -mt-4 mb-4">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                            {currentOrg?.logo_url ? (
-                                <img suppressHydrationWarning src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 rounded-lg object-contain bg-gray-50 border border-gray-100" />
-                            ) : (
-                                <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center text-white flex-shrink-0">
-                                    <Globe className="w-4 h-4" />
-                                </div>
-                            )}
+                    <div className="lg:hidden flex-shrink-0 bg-white border-b border-gray-200/50 px-6 flex items-center justify-between h-16 -mx-4 -mt-4 mb-6">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-1 bg-white rounded-lg shadow-sm border border-gray-100">
+                                {currentOrg?.logo_url ? (
+                                    <img suppressHydrationWarning src={currentOrg.logo_url} alt="Logo" className="w-7 h-7 flex-shrink-0 object-contain" />
+                                ) : (
+                                    <div className="w-7 h-7 rounded-md bg-gray-900 flex items-center justify-center text-white flex-shrink-0">
+                                        <Globe className="w-3 h-3" />
+                                    </div>
+                                )}
+                            </div>
                             <div className="flex flex-col min-w-0">
-                                <h1 className="text-lg font-black text-gray-900 tracking-tight truncate leading-tight">
-                                    {currentOrg?.name || 'Staff View'}
+                                <span className="text-[10px] font-black text-primary-600/60 uppercase tracking-widest leading-none mb-0.5">Team Portal</span>
+                                <h1 className="text-sm font-black text-gray-900 tracking-tight leading-none truncate">
+                                    {currentOrg?.name || 'Reelin Bookings'}
                                 </h1>
                             </div>
                         </div>

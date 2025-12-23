@@ -117,13 +117,8 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
 
             {/* Premium Hero Section */}
             <div className="relative group animate-in fade-in slide-in-from-top-4 duration-700">
-                <div
-                    className="absolute inset-0 rounded-[2.5rem] shadow-xl shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow duration-500"
-                    style={{
-                        background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #4f46e5 100%)', // Hardcoded blue gradient
-                    }}
-                />
-                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 rounded-[2.5rem] mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-600 rounded-[2.5rem] shadow-2xl shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow duration-500"></div>
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 rounded-[2.5rem]"></div>
 
                 <div className="relative p-10 md:p-16 flex flex-col items-center text-center">
                     <div className="relative mb-8 group/avatar">
@@ -342,11 +337,11 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
             </div>
 
             {/* Sign Out Section */}
-            <div className="pt-8 border-t border-gray-200">
+            <div className="pt-12 border-t border-gray-200">
                 <div className="bg-rose-50 rounded-[2rem] border border-rose-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div>
-                        <h4 className="text-xl font-black text-rose-900 tracking-tight">End Session</h4>
-                        <p className="text-sm text-rose-600 font-medium">Sign out securely from your admin account.</p>
+                        <h4 className="text-xl font-black text-rose-900 tracking-tight">Account Session</h4>
+                        <p className="text-sm text-rose-600 font-medium">End your current session on this device.</p>
                     </div>
                     <button
                         type="button"
@@ -354,7 +349,7 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                         className="flex items-center gap-2 px-8 py-4 bg-rose-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 active:scale-95 transition-all"
                     >
                         <LogOut className="w-5 h-5" />
-                        Sign Out
+                        Sign Out Now
                     </button>
                 </div>
             </div>
