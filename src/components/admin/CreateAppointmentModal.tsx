@@ -105,7 +105,7 @@ export default function CreateAppointmentModal({
 
     // Helper to get H:M from time string
     const getDisplayTime = (t: string) => {
-        if (!t) return '--';
+        if (!t) return 'Select Time';
         const [h, m] = t.split(':').map(Number);
         const period = h >= 12 ? 'PM' : 'AM';
         const displayH = h > 12 ? h - 12 : (h === 0 || h === 12 ? 12 : h);
@@ -262,33 +262,41 @@ export default function CreateAppointmentModal({
 
                             {/* Professional Metadata Module */}
                             <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
+                                {/* Service Overlay Row */}
                                 <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    <select
+                                        value={serviceId}
+                                        onChange={e => setServiceId(e.target.value)}
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                    >
+                                        {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    </select>
+
                                     <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Service</p>
-                                    <div className="flex items-center gap-2">
-                                        <select
-                                            value={serviceId}
-                                            onChange={e => setServiceId(e.target.value)}
-                                            className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
-                                            style={{ direction: 'rtl' }}
-                                        >
-                                            {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                        </select>
-                                        <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                                    <div className="flex items-center gap-2 pointer-events-none">
+                                        <span className="text-sm font-bold text-gray-500 text-right truncate max-w-[150px]">
+                                            {selectedService ? selectedService.name : 'Select Service'}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4 text-gray-300" />
                                     </div>
                                 </div>
 
+                                {/* Staff Overlay Row */}
                                 <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    <select
+                                        value={staffId}
+                                        onChange={e => setStaffId(e.target.value)}
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                    >
+                                        {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    </select>
+
                                     <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
-                                    <div className="flex items-center gap-2">
-                                        <select
-                                            value={staffId}
-                                            onChange={e => setStaffId(e.target.value)}
-                                            className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
-                                            style={{ direction: 'rtl' }}
-                                        >
-                                            {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                        </select>
-                                        <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                                    <div className="flex items-center gap-2 pointer-events-none">
+                                        <span className="text-sm font-bold text-gray-500 text-right truncate max-w-[150px]">
+                                            {selectedStaff ? selectedStaff.name : 'Select Staff'}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4 text-gray-300" />
                                     </div>
                                 </div>
 
@@ -310,33 +318,42 @@ export default function CreateAppointmentModal({
                         <div className="space-y-4">
                             {/* Selection Group: Date & Time */}
                             <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 space-y-4">
-                                <div className="flex justify-between items-center group">
+                                {/* Date Row - Modified to Overlay Pill */}
+                                <div className="flex justify-between items-center group relative">
                                     <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</span>
-                                    <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform">
+                                    {/* Interactive Pill */}
+                                    <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden">
                                         <input
                                             type="date"
                                             value={date}
                                             onChange={e => setDate(e.target.value)}
-                                            className="text-sm font-black text-primary-600 bg-transparent outline-none cursor-pointer"
+                                            className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
                                         />
+                                        <p className="text-sm font-black text-primary-600 pointer-events-none">
+                                            {date ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Select Date'}
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div className="flex justify-between items-center group">
+                                {/* Time Row - Modified to Overlay Pill */}
+                                <div className="flex justify-between items-center group relative">
                                     <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Starts</span>
-                                    <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative">
+                                    {/* Interactive Pill */}
+                                    <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden flex items-center gap-1.5">
                                         <select
                                             value={time}
                                             onChange={e => setTime(e.target.value)}
-                                            className="text-sm font-black text-primary-600 bg-transparent outline-none appearance-none cursor-pointer pr-4"
-                                            style={{ direction: 'rtl' }}
+                                            className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
                                         >
                                             <option value="" disabled>Select Time</option>
                                             {timeOptions.map(opt => (
                                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                                             ))}
                                         </select>
-                                        <ChevronRight className="w-4 h-4 text-primary-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" />
+                                        <p className="text-sm font-black text-primary-600 pointer-events-none">
+                                            {time ? getDisplayTime(time) : 'Select Time'}
+                                        </p>
+                                        <ChevronRight className="w-3.5 h-3.5 text-primary-400 rotate-90 pointer-events-none" />
                                     </div>
                                 </div>
 

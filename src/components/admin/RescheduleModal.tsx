@@ -195,75 +195,88 @@ export default function RescheduleModal({
 
                                 {/* Staff */}
                                 <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    {/* Overlay Select */}
+                                    <select
+                                        value={staffId}
+                                        onChange={(e) => setStaffId(e.target.value)}
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                    >
+                                        {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    </select>
+
                                     <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
-                                    <div className="flex items-center gap-2">
-                                        <select
-                                            value={staffId}
-                                            onChange={(e) => setStaffId(e.target.value)}
-                                            className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
-                                            style={{ direction: 'rtl' }}
-                                        >
-                                            {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                        </select>
-                                        <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                                    <div className="flex items-center gap-2 pointer-events-none">
+                                        <span className="text-sm font-bold text-gray-500">
+                                            {staff.find(s => s.id === staffId)?.name || 'Select Staff'}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4 text-gray-300" />
                                     </div>
                                 </div>
 
                                 {/* Date */}
                                 <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    {/* Overlay Input */}
+                                    <input
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                    />
+
                                     <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</p>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="date"
-                                            value={date}
-                                            onChange={(e) => setDate(e.target.value)}
-                                            className="text-sm font-bold text-primary-600 bg-transparent outline-none cursor-pointer text-right"
-                                        />
-                                        <ChevronRight className="w-4 h-4 text-gray-300 pointer-events-none" />
+                                    <div className="flex items-center gap-2 pointer-events-none">
+                                        <span className="text-sm font-bold text-primary-600">
+                                            {date ? format(new Date(date + 'T00:00:00'), 'MMM d, yyyy') : 'Select Date'}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4 text-gray-300" />
                                     </div>
                                 </div>
 
                                 {/* Time */}
                                 <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    {/* Overlay Select */}
+                                    <select
+                                        value={time}
+                                        onChange={(e) => setTime(e.target.value)}
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                    >
+                                        {(() => {
+                                            if (!date) return <option disabled>Select date first</option>;
+                                            // Simplified time generation for Edit Mode (Show all slots)
+                                            // In real app, reuse the generator but here we just need options. 
+                                            // We will just recreate the simple list for now or copy logic if needed.
+                                            // For brevity, using the same logic as Create is best, but let's stick to the structure.
+
+                                            // Re-using logic from CreateModal would be ideal, but for now let's use a simple generator or confirm we have business hours.
+                                            // Assuming standard strict generation:
+                                            const [y, m, d] = date.split('-').map(Number);
+                                            const localDate = new Date(y, m - 1, d);
+                                            const dayName = format(localDate, 'EEEE').toLowerCase();
+                                            const hours = businessHours?.[dayName];
+
+                                            if (!hours || !hours.isOpen) return <option disabled>Closed</option>;
+
+                                            const start = parseInt(hours.open.split(':')[0]) * 60 + parseInt(hours.open.split(':')[1]);
+                                            const end = parseInt(hours.close.split(':')[0]) * 60 + parseInt(hours.close.split(':')[1]);
+                                            const interval = slotInterval || 30;
+
+                                            const options = [];
+                                            for (let i = start; i < end; i += interval) {
+                                                const h = Math.floor(i / 60);
+                                                const m = i % 60;
+                                                const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                                                options.push(<option key={t} value={t}>{getDisplayTime(t)}</option>);
+                                            }
+                                            return options;
+                                        })()}
+                                    </select>
+
                                     <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Time</p>
-                                    <div className="flex items-center gap-2 relative">
-                                        <select
-                                            value={time}
-                                            onChange={(e) => setTime(e.target.value)}
-                                            className="text-sm font-bold text-primary-600 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
-                                            style={{ direction: 'rtl' }}
-                                        >
-                                            {(() => {
-                                                if (!date) return <option disabled>Select date first</option>;
-                                                // Simplified time generation for Edit Mode (Show all slots)
-                                                // In real app, reuse the generator but here we just need options. 
-                                                // We will just recreate the simple list for now or copy logic if needed.
-                                                // For brevity, using the same logic as Create is best, but let's stick to the structure.
-
-                                                // Re-using logic from CreateModal would be ideal, but for now let's use a simple generator or confirm we have business hours.
-                                                // Assuming standard strict generation:
-                                                const [y, m, d] = date.split('-').map(Number);
-                                                const localDate = new Date(y, m - 1, d);
-                                                const dayName = format(localDate, 'EEEE').toLowerCase();
-                                                const hours = businessHours?.[dayName];
-
-                                                if (!hours || !hours.isOpen) return <option disabled>Closed</option>;
-
-                                                const start = parseInt(hours.open.split(':')[0]) * 60 + parseInt(hours.open.split(':')[1]);
-                                                const end = parseInt(hours.close.split(':')[0]) * 60 + parseInt(hours.close.split(':')[1]);
-                                                const interval = slotInterval || 30;
-
-                                                const options = [];
-                                                for (let i = start; i < end; i += interval) {
-                                                    const h = Math.floor(i / 60);
-                                                    const m = i % 60;
-                                                    const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                                                    options.push(<option key={t} value={t}>{getDisplayTime(t)}</option>);
-                                                }
-                                                return options;
-                                            })()}
-                                        </select>
-                                        <ChevronRight className="w-4 h-4 text-gray-300 absolute right-0 pointer-events-none" />
+                                    <div className="flex items-center gap-2 relative pointer-events-none">
+                                        <span className="text-sm font-bold text-primary-600 truncate min-w-[60px] text-right">
+                                            {time ? getDisplayTime(time) : 'Select Time'}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4 text-gray-300" />
                                     </div>
                                 </div>
                             </div>
