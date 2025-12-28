@@ -14,6 +14,13 @@ const PulseStyle = () => (
         .live-pulse {
             animation: gravityPulse 2s infinite ease-in-out;
         }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     `}} />
 );
 
@@ -391,13 +398,12 @@ export default function WeeklyCalendar({
                     <div className="flex items-center gap-2.5 mb-2">
                         {calendarLevel === 'day' && (
                             <button
-                                className="text-indigo-600"
+                                className={`text-indigo-600 ${viewMode === 'team' ? 'bg-indigo-100 rounded-full p-1.5' : ''}`}
                                 onClick={() => setViewMode(prev => prev === 'personal' ? 'team' : 'personal')}
                             >
                                 <Users className="w-6 h-6" strokeWidth={2} />
                             </button>
                         )}
-                        <CalendarIcon className="w-6 h-6 text-indigo-600" strokeWidth={2} />
                         <button
                             className="text-indigo-600"
                             onClick={() => onSelectSlot(selectedDate, "09:00")}
