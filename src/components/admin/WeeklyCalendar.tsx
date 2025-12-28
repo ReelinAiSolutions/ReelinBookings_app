@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { ChevronLeft, Plus, Users } from 'lucide-react';
 import { Appointment, Staff, Service, Organization, AppointmentStatus } from '@/types';
 import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth, subMonths, subYears, eachMonthOfInterval, endOfYear } from 'date-fns';
@@ -52,12 +52,16 @@ export default function WeeklyCalendar({
 
     // Swipe State
     // Swipe State
+    // Swipe State
+    // Swipe State
     const touchStart = useRef<number | null>(null);
     const touchEnd = useRef<number | null>(null);
     const headerTouchStart = useRef<number | null>(null);
     const headerTouchEnd = useRef<number | null>(null);
     const minSwipeDistance = 50;
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const isPrepending = useRef(false);
+    const prevScrollHeight = useRef(0);
 
     // -- CONSTANTS --
     const hours = Array.from({ length: 24 }).map((_, i) => i);
@@ -107,6 +111,18 @@ export default function WeeklyCalendar({
         }
     }, [calendarLevel]); // Re-init when level changes. Note: selectedDate change shouldn't reset, unless stepping level.
 
+    // Handle Scroll Position Restoration
+    useLayoutEffect(() => {
+        if (isPrepending.current && scrollContainerRef.current) {
+            const newHeight = scrollContainerRef.current.scrollHeight;
+            const diff = newHeight - prevScrollHeight.current;
+            if (diff > 0) {
+                scrollContainerRef.current.scrollTop += diff;
+            }
+            isPrepending.current = false;
+        }
+    }, [renderedMonths, renderedYears]);
+
     const handleInfiniteScroll = (e: React.UIEvent<HTMLDivElement>, type: 'month' | 'year') => {
         const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
         const threshold = 100;
@@ -114,10 +130,11 @@ export default function WeeklyCalendar({
         if (type === 'month') {
             if (scrollTop < threshold) {
                 // Prepend
+                isPrepending.current = true;
+                prevScrollHeight.current = scrollHeight;
                 const first = renderedMonths[0];
                 const newMonths = Array.from({ length: 6 }).map((_, i) => subMonths(first, 6 - i));
                 setRenderedMonths(prev => [...newMonths, ...prev]);
-                // Adjust scroll (simple heuristic, smooth scroll might jump but ok for now)
             } else if (scrollTop + clientHeight > scrollHeight - threshold) {
                 // Append
                 const last = renderedMonths[renderedMonths.length - 1];
@@ -127,6 +144,8 @@ export default function WeeklyCalendar({
         } else if (type === 'year') {
             if (scrollTop < threshold) {
                 // Prepend
+                isPrepending.current = true;
+                prevScrollHeight.current = scrollHeight;
                 const first = renderedYears[0];
                 const newYears = Array.from({ length: 3 }).map((_, i) => first - 3 + i);
                 setRenderedYears(prev => [...newYears, ...prev]);
@@ -266,6 +285,7 @@ export default function WeeklyCalendar({
     const renderYearView = () => {
         return (
             <div
+                ref={scrollContainerRef}
                 className={`flex-1 overflow-y-auto bg-white pb-20 pt-2 ${getAnimClass()} scrollbar-hide`}
                 onScroll={(e) => handleInfiniteScroll(e, 'year')}
             >
@@ -341,6 +361,7 @@ export default function WeeklyCalendar({
 
     const renderMonthView = () => (
         <div
+            ref={scrollContainerRef}
             className={`flex-1 overflow-y-auto bg-white ${getAnimClass()} scrollbar-hide`}
             onScroll={(e) => handleInfiniteScroll(e, 'month')}
         >
