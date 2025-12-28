@@ -159,12 +159,12 @@ export default function WeeklyCalendar({
             )}
 
             {/* Grid Container */}
-            <div className="relative w-fit flex" style={{ height: '1600px', minWidth: viewMode === 'team' ? '100%' : 'auto' }}>
+            <div className="relative w-full flex" style={{ height: '1600px' }}>
                 {/* Time Column */}
-                <div className="w-16 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
+                <div className="w-16 lg:w-20 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
                     {hours.map((h, i) => (
-                        <div key={h} className="absolute w-16 text-right pr-2" style={{ top: `${i * 60}px` }}>
-                            <span className="text-[10px] font-medium text-gray-400 relative -top-2">
+                        <div key={h} className="absolute w-16 lg:w-20 text-right pr-2 lg:pr-3" style={{ top: `${i * 60}px` }}>
+                            <span className="text-[10px] lg:text-xs font-medium text-gray-400 relative -top-2">
                                 {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
                             </span>
                         </div>
@@ -172,11 +172,11 @@ export default function WeeklyCalendar({
                 </div>
 
                 {/* Content Area */}
-                <div className="flex relative items-start">
+                <div className="flex relative items-start flex-1">
                     {viewMode === 'personal' ? (
                         <div
                             key={selectedDateString}
-                            className={`w-full relative min-w-[300px] ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
+                            className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
                             style={{ height: '1600px' }}
                         >
                             {/* Grid Lines */}
