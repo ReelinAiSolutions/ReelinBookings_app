@@ -295,7 +295,7 @@ export default function WeeklyCalendar({
                         {staff.map((member, idx) => {
                             const colorScheme = staffColors[idx % staffColors.length];
                             return (
-                                <div key={member.id} className="flex-1 min-w-0 text-center border-l border-gray-400 first:border-l-0 py-2 bg-white sticky top-0">
+                                <div key={member.id} className="flex-1 min-w-[120px] text-center border-l border-gray-400 first:border-l-0 py-2 bg-white sticky top-0">
                                     <div className="flex items-center justify-center gap-1.5">
                                         <div className={`w-2 h-2 rounded-full ${colorScheme.dot}`}></div>
                                         <div className="text-xs font-bold text-gray-900 truncate px-1">{member.name}</div>
@@ -364,7 +364,7 @@ export default function WeeklyCalendar({
                                     const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
 
                                     return (
-                                        <div key={member.id} className="flex-1 min-w-0 border-l border-gray-400 relative first:border-l-0 group h-full">
+                                        <div key={member.id} className="flex-1 min-w-[120px] border-l border-gray-400 relative first:border-l-0 group h-full">
                                             {hours.map(h => (
                                                 <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${h * 60}px` }} onClick={() => handleGridClick(h, member.id)}></div>
                                             ))}
