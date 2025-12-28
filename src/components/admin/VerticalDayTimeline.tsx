@@ -6,12 +6,16 @@ const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
         __html: `
         @keyframes gravityPulse {
-            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.4); }
-            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(0, 122, 255, 0); }
-            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); }
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
         }
         .live-pulse {
             animation: gravityPulse 2s infinite ease-in-out;
+        }
+        .bg-stripes-light {
+            background-image: linear-gradient(45deg, rgba(243, 244, 246, 0.4) 25%, transparent 25%, transparent 50%, rgba(243, 244, 246, 0.4) 50%, rgba(243, 244, 246, 0.4) 75%, transparent 75%, transparent);
+            background-size: 20px 20px;
         }
     `}} />
 );
@@ -28,7 +32,7 @@ interface VerticalDayTimelineProps {
     colorMode?: 'staff' | 'service';
 }
 
-const HOUR_HEIGHT = 68;
+const HOUR_HEIGHT = 72;
 
 export default function VerticalDayTimeline({ appointments, staff, services, availability = [], businessHours, date, onAppointmentClick, onSelectSlot, colorMode = 'staff' }: VerticalDayTimelineProps) {
     const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -70,8 +74,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
     const todayDayOfWeek = viewDayIndex;
     const hours = Array.from({ length: TOTAL_HOURS + 1 }).map((_, i) => i + START_HOUR);
 
-    const uniqueAppointments = Array.from(new Map(appointments.map(item => [item.id, item])).values());
-    const renderAppointments = uniqueAppointments.filter(apt => {
+    const renderAppointments = appointments.filter(apt => {
         const hour = parseInt(apt.timeSlot.split(':')[0]);
         return hour < END_HOUR && hour >= START_HOUR;
     });
@@ -111,29 +114,26 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
         <div className="flex flex-1 relative bg-transparent h-auto lg:h-full lg:overflow-hidden min-w-0" onClick={() => setFocusedId(null)}>
             <PulseStyle />
             <div className="flex w-full h-auto lg:h-full min-w-0 overflow-visible lg:overflow-auto no-scrollbar">
-                <div className="flex w-full relative" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
+                <div className="flex w-full min-w-full relative" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
 
-                    {/* Static Time Column (Mockup Alignment) */}
+                    {/* Time Column (Apple Style) */}
                     <div
-                        className="relative z-[100] bg-white border-r border-gray-100 flex-shrink-0 w-16 flex flex-col sticky left-0 shadow-[4px_0_20px_rgba(0,0,0,0.02)]"
+                        className="relative z-[100] bg-white border-r border-gray-100 flex-shrink-0 w-16 flex flex-col sticky left-0"
                         style={{ height: `${TOTAL_HEIGHT_PX}px` }}
                     >
                         <div className="relative w-full h-full">
-                            {hours.map((hour, i) => {
-                                const topPx = (i * HOUR_HEIGHT) + TOP_PADDING;
-                                return (
-                                    <div key={hour} className={`absolute w-full text-center ${i === 0 ? '' : 'transform -translate-y-1/2'}`} style={{ top: `${topPx}px` }}>
-                                        <span className="text-[11px] font-bold text-gray-400">
-                                            {hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour)}
-                                            <span className="text-[10px] font-medium ml-1 uppercase">{hour >= 12 ? 'PM' : 'AM'}</span>
-                                        </span>
-                                    </div>
-                                )
-                            })}
+                            {hours.map((hour, i) => (
+                                <div key={hour} className="absolute w-full text-center transform -translate-y-1/2" style={{ top: `${(i * HOUR_HEIGHT) + TOP_PADDING}px` }}>
+                                    <span className="text-[11px] font-[900] text-gray-400">
+                                        {hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour)}
+                                        <span className="text-[9px] font-bold ml-0.5 uppercase">{hour >= 12 ? 'pm' : 'am'}</span>
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Staff Columns */}
+                    {/* Staff Columns (Responsive Growth) */}
                     <div className="flex flex-1 relative h-full divide-x divide-gray-100/30" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
                         {Array.from(new Set(staff.map(s => s.name.toLowerCase()))).map((normalizedName, idx) => {
                             const staffGroup = staff.filter(s => s.name.toLowerCase() === normalizedName);
@@ -142,40 +142,39 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                             const memberRule = availability.find(r => r.staffId === primaryStaff.id && r.dayOfWeek === todayDayOfWeek);
                             const showOffDuty = memberRule && !memberRule.isWorking;
 
-                            const staffColors = ['#007AFF', '#34C759', '#AF52DE', '#FF9500', '#FF2D55'];
+                            const staffColors = ['#4F46E5', '#10B981', '#7C3AED', '#F59E0B', '#EF4444'];
                             const staffColor = staffColors[idx % staffColors.length];
 
                             return (
-                                <div key={primaryStaff.id} className="flex-1 min-w-[11rem] relative flex flex-col h-full bg-white/10 group/col last:border-r-0">
-                                    {/* Staff Header: Name + Circle Dot (Match Image 2) */}
-                                    <div className="h-10 flex-shrink-0 bg-white/20 backdrop-blur-3xl z-[50] border-b border-gray-100/50 flex items-center justify-center p-2 sticky top-0">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: staffColor }}></div>
-                                            <span className="text-[13px] font-bold text-gray-800 tracking-tight">{primaryStaff.name}</span>
-                                        </div>
+                                <div key={primaryStaff.id} className="flex-1 min-w-[12rem] lg:min-w-0 relative flex flex-col h-full bg-white/5 transition-all">
+                                    {/* Column Header (Dot + Name) */}
+                                    <div className="h-10 flex-shrink-0 bg-white/20 backdrop-blur-3xl z-[50] border-b border-gray-100 flex items-center justify-center gap-2 sticky top-0 px-2 lg:px-4">
+                                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: staffColor }}></div>
+                                        <span className="text-[13px] font-[900] text-[#111827] truncate uppercase tracking-tight">{primaryStaff.name.split(' ')[0]}</span>
                                     </div>
 
-                                    <div className={`relative w-full flex-1 ${showOffDuty ? 'bg-stripes-gray-light' : ''}`} style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
-                                        {/* Clickable Grid Slots */}
+                                    <div className={`relative w-full flex-1 ${showOffDuty ? 'bg-stripes-light opacity-50' : ''}`} style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
+                                        {/* Grid Lines */}
                                         {hours.map((hour, i) => (
                                             <div
                                                 key={`slot-${hour}`}
-                                                className="absolute w-full border-t border-gray-100 z-0 bg-transparent hover:bg-white/40 transition-colors cursor-pointer"
+                                                className="absolute w-full border-t border-gray-100/50 z-0 bg-transparent hover:bg-white/40 transition-colors cursor-pointer"
                                                 style={{ top: `${(i * HOUR_HEIGHT) + TOP_PADDING}px`, height: `${HOUR_HEIGHT}px` }}
                                                 onClick={() => !showOffDuty && handleSlotClick(hour, primaryStaff.id)}
                                             >
-                                                <div className="absolute top-1/2 w-full border-t border-dashed border-gray-50 pointer-events-none opacity-20"></div>
+                                                <div className="absolute top-1/2 w-full border-t border-dashed border-gray-50 opacity-20"></div>
                                             </div>
                                         ))}
 
+                                        {/* Current Time Pulse (Refined) */}
                                         {currentTimeTopPx !== -1 && (
                                             <div className="absolute w-full flex items-center z-[60] pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                                <div className="w-3.5 h-3.5 bg-[#007AFF] rounded-full -ml-1.75 shadow-lg live-pulse border-2 border-white"></div>
-                                                <div className="h-0.5 bg-[#007AFF]/40 w-full"></div>
+                                                <div className="w-3.5 h-3.5 bg-[#4F46E5] rounded-full -ml-1.75 shadow-lg live-pulse border-2 border-white"></div>
+                                                <div className="h-0.5 bg-[#4F46E5]/40 w-full"></div>
                                             </div>
                                         )}
 
-                                        {/* Appointments (Match Image 3 - Mobile/Apple Feel) */}
+                                        {/* Appointment Cards (Design Lab Parity) */}
                                         {memberAppointments.map(apt => {
                                             const [h, m] = apt.timeSlot.split(':').map(Number);
                                             const aptStartMins = (h - START_HOUR) * 60 + m;
@@ -184,24 +183,27 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                                             const topPx = (aptStartMins / 60) * HOUR_HEIGHT + TOP_PADDING;
                                             const heightPx = (durationMins / 60) * HOUR_HEIGHT;
 
-                                            // Determine display color for this appointment
-                                            const displayColor = staffColor;
-
                                             return (
-                                                <div key={apt.id} onClick={(e) => { e.stopPropagation(); if (onAppointmentClick) onAppointmentClick(apt.id); }}
-                                                    className="absolute left-1 right-2 rounded-lg border-l-[3px] px-3 py-2 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-md z-20 group/apt"
+                                                <div
+                                                    key={apt.id}
+                                                    onClick={(e) => { e.stopPropagation(); if (onAppointmentClick) onAppointmentClick(apt.id); }}
+                                                    className="absolute left-1.5 right-1.5 rounded-xl border-l-[4px] px-3.5 py-2.5 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-lg backdrop-blur-xl z-20 group"
                                                     style={{
                                                         top: `${topPx}px`,
                                                         height: `${heightPx}px`,
-                                                        minHeight: '42px',
-                                                        backgroundColor: `rgba(235, 245, 255, 0.8)`, // Native feel background
-                                                        borderColor: displayColor,
-                                                        backdropFilter: 'blur(10px)'
-                                                    }}>
-                                                    <div className="flex flex-col leading-none">
-                                                        <span className="text-[13px] font-black text-gray-900 mb-0.5 truncate">{apt.clientName}</span>
-                                                        <span className="text-[11px] font-bold text-[#007AFF] mb-1 truncate">{service?.name || 'Service'}</span>
-                                                        <span className="text-[10px] font-black text-gray-400 mt-auto">{apt.timeSlot} {parseInt(apt.timeSlot) >= 12 ? 'PM' : 'AM'}</span>
+                                                        minHeight: '44px',
+                                                        backgroundColor: 'rgba(238, 242, 255, 0.75)',
+                                                        borderColor: staffColor,
+                                                    }}
+                                                >
+                                                    <div className="flex flex-col h-full">
+                                                        <span className="text-[14px] font-[950] text-[#111827] truncate mb-0.5 tracking-tight">{apt.clientName}</span>
+                                                        <span className="text-[11px] font-[800] text-[#4F46E5] uppercase tracking-wide truncate mb-1 opacity-90">{service?.name || 'Service'}</span>
+                                                        <div className="mt-auto flex items-center gap-1">
+                                                            <span className="text-[10px] font-[900] text-gray-400 tabular-nums">
+                                                                {apt.timeSlot} {parseInt(apt.timeSlot) >= 12 ? 'PM' : 'AM'}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             );
