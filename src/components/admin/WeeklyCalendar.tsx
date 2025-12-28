@@ -350,7 +350,7 @@ export default function WeeklyCalendar({
                                 })}
                             </div>
                         ) : (
-                            <>
+                            <div className="flex w-full h-full">
                                 {staff.map((member, idx) => {
                                     const colorScheme = staffColors[idx % staffColors.length];
                                     const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
@@ -381,7 +381,7 @@ export default function WeeklyCalendar({
                                         </div>
                                     );
                                 })}
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
