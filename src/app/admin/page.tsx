@@ -312,58 +312,48 @@ export default function AdminDashboard() {
 
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
             <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col min-h-screen lg:h-[100dvh]' : 'block min-h-screen'}`}>
-                <div className={`p-4 pb-24 lg:p-10 ${activeTab === 'operations' ? 'flex-1 flex flex-col lg:overflow-hidden' : 'space-y-6'}`}>
-                    {/* Mobile Header (Sticky & Glass) */}
-                    <div className="lg:hidden sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 h-16 flex items-center justify-between -mx-4 -mt-4 mb-4 transition-all duration-300">
-                        {/* Left: Organization Logo & Name */}
-                        <div className="flex items-center gap-3 min-w-0">
-                            <div className="p-1.5 bg-white/50 rounded-xl shadow-sm border border-gray-100/50 backdrop-blur-sm">
-                                {currentOrg?.logo_url ? (
-                                    <img src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 flex-shrink-0 object-contain" />
-                                ) : (
-                                    <img src="/icon-180.png" alt="Reelin Logo" className="w-8 h-8 flex-shrink-0 object-contain rounded-md" />
-                                )}
-                            </div>
-                            <div className="flex flex-col min-w-0 justify-center">
-                                {/* 'Admin Portal' label removed for cleaner, more universal look */}
-                                <h1 className="text-base font-black text-gray-900 tracking-tight leading-none truncate">
-                                    {currentOrg?.name || 'Reelin Bookings'}
-                                </h1>
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-none mt-1">Management Hub</span>
+                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full lg:p-10 lg:overflow-hidden' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
+                    {/* Mobile Header (Only for non-operations tabs) */}
+                    {activeTab !== 'operations' && (
+                        <div className="lg:hidden sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 h-16 flex items-center justify-between -mx-4 -mt-4 mb-4 transition-all duration-300">
+                            {/* Left: Organization Logo & Name */}
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="p-1.5 bg-white/50 rounded-xl shadow-sm border border-gray-100/50 backdrop-blur-sm">
+                                    {currentOrg?.logo_url ? (
+                                        <img src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 flex-shrink-0 object-contain" />
+                                    ) : (
+                                        <img src="/icon-180.png" alt="Reelin Logo" className="w-8 h-8 flex-shrink-0 object-contain rounded-md" />
+                                    )}
+                                </div>
+                                <div className="flex flex-col min-w-0 justify-center">
+                                    <h1 className="text-base font-black text-gray-900 tracking-tight leading-none truncate">
+                                        {currentOrg?.name || 'Reelin Bookings'}
+                                    </h1>
+                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-none mt-1">Management Hub</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
 
                     {/* OPERATIONS (New Home) */}
                     {
                         activeTab === 'operations' && (
-                            <div className="flex-1 flex flex-col min-h-0 lg:block lg:min-h-auto animate-in fade-in duration-300">
-                                {/* Hero Operations Layout - Dense Stacked */}
-                                <div className="flex flex-col h-full lg:h-auto lg:gap-4">
-                                    {/* Weekly Calendar */}
-                                    <div className="w-full h-full lg:h-auto overflow-hidden flex flex-col">
-                                        <WeeklyCalendar
-                                            appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
-                                            staff={staff}
-                                            services={services}
-                                            availability={availability}
-                                            businessHours={currentOrg?.business_hours}
-                                            isBlockingMode={isBlockingMode}
-                                            onSelectSlot={handleSelectSlot}
-                                            onAppointmentClick={handleAppointmentClick}
-                                            colorMode={currentOrg?.settings?.color_mode || 'staff'}
-                                        />
-                                    </div>
+                            <div className="flex-1 flex flex-col h-full animate-in fade-in duration-300">
+                                {/* Weekly Calendar - Full Screen */}
+                                <div className="flex-1 flex flex-col h-full overflow-hidden">
+                                    <WeeklyCalendar
+                                        appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
+                                        staff={staff}
+                                        services={services}
+                                        availability={availability}
+                                        businessHours={currentOrg?.business_hours}
+                                        isBlockingMode={isBlockingMode}
+                                        onSelectSlot={handleSelectSlot}
+                                        onAppointmentClick={handleAppointmentClick}
+                                        colorMode={currentOrg?.settings?.color_mode || 'staff'}
+                                    />
                                 </div>
-
-                                {/* FLOATING ACTION BUTTON (Mobile Only) */}
-                                <button
-                                    onClick={() => setIsCreateModalOpen(true)}
-                                    className="lg:hidden fixed bottom-24 right-4 w-14 h-14 bg-primary-600 text-white rounded-full shadow-xl flex items-center justify-center z-40 hover:bg-primary-700 active:scale-95 transition-all"
-                                >
-                                    <Plus className="w-8 h-8" />
-                                </button>
                             </div>
                         )
                     }
