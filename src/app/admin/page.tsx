@@ -312,7 +312,7 @@ export default function AdminDashboard() {
             />
 
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
-            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col min-h-screen lg:h-[100dvh]' : 'block min-h-screen'}`}>
+            <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col min-h-screen lg:h-[100dvh]' : 'block min-h-screen'}`}>
                 <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full lg:p-10 lg:overflow-hidden' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
                     {/* Mobile Header (Only for non-operations tabs) */}
                     {activeTab !== 'operations' && (
@@ -347,12 +347,9 @@ export default function AdminDashboard() {
                                         appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
                                         staff={staff}
                                         services={services}
-                                        availability={availability}
                                         businessHours={currentOrg?.business_hours}
-                                        isBlockingMode={isBlockingMode}
                                         onSelectSlot={handleSelectSlot}
                                         onAppointmentClick={handleAppointmentClick}
-                                        colorMode={currentOrg?.settings?.color_mode || 'staff'}
                                     />
                                 </div>
                             </div>
