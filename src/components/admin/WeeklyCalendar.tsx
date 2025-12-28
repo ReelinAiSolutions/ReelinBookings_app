@@ -171,8 +171,8 @@ export default function WeeklyCalendar({
                                     }}
                                 >
                                     <span className={`absolute top-1 left-1/2 -translate-x-1/2 text-sm font-medium ${isSelectedDay || isTodayDay
-                                            ? 'bg-[#007AFF] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5'
-                                            : 'text-gray-900'
+                                        ? 'bg-[#007AFF] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5'
+                                        : 'text-gray-900'
                                         }`}>
                                         {dayNum}
                                     </span>
@@ -203,7 +203,7 @@ export default function WeeklyCalendar({
     const renderDayView = () => (
         <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-auto bg-white relative ${getAnimClass()}`}
+            className={`flex-1 w-full overflow-auto bg-white relative ${getAnimClass()}`}
             style={{ scrollBehavior: 'smooth' }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
@@ -228,12 +228,12 @@ export default function WeeklyCalendar({
             )}
 
             {/* Grid Container */}
-            <div className="relative w-fit flex" style={{ height: '1600px', minWidth: viewMode === 'team' ? '100%' : 'auto' }}>
+            <div className="relative w-full flex" style={{ height: '1600px' }}>
                 {/* Time Column */}
-                <div className="w-16 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
+                <div className="w-16 lg:w-20 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
                     {hours.map((h, i) => (
-                        <div key={h} className="absolute w-16 text-right pr-2" style={{ top: `${i * 60}px` }}>
-                            <span className="text-[10px] font-medium text-gray-400 relative -top-2">
+                        <div key={h} className="absolute w-16 lg:w-20 text-right pr-2 lg:pr-3" style={{ top: `${i * 60}px` }}>
+                            <span className="text-[10px] lg:text-xs font-medium text-gray-400 relative -top-2">
                                 {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
                             </span>
                         </div>
@@ -241,11 +241,11 @@ export default function WeeklyCalendar({
                 </div>
 
                 {/* Content Area */}
-                <div className="flex relative items-start">
+                <div className="flex relative items-start flex-1">
                     {viewMode === 'personal' ? (
                         <div
                             key={selectedDateString}
-                            className={`w-full relative min-w-[300px] ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
+                            className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
                             style={{ height: '1600px' }}
                         >
                             {/* Grid Lines */}
@@ -425,10 +425,10 @@ export default function WeeklyCalendar({
                                     onClick={() => setSelectedDate(date)}
                                 >
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
-                                            ? 'bg-[#007AFF] text-white shadow-sm'
-                                            : isTodayDate
-                                                ? 'text-[#007AFF]'
-                                                : 'text-gray-900 bg-transparent'
+                                        ? 'bg-[#007AFF] text-white shadow-sm'
+                                        : isTodayDate
+                                            ? 'text-[#007AFF]'
+                                            : 'text-gray-900 bg-transparent'
                                         }`}>
                                         {format(date, 'd')}
                                     </div>
