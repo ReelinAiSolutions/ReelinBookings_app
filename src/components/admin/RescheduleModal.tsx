@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Appointment, Service, Organization, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { X, Calendar, Clock, Loader2 } from 'lucide-react';
+import { X, Calendar, Clock, Loader2, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface RescheduleModalProps {
@@ -101,149 +101,176 @@ export default function RescheduleModal({
         }
     };
 
+    // Helper to get H:M from time string
+    const getDisplayTime = (t: string) => {
+        if (!t) return '--';
+        const [h, m] = t.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const displayH = h > 12 ? h - 12 : (h === 0 || h === 12 ? 12 : h);
+        return `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
+    };
+
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h3 className="font-bold text-lg text-gray-900">Manage Appointment</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-                        <X className="w-5 h-5" />
-                    </button>
+        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center pointer-events-none">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 pointer-events-auto"
+                onClick={onClose}
+            ></div>
+
+            {/* Modal Sheet */}
+            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-[420px] h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
+
+                {/* Header (Sticky) */}
+                <div className="bg-[#F2F2F7]/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
+                    <div className="w-full flex justify-center mb-2">
+                        <div className="w-12 h-1.5 bg-gray-300/50 rounded-full"></div>
+                    </div>
+                    <div className="flex justify-between items-center px-6 h-14 pb-2">
+                        <button onClick={onClose} className="text-[#007AFF] text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
+                        <span className="font-black text-[17px] text-gray-900 tracking-tight">Manage Booking</span>
+                        <button
+                            onClick={handleSave}
+                            disabled={isLoading}
+                            className="font-black text-[#007AFF] text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
+                        >
+                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-6">
-                    <div>
-                        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">Client</div>
-                        <div className="text-lg font-bold text-gray-900">{appointment.clientName}</div>
-                        <div className="text-sm font-medium text-primary-600 mb-1">
-                            {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 space-y-6 pt-2">
+
+                    {/* Client Info Group */}
+                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5">
+                        <div className="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 leading-tight">{appointment.clientName}</h3>
+                                <p className="text-sm font-medium text-gray-500">{appointment.clientEmail}</p>
+                            </div>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${appointment.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                {appointment.status || 'CONFIRMED'}
+                            </span>
                         </div>
-                        <div className="text-sm text-gray-600">{appointment.clientEmail}</div>
-                        <div className={`mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${appointment.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                            {appointment.status || 'CONFIRMED'}
+                        <div className="flex items-center gap-2 text-sm font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-xl w-fit">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Assigned Staff</label>
-                            <select
-                                value={staffId}
-                                onChange={(e) => setStaffId(e.target.value)}
-                                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all appearance-none"
-                            >
-                                {staff.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name}</option>
-                                ))}
-                            </select>
+                    {/* Editor Group */}
+                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
+
+                        {/* Staff */}
+                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
+                            <div className="flex items-center gap-2">
+                                <select
+                                    value={staffId}
+                                    onChange={(e) => setStaffId(e.target.value)}
+                                    className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
+                                    style={{ direction: 'rtl' }}
+                                >
+                                    {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+                                <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-500 uppercase">New Date</label>
+                        {/* Date */}
+                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</p>
+                            <div className="flex items-center gap-2">
                                 <input
                                     type="date"
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                    className="text-sm font-bold text-primary-600 bg-transparent outline-none cursor-pointer text-right"
                                 />
+                                <ChevronRight className="w-4 h-4 text-gray-300 pointer-events-none" />
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-500 uppercase">New Time</label>
+                        </div>
+
+                        {/* Time */}
+                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Time</p>
+                            <div className="flex items-center gap-2 relative">
                                 <select
                                     value={time}
                                     onChange={(e) => setTime(e.target.value)}
-                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all appearance-none"
+                                    className="text-sm font-bold text-primary-600 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
+                                    style={{ direction: 'rtl' }}
                                 >
-                                    <option value="" disabled>Select Time</option>
                                     {(() => {
-                                        // 1. Determine Day of Week from selected Date
                                         if (!date) return <option disabled>Select date first</option>;
+                                        // Simplified time generation for Edit Mode (Show all slots)
+                                        // In real app, reuse the generator but here we just need options. 
+                                        // We will just recreate the simple list for now or copy logic if needed.
+                                        // For brevity, using the same logic as Create is best, but let's stick to the structure.
 
-                                        // Safe local parsing for Day Index
+                                        // Re-using logic from CreateModal would be ideal, but for now let's use a simple generator or confirm we have business hours.
+                                        // Assuming standard strict generation:
                                         const [y, m, d] = date.split('-').map(Number);
                                         const localDate = new Date(y, m - 1, d);
                                         const dayName = format(localDate, 'EEEE').toLowerCase();
-
                                         const hours = businessHours?.[dayName];
-                                        if (!hours || !hours.isOpen) {
-                                            return <option disabled>Closed on this day</option>;
-                                        }
 
-                                        // 2. Determine Start/End Minutes
-                                        const toMinutes = (t: string) => {
-                                            const [hh, mm] = t.split(':').map(Number);
-                                            return hh * 60 + mm;
-                                        };
-                                        const fromTime = (mins: number) => {
-                                            const hh = Math.floor(mins / 60);
-                                            const mm = mins % 60;
-                                            return `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
-                                        };
+                                        if (!hours || !hours.isOpen) return <option disabled>Closed</option>;
 
-                                        const startMins = toMinutes(hours.open);
-                                        // Round close time down to last valid slot? 
-                                        // Usually "close" is when shop shuts. Last appointment logic is tricky.
-                                        // We'll show slots up until (Close - Interval) or simple Close if 0 duration.
-                                        // For rescheduling, let's show all starts < Close.
-                                        const endMins = toMinutes(hours.close);
+                                        const start = parseInt(hours.open.split(':')[0]) * 60 + parseInt(hours.open.split(':')[1]);
+                                        const end = parseInt(hours.close.split(':')[0]) * 60 + parseInt(hours.close.split(':')[1]);
                                         const interval = slotInterval || 30;
 
                                         const options = [];
-                                        for (let m = startMins; m < endMins; m += interval) {
-                                            const tStr = fromTime(m);
-                                            options.push(
-                                                <option key={tStr} value={tStr}>
-                                                    {tStr}
-                                                </option>
-                                            );
+                                        for (let i = start; i < end; i += interval) {
+                                            const h = Math.floor(i / 60);
+                                            const m = i % 60;
+                                            const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                                            options.push(<option key={t} value={t}>{getDisplayTime(t)}</option>);
                                         }
                                         return options;
                                     })()}
                                 </select>
+                                <ChevronRight className="w-4 h-4 text-gray-300 absolute right-0 pointer-events-none" />
                             </div>
-                        </div>
-
-                        <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg">
-                            <strong>Note:</strong> Moving this appointment will free up the original slot. Use "Block Time" if you want to keep both closed.
                         </div>
                     </div>
 
-                    {/* Footer */}
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-3">
-                        {appointment.status === 'CANCELLED' ? (
-                            <div className="flex justify-between w-full">
-                                <button
-                                    onClick={handleArchiveApt}
-                                    className="text-gray-600 text-sm font-medium hover:text-gray-800 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
-                                    disabled={isLoading}
-                                >
-                                    Confirm Cancel (Hide)
-                                </button>
-                                <Button onClick={handleRestoreApt} disabled={isLoading} className="bg-green-600 hover:bg-green-700 text-white">
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Uncancel Booking'}
-                                </Button>
-                            </div>
-                        ) : (
-                            <div className="flex justify-between w-full items-center">
-                                <button
-                                    onClick={handleCancelApt}
-                                    className="text-red-600 text-sm font-medium hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
-                                    disabled={isLoading}
-                                >
-                                    Cancel Booking
-                                </button>
-                                <div className="flex gap-3">
-                                    <Button variant="outline" onClick={onClose} disabled={isLoading}>Close</Button>
-                                    <Button onClick={handleSave} disabled={isLoading}>
-                                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Move'}
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
+                    {/* Notes */}
+                    <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                            Moving this appointment will free up the original slot. <br />
+                            Use "Block Time" if you want to keep both closed.
+                        </p>
                     </div>
+
+                    {/* Destructive Actions */}
+                    {appointment.status !== 'CANCELLED' && (
+                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
+                            <button
+                                onClick={handleCancelApt}
+                                className="w-full p-4 text-[17px] font-normal text-red-600 active:bg-gray-50 transition-colors text-center"
+                            >
+                                Cancel Booking
+                            </button>
+                        </div>
+                    )}
+
+                    {appointment.status === 'CANCELLED' && (
+                        <div className="space-y-3">
+                            <Button onClick={handleRestoreApt} disabled={isLoading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg">
+                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Uncancel Booking'}
+                            </Button>
+                            <button
+                                onClick={handleArchiveApt}
+                                className="w-full py-4 text-gray-400 font-bold text-sm uppercase tracking-widest hover:text-gray-600"
+                            >
+                                Archive (Hide)
+                            </button>
+                        </div>
+                    )}
+
                 </div>
             </div>
         </div>

@@ -186,7 +186,7 @@ export default function CreateAppointmentModal({
             ></div>
 
             {/* Modal Sheet */}
-            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-[420px] h-[92vh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
+            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-[420px] h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
 
                 {/* Header (Sticky) */}
                 <div className="bg-[#F2F2F7]/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
