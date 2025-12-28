@@ -131,6 +131,14 @@ export default function WeeklyCalendar({
         return appointments.filter(apt => apt.date === dateStr && apt.status !== AppointmentStatus.CANCELLED);
     };
 
+    const formatTo12Hour = (timeStr: string) => {
+        if (!timeStr) return '';
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const h = hours % 12 || 12;
+        return `${h}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
     // -- RENDERERS --
 
     const renderYearBlock = (year: number) => (
@@ -343,7 +351,7 @@ export default function WeeklyCalendar({
                                         >
                                             <div className="text-sm font-bold leading-tight text-indigo-700">{apt.clientName}</div>
                                             <div className="text-xs text-indigo-500 mt-0.5">
-                                                {apt.timeSlot}
+                                                {formatTo12Hour(apt.timeSlot)}
                                             </div>
                                         </div>
                                     );
@@ -375,7 +383,7 @@ export default function WeeklyCalendar({
                                                         style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
                                                     >
                                                         <div className={`text-xs font-bold leading-tight ${colorScheme.text} truncate`}>{apt.clientName}</div>
-                                                        <div className={`text-[10px] font-medium ${colorScheme.text} opacity-80 truncate`}>{apt.timeSlot}</div>
+                                                        <div className={`text-[10px] font-medium ${colorScheme.text} opacity-80 truncate`}>{formatTo12Hour(apt.timeSlot)}</div>
                                                     </div>
                                                 );
                                             })}
