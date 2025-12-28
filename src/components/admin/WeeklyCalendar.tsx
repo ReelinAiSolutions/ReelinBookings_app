@@ -67,44 +67,44 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
 
     return (
         <div className="flex flex-col h-full lg:overflow-hidden relative bg-transparent">
-            {/* Header Content (Elite V3 - Design Lab Match) */}
-            <div className="flex flex-col pt-2 bg-transparent sticky top-0 z-30 subpixel-antialiased">
+            {/* Header Content - Mobile: Design Lab Style, Desktop: Full Width */}
+            <div className="flex flex-col lg:pt-4 bg-transparent sticky top-0 z-30 subpixel-antialiased">
                 {/* Top Nav Row */}
-                <div className="flex items-center justify-between px-6 mb-2">
+                <div className="flex items-center justify-between px-4 lg:px-6 mb-3 lg:mb-4">
                     <button
                         onClick={() => setViewMode('month')}
                         className="flex items-center gap-1 text-[#4F46E5] hover:opacity-70 transition-opacity"
                     >
                         <ChevronLeft className="w-5 h-5" />
-                        <span className="text-[18px] font-bold">Month</span>
+                        <span className="text-[15px] lg:text-[17px] font-bold">Month</span>
                     </button>
 
-                    <div className="flex items-center gap-5">
-                        <Users className="w-6 h-6 text-[#4F46E5] cursor-pointer" />
-                        <CalendarIcon className="w-6 h-6 text-[#4F46E5] cursor-pointer" />
+                    <div className="flex items-center gap-4 lg:gap-5">
+                        <Users className="w-5 h-5 lg:w-6 lg:h-6 text-[#4F46E5] cursor-pointer" />
+                        <CalendarIcon className="w-5 h-5 lg:w-6 lg:h-6 text-[#4F46E5] cursor-pointer" />
                         <button
                             onClick={() => onSelectSlot(selectedDate, "09:00")}
                             className="text-[#4F46E5]"
                         >
-                            <Plus className="w-8 h-8" strokeWidth={2.5} />
+                            <Plus className="w-7 h-7 lg:w-8 lg:h-8" strokeWidth={2.5} />
                         </button>
                     </div>
                 </div>
 
                 {/* Day Row */}
-                <div className="flex items-center px-6 mb-8 gap-4">
-                    <h2 className="text-[44px] font-[900] text-[#111827] tracking-tight leading-none">
+                <div className="flex items-center px-4 lg:px-6 mb-6 lg:mb-8 gap-3 lg:gap-4">
+                    <h2 className="text-[34px] lg:text-[44px] font-[900] text-[#111827] tracking-tight leading-none">
                         {format(selectedDate, 'EEEE')}
                     </h2>
                     {isSameDay(selectedDate, new Date()) && (
-                        <div className="px-4 py-1.5 bg-[#EEF2FF] text-[#4F46E5] rounded-full text-[14px] font-[900] tracking-tight">
+                        <div className="px-3 lg:px-4 py-1 lg:py-1.5 bg-[#EEF2FF] text-[#4F46E5] rounded-full text-[13px] lg:text-[14px] font-[900] tracking-tight">
                             Today
                         </div>
                     )}
                 </div>
 
-                {/* Date Slider Selection */}
-                <div className="flex justify-between px-6 pb-8 overflow-x-auto no-scrollbar max-w-full lg:max-w-[700px]">
+                {/* Date Slider Selection - Mobile: Compact, Desktop: Spread */}
+                <div className="flex justify-between px-4 lg:px-6 pb-6 lg:pb-8 overflow-x-auto no-scrollbar">
                     {weekDays.map(day => {
                         const isSelected = isSameDay(day, selectedDate);
                         const isToday = isSameDay(day, new Date());
@@ -112,13 +112,13 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                             <div
                                 key={day.toISOString()}
                                 onClick={() => setSelectedDate(day)}
-                                className="flex flex-col items-center group cursor-pointer min-w-[3.5rem]"
+                                className="flex flex-col items-center group cursor-pointer min-w-[3rem] lg:min-w-[3.5rem]"
                             >
-                                <span className={`text-[12px] font-bold uppercase tracking-widest mb-4 transition-colors ${isSelected ? 'text-[#4F46E5]' : 'text-gray-400'}`}>
+                                <span className={`text-[11px] lg:text-[12px] font-bold uppercase tracking-widest mb-3 lg:mb-4 transition-colors ${isSelected ? 'text-[#4F46E5]' : 'text-gray-400'}`}>
                                     {format(day, 'EEEEE')}
                                 </span>
                                 <div
-                                    className={`w-12 h-12 flex items-center justify-center rounded-full text-[18px] font-[900] transition-all ${isSelected
+                                    className={`w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center rounded-full text-[16px] lg:text-[18px] font-[900] transition-all ${isSelected
                                             ? 'bg-[#4F46E5] text-white shadow-xl shadow-[#4F46E5]/30'
                                             : isToday ? 'text-[#4F46E5] bg-[#EEF2FF]' : 'text-[#111827] hover:bg-white/50'
                                         }`}

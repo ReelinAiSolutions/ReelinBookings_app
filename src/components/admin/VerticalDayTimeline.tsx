@@ -174,7 +174,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                                             </div>
                                         )}
 
-                                        {/* Appointment Cards (Design Lab Parity) */}
+                                        {/* Appointment Cards (Design Lab Exact Match) */}
                                         {memberAppointments.map(apt => {
                                             const [h, m] = apt.timeSlot.split(':').map(Number);
                                             const aptStartMins = (h - START_HOUR) * 60 + m;
@@ -187,23 +187,18 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                                                 <div
                                                     key={apt.id}
                                                     onClick={(e) => { e.stopPropagation(); if (onAppointmentClick) onAppointmentClick(apt.id); }}
-                                                    className="absolute left-1.5 right-1.5 rounded-xl border-l-[4px] px-3.5 py-2.5 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-lg backdrop-blur-xl z-20 group"
+                                                    className="absolute left-2 right-2 lg:left-1.5 lg:right-1.5 rounded-2xl border-l-[3px] px-3 py-2 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-md backdrop-blur-md z-20 group"
                                                     style={{
                                                         top: `${topPx}px`,
                                                         height: `${heightPx}px`,
-                                                        minHeight: '44px',
-                                                        backgroundColor: 'rgba(238, 242, 255, 0.75)',
+                                                        minHeight: '50px',
+                                                        backgroundColor: 'rgba(238, 242, 255, 0.9)',
                                                         borderColor: staffColor,
                                                     }}
                                                 >
-                                                    <div className="flex flex-col h-full">
-                                                        <span className="text-[14px] font-[950] text-[#111827] truncate mb-0.5 tracking-tight">{apt.clientName}</span>
-                                                        <span className="text-[11px] font-[800] text-[#4F46E5] uppercase tracking-wide truncate mb-1 opacity-90">{service?.name || 'Service'}</span>
-                                                        <div className="mt-auto flex items-center gap-1">
-                                                            <span className="text-[10px] font-[900] text-gray-400 tabular-nums">
-                                                                {apt.timeSlot} {parseInt(apt.timeSlot) >= 12 ? 'PM' : 'AM'}
-                                                            </span>
-                                                        </div>
+                                                    <div className="flex flex-col justify-center h-full">
+                                                        <span className="text-[13px] font-[900] text-[#111827] truncate leading-tight mb-0.5">{apt.clientName}</span>
+                                                        <span className="text-[10px] font-[700] text-gray-500 truncate leading-tight">{service?.name || 'Service'}</span>
                                                     </div>
                                                 </div>
                                             );
