@@ -61,9 +61,8 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
                     })}
                 </div>
 
-                {/* Management Group */}
                 <div className="space-y-1">
-                    <p className="px-4 text-[11px] font-[950] text-gray-400 uppercase tracking-[0.2em] mb-4">Management</p>
+                    <p className="px-4 text-[11px] font-[950] text-gray-400 uppercase tracking-[0.2em] mb-4 mt-6">Management</p>
                     {managementItems.map((item) => {
                         const isActive = activeTab === item.id;
                         return (

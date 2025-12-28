@@ -299,9 +299,9 @@ export default function WeeklyCalendar({
                 )}
 
                 <div className="relative w-full flex" style={{ height: '1600px' }}>
-                    <div className="w-12 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
+                    <div className="w-12 lg:w-20 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
-                            <div key={h} className="absolute w-12 text-right pr-2" style={{ top: `${i * 60}px` }}>
+                            <div key={h} className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 60}px` }}>
                                 <span className="text-[10px] font-medium text-gray-400 relative -top-2">
                                     {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
                                 </span>
