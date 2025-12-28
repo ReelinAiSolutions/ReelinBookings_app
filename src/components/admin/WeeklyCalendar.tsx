@@ -134,7 +134,7 @@ export default function WeeklyCalendar({
     const renderDayView = () => (
         <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-auto bg-white relative ${getAnimClass()}`}
+            className={`flex-1 w-full overflow-auto bg-white relative ${getAnimClass()}`}
             style={{ scrollBehavior: 'smooth' }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
