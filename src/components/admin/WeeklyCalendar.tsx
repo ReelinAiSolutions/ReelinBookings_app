@@ -282,12 +282,12 @@ export default function WeeklyCalendar({
                 onTouchEnd={onTouchEnd}
             >
                 {viewMode === 'team' && (
-                    <div className="flex w-fit sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-                        <div className="w-16 shrink-0 sticky left-0 z-50 bg-white border-r border-gray-50"></div>
+                    <div className="flex w-full sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+                        <div className="w-12 lg:w-20 shrink-0 sticky left-0 z-50 bg-white border-r border-gray-50"></div>
                         {staff.map((member, idx) => {
                             const colorScheme = staffColors[idx % staffColors.length];
                             return (
-                                <div key={member.id} className="min-w-[150px] w-[150px] shrink-0 text-center border-l border-gray-50 first:border-l-0 py-2 bg-white">
+                                <div key={member.id} className="flex-1 min-w-0 text-center border-l border-gray-50 first:border-l-0 py-2 bg-white sticky top-0">
                                     <div className="flex items-center justify-center gap-1.5">
                                         <div className={`w-2 h-2 rounded-full ${colorScheme.dot}`}></div>
                                         <div className="text-xs font-bold text-gray-900 truncate px-1">{member.name}</div>
@@ -356,7 +356,7 @@ export default function WeeklyCalendar({
                                     const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
 
                                     return (
-                                        <div key={member.id} className="w-[150px] shrink-0 border-l border-gray-50 relative first:border-l-0 group h-full">
+                                        <div key={member.id} className="flex-1 min-w-0 border-l border-gray-50 relative first:border-l-0 group h-full">
                                             {hours.map(h => (
                                                 <div key={h} className="absolute w-full border-t border-gray-100/50 h-px z-0" style={{ top: `${h * 60}px` }} onClick={() => handleGridClick(h, member.id)}></div>
                                             ))}
