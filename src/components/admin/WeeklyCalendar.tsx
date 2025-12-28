@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, Plus, Users } from 'lucide-react';
 import { Appointment, Staff, Service, Organization, AppointmentStatus } from '@/types';
-import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth } from 'date-fns';
+import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth, subMonths, subYears, eachMonthOfInterval, endOfYear } from 'date-fns';
 
 const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
@@ -47,6 +47,8 @@ export default function WeeklyCalendar({
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
     const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
+    const [renderedMonths, setRenderedMonths] = useState<Date[]>([]);
+    const [renderedYears, setRenderedYears] = useState<number[]>([]);
 
     // Swipe State
     const touchStart = useRef<number | null>(null);
@@ -73,15 +75,66 @@ export default function WeeklyCalendar({
         { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-700', dot: 'bg-blue-500' },
     ];
 
-    // -- SCROLL START --
+    // -- SCROLL START & INFINITE SCROLL INIT --
     useEffect(() => {
         if (calendarLevel === 'day' && scrollContainerRef.current) {
             const currentHour = new Date().getHours();
-            // Scroll to 2 hours before current time, or 8 AM if early
             const targetHour = Math.max(0, currentHour - 2);
             scrollContainerRef.current.scrollTop = targetHour * 60;
+        } else if (calendarLevel === 'month') {
+            // Init Month Range: -6 to +12 months
+            const start = subMonths(selectedDate, 6);
+            const end = addMonths(selectedDate, 12);
+            const months = eachMonthOfInterval({ start, end });
+            setRenderedMonths(months);
+            // Scroll to selected date after render (timeout for layout)
+            setTimeout(() => {
+                const el = document.getElementById(`month-${format(selectedDate, 'yyyy-MM')}`);
+                if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+            }, 10);
+        } else if (calendarLevel === 'year') {
+            // Init Year Range: -2 to +5 years
+            const currentYear = getYear(selectedDate);
+            const years = Array.from({ length: 8 }).map((_, i) => currentYear - 2 + i);
+            setRenderedYears(years);
+            setTimeout(() => {
+                const el = document.getElementById(`year-${currentYear}`);
+                if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+            }, 10);
         }
-    }, [calendarLevel]);
+    }, [calendarLevel]); // Re-init when level changes. Note: selectedDate change shouldn't reset, unless stepping level.
+
+    const handleInfiniteScroll = (e: React.UIEvent<HTMLDivElement>, type: 'month' | 'year') => {
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        const threshold = 100;
+
+        if (type === 'month') {
+            if (scrollTop < threshold) {
+                // Prepend
+                const first = renderedMonths[0];
+                const newMonths = Array.from({ length: 6 }).map((_, i) => subMonths(first, 6 - i));
+                setRenderedMonths(prev => [...newMonths, ...prev]);
+                // Adjust scroll (simple heuristic, smooth scroll might jump but ok for now)
+            } else if (scrollTop + clientHeight > scrollHeight - threshold) {
+                // Append
+                const last = renderedMonths[renderedMonths.length - 1];
+                const newMonths = Array.from({ length: 6 }).map((_, i) => addMonths(last, i + 1));
+                setRenderedMonths(prev => [...prev, ...newMonths]);
+            }
+        } else if (type === 'year') {
+            if (scrollTop < threshold) {
+                // Prepend
+                const first = renderedYears[0];
+                const newYears = Array.from({ length: 3 }).map((_, i) => first - 3 + i);
+                setRenderedYears(prev => [...newYears, ...prev]);
+            } else if (scrollTop + clientHeight > scrollHeight - threshold) {
+                // Append
+                const last = renderedYears[renderedYears.length - 1];
+                const newYears = Array.from({ length: 3 }).map((_, i) => last + 1 + i);
+                setRenderedYears(prev => [...prev, ...newYears]);
+            }
+        }
+    };
 
     // -- ANIMATION CLASS --
     const getAnimClass = () => {
@@ -142,7 +195,7 @@ export default function WeeklyCalendar({
     // -- RENDERERS --
 
     const renderYearBlock = (year: number) => (
-        <div key={year} className="mb-12">
+        <div key={year} id={`year-${year}`} className="mb-12">
             <h2 className={`text-3xl font-bold px-4 mb-4 border-b border-gray-50/0 ${year === getYear(selectedDate) ? 'text-indigo-600' : 'text-gray-900'}`}>{year}</h2>
             <div className="grid grid-cols-3 gap-x-2 gap-y-6 px-2">
                 {months.map((m, i) => {
@@ -181,15 +234,17 @@ export default function WeeklyCalendar({
     );
 
     const renderYearView = () => {
-        const currentYear = getYear(selectedDate);
-        // Show current year, next year, and year after that just like Design Labs
         return (
-            <div className={`flex-1 overflow-y-auto bg-white pb-20 pt-2 ${getAnimClass()} scrollbar-hide`}>
-                {renderYearBlock(currentYear)}
-                <div className="h-px bg-gray-100 mx-4 mb-8"></div>
-                {renderYearBlock(currentYear + 1)}
-                <div className="h-px bg-gray-100 mx-4 mb-8"></div>
-                {renderYearBlock(currentYear + 2)}
+            <div
+                className={`flex-1 overflow-y-auto bg-white pb-20 pt-2 ${getAnimClass()} scrollbar-hide`}
+                onScroll={(e) => handleInfiniteScroll(e, 'year')}
+            >
+                {renderedYears.map((year, i) => (
+                    <React.Fragment key={year}>
+                        {renderYearBlock(year)}
+                        {i < renderedYears.length - 1 && <div className="h-px bg-gray-100 mx-4 mb-8"></div>}
+                    </React.Fragment>
+                ))}
             </div>
         );
     };
@@ -201,7 +256,7 @@ export default function WeeklyCalendar({
         const year = date.getFullYear();
 
         return (
-            <div key={`${monthName}-${year}`} className="mb-8">
+            <div key={`${monthName}-${year}`} id={`month-${format(date, 'yyyy-MM')}`} className="mb-8">
                 <h3 className="sticky top-0 bg-white/95 backdrop-blur-sm py-2 px-4 text-xl font-bold text-gray-900 z-10 border-b border-gray-50/50">
                     {monthName} <span className="text-gray-400 font-normal ml-1">{year}</span>
                 </h3>
@@ -255,7 +310,10 @@ export default function WeeklyCalendar({
     };
 
     const renderMonthView = () => (
-        <div className={`flex-1 overflow-y-auto bg-white ${getAnimClass()} scrollbar-hide`}>
+        <div
+            className={`flex-1 overflow-y-auto bg-white ${getAnimClass()} scrollbar-hide`}
+            onScroll={(e) => handleInfiniteScroll(e, 'month')}
+        >
             {/* Weekday Headers */}
             <div className="grid grid-cols-7 border-b border-gray-100 pb-2 pt-2 sticky top-0 bg-white z-20 shadow-sm">
                 {weekDayLabels.map((d, i) => (
@@ -264,9 +322,7 @@ export default function WeeklyCalendar({
             </div>
 
             <div className="pb-20 pt-2">
-                {renderMonthBlock(selectedDate)}
-                {renderMonthBlock(addMonths(startOfMonth(selectedDate), 1))}
-                {renderMonthBlock(addMonths(startOfMonth(selectedDate), 2))}
+                {renderedMonths.map(date => renderMonthBlock(date))}
             </div>
         </div>
     );
