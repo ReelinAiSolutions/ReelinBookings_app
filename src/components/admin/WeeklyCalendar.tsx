@@ -107,6 +107,10 @@ export default function WeeklyCalendar({
 
     const onTouchEnd = () => {
         if (!touchStart.current || !touchEnd.current) return;
+
+        // Only allow swipe to change dates in personal view
+        if (viewMode !== 'personal') return;
+
         const distance = touchStart.current - touchEnd.current;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
