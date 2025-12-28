@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, Plus, Users } from 'lucide-react';
 import { Appointment, Staff, Service, Organization } from '@/types';
-import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth } from 'date-fns';
+import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth } from 'date-fns';
 
 const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
@@ -28,12 +28,9 @@ interface WeeklyCalendarProps {
     appointments: Appointment[];
     staff: Staff[];
     services: Service[];
-    availability?: any[];
     businessHours?: Organization['business_hours'];
-    isBlockingMode?: boolean;
     onSelectSlot: (date: Date, time: string, staffId?: string) => void;
     onAppointmentClick: (appointment: Appointment) => void;
-    colorMode?: 'staff' | 'service';
 }
 
 export default function WeeklyCalendar({
@@ -57,52 +54,43 @@ export default function WeeklyCalendar({
     const minSwipeDistance = 50;
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to current time
-    useEffect(() => {
-        if (calendarLevel === 'day' && scrollContainerRef.current) {
-            const now = new Date();
-            const currentHour = now.getHours();
-            scrollContainerRef.current.scrollTop = (currentHour - 2) * 60;
-        }
-    }, [calendarLevel, selectedDate]);
-
-    // Calculate week dates
-    const startDate = startOfWeek(selectedDate, { weekStartsOn: 0 });
-    const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(startDate, i));
-    const weekDayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-
-    // Constants
+    // -- CONSTANTS --
     const hours = Array.from({ length: 24 }).map((_, i) => i);
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const weekDayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-    // Filter appointments for selected date
-    const selectedDateString = selectedDate.toLocaleDateString('en-CA', { timeZone: 'America/Vancouver' });
-    const selectedDateAppointments = appointments.filter(apt => apt.date === selectedDateString);
+    // Calculate week dates dynamically
+    const startOfCurrentWeek = startOfWeek(selectedDate);
+    const weekDates = Array.from({ length: 7 }).map((_, i) => addDays(startOfCurrentWeek, i));
 
-    // Current time
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const isToday = isSameDay(selectedDate, now);
-    const currentTimeTopPx = isToday ? (currentHour * 60) + currentMinute : -1;
-
-    // Staff colors
+    // Staff colors mapping (Design Labs style)
     const staffColors = [
         { bg: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-700', dot: 'bg-indigo-500' },
         { bg: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-700', dot: 'bg-emerald-500' },
         { bg: 'bg-rose-50', border: 'border-rose-500', text: 'text-rose-700', dot: 'bg-rose-500' },
         { bg: 'bg-amber-50', border: 'border-amber-500', text: 'text-amber-700', dot: 'bg-amber-500' },
         { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-700', dot: 'bg-purple-500' },
+        { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-700', dot: 'bg-blue-500' },
     ];
 
-    // Animation class
+    // -- SCROLL START --
+    useEffect(() => {
+        if (calendarLevel === 'day' && scrollContainerRef.current) {
+            const currentHour = new Date().getHours();
+            // Scroll to 2 hours before current time, or 8 AM if early
+            const targetHour = Math.max(0, currentHour - 2);
+            scrollContainerRef.current.scrollTop = targetHour * 60;
+        }
+    }, [calendarLevel]);
+
+    // -- ANIMATION CLASS --
     const getAnimClass = () => {
         return direction === 'forward'
             ? 'animate-in zoom-in-90 fade-in duration-300'
             : 'animate-in zoom-out-105 fade-in duration-300';
     };
 
-    // Swipe handlers
+    // -- SWIPE HANDLERS --
     const onTouchStart = (e: React.TouchEvent) => {
         touchEnd.current = null;
         touchStart.current = e.targetTouches[0].clientX;
@@ -114,6 +102,10 @@ export default function WeeklyCalendar({
 
     const onTouchEnd = () => {
         if (!touchStart.current || !touchEnd.current) return;
+
+        // Only allow swipe to change dates in personal view for now (simplifies logic)
+        if (viewMode !== 'personal') return;
+
         const distance = touchStart.current - touchEnd.current;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
@@ -128,16 +120,22 @@ export default function WeeklyCalendar({
         }
     };
 
-    // Grid click handler
     const handleGridClick = (hour: number, staffId?: string) => {
         const timeStr = `${hour.toString().padStart(2, '0')}:00`;
         onSelectSlot(selectedDate, timeStr, staffId);
     };
 
-    // -- YEAR VIEW --
+    // -- HELPERS --
+    const getAppointmentsForDate = (date: Date) => {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        return appointments.filter(apt => apt.date === dateStr && apt.status !== 'cancelled');
+    };
+
+    // -- RENDERERS --
+
     const renderYearBlock = (year: number) => (
         <div key={year} className="mb-12">
-            <h2 className={`text-3xl font-bold px-4 mb-4 border-b border-gray-50/0 ${year === selectedDate.getFullYear() ? 'text-indigo-600' : 'text-gray-900'}`}>{year}</h2>
+            <h2 className={`text-3xl font-bold px-4 mb-4 border-b border-gray-50/0 ${year === getYear(selectedDate) ? 'text-indigo-600' : 'text-gray-900'}`}>{year}</h2>
             <div className="grid grid-cols-3 gap-x-2 gap-y-6 px-2">
                 {months.map((m, i) => {
                     const monthDate = new Date(year, i, 1);
@@ -158,7 +156,8 @@ export default function WeeklyCalendar({
                                 {Array.from({ length: offset }).map((_, k) => <div key={`e-${k}`} className="w-full h-[10px]"></div>)}
                                 {Array.from({ length: days }).map((_, d) => {
                                     const dayNum = d + 1;
-                                    const isToday = isSameDay(new Date(year, i, dayNum), now);
+                                    const currentDayDate = new Date(year, i, dayNum);
+                                    const isToday = isSameDay(currentDayDate, new Date());
                                     return (
                                         <div key={d} className={`w-full h-[10px] flex items-center justify-center text-[7px] font-medium leading-none ${isToday ? 'bg-indigo-600 text-white rounded-full' : 'text-gray-800'}`}>
                                             {dayNum}
@@ -174,17 +173,19 @@ export default function WeeklyCalendar({
     );
 
     const renderYearView = () => {
-        const currentYear = selectedDate.getFullYear();
+        const currentYear = getYear(selectedDate);
+        // Show current year, next year, and year after that just like Design Labs
         return (
             <div className={`flex-1 overflow-y-auto bg-white pb-20 pt-2 ${getAnimClass()} scrollbar-hide`}>
                 {renderYearBlock(currentYear)}
                 <div className="h-px bg-gray-100 mx-4 mb-8"></div>
                 {renderYearBlock(currentYear + 1)}
+                <div className="h-px bg-gray-100 mx-4 mb-8"></div>
+                {renderYearBlock(currentYear + 2)}
             </div>
         );
     };
 
-    // -- MONTH VIEW --
     const renderMonthBlock = (date: Date) => {
         const daysInMonth = getDaysInMonth(date);
         const startDayOffset = getDay(startOfMonth(date));
@@ -203,10 +204,9 @@ export default function WeeklyCalendar({
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                         const dayNum = i + 1;
                         const cellDate = new Date(year, date.getMonth(), dayNum);
-                        const cellDateString = cellDate.toLocaleDateString('en-CA', { timeZone: 'America/Vancouver' });
-                        const eventCount = appointments.filter(apt => apt.date === cellDateString).length;
+                        const eventCount = getAppointmentsForDate(cellDate).length;
                         const isSelectedDay = isSameDay(cellDate, selectedDate);
-                        const isTodayDay = isSameDay(cellDate, now);
+                        const isTodayDay = isSameDay(cellDate, new Date());
 
                         return (
                             <div
@@ -225,6 +225,7 @@ export default function WeeklyCalendar({
                                     {dayNum}
                                 </span>
 
+                                {/* Smart Booking Indicator */}
                                 {eventCount > 0 && (
                                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center">
                                         {eventCount === 1 ? (
@@ -256,190 +257,170 @@ export default function WeeklyCalendar({
 
             <div className="pb-20 pt-2">
                 {renderMonthBlock(selectedDate)}
-                {renderMonthBlock(addDays(startOfMonth(selectedDate), 32))} {/* Next Month */}
+                {renderMonthBlock(addMonths(startOfMonth(selectedDate), 1))}
+                {renderMonthBlock(addMonths(startOfMonth(selectedDate), 2))}
             </div>
         </div>
     );
 
-    // Render Day View
-    const renderDayView = () => (
-        <div
-            ref={scrollContainerRef}
-            className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide`}
-            style={{ scrollBehavior: 'smooth' }}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-        >
-            {/* Team View Header */}
-            {viewMode === 'team' && (
-                <div className="flex w-fit sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-                    <div className="w-16 shrink-0 sticky left-0 z-50 bg-white border-r border-gray-50"></div>
-                    {staff.map((member, idx) => {
-                        const colorScheme = staffColors[idx % staffColors.length];
-                        return (
-                            <div key={member.id} className="min-w-[150px] w-[150px] shrink-0 text-center border-l border-gray-50 first:border-l-0 py-2 bg-white">
-                                <div className="flex items-center justify-center gap-1.5">
-                                    <div className={`w-2 h-2 rounded-full ${colorScheme.dot}`}></div>
-                                    <div className="text-xs font-bold text-gray-900 truncate px-1">{member.name}</div>
+    // -- DAY VIEW --
+    const renderDayView = () => {
+        const dayAppointments = getAppointmentsForDate(selectedDate);
+        const now = new Date();
+        const isToday = isSameDay(selectedDate, now);
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTimeTopPx = isToday ? (currentHour * 60) + currentMinute : -1;
+
+        return (
+            <div
+                ref={scrollContainerRef}
+                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide`}
+                style={{ scrollBehavior: 'smooth' }}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+            >
+                {viewMode === 'team' && (
+                    <div className="flex w-fit sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+                        <div className="w-16 shrink-0 sticky left-0 z-50 bg-white border-r border-gray-50"></div>
+                        {staff.map((member, idx) => {
+                            const colorScheme = staffColors[idx % staffColors.length];
+                            return (
+                                <div key={member.id} className="min-w-[150px] w-[150px] shrink-0 text-center border-l border-gray-50 first:border-l-0 py-2 bg-white">
+                                    <div className="flex items-center justify-center gap-1.5">
+                                        <div className={`w-2 h-2 rounded-full ${colorScheme.dot}`}></div>
+                                        <div className="text-xs font-bold text-gray-900 truncate px-1">{member.name}</div>
+                                    </div>
                                 </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                <div className="relative w-full flex" style={{ height: '1600px' }}>
+                    <div className="w-16 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
+                        {hours.map((h, i) => (
+                            <div key={h} className="absolute w-16 text-right pr-2" style={{ top: `${i * 60}px` }}>
+                                <span className="text-[10px] font-medium text-gray-400 relative -top-2">
+                                    {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
+                                </span>
                             </div>
-                        );
-                    })}
-                </div>
-            )}
+                        ))}
+                    </div>
 
-            {/* Grid Container */}
-            <div className="relative w-full flex" style={{ height: '1600px' }}>
-                {/* Time Column */}
-                <div className="w-16 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
-                    {hours.map((h, i) => (
-                        <div key={h} className="absolute w-16 text-right pr-2" style={{ top: `${i * 60}px` }}>
-                            <span className="text-[10px] font-medium text-gray-400 relative -top-2">
-                                {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
-                            </span>
-                        </div>
-                    ))}
-                </div>
+                    <div className="flex relative items-start w-full">
+                        {viewMode === 'personal' ? (
+                            <div
+                                key={selectedDate.toISOString()}
+                                className={`w-full relative min-w-[300px] ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
+                                style={{ height: '1600px' }}
+                            >
+                                {hours.map((h, i) => (
+                                    <div key={h} className="absolute w-full border-t border-gray-100 h-px z-0" style={{ top: `${i * 60}px` }} onClick={() => handleGridClick(h)}></div>
+                                ))}
 
-                {/* Content Area */}
-                <div className="flex relative items-start">
-                    {viewMode === 'personal' ? (
-                        <div
-                            key={selectedDateString}
-                            className={`w-full relative min-w-[300px] ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
-                            style={{ height: '1600px' }}
-                        >
-                            {/* Grid Lines */}
-                            {hours.map((h) => (
-                                <div
-                                    key={h}
-                                    className="absolute w-full border-t border-gray-100 h-px z-0 cursor-pointer hover:bg-gray-50/50"
-                                    style={{ top: `${h * 60}px` }}
-                                    onClick={() => handleGridClick(h)}
-                                ></div>
-                            ))}
+                                {/* Current Time Indicator */}
+                                {currentTimeTopPx !== -1 && (
+                                    <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
+                                        <div className="w-full h-[1px] bg-[#007AFF] shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
+                                        <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF] live-pulse border-2 border-white shadow-sm"></div>
+                                    </div>
+                                )}
 
-                            {/* Current Time Indicator */}
-                            {currentTimeTopPx !== -1 && (
-                                <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                    <div className="w-full h-[1px] bg-[#007AFF] shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
-                                    <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF] live-pulse border-2 border-white shadow-sm"></div>
-                                </div>
-                            )}
+                                {dayAppointments.map(apt => {
+                                    const [h, m] = apt.timeSlot.split(':').map(Number);
+                                    const service = services.find(s => s.id === apt.serviceId);
+                                    const duration = service?.durationMinutes || 60;
+                                    const topPx = (h * 60) + m;
 
-                            {/* Appointments */}
-                            {selectedDateAppointments.map(apt => {
-                                const [h, m] = apt.timeSlot.split(':').map(Number);
-                                const service = services.find(s => s.id === apt.serviceId);
-                                const duration = service?.durationMinutes || 60;
-                                const topPx = (h * 60) + m;
-                                const heightPx = duration;
-
-                                return (
-                                    <div
-                                        key={apt.id}
-                                        onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
-                                        className="absolute left-2 right-2 rounded-[4px] bg-indigo-50 border-l-[3px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-sm animate-in zoom-in-95 duration-200"
-                                        style={{ top: `${topPx}px`, height: `${heightPx}px`, minHeight: '40px' }}
-                                    >
-                                        <div className="text-sm font-bold leading-tight text-indigo-700">{apt.clientName}</div>
-                                        <div className="text-xs text-indigo-500 mt-0.5">
-                                            {apt.timeSlot} {parseInt(apt.timeSlot) >= 12 ? 'PM' : 'AM'}
+                                    return (
+                                        <div
+                                            key={apt.id}
+                                            onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
+                                            className="absolute left-2 right-2 rounded-[4px] bg-indigo-50 border-l-[3px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-sm animate-in zoom-in-95 duration-200"
+                                            style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
+                                        >
+                                            <div className="text-sm font-bold leading-tight text-indigo-700">{apt.title || apt.clientName}</div>
+                                            <div className="text-xs text-indigo-500 mt-0.5">
+                                                {apt.timeSlot}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <>
-                            {staff.map((member, idx) => {
-                                const colorScheme = staffColors[idx % staffColors.length];
-                                const memberAppointments = selectedDateAppointments.filter(apt => apt.staffId === member.id);
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <>
+                                {staff.map((member, idx) => {
+                                    const colorScheme = staffColors[idx % staffColors.length];
+                                    const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
 
-                                return (
-                                    <div key={member.id} className="w-[150px] shrink-0 border-l border-gray-50 relative first:border-l-0 group h-full">
-                                        {/* Grid Lines */}
-                                        {hours.map(h => (
-                                            <div
-                                                key={h}
-                                                className="absolute w-full border-t border-gray-100/50 h-px z-0 cursor-pointer hover:bg-gray-50/50"
-                                                style={{ top: `${h * 60}px` }}
-                                                onClick={() => handleGridClick(h, member.id)}
-                                            ></div>
-                                        ))}
+                                    return (
+                                        <div key={member.id} className="w-[150px] shrink-0 border-l border-gray-50 relative first:border-l-0 group h-full">
+                                            {hours.map(h => (
+                                                <div key={h} className="absolute w-full border-t border-gray-100/50 h-px z-0" style={{ top: `${h * 60}px` }} onClick={() => handleGridClick(h, member.id)}></div>
+                                            ))}
 
-                                        {/* Appointments */}
-                                        {memberAppointments.map(apt => {
-                                            const [h, m] = apt.timeSlot.split(':').map(Number);
-                                            const service = services.find(s => s.id === apt.serviceId);
-                                            const duration = service?.durationMinutes || 60;
-                                            const topPx = (h * 60) + m;
-                                            const heightPx = duration;
+                                            {memberAppointments.map(apt => {
+                                                const [h, m] = apt.timeSlot.split(':').map(Number);
+                                                const service = services.find(s => s.id === apt.serviceId);
+                                                const duration = service?.durationMinutes || 60;
+                                                const topPx = (h * 60) + m;
 
-                                            return (
-                                                <div
-                                                    key={apt.id}
-                                                    onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
-                                                    className={`absolute left-1 right-1 rounded-[3px] ${colorScheme.bg} border-l-[3px] ${colorScheme.border} p-1.5 overflow-hidden z-10 shadow-sm animate-in zoom-in-95 cursor-pointer`}
-                                                    style={{ top: `${topPx}px`, height: `${heightPx}px`, minHeight: '40px' }}
-                                                >
-                                                    <div className={`text-xs font-bold leading-tight ${colorScheme.text}`}>{apt.clientName}</div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                );
-                            })}
-                        </>
-                    )}
+                                                return (
+                                                    <div
+                                                        key={apt.id}
+                                                        onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
+                                                        className={`absolute left-1 right-1 rounded-[3px] ${colorScheme.bg} border-l-[3px] ${colorScheme.border} p-1.5 overflow-hidden z-10 shadow-sm animate-in zoom-in-95`}
+                                                        style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
+                                                    >
+                                                        <div className={`text-xs font-bold leading-tight ${colorScheme.text}`}>{apt.clientName}</div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })}
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="w-full h-full bg-white text-gray-900 flex flex-col font-sans overflow-hidden select-none relative">
             <PulseStyle />
 
-            {/* Header */}
+            {/* MAIN HEADER */}
             <header className="pt-6 pb-2 px-5 bg-[#F2F2F7]/90 backdrop-blur-md sticky top-0 z-50 flex flex-col shrink-0 transition-all">
-                {/* Back Link */}
+                {/* Row 1: Back Link */}
                 <div className="h-6 flex items-start">
                     {calendarLevel === 'month' && (
-                        <div
-                            className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50"
-                            onClick={() => { setDirection('backward'); setCalendarLevel('year'); }}
-                        >
+                        <div className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50" onClick={() => { setDirection('backward'); setCalendarLevel('year'); }}>
                             <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
-                            <span className="text-[17px] font-normal">{selectedDate.getFullYear()}</span>
+                            <span className="text-[17px] font-normal">{getYear(selectedDate)}</span>
                         </div>
                     )}
                     {calendarLevel === 'day' && (
-                        <div
-                            className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50"
-                            onClick={() => { setDirection('backward'); setCalendarLevel('month'); }}
-                        >
+                        <div className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50" onClick={() => { setDirection('backward'); setCalendarLevel('month'); }}>
                             <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
                             <span className="text-[17px] font-normal">Month</span>
                         </div>
                     )}
                 </div>
 
-                {/* Title & Actions */}
+                {/* Row 2: Title & Primary Actions */}
                 <div className="flex items-end justify-between mt-1">
                     <div className="flex items-center gap-2">
                         <h1 className="text-[30px] font-black tracking-tight text-gray-900 leading-tight">
-                            {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : calendarLevel === 'month' ? format(selectedDate, 'MMMM') : selectedDate.getFullYear()}
+                            {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : calendarLevel === 'month' ? format(selectedDate, 'MMMM') : getYear(selectedDate)}
                         </h1>
-                        {!isSameDay(selectedDate, now) && (
+                        {!isSameDay(selectedDate, new Date()) && (
                             <button
                                 className="text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors mb-1.5"
-                                onClick={() => {
-                                    setDirection('forward');
-                                    setCalendarLevel('day');
-                                    setSelectedDate(new Date());
-                                }}
+                                onClick={() => { setDirection('forward'); setCalendarLevel('day'); setSelectedDate(new Date()); }}
                             >
                                 Today
                             </button>
@@ -452,7 +433,7 @@ export default function WeeklyCalendar({
                                 className={`text-indigo-600 ${viewMode === 'team' ? 'bg-indigo-100 rounded-full p-1.5' : ''}`}
                                 onClick={() => setViewMode(prev => prev === 'personal' ? 'team' : 'personal')}
                             >
-                                <Users className={`w-6 h-6`} strokeWidth={2} />
+                                <Users className="w-6 h-6" strokeWidth={2} />
                             </button>
                         )}
                         <button
@@ -465,7 +446,7 @@ export default function WeeklyCalendar({
                 </div>
             </header>
 
-            {/* Date Selector (Day View Only) */}
+            {/* DAY SPECIFIC DATE HEADER */}
             {calendarLevel === 'day' && (
                 <div className="bg-[#F2F2F7] border-b border-gray-200/50 pb-3 shrink-0 z-40 pt-2 transition-all">
                     <div className="flex justify-between px-5 mb-2">
@@ -476,9 +457,9 @@ export default function WeeklyCalendar({
                         ))}
                     </div>
                     <div className="flex justify-between px-5 text-[17px]">
-                        {weekDays.map((date) => {
+                        {weekDates.map((date) => {
                             const isSelected = isSameDay(date, selectedDate);
-                            const isTodayDate = isSameDay(date, now);
+                            const isToday = isSameDay(date, new Date());
                             return (
                                 <div
                                     key={date.toISOString()}
@@ -487,13 +468,13 @@ export default function WeeklyCalendar({
                                 >
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
                                         ? 'bg-[#007AFF] text-white shadow-sm'
-                                        : isTodayDate
+                                        : isToday
                                             ? 'text-[#007AFF]'
                                             : 'text-gray-900 bg-transparent'
                                         }`}>
                                         {format(date, 'd')}
                                     </div>
-                                    {isTodayDate && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF] mt-1"></div>}
+                                    {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF] mt-1"></div>}
                                 </div>
                             );
                         })}
@@ -501,10 +482,11 @@ export default function WeeklyCalendar({
                 </div>
             )}
 
-            {/* Main Content */}
+            {/* MAIN CONTENT AREA */}
             {calendarLevel === 'year' && renderYearView()}
             {calendarLevel === 'month' && renderMonthView()}
             {calendarLevel === 'day' && renderDayView()}
+
         </div>
     );
 }
