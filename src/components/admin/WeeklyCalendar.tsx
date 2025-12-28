@@ -375,6 +375,7 @@ export default function WeeklyCalendar({
                                                         style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
                                                     >
                                                         <div className={`text-xs font-bold leading-tight ${colorScheme.text} truncate`}>{apt.clientName}</div>
+                                                        <div className={`text-[10px] font-medium ${colorScheme.text} opacity-80 truncate`}>{apt.timeSlot}</div>
                                                     </div>
                                                 );
                                             })}
