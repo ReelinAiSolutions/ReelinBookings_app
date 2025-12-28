@@ -119,7 +119,7 @@ export default function RescheduleModal({
             ></div>
 
             {/* Modal Sheet */}
-            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-[420px] h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
+            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
 
                 {/* Header (Sticky) */}
                 <div className="bg-[#F2F2F7]/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
@@ -140,137 +140,143 @@ export default function RescheduleModal({
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 space-y-6 pt-2">
-
-                    {/* Client Info Group */}
-                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5">
-                        <div className="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900 leading-tight">{appointment.clientName}</h3>
-                                <p className="text-sm font-medium text-gray-500">{appointment.clientEmail}</p>
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 pt-2">
+                    <div className="md:grid md:grid-cols-2 md:gap-8 space-y-6 md:space-y-0 text-left">
+                        {/* LEFT COLUMN: Client & Actions */}
+                        <div className="space-y-6">
+                            {/* Client Info Group */}
+                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900 leading-tight">{appointment.clientName}</h3>
+                                        <p className="text-sm font-medium text-gray-500">{appointment.clientEmail}</p>
+                                    </div>
+                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${appointment.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                        {appointment.status || 'CONFIRMED'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-xl w-fit">
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
+                                </div>
                             </div>
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${appointment.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                                {appointment.status || 'CONFIRMED'}
-                            </span>
+
+                            {/* Destructive Actions */}
+                            {appointment.status !== 'CANCELLED' && (
+                                <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
+                                    <button
+                                        onClick={handleCancelApt}
+                                        className="w-full p-4 text-[17px] font-normal text-red-600 active:bg-gray-50 transition-colors text-center"
+                                    >
+                                        Cancel Booking
+                                    </button>
+                                </div>
+                            )}
+
+                            {appointment.status === 'CANCELLED' && (
+                                <div className="space-y-3">
+                                    <Button onClick={handleRestoreApt} disabled={isLoading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg">
+                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Uncancel Booking'}
+                                    </Button>
+                                    <button
+                                        onClick={handleArchiveApt}
+                                        className="w-full py-4 text-gray-400 font-bold text-sm uppercase tracking-widest hover:text-gray-600"
+                                    >
+                                        Archive (Hide)
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                        <div className="flex items-center gap-2 text-sm font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-xl w-fit">
-                            <Calendar className="w-3.5 h-3.5" />
-                            {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
+
+                        {/* RIGHT COLUMN: Editor & Notes */}
+                        <div className="space-y-6">
+                            {/* Editor Group */}
+                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
+
+                                {/* Staff */}
+                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            value={staffId}
+                                            onChange={(e) => setStaffId(e.target.value)}
+                                            className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
+                                            style={{ direction: 'rtl' }}
+                                        >
+                                            {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                        <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                                    </div>
+                                </div>
+
+                                {/* Date */}
+                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</p>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="date"
+                                            value={date}
+                                            onChange={(e) => setDate(e.target.value)}
+                                            className="text-sm font-bold text-primary-600 bg-transparent outline-none cursor-pointer text-right"
+                                        />
+                                        <ChevronRight className="w-4 h-4 text-gray-300 pointer-events-none" />
+                                    </div>
+                                </div>
+
+                                {/* Time */}
+                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Time</p>
+                                    <div className="flex items-center gap-2 relative">
+                                        <select
+                                            value={time}
+                                            onChange={(e) => setTime(e.target.value)}
+                                            className="text-sm font-bold text-primary-600 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
+                                            style={{ direction: 'rtl' }}
+                                        >
+                                            {(() => {
+                                                if (!date) return <option disabled>Select date first</option>;
+                                                // Simplified time generation for Edit Mode (Show all slots)
+                                                // In real app, reuse the generator but here we just need options. 
+                                                // We will just recreate the simple list for now or copy logic if needed.
+                                                // For brevity, using the same logic as Create is best, but let's stick to the structure.
+
+                                                // Re-using logic from CreateModal would be ideal, but for now let's use a simple generator or confirm we have business hours.
+                                                // Assuming standard strict generation:
+                                                const [y, m, d] = date.split('-').map(Number);
+                                                const localDate = new Date(y, m - 1, d);
+                                                const dayName = format(localDate, 'EEEE').toLowerCase();
+                                                const hours = businessHours?.[dayName];
+
+                                                if (!hours || !hours.isOpen) return <option disabled>Closed</option>;
+
+                                                const start = parseInt(hours.open.split(':')[0]) * 60 + parseInt(hours.open.split(':')[1]);
+                                                const end = parseInt(hours.close.split(':')[0]) * 60 + parseInt(hours.close.split(':')[1]);
+                                                const interval = slotInterval || 30;
+
+                                                const options = [];
+                                                for (let i = start; i < end; i += interval) {
+                                                    const h = Math.floor(i / 60);
+                                                    const m = i % 60;
+                                                    const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                                                    options.push(<option key={t} value={t}>{getDisplayTime(t)}</option>);
+                                                }
+                                                return options;
+                                            })()}
+                                        </select>
+                                        <ChevronRight className="w-4 h-4 text-gray-300 absolute right-0 pointer-events-none" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notes */}
+                            <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
+                                <p className="text-xs text-gray-500 leading-relaxed">
+                                    Moving this appointment will free up the original slot. <br />
+                                    Use "Block Time" if you want to keep both closed.
+                                </p>
+                            </div>
                         </div>
                     </div>
-
-                    {/* Editor Group */}
-                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
-
-                        {/* Staff */}
-                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
-                            <div className="flex items-center gap-2">
-                                <select
-                                    value={staffId}
-                                    onChange={(e) => setStaffId(e.target.value)}
-                                    className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
-                                    style={{ direction: 'rtl' }}
-                                >
-                                    {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                                <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
-                            </div>
-                        </div>
-
-                        {/* Date */}
-                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</p>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="date"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                    className="text-sm font-bold text-primary-600 bg-transparent outline-none cursor-pointer text-right"
-                                />
-                                <ChevronRight className="w-4 h-4 text-gray-300 pointer-events-none" />
-                            </div>
-                        </div>
-
-                        {/* Time */}
-                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Time</p>
-                            <div className="flex items-center gap-2 relative">
-                                <select
-                                    value={time}
-                                    onChange={(e) => setTime(e.target.value)}
-                                    className="text-sm font-bold text-primary-600 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
-                                    style={{ direction: 'rtl' }}
-                                >
-                                    {(() => {
-                                        if (!date) return <option disabled>Select date first</option>;
-                                        // Simplified time generation for Edit Mode (Show all slots)
-                                        // In real app, reuse the generator but here we just need options. 
-                                        // We will just recreate the simple list for now or copy logic if needed.
-                                        // For brevity, using the same logic as Create is best, but let's stick to the structure.
-
-                                        // Re-using logic from CreateModal would be ideal, but for now let's use a simple generator or confirm we have business hours.
-                                        // Assuming standard strict generation:
-                                        const [y, m, d] = date.split('-').map(Number);
-                                        const localDate = new Date(y, m - 1, d);
-                                        const dayName = format(localDate, 'EEEE').toLowerCase();
-                                        const hours = businessHours?.[dayName];
-
-                                        if (!hours || !hours.isOpen) return <option disabled>Closed</option>;
-
-                                        const start = parseInt(hours.open.split(':')[0]) * 60 + parseInt(hours.open.split(':')[1]);
-                                        const end = parseInt(hours.close.split(':')[0]) * 60 + parseInt(hours.close.split(':')[1]);
-                                        const interval = slotInterval || 30;
-
-                                        const options = [];
-                                        for (let i = start; i < end; i += interval) {
-                                            const h = Math.floor(i / 60);
-                                            const m = i % 60;
-                                            const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                                            options.push(<option key={t} value={t}>{getDisplayTime(t)}</option>);
-                                        }
-                                        return options;
-                                    })()}
-                                </select>
-                                <ChevronRight className="w-4 h-4 text-gray-300 absolute right-0 pointer-events-none" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Notes */}
-                    <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
-                        <p className="text-xs text-gray-500 leading-relaxed">
-                            Moving this appointment will free up the original slot. <br />
-                            Use "Block Time" if you want to keep both closed.
-                        </p>
-                    </div>
-
-                    {/* Destructive Actions */}
-                    {appointment.status !== 'CANCELLED' && (
-                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
-                            <button
-                                onClick={handleCancelApt}
-                                className="w-full p-4 text-[17px] font-normal text-red-600 active:bg-gray-50 transition-colors text-center"
-                            >
-                                Cancel Booking
-                            </button>
-                        </div>
-                    )}
-
-                    {appointment.status === 'CANCELLED' && (
-                        <div className="space-y-3">
-                            <Button onClick={handleRestoreApt} disabled={isLoading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg">
-                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Uncancel Booking'}
-                            </Button>
-                            <button
-                                onClick={handleArchiveApt}
-                                className="w-full py-4 text-gray-400 font-bold text-sm uppercase tracking-widest hover:text-gray-600"
-                            >
-                                Archive (Hide)
-                            </button>
-                        </div>
-                    )}
-
                 </div>
             </div>
         </div>

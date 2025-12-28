@@ -186,7 +186,7 @@ export default function CreateAppointmentModal({
             ></div>
 
             {/* Modal Sheet */}
-            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-[420px] h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
+            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
 
                 {/* Header (Sticky) */}
                 <div className="bg-[#F2F2F7]/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
@@ -209,162 +209,171 @@ export default function CreateAppointmentModal({
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 space-y-4">
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 pt-2">
 
                     {/* Error Display */}
                     {error && (
-                        <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold border border-red-100 flex items-center gap-3 animate-in fade-in zoom-in-95">
+                        <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold border border-red-100 flex items-center gap-3 animate-in fade-in zoom-in-95">
                             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                             {error}
                         </div>
                     )}
 
-                    {/* Client Information Module */}
-                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
-                        {mode === 'booking' ? (
-                            <div className="divide-y divide-gray-50">
-                                <div className="px-5 py-4">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Client Name</p>
-                                    <input
-                                        type="text"
-                                        placeholder="E.g. John Doe"
-                                        value={clientName}
-                                        onChange={e => setClientName(e.target.value)}
-                                        className="w-full text-lg font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
-                                    />
-                                </div>
-                                <div className="px-5 py-4">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Contact Email</p>
-                                    <input
-                                        type="email"
-                                        placeholder="jane@example.com"
-                                        value={clientEmail}
-                                        onChange={e => setClientEmail(e.target.value)}
-                                        className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="p-6 text-center">
-                                <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                    <X className="w-6 h-6 text-red-500" />
-                                </div>
-                                <p className="text-sm font-bold text-gray-900">Blocking Off-Duty Time</p>
-                                <p className="text-xs text-gray-500 mt-1">Prevent any bookings during this slot</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Selection Group: Date & Time */}
-                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 space-y-4">
-                        <div className="flex justify-between items-center group">
-                            <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</span>
-                            <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform">
-                                <input
-                                    type="date"
-                                    value={date}
-                                    onChange={e => setDate(e.target.value)}
-                                    className="text-sm font-black text-primary-600 bg-transparent outline-none cursor-pointer"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center group">
-                            <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Starts</span>
-                            <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative">
-                                <select
-                                    value={time}
-                                    onChange={e => setTime(e.target.value)}
-                                    className="text-sm font-black text-primary-600 bg-transparent outline-none appearance-none cursor-pointer pr-4"
-                                    style={{ direction: 'rtl' }}
-                                >
-                                    <option value="" disabled>Select Time</option>
-                                    {timeOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
-                                <ChevronRight className="w-4 h-4 text-primary-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" />
-                            </div>
-                        </div>
-
-                        {/* MINI TIMELINE VISUALIZER */}
-                        <div className="pt-4 border-t border-gray-50">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
-                            <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
-                                <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
-                                <span className="text-primary-600 font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
-                                <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
-                            </div>
-                            <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
-                                {selectedService ? (
-                                    <div className="w-2/3 h-10 bg-primary-50 border-2 border-primary-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
-                                        <div className="w-2 h-2 rounded-full bg-primary-600 mr-3 shadow-[0_0_8px_rgba(var(--primary),0.5)]"></div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-black text-primary-900 truncate uppercase tracking-tight">{selectedService.name}</p>
-                                            <p className="text-[9px] font-bold text-primary-600 opacity-70 uppercase">{selectedService.durationMinutes}m duration</p>
+                    <div className="md:grid md:grid-cols-2 md:gap-8 space-y-4 md:space-y-0 text-left">
+                        {/* LEFT COLUMN: Client & Config */}
+                        <div className="space-y-4">
+                            {/* Client Information Module */}
+                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
+                                {mode === 'booking' ? (
+                                    <div className="divide-y divide-gray-50">
+                                        <div className="px-5 py-4">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                                Client Name
+                                            </p>
+                                            <input
+                                                type="text"
+                                                placeholder="E.g. John Doe"
+                                                value={clientName}
+                                                onChange={e => setClientName(e.target.value)}
+                                                className="w-full text-lg font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                            />
+                                        </div>
+                                        <div className="px-5 py-4">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Contact Email</p>
+                                            <input
+                                                type="email"
+                                                placeholder="jane@example.com"
+                                                value={clientEmail}
+                                                onChange={e => setClientEmail(e.target.value)}
+                                                className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                            />
                                         </div>
                                     </div>
                                 ) : (
-                                    <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Select a Service</span>
+                                    <div className="p-6 text-center">
+                                        <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                            <X className="w-6 h-6 text-red-500" />
+                                        </div>
+                                        <p className="text-sm font-bold text-gray-900">Blocking Off-Duty Time</p>
+                                        <p className="text-xs text-gray-500 mt-1">Prevent any bookings during this slot</p>
+                                    </div>
                                 )}
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Professional Metadata Module */}
-                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
-                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Service</p>
-                            <div className="flex items-center gap-2">
-                                <select
-                                    value={serviceId}
-                                    onChange={e => setServiceId(e.target.value)}
-                                    className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
-                                    style={{ direction: 'rtl' }}
+                            {/* Professional Metadata Module */}
+                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
+                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Service</p>
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            value={serviceId}
+                                            onChange={e => setServiceId(e.target.value)}
+                                            className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
+                                            style={{ direction: 'rtl' }}
+                                        >
+                                            {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                        <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                                    </div>
+                                </div>
+
+                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            value={staffId}
+                                            onChange={e => setStaffId(e.target.value)}
+                                            className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
+                                            style={{ direction: 'rtl' }}
+                                        >
+                                            {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                        <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                                    </div>
+                                </div>
+
+                                <div
+                                    className="p-5 flex justify-between items-center active:bg-gray-50 cursor-pointer transition-colors"
+                                    onClick={() => setMode(prev => prev === 'booking' ? 'blocking' : 'booking')}
                                 >
-                                    {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                                <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Booking Mode</p>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${mode === 'booking' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                            {mode === 'booking' ? 'Appointment' : 'Block Time'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
-                            <div className="flex items-center gap-2">
-                                <select
-                                    value={staffId}
-                                    onChange={e => setStaffId(e.target.value)}
-                                    className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
-                                    style={{ direction: 'rtl' }}
-                                >
-                                    {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                                <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
-                            </div>
-                        </div>
+                        {/* RIGHT COLUMN: Schedule & Notes */}
+                        <div className="space-y-4">
+                            {/* Selection Group: Date & Time */}
+                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 space-y-4">
+                                <div className="flex justify-between items-center group">
+                                    <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</span>
+                                    <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform">
+                                        <input
+                                            type="date"
+                                            value={date}
+                                            onChange={e => setDate(e.target.value)}
+                                            className="text-sm font-black text-primary-600 bg-transparent outline-none cursor-pointer"
+                                        />
+                                    </div>
+                                </div>
 
-                        <div
-                            className="p-5 flex justify-between items-center active:bg-gray-50 cursor-pointer transition-colors"
-                            onClick={() => setMode(prev => prev === 'booking' ? 'blocking' : 'booking')}
-                        >
-                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Booking Mode</p>
-                            <div className="flex items-center gap-2">
-                                <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${mode === 'booking' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                    {mode === 'booking' ? 'Appointment' : 'Block Time'}
-                                </span>
+                                <div className="flex justify-between items-center group">
+                                    <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Starts</span>
+                                    <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative">
+                                        <select
+                                            value={time}
+                                            onChange={e => setTime(e.target.value)}
+                                            className="text-sm font-black text-primary-600 bg-transparent outline-none appearance-none cursor-pointer pr-4"
+                                            style={{ direction: 'rtl' }}
+                                        >
+                                            <option value="" disabled>Select Time</option>
+                                            {timeOptions.map(opt => (
+                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronRight className="w-4 h-4 text-primary-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" />
+                                    </div>
+                                </div>
+
+                                {/* MINI TIMELINE VISUALIZER */}
+                                <div className="pt-4 border-t border-gray-50">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
+                                    <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
+                                        <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
+                                        <span className="text-primary-600 font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
+                                        <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
+                                    </div>
+                                    <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
+                                        {selectedService ? (
+                                            <div className="w-2/3 h-10 bg-primary-50 border-2 border-primary-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
+                                                <div className="w-2 h-2 rounded-full bg-primary-600 mr-3 shadow-[0_0_8px_rgba(var(--primary),0.5)]"></div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-[10px] font-black text-primary-900 truncate uppercase tracking-tight">{selectedService.name}</p>
+                                                    <p className="text-[9px] font-bold text-primary-600 opacity-70 uppercase">{selectedService.durationMinutes}m duration</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Select a Service</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notes Area */}
+                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 pb-safe-bottom">
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Internal Notes</p>
+                                <textarea
+                                    placeholder="Add specifics about this booking..."
+                                    className="w-full h-24 text-sm font-bold text-gray-900 placeholder-gray-300 bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100"
+                                ></textarea>
                             </div>
                         </div>
                     </div>
-
-                    {/* Notes Area */}
-                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 pb-safe-bottom">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Internal Notes</p>
-                        <textarea
-                            placeholder="Add specifics about this booking..."
-                            className="w-full h-24 text-sm font-bold text-gray-900 placeholder-gray-300 bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100"
-                        ></textarea>
-                    </div>
-
                 </div>
             </div>
         </div>
