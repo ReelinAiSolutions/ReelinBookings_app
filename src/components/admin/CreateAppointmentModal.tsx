@@ -345,13 +345,38 @@ export default function CreateAppointmentModal({
                                             onChange={e => setTime(e.target.value)}
                                             className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
                                         >
-                                            <option value="" disabled>Select Time</option>
+                                            <option value="" disabled>
+                                                {timeOptions.length === 0 ? (
+                                                    // Check if it's likely closed
+                                                    (() => {
+                                                        if (!date || !businessHours) return 'No slots';
+                                                        const [y, m, d] = date.split('-').map(Number);
+                                                        const dayName = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                                                        const hours = businessHours[dayName];
+                                                        if (!hours || !hours.isOpen) return 'Business Closed';
+                                                        return 'No slots available';
+                                                    })()
+                                                ) : 'Select Time'}
+                                            </option>
                                             {timeOptions.map(opt => (
                                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                                             ))}
                                         </select>
-                                        <p className="text-sm font-black text-primary-600 pointer-events-none">
-                                            {time ? getDisplayTime(time) : 'Select Time'}
+                                        <p className={`text-sm font-black pointer-events-none ${time ? 'text-primary-600' : 'text-gray-400'}`}>
+                                            {time ? getDisplayTime(time) : (
+                                                timeOptions.length === 0
+                                                    ? (
+                                                        (() => {
+                                                            if (!date || !businessHours) return 'No slots';
+                                                            const [y, m, d] = date.split('-').map(Number);
+                                                            const dayName = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                                                            const hours = businessHours[dayName];
+                                                            if (!hours || !hours.isOpen) return 'Closed';
+                                                            return 'No slots';
+                                                        })()
+                                                    )
+                                                    : 'Select Time'
+                                            )}
                                         </p>
                                         <ChevronRight className="w-3.5 h-3.5 text-primary-400 rotate-90 pointer-events-none" />
                                     </div>
