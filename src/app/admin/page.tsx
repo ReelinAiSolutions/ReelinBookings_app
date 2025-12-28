@@ -9,7 +9,6 @@ import ServiceManager from '@/components/admin/ServiceManager';
 import StaffManager from '@/components/admin/StaffManager';
 import AnalyticsView from '@/components/admin/AnalyticsView';
 import WeeklyCalendar from '@/components/admin/WeeklyCalendar';
-import VerticalDayTimeline from '@/components/admin/VerticalDayTimeline';
 import TodayPanel from '@/components/admin/TodayPanel';
 import RescheduleModal from '@/components/admin/RescheduleModal';
 import BlockModal from '@/components/admin/BlockModal';
@@ -341,8 +340,8 @@ export default function AdminDashboard() {
                     {
                         activeTab === 'operations' && (
                             <div className="flex-1 flex flex-col h-full animate-in fade-in duration-300">
-                                {/* Mobile: Design Labs Calendar */}
-                                <div className="lg:hidden flex-1 flex flex-col h-full overflow-hidden">
+                                {/* Design Labs Calendar - Mobile & Desktop */}
+                                <div className="flex-1 flex flex-col h-full overflow-hidden">
                                     <WeeklyCalendar
                                         appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
                                         staff={staff}
@@ -354,26 +353,6 @@ export default function AdminDashboard() {
                                         onAppointmentClick={handleAppointmentClick}
                                         colorMode={currentOrg?.settings?.color_mode || 'staff'}
                                     />
-                                </div>
-
-                                {/* Desktop: Original Wide Calendar */}
-                                <div className="hidden lg:flex flex-col h-full gap-4">
-                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
-                                        <VerticalDayTimeline
-                                            appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
-                                            staff={staff}
-                                            services={services}
-                                            availability={availability}
-                                            businessHours={currentOrg?.business_hours}
-                                            date={new Date()}
-                                            onAppointmentClick={(id) => {
-                                                const apt = appointments.find(a => a.id === id);
-                                                if (apt) handleAppointmentClick(apt);
-                                            }}
-                                            onSelectSlot={handleSelectSlot}
-                                            colorMode={currentOrg?.settings?.color_mode || 'staff'}
-                                        />
-                                    </div>
                                 </div>
                             </div>
                         )
