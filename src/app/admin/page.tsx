@@ -8,6 +8,7 @@ import AppointmentList from '@/components/admin/AppointmentList';
 import ServiceManager from '@/components/admin/ServiceManager';
 import StaffManager from '@/components/admin/StaffManager';
 import AnalyticsView from '@/components/admin/AnalyticsView';
+import PerformanceView from '@/components/admin/PerformanceView';
 import WeeklyCalendar from '@/components/admin/WeeklyCalendar';
 import TodayPanel from '@/components/admin/TodayPanel';
 import RescheduleModal from '@/components/admin/RescheduleModal';
@@ -389,8 +390,8 @@ export default function AdminDashboard() {
 
                     {
                         activeTab === 'analytics' && (
-                            <div className="animate-in fade-in duration-300">
-                                <AnalyticsView
+                            <div className="flex-1 flex flex-col h-full animate-in fade-in duration-300">
+                                <PerformanceView
                                     appointments={appointments}
                                     services={services}
                                     staff={staff}
