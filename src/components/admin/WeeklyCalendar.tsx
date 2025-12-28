@@ -374,7 +374,7 @@ export default function WeeklyCalendar({
                                                         className={`absolute left-1 right-1 rounded-[3px] ${colorScheme.bg} border-l-[3px] ${colorScheme.border} p-1.5 overflow-hidden z-10 shadow-sm animate-in zoom-in-95`}
                                                         style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
                                                     >
-                                                        <div className={`text-xs font-bold leading-tight ${colorScheme.text}`}>{apt.clientName}</div>
+                                                        <div className={`text-xs font-bold leading-tight ${colorScheme.text} truncate`}>{apt.clientName}</div>
                                                     </div>
                                                 );
                                             })}
