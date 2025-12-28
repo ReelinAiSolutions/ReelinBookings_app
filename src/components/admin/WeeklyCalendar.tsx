@@ -21,6 +21,9 @@ const PulseStyle = () => (
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        .appointment-card:active {
+            transform: scale(0.98);
+        }
     `}} />
 );
 
@@ -83,8 +86,19 @@ export default function WeeklyCalendar({
     ];
 
     // -- SCROLL START & INFINITE SCROLL INIT --
+    const scrollToTime = (hour: number = new Date().getHours()) => {
+        if (scrollContainerRef.current) {
+            const targetHour = Math.max(0, hour - 2);
+            scrollContainerRef.current.scrollTo({
+                top: targetHour * 60,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     useEffect(() => {
         if (calendarLevel === 'day' && scrollContainerRef.current) {
+            // Initial scroll (no smooth)
             const currentHour = new Date().getHours();
             const targetHour = Math.max(0, currentHour - 2);
             scrollContainerRef.current.scrollTop = targetHour * 60;
@@ -425,6 +439,14 @@ export default function WeeklyCalendar({
                     </div>
 
                     <div className="flex-1 relative items-start min-w-0">
+                        {/* Current Time Indicator (Shared for both views) */}
+                        {currentTimeTopPx !== -1 && (
+                            <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
+                                <div className="w-full h-[1px] bg-[#007AFF] shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
+                                <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF] live-pulse border-2 border-white shadow-sm"></div>
+                            </div>
+                        )}
+
                         {viewMode === 'personal' ? (
                             <div
                                 key={selectedDate.toISOString()}
@@ -435,25 +457,19 @@ export default function WeeklyCalendar({
                                     <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 60}px` }} onClick={() => handleGridClick(h)}></div>
                                 ))}
 
-                                {/* Current Time Indicator */}
-                                {currentTimeTopPx !== -1 && (
-                                    <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                        <div className="w-full h-[1px] bg-[#007AFF] shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
-                                        <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF] live-pulse border-2 border-white shadow-sm"></div>
-                                    </div>
-                                )}
-
                                 {dayAppointments.map(apt => {
                                     const [h, m] = apt.timeSlot.split(':').map(Number);
                                     const service = services.find(s => s.id === apt.serviceId);
                                     const duration = service?.durationMinutes || 60;
                                     const topPx = (h * 60) + m;
+                                    const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
+                                    const isPast = aptDate < now;
 
                                     return (
                                         <div
                                             key={apt.id}
                                             onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
-                                            className="absolute left-2 right-2 rounded-[4px] bg-indigo-50 border-l-[3px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-sm animate-in zoom-in-95 duration-200"
+                                            className={`absolute left-2 right-2 rounded-[4px] bg-indigo-50 border-l-[3px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-sm animate-in zoom-in-95 duration-200 appointment-card transition-transform ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}`}
                                             style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
                                         >
                                             <div className="text-sm font-bold leading-tight text-indigo-700">{apt.clientName}</div>
@@ -481,12 +497,14 @@ export default function WeeklyCalendar({
                                                 const service = services.find(s => s.id === apt.serviceId);
                                                 const duration = service?.durationMinutes || 60;
                                                 const topPx = (h * 60) + m;
+                                                const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
+                                                const isPast = aptDate < now;
 
                                                 return (
                                                     <div
                                                         key={apt.id}
                                                         onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
-                                                        className={`absolute left-1 right-1 rounded-[3px] ${colorScheme.bg} border-l-[3px] ${colorScheme.border} p-1.5 overflow-hidden z-10 shadow-sm animate-in zoom-in-95`}
+                                                        className={`absolute left-1 right-1 rounded-[3px] ${colorScheme.bg} border-l-[3px] ${colorScheme.border} p-1.5 overflow-hidden z-10 shadow-sm animate-in zoom-in-95 appointment-card transition-transform ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}`}
                                                         style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
                                                     >
                                                         <div className={`text-xs font-bold leading-tight ${colorScheme.text} truncate`}>{apt.clientName}</div>
@@ -538,7 +556,12 @@ export default function WeeklyCalendar({
                             {!isSameDay(selectedDate, new Date()) && (
                                 <button
                                     className="text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors mb-1.5"
-                                    onClick={() => { setDirection('forward'); setCalendarLevel('day'); setSelectedDate(new Date()); }}
+                                    onClick={() => {
+                                        setDirection('forward');
+                                        setCalendarLevel('day');
+                                        setSelectedDate(new Date());
+                                        setTimeout(() => scrollToTime(), 100);
+                                    }}
                                 >
                                     Today
                                 </button>
