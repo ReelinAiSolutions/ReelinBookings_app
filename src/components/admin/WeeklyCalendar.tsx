@@ -51,8 +51,11 @@ export default function WeeklyCalendar({
     const [renderedYears, setRenderedYears] = useState<number[]>([]);
 
     // Swipe State
+    // Swipe State
     const touchStart = useRef<number | null>(null);
     const touchEnd = useRef<number | null>(null);
+    const headerTouchStart = useRef<number | null>(null);
+    const headerTouchEnd = useRef<number | null>(null);
     const minSwipeDistance = 50;
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -190,6 +193,33 @@ export default function WeeklyCalendar({
         const period = hours >= 12 ? 'PM' : 'AM';
         const h = hours % 12 || 12;
         return `${h}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
+    // -- HEADER SWIPE HANDLERS --
+    const onHeaderTouchStart = (e: React.TouchEvent) => {
+        headerTouchEnd.current = null;
+        headerTouchStart.current = e.targetTouches[0].clientX;
+    };
+
+    const onHeaderTouchMove = (e: React.TouchEvent) => {
+        headerTouchEnd.current = e.targetTouches[0].clientX;
+    };
+
+    const onHeaderTouchEnd = () => {
+        if (!headerTouchStart.current || !headerTouchEnd.current) return;
+
+        const distance = headerTouchStart.current - headerTouchEnd.current;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) { // Swipe Left -> Next Week
+            setDirection('forward');
+            setSelectedDate(prev => addDays(prev, 7));
+        }
+        if (isRightSwipe) { // Swipe Right -> Previous Week
+            setDirection('backward'); // Corrected logic: Swipe Right = Go Back
+            setSelectedDate(prev => addDays(prev, -7));
+        }
     };
 
     // -- RENDERERS --
@@ -515,7 +545,12 @@ export default function WeeklyCalendar({
 
                 {/* DAY SPECIFIC DATE HEADER */}
                 {calendarLevel === 'day' && (
-                    <div className="border-b border-gray-200/50 pb-3 shrink-0 pt-2 transition-all">
+                    <div
+                        className="border-b border-gray-200/50 pb-3 shrink-0 pt-2 transition-all"
+                        onTouchStart={onHeaderTouchStart}
+                        onTouchMove={onHeaderTouchMove}
+                        onTouchEnd={onHeaderTouchEnd}
+                    >
                         <div className="flex justify-between px-5 mb-2">
                             {weekDayLabels.map((day, i) => (
                                 <div key={i} className="w-10 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">
