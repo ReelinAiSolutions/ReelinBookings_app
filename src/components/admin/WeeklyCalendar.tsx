@@ -283,7 +283,7 @@ export default function WeeklyCalendar({
         return (
             <div
                 ref={scrollContainerRef}
-                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide`}
+                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide pb-24`}
                 style={{ scrollBehavior: 'smooth' }}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}

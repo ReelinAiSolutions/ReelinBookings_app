@@ -312,8 +312,9 @@ export default function AdminDashboard() {
             />
 
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
-            <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col min-h-screen lg:h-[100dvh]' : 'block min-h-screen'}`}>
-                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full lg:p-10 lg:overflow-hidden' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
+            {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
+            <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh] overflow-hidden' : 'block min-h-screen'}`}>
+                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden lg:p-10' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
                     {/* Mobile Header (Only for non-operations tabs) */}
                     {activeTab !== 'operations' && (
                         <div className="lg:hidden sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 h-16 flex items-center justify-between -mx-4 -mt-4 mb-4 transition-all duration-300">
