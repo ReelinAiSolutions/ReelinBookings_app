@@ -312,7 +312,7 @@ export default function AdminDashboard() {
 
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
             <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col min-h-screen lg:h-[100dvh]' : 'block min-h-screen'}`}>
-                <div className={`p-4 pb-24 lg:p-8 lg:pb-0 ${activeTab === 'operations' ? 'flex-1 flex flex-col lg:overflow-hidden space-y-4' : 'lg:space-y-6'}`}>
+                <div className={`p-4 pb-24 lg:p-12 lg:pb-8 mx-auto w-full max-w-[1600px] ${activeTab === 'operations' ? 'flex-1 flex flex-col lg:overflow-hidden' : 'space-y-6'}`}>
                     {/* Mobile Header (Sticky & Glass) */}
                     <div className="lg:hidden sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 h-16 flex items-center justify-between -mx-4 -mt-4 mb-4 transition-all duration-300">
                         {/* Left: Organization Logo & Name */}

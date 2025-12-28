@@ -67,24 +67,24 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
 
     return (
         <div className="flex flex-col h-full lg:overflow-hidden relative bg-transparent">
-            {/* Header Content (Elite V2 Style) */}
-            <div className="flex flex-col pt-2 bg-transparent sticky top-0 z-30 subpixel-antialiased">
+            {/* Header Content (Elite V2 Style - Final Polish) */}
+            <div className="flex flex-col pt-4 bg-transparent sticky top-0 z-30 subpixel-antialiased">
                 {/* Top Nav Row */}
                 <div className="flex items-center justify-between px-6 mb-4">
                     <button
                         onClick={() => setViewMode('month')}
-                        className="flex items-center gap-1.5 text-primary-600 font-bold hover:opacity-70 transition-opacity"
+                        className="flex items-center gap-1.5 text-[#007AFF] font-bold hover:opacity-70 transition-opacity"
                     >
                         <ChevronLeft className="w-5 h-5" />
                         <span className="text-[17px]">Month</span>
                     </button>
 
                     <div className="flex items-center gap-4">
-                        <Users className="w-6 h-6 text-primary-600/80 hover:text-primary-600 cursor-pointer transition-colors" />
-                        <CalendarIcon className="w-6 h-6 text-primary-600/80 hover:text-primary-600 cursor-pointer transition-colors" />
+                        <Users className="w-6 h-6 text-[#007AFF] hover:opacity-80 cursor-pointer transition-colors" />
+                        <CalendarIcon className="w-6 h-6 text-[#007AFF] hover:opacity-80 cursor-pointer transition-colors" />
                         <button
                             onClick={() => onSelectSlot(selectedDate, "09:00")}
-                            className="bg-transparent text-primary-600 hover:opacity-70 transition-opacity"
+                            className="text-[#007AFF] hover:opacity-70 transition-opacity"
                         >
                             <Plus className="w-7 h-7" />
                         </button>
@@ -93,11 +93,11 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
 
                 {/* Day Row */}
                 <div className="flex items-center px-6 mb-6 gap-3">
-                    <h2 className="text-4xl font-black text-gray-900 tracking-tight italic">
+                    <h2 className="text-[34px] font-black text-gray-900 tracking-tight leading-none">
                         {format(selectedDate, 'EEEE')}
                     </h2>
                     {isSameDay(selectedDate, new Date()) && (
-                        <div className="px-3 py-1 bg-primary-100 text-primary-600 rounded-full text-[13px] font-black tracking-tight mt-1">
+                        <div className="px-3 py-1 bg-primary-100 text-primary-600 rounded-full text-[13px] font-black tracking-tight self-center">
                             Today
                         </div>
                     )}
@@ -112,15 +112,15 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                             <div
                                 key={day.toISOString()}
                                 onClick={() => setSelectedDate(day)}
-                                className="flex flex-col items-center group cursor-pointer"
+                                className="flex flex-col items-center group cursor-pointer min-w-[3rem]"
                             >
-                                <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                                    {format(day, 'EEEEEE')}
+                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                    {format(day, 'EEEEE')}
                                 </span>
                                 <div
-                                    className={`w-11 h-11 flex items-center justify-center rounded-full text-[15px] font-black transition-all ${isSelected
-                                            ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
-                                            : 'text-gray-900 hover:bg-white/50'
+                                    className={`w-11 h-11 flex items-center justify-center rounded-full text-[17px] font-black transition-all ${isSelected
+                                            ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30 ring-4 ring-primary-100'
+                                            : isToday ? 'text-primary-600 border border-primary-100' : 'text-gray-900 hover:bg-gray-100'
                                         }`}
                                 >
                                     {format(day, 'd')}
@@ -131,8 +131,8 @@ export default function WeeklyCalendar({ appointments, staff, services, availabi
                 </div>
             </div>
 
-            {/* Main Content Area (Timeline) */}
-            <div className="flex-1 bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden relative">
+            {/* Main Content Area (Timeline) - No Borders/Shadows to revealed background */}
+            <div className="flex-1 overflow-hidden relative">
                 <VerticalDayTimeline
                     appointments={selectedDateAppointments}
                     staff={staff}

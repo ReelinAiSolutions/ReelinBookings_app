@@ -6,9 +6,9 @@ const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
         __html: `
         @keyframes gravityPulse {
-            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.4); }
+            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(0, 122, 255, 0); }
+            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); }
         }
         .live-pulse {
             animation: gravityPulse 2s infinite ease-in-out;
@@ -113,22 +113,19 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
             <div className="flex w-full h-auto lg:h-full min-w-0 overflow-visible lg:overflow-auto no-scrollbar">
                 <div className="flex w-full relative" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
 
-                    {/* Static Time Column */}
+                    {/* Static Time Column (Mockup Alignment) */}
                     <div
-                        className="relative z-[100] bg-white/5 backdrop-blur-md border-r border-gray-100 flex-shrink-0 w-14 flex flex-col sticky left-0"
+                        className="relative z-[100] bg-white border-r border-gray-100 flex-shrink-0 w-16 flex flex-col sticky left-0 shadow-[4px_0_20px_rgba(0,0,0,0.02)]"
                         style={{ height: `${TOTAL_HEIGHT_PX}px` }}
                     >
-                        <div className="h-10 bg-transparent z-[110] border-b border-gray-100 flex items-center justify-center flex-shrink-0 sticky top-0">
-                            <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        </div>
                         <div className="relative w-full h-full">
                             {hours.map((hour, i) => {
                                 const topPx = (i * HOUR_HEIGHT) + TOP_PADDING;
                                 return (
-                                    <div key={hour} className={`absolute w-full text-right pr-3 ${i === 0 ? '' : 'transform -translate-y-1/2'}`} style={{ top: `${topPx}px` }}>
-                                        <span className="text-[10px] font-black text-gray-400 leading-none block uppercase">
+                                    <div key={hour} className={`absolute w-full text-center ${i === 0 ? '' : 'transform -translate-y-1/2'}`} style={{ top: `${topPx}px` }}>
+                                        <span className="text-[11px] font-bold text-gray-400">
                                             {hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour)}
-                                            <span className="text-[8px] font-bold text-gray-300 ml-1">{hour >= 12 ? 'PM' : 'AM'}</span>
+                                            <span className="text-[10px] font-medium ml-1 uppercase">{hour >= 12 ? 'PM' : 'AM'}</span>
                                         </span>
                                     </div>
                                 )
@@ -137,47 +134,48 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                     </div>
 
                     {/* Staff Columns */}
-                    <div className="flex flex-1 relative h-full divide-x divide-gray-100/50" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
-                        {Array.from(new Set(staff.map(s => s.name.toLowerCase()))).map((normalizedName) => {
+                    <div className="flex flex-1 relative h-full divide-x divide-gray-100/30" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
+                        {Array.from(new Set(staff.map(s => s.name.toLowerCase()))).map((normalizedName, idx) => {
                             const staffGroup = staff.filter(s => s.name.toLowerCase() === normalizedName);
                             const primaryStaff = staffGroup[0];
                             const memberAppointments = renderAppointments.filter(apt => staffGroup.some(s => s.id === apt.staffId));
                             const memberRule = availability.find(r => r.staffId === primaryStaff.id && r.dayOfWeek === todayDayOfWeek);
                             const showOffDuty = memberRule && !memberRule.isWorking;
 
+                            const staffColors = ['#007AFF', '#34C759', '#AF52DE', '#FF9500', '#FF2D55'];
+                            const staffColor = staffColors[idx % staffColors.length];
+
                             return (
-                                <div key={primaryStaff.id} className="flex-1 min-w-[10rem] relative flex flex-col h-full bg-transparent group/col">
-                                    <div className="h-10 flex-shrink-0 bg-white/10 backdrop-blur-xl z-[50] border-b border-gray-100/50 flex items-center justify-center p-1 sticky top-0">
-                                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-md rounded-full border border-white shadow-sm transition-all hover:scale-105">
-                                            <div className="w-5 h-5 rounded-full bg-gray-100 overflow-hidden border border-gray-100">
-                                                {primaryStaff.avatar ? <img src={primaryStaff.avatar} alt={primaryStaff.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-gray-400">{primaryStaff.name.charAt(0)}</div>}
-                                            </div>
-                                            <span className="text-[11px] font-black text-gray-900 truncate max-w-[5rem] uppercase tracking-tight">{primaryStaff.name.split(' ')[0]}</span>
-                                            <div className={`w-1.5 h-1.5 rounded-full ${primaryStaff.id.includes('1') ? 'bg-primary-500' : 'bg-green-500'}`}></div>
+                                <div key={primaryStaff.id} className="flex-1 min-w-[11rem] relative flex flex-col h-full bg-white/10 group/col last:border-r-0">
+                                    {/* Staff Header: Name + Circle Dot (Match Image 2) */}
+                                    <div className="h-10 flex-shrink-0 bg-white/20 backdrop-blur-3xl z-[50] border-b border-gray-100/50 flex items-center justify-center p-2 sticky top-0">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: staffColor }}></div>
+                                            <span className="text-[13px] font-bold text-gray-800 tracking-tight">{primaryStaff.name}</span>
                                         </div>
                                     </div>
 
-                                    <div className={`relative w-full flex-1 ${showOffDuty ? 'bg-stripes-gray' : ''}`} style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
+                                    <div className={`relative w-full flex-1 ${showOffDuty ? 'bg-stripes-gray-light' : ''}`} style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
                                         {/* Clickable Grid Slots */}
                                         {hours.map((hour, i) => (
                                             <div
                                                 key={`slot-${hour}`}
-                                                className="absolute w-full border-t border-gray-100/30 z-0 bg-transparent hover:bg-white/5 transition-colors cursor-pointer"
+                                                className="absolute w-full border-t border-gray-100 z-0 bg-transparent hover:bg-white/40 transition-colors cursor-pointer"
                                                 style={{ top: `${(i * HOUR_HEIGHT) + TOP_PADDING}px`, height: `${HOUR_HEIGHT}px` }}
                                                 onClick={() => !showOffDuty && handleSlotClick(hour, primaryStaff.id)}
                                             >
-                                                <div className="absolute top-1/2 w-full border-t border-dashed border-gray-50/20 pointer-events-none"></div>
+                                                <div className="absolute top-1/2 w-full border-t border-dashed border-gray-50 pointer-events-none opacity-20"></div>
                                             </div>
                                         ))}
 
                                         {currentTimeTopPx !== -1 && (
                                             <div className="absolute w-full flex items-center z-[60] pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                                <div className="w-3 h-3 bg-red-500 rounded-full -ml-1.5 shadow-lg live-pulse border-2 border-white"></div>
-                                                <div className="h-0.5 bg-red-500/50 w-full"></div>
+                                                <div className="w-3.5 h-3.5 bg-[#007AFF] rounded-full -ml-1.75 shadow-lg live-pulse border-2 border-white"></div>
+                                                <div className="h-0.5 bg-[#007AFF]/40 w-full"></div>
                                             </div>
                                         )}
 
-                                        {/* Appointments */}
+                                        {/* Appointments (Match Image 3 - Mobile/Apple Feel) */}
                                         {memberAppointments.map(apt => {
                                             const [h, m] = apt.timeSlot.split(':').map(Number);
                                             const aptStartMins = (h - START_HOUR) * 60 + m;
@@ -186,26 +184,25 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                                             const topPx = (aptStartMins / 60) * HOUR_HEIGHT + TOP_PADDING;
                                             const heightPx = (durationMins / 60) * HOUR_HEIGHT;
 
-                                            const colors = [
-                                                { bg: 'bg-primary-500/10 hover:bg-primary-500/20', border: 'border-primary-500', text: 'text-primary-900', pill: 'bg-primary-500' },
-                                                { bg: 'bg-emerald-500/10 hover:bg-emerald-500/20', border: 'border-emerald-500', text: 'text-emerald-900', pill: 'bg-emerald-500' },
-                                                { bg: 'bg-purple-500/10 hover:bg-purple-500/20', border: 'border-purple-500', text: 'text-purple-900', pill: 'bg-purple-500' },
-                                                { bg: 'bg-amber-500/10 hover:bg-amber-500/20', border: 'border-amber-500', text: 'text-amber-900', pill: 'bg-amber-500' },
-                                            ];
-
-                                            const colorIdx = staff.findIndex(s => s.id === apt.staffId) % colors.length;
-                                            const staffColor = colors[colorIdx];
+                                            // Determine display color for this appointment
+                                            const displayColor = staffColor;
 
                                             return (
                                                 <div key={apt.id} onClick={(e) => { e.stopPropagation(); if (onAppointmentClick) onAppointmentClick(apt.id); }}
-                                                    className={`absolute left-1 right-1 rounded-2xl border-l-[4px] px-3 py-2 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-lg backdrop-blur-md z-20 group/apt ${apt.status === 'CONFIRMED' ? `${staffColor.bg} ${staffColor.border}` : 'bg-gray-100/60 border-gray-400'}`}
-                                                    style={{ top: `${topPx}px`, height: `${heightPx}px`, minHeight: '38px' }}>
-                                                    <div className={`flex items-center gap-2 leading-none mb-1`}>
-                                                        <div className={`w-1.5 h-1.5 rounded-full ${staffColor.pill}`}></div>
-                                                        <span className="text-[11px] font-black text-gray-900 truncate">{apt.clientName}</span>
+                                                    className="absolute left-1 right-2 rounded-lg border-l-[3px] px-3 py-2 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-md z-20 group/apt"
+                                                    style={{
+                                                        top: `${topPx}px`,
+                                                        height: `${heightPx}px`,
+                                                        minHeight: '42px',
+                                                        backgroundColor: `rgba(235, 245, 255, 0.8)`, // Native feel background
+                                                        borderColor: displayColor,
+                                                        backdropFilter: 'blur(10px)'
+                                                    }}>
+                                                    <div className="flex flex-col leading-none">
+                                                        <span className="text-[13px] font-black text-gray-900 mb-0.5 truncate">{apt.clientName}</span>
+                                                        <span className="text-[11px] font-bold text-[#007AFF] mb-1 truncate">{service?.name || 'Service'}</span>
+                                                        <span className="text-[10px] font-black text-gray-400 mt-auto">{apt.timeSlot} {parseInt(apt.timeSlot) >= 12 ? 'PM' : 'AM'}</span>
                                                     </div>
-                                                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tight truncate">{service?.name || 'Service'}</span>
-                                                    <span className="text-[9px] font-black text-gray-400 mt-auto">{apt.timeSlot}</span>
                                                 </div>
                                             );
                                         })}
