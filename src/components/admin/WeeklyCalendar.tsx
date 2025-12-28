@@ -3,6 +3,8 @@ import { ChevronLeft, Plus, Calendar as CalendarIcon, Users } from 'lucide-react
 import { Appointment, Staff, Service, Organization } from '@/types';
 import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth } from 'date-fns';
 
+// Design Labs Calendar v2.0 - Pixel-perfect mobile experience
+
 const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
         __html: `
