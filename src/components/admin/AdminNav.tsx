@@ -23,24 +23,19 @@ export default function AdminNav({ activeTab, setActiveTab, currentOrg }: AdminN
             <div className="hidden"></div>
 
             {/* MOBILE NAV (Bottom Bar) - Hidden on Desktop */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-2xl border-t border-gray-200/50 px-6 py-3 flex justify-between items-center z-50 pb-safe shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-2xl border-t border-gray-100 px-6 h-20 flex justify-between items-center z-[9999] pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                 {navItems.map((item) => {
-                    const isActive = activeTab === item.id;
+                    const isActive = activeTab === item.id || (item.id === 'operations' && activeTab === 'invites');
                     return (
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id as any)}
-                            className={`flex flex-col items-center gap-1.5 w-full p-2 rounded-xl transition-all duration-300 ${isActive
-                                ? 'text-primary-600 scale-110'
-                                : 'text-gray-400 hover:text-gray-600 active:scale-95'
-                                }`}
+                            className={`flex flex-col items-center transition-all duration-300 w-full ${isActive ? 'text-primary-600' : 'text-gray-400'}`}
                         >
-                            <div className={`p-1 rounded-lg transition-colors ${isActive ? 'bg-primary-50' : ''}`}>
-                                <item.icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
-                            </div>
-                            <span className={`text-[10px] font-black tracking-widest uppercase ${isActive ? 'opacity-100' : 'opacity-60 text-[9px]'}`}>
-                                {item.mobileLabel}
-                            </span>
+                            <item.icon
+                                className={`w-7 h-7 transition-all ${isActive ? 'drop-shadow-[0_0_8px_rgba(var(--primary),0.3)]' : ''}`}
+                                strokeWidth={isActive ? 2.5 : 1.5}
+                            />
                         </button>
                     );
                 })}

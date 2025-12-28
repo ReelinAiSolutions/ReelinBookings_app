@@ -39,6 +39,24 @@ import Link from 'next/link';
 import { ExternalLink, Plus, Lock, X } from 'lucide-react';
 import { Organization, Appointment } from '@/types';
 
+const AmbientBackground = () => (
+    <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes mashDrift {
+            0% { background-position: 0% 50%; opacity: 0.7; }
+            50% { background-position: 100% 50%; opacity: 1; }
+            100% { background-position: 0% 50%; opacity: 0.7; }
+        }
+        .ambient-mesh {
+            background: radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, rgba(0, 122, 255, 0.05) 0%, transparent 100%);
+            background-size: 200% 200%;
+            animation: mashDrift 15s infinite ease-in-out;
+        }
+    `}} />
+);
+
 const MOCK_STATS = [
     { name: 'Mon', bookings: 4, revenue: 240 },
     { name: 'Tue', bookings: 7, revenue: 525 },
@@ -151,15 +169,15 @@ export default function AdminDashboard() {
         await loadDashboardData();
     };
 
-    const [createSelection, setCreateSelection] = useState<{ date: Date | null, time: string | null }>({ date: null, time: null });
+    const [createSelection, setCreateSelection] = useState<{ date: Date | null, time: string | null, staffId: string | null }>({ date: null, time: null, staffId: null });
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    const handleSelectSlot = (date: Date, time: string) => {
+    const handleSelectSlot = (date: Date, time: string, staffId?: string) => {
         if (isBlockingMode) {
             setBlockSelection({ date, time });
             setIsBlockModalOpen(true);
         } else {
-            setCreateSelection({ date, time });
+            setCreateSelection({ date, time, staffId: staffId || null });
             setIsCreateModalOpen(true);
         }
     };
@@ -279,9 +297,11 @@ export default function AdminDashboard() {
 
     return (
         <div
-            className="min-h-screen bg-gray-50/50"
+            className="min-h-screen bg-[#F8F9FD] relative overflow-hidden flex"
             style={brandingStyle}
         >
+            <AmbientBackground />
+            <div className="absolute inset-0 ambient-mesh pointer-events-none" />
             <BrandingInjector primaryColor={currentOrg?.primary_color} />
             {/* Desktop Sidebar (Fixed) */}
             <AdminSidebar
@@ -290,29 +310,28 @@ export default function AdminDashboard() {
                 currentOrg={currentOrg}
             />
 
-            {/* Main Content Area (Mobile: Fixed Height App Shell for Ops, Scrollable Body for others) */}
-            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh]' : 'block min-h-screen'}`}>
-                <div className={`p-4 pb-24 lg:p-8 lg:pb-0 ${activeTab === 'operations' ? 'flex-1 flex flex-col overflow-hidden space-y-4' : 'lg:space-y-6'}`}>
-                    {/* Mobile Header (Scrolls Away) */}
-                    <div className="lg:hidden flex-shrink-0 bg-white border-b border-gray-200/50 px-6 flex items-center justify-between h-16 -mx-4 -mt-4 mb-6">
+            {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
+            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col min-h-screen lg:h-[100dvh]' : 'block min-h-screen'}`}>
+                <div className={`p-4 pb-24 lg:p-8 lg:pb-0 ${activeTab === 'operations' ? 'flex-1 flex flex-col lg:overflow-hidden space-y-4' : 'lg:space-y-6'}`}>
+                    {/* Mobile Header (Sticky & Glass) */}
+                    <div className="lg:hidden sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 h-16 flex items-center justify-between -mx-4 -mt-4 mb-4 transition-all duration-300">
                         {/* Left: Organization Logo & Name */}
                         <div className="flex items-center gap-3 min-w-0">
-                            <div className="p-1 bg-white rounded-lg shadow-sm border border-gray-100">
+                            <div className="p-1.5 bg-white/50 rounded-xl shadow-sm border border-gray-100/50 backdrop-blur-sm">
                                 {currentOrg?.logo_url ? (
-                                    <img src={currentOrg.logo_url} alt="Logo" className="w-7 h-7 flex-shrink-0 object-contain" />
+                                    <img src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 flex-shrink-0 object-contain" />
                                 ) : (
-                                    <img src="/icon-180.png" alt="Reelin Logo" className="w-7 h-7 flex-shrink-0 object-contain rounded-md" />
+                                    <img src="/icon-180.png" alt="Reelin Logo" className="w-8 h-8 flex-shrink-0 object-contain rounded-md" />
                                 )}
                             </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-black text-primary-600/60 uppercase tracking-widest leading-none mb-0.5">Admin Portal</span>
-                                <h1 className="text-sm font-black text-gray-900 tracking-tight leading-none truncate">
+                            <div className="flex flex-col min-w-0 justify-center">
+                                {/* 'Admin Portal' label removed for cleaner, more universal look */}
+                                <h1 className="text-base font-black text-gray-900 tracking-tight leading-none truncate">
                                     {currentOrg?.name || 'Reelin Bookings'}
                                 </h1>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-none mt-1">Management Hub</span>
                             </div>
                         </div>
-
-
                     </div>
 
 
@@ -322,33 +341,8 @@ export default function AdminDashboard() {
                             <div className="flex-1 flex flex-col min-h-0 lg:block lg:min-h-auto animate-in fade-in duration-300">
                                 {/* Hero Operations Layout - Dense Stacked */}
                                 <div className="flex flex-col h-full lg:h-auto lg:gap-4">
-                                    {/* Today's Catch (Top) */}
-                                    <div className="w-full hidden lg:block">
-                                        {isDebugStaffView ? (
-                                            <StaffDashboard
-                                                appointments={appointments}
-                                                currentUser={currentUser || { id: 'loading' }}
-                                                currentStaffId={selectedStaffId === 'ALL' ? undefined : selectedStaffId}
-                                                services={services}
-                                                staff={staff}
-                                                availability={availability}
-                                                currentOrg={currentOrg}
-                                                onStatusUpdate={onStatusUpdate}
-                                            />
-                                        ) : (
-                                            <TodayPanel
-                                                appointments={appointments}
-                                                staff={staff}
-                                                services={services}
-                                                availability={availability}
-                                                businessHours={currentOrg?.business_hours}
-                                                onAppointmentClick={handleAppointmentClick}
-                                            />
-                                        )}
-                                    </div>
-
-                                    {/* Weekly Calendar (Bottom) */}
-                                    <div className="w-full h-full lg:h-auto bg-white lg:rounded-xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden flex flex-col">
+                                    {/* Weekly Calendar */}
+                                    <div className="w-full h-full lg:h-auto overflow-hidden flex flex-col">
                                         <WeeklyCalendar
                                             appointments={appointments.filter(a => selectedStaffId === 'ALL' || a.staffId === selectedStaffId)}
                                             staff={staff}
@@ -405,11 +399,13 @@ export default function AdminDashboard() {
 
                     {
                         activeTab === 'analytics' && (
-                            <AnalyticsView
-                                appointments={appointments}
-                                services={services}
-                                staff={staff}
-                            />
+                            <div className="animate-in fade-in duration-300">
+                                <AnalyticsView
+                                    appointments={appointments}
+                                    services={services}
+                                    staff={staff}
+                                />
+                            </div>
                         )
                     }
 
@@ -470,6 +466,7 @@ export default function AdminDashboard() {
                         staff={staff}
                         appointments={appointments}
                         availability={availability}
+                        preselectedStaffId={createSelection.staffId || undefined}
                         slotInterval={currentOrg?.slot_interval}
                         businessHours={currentOrg?.business_hours}
                     />

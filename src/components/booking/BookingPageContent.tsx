@@ -256,6 +256,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 clientId: 'c_temp_user',
                 clientName: formData.name,
                 clientEmail: formData.email,
+                notes: formData.notes,
                 date: dateString,
                 timeSlot: selectedTime,
                 status: 'CONFIRMED'

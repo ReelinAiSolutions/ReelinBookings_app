@@ -159,9 +159,9 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                             <div className="p-2 bg-primary-50 rounded-xl">
                                 <Activity className="w-6 h-6 md:w-8 md:h-8 text-primary-600" />
                             </div>
-                            My Stats
+                            Performance Analytics
                         </h1>
-                        <p className="text-gray-500 text-xs md:text-sm font-medium mt-1">Track your personal growth and impact.</p>
+                        <p className="text-gray-500 text-xs md:text-sm font-medium mt-1">Track your growth and impact.</p>
                     </div>
                 </div>
 
@@ -227,7 +227,8 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
             </div>
 
             {/* Performance Metric Cards - Using Shared StatCard for Color Pop */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {/* FIX: Switch grid-cols-2 to grid-cols-1 for better mobile readability */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <StatCard
                     title="My Revenue"
                     value={`$${stats.revenue.value}`}
@@ -345,7 +346,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                         <p className="text-gray-400 text-sm font-medium leading-relaxed mb-8">
                             {stats.rank.next
                                 ? `Unlock ${stats.rank.next.name} status by hitting both career milestones below.`
-                                : "You've reached LEGEND status. Your name is etched into the floor of this shop."
+                                : "You've reached LEGEND status. Your name is etched into the history of this organization."
                             }
                         </p>
 

@@ -36,13 +36,16 @@ function LoginForm() {
     if (isInitialLoad) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <img src="/icon-180.png" alt="Reelin Bookings" className="w-20 h-20 animate-pulse" />
-                    <h2 className="text-xl font-bold text-gray-900">Reelin Bookings</h2>
-                    <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="flex flex-col items-center gap-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-primary-100 rounded-full blur-xl animate-pulse"></div>
+                        <img src="/icon-180.png" alt="Reelin Bookings" className="relative w-24 h-24 object-contain" />
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                        <h2 className="text-sm font-bold text-gray-900 tracking-widest uppercase">Reelin Bookings</h2>
+                        <div className="w-32 h-1 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary-600 w-1/3 animate-[loading_1s_ease-in-out_infinite]"></div>
+                        </div>
                     </div>
                 </div>
             </div>

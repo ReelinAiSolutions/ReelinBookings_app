@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Service, Staff, Availability } from '@/types';
-import { Button } from '@/components/ui/Button';
-import { X, Calendar, Clock, Loader2, User, Mail, Scissors, Lock, Check } from 'lucide-react';
+import { Loader2, ChevronRight, X, Calendar } from 'lucide-react';
 
 interface CreateAppointmentModalProps {
     isOpen: boolean;
@@ -20,9 +19,9 @@ interface CreateAppointmentModalProps {
     staff: Staff[];
     appointments: any[]; // Receiving existing appointments for conflict check
     businessHours?: any; // Organization['business_hours']
-    availability?: Availability[]; // Added prop
-    preselectedStaffId?: string; // Added prop
-    slotInterval?: number; // Added prop
+    availability?: Availability[];
+    preselectedStaffId?: string;
+    slotInterval?: number;
 }
 
 type Mode = 'booking' | 'blocking';
@@ -52,6 +51,7 @@ export default function CreateAppointmentModal({
     const [clientEmail, setClientEmail] = useState('');
     const [error, setError] = useState<string | null>(null);
 
+    // Initial Synced State
     useEffect(() => {
         if (isOpen) {
             // Reset form on open
@@ -64,19 +64,16 @@ export default function CreateAppointmentModal({
         }
     }, [isOpen, defaultDate, defaultTime, preselectedStaffId]);
 
+    // -- HELPER: Time Options --
     const generateTimeOptions = () => {
-        if (!date) return <option disabled>Select a date first</option>;
+        if (!date) return [];
 
-        // 1. Get Day of Week
         const [y, m, d] = date.split('-').map(Number);
         const localDate = new Date(y, m - 1, d);
         const dayName = localDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
-        // 2. Get Hours
         const hours = businessHours?.[dayName];
-        if (!hours || !hours.isOpen) {
-            return <option disabled>Closed on this day</option>;
-        }
+        if (!hours || !hours.isOpen) return [];
 
         const toMinutes = (t: string) => {
             const [hh, mm] = t.split(':').map(Number);
@@ -94,258 +91,280 @@ export default function CreateAppointmentModal({
             const m = currentMinutes % 60;
             const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 
-            // Format 12-hour
             const period = h >= 12 ? 'PM' : 'AM';
             const displayH = h > 12 ? h - 12 : (h === 0 || h === 12 ? 12 : h);
             const displayT = `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
 
-            options.push(<option key={t} value={t}>{displayT}</option>);
+            options.push({ value: t, label: displayT, hour: h });
             currentMinutes += (slotInterval || 60);
         }
         return options;
     };
 
-    if (!isOpen) return null;
+    const timeOptions = generateTimeOptions();
 
+    // Helper to get H:M from time string
+    const getDisplayTime = (t: string) => {
+        if (!t) return '--';
+        const [h, m] = t.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const displayH = h > 12 ? h - 12 : (h === 0 || h === 12 ? 12 : h);
+        return `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
+    };
+
+    // Helper for visual slider preview (Mock usage)
+    const getSliderHour = (t: string) => {
+        const [h] = t.split(':').map(Number);
+        return h || 12;
+    };
+
+    // -- SUBMIT --
     const handleSubmit = async () => {
         if (!serviceId || !staffId || !date || !time) {
             setError('Please fill in Date, Time, Staff, and Service.');
             return;
         }
 
-        // --- CONFLICT & VALIDATION CHECK ---
-        const parseTime = (t: string) => {
-            const [h, m] = t.split(':').map(Number);
-            return h * 60 + m;
-        };
-
+        const parseTime = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
         const checkService = services.find(s => s.id === serviceId);
         const checkDuration = checkService?.durationMinutes || 60;
-
         const newStart = parseTime(time);
         const newEnd = newStart + checkDuration;
 
-        // 1. Off Duty Check
         if (availability && availability.length > 0) {
-            // Parse date "YYYY-MM-DD" safely to get day of week
             const [y, m, d] = date.split('-').map(Number);
             const safeDate = new Date(y, m - 1, d);
-            const dayIndex = safeDate.getDay(); // 0-6 (Sun-Sat)
-
+            const dayIndex = safeDate.getDay();
             const rule = availability.find(r => r.staffId === staffId && r.dayOfWeek === dayIndex);
-
-            if (rule && !rule.isWorking) {
-                setError(`Staff member is OFF DUTY on this day.`);
-                return;
-            }
+            if (rule && !rule.isWorking) { setError(`Staff member is OFF DUTY on this day.`); return; }
         }
 
-        // 2. Business Hours Check (9 AM - 5 PM)
-        const businessOpen = 9 * 60;
-        const businessClose = 17 * 60;
-
-        if (newStart < businessOpen || newEnd > businessClose) {
-            setError(`Booking must be between 9:00 AM and 5:00 PM.`);
-            return;
-        }
-
-        // 2. Overlap Check
-        const relevantApts = appointments.filter(apt =>
-            apt.date === date &&
-            apt.staffId === staffId &&
-            apt.status !== 'CANCELLED' &&
-            apt.status !== 'ARCHIVED'
-        );
-
+        const relevantApts = appointments.filter(apt => apt.date === date && apt.staffId === staffId && apt.status !== 'CANCELLED' && apt.status !== 'ARCHIVED');
         const conflict = relevantApts.find(apt => {
             const existingStart = parseTime(apt.timeSlot);
             const aptService = services.find(s => s.id === apt.serviceId);
             const existingDuration = aptService?.durationMinutes || 60;
             const existingEnd = existingStart + existingDuration;
-
             return (newStart < existingEnd && newEnd > existingStart);
         });
 
         if (conflict) {
-            const staffMember = staff.find(s => s.id === staffId);
-            const conflictService = services.find(s => s.id === conflict.serviceId);
-            setError(`Conflict: ${staffMember?.name} is busy at ${conflict.timeSlot} (${conflictService?.name || 'Service'}).`);
+            setError(`Conflict at ${conflict.timeSlot}.`);
             return;
         }
-        // -----------------------
 
         setIsLoading(true);
         try {
-            const finalClientName = mode === 'blocking' ? 'Blocked Time' : (clientName || 'Walk-in Client');
-            const finalEmail = mode === 'blocking' ? 'blocked@internal' : (clientEmail || `walkin-${Date.now()}@internal.system`);
-
             await onConfirm({
                 serviceId,
                 staffId,
-                clientName: finalClientName,
-                clientEmail: finalEmail,
+                clientName: mode === 'blocking' ? 'Blocked Time' : (clientName || 'Walk-in'),
+                clientEmail: mode === 'blocking' ? 'blocked@internal' : (clientEmail || ''),
                 date,
                 timeSlot: time
             });
             onClose();
         } catch (error) {
-            alert('Failed to create: ' + (error as Error).message);
+            alert('Failed: ' + (error as Error).message);
         } finally {
             setIsLoading(false);
         }
     };
 
+    if (!isOpen) return null;
+
+    const selectedStaff = staff.find(s => s.id === staffId);
+    const selectedService = services.find(s => s.id === serviceId);
+    const displayHour = getSliderHour(time);
+
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center pointer-events-none">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 pointer-events-auto"
+                onClick={onClose}
+            ></div>
 
-                {/* Header with Mode Toggle */}
-                <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-lg text-gray-900">
-                            {mode === 'booking' ? 'New Booking' : 'Block Time'}
-                        </h3>
-                        <button onClick={onClose} className="p-2 bg-gray-100 rounded-full text-gray-400 hover:text-gray-600">
-                            <X className="w-5 h-5" />
-                        </button>
+            {/* Modal Sheet */}
+            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-[420px] h-[92vh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
+
+                {/* Header (Sticky) */}
+                <div className="bg-[#F2F2F7]/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
+                    <div className="w-full flex justify-center mb-2">
+                        <div className="w-12 h-1.5 bg-gray-300/50 rounded-full"></div>
                     </div>
-
-                    {/* Mode Switcher */}
-                    <div className="bg-gray-100 p-1 rounded-lg flex gap-1 relative">
+                    <div className="flex justify-between items-center px-6 h-14 pb-2">
+                        <button onClick={onClose} className="text-[#007AFF] text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
+                        <span className="font-black text-[17px] text-gray-900 tracking-tight">
+                            {mode === 'booking' ? 'New Event' : 'Block Time'}
+                        </span>
                         <button
-                            onClick={() => setMode('booking')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-bold transition-all ${mode === 'booking' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            onClick={handleSubmit}
+                            disabled={isLoading}
+                            className="font-black text-[#007AFF] text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
                         >
-                            <Calendar className="w-4 h-4" /> Booking
-                        </button>
-                        <button
-                            onClick={() => setMode('blocking')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-bold transition-all ${mode === 'blocking' ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                        >
-                            <Lock className="w-4 h-4" /> Block
+                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Add'}
                         </button>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-5 space-y-5 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 space-y-4">
 
-                    {/* Time & Date */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Date</label>
-                            <input
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Time</label>
-                            <select
-                                value={time}
-                                onChange={(e) => setTime(e.target.value)}
-                                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all appearance-none"
-                            >
-                                {generateTimeOptions()}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Staff Selection */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-500 uppercase">Staff Member</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {staff.map(s => (
-                                <button
-                                    key={s.id}
-                                    onClick={() => setStaffId(s.id)}
-                                    className={`
-                                        flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all
-                                        ${staffId === s.id
-                                            ? 'border-gray-900 bg-gray-900 text-white shadow-md transform scale-[1.02]'
-                                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                                        }
-                                    `}
-                                >
-                                    <div className={`w-2 h-2 rounded-full ${staffId === s.id ? 'bg-green-400' : 'bg-gray-300'}`}></div>
-                                    {s.name.split(' ')[0]}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Dynamic Section based on Mode */}
-                    {mode === 'booking' ? (
-                        <div className="space-y-5 animate-in slide-in-from-right-4 duration-300">
-                            {/* Service Selection */}
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Service</label>
-                                <select
-                                    value={serviceId}
-                                    onChange={(e) => setServiceId(e.target.value)}
-                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                >
-                                    {services.map(s => (
-                                        <option key={s.id} value={s.id}>{s.name} ({s.durationMinutes}m)</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <hr className="border-gray-100" />
-
-                            <div className="space-y-3">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Client INFO</label>
-                                <input
-                                    type="text"
-                                    placeholder="Client Name"
-                                    value={clientName}
-                                    onChange={(e) => setClientName(e.target.value)}
-                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                />
-                                <input
-                                    type="email"
-                                    placeholder="Client Email (Optional)"
-                                    value={clientEmail}
-                                    onChange={(e) => setClientEmail(e.target.value)}
-                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-center space-y-2 animate-in slide-in-from-left-4 duration-300">
-                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mx-auto text-gray-500">
-                                <Lock className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-gray-900 text-sm">Blocking Time Slot</h4>
-                                <p className="text-xs text-gray-500 mt-1">This will prevent any clients from booking this time slot.</p>
-                            </div>
-                        </div>
-                    )}
-
-                </div>
-
-                {/* Footer */}
-                <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-                    {/* Error Message */}
+                    {/* Error Display */}
                     {error && (
-                        <div className="text-xs font-bold text-red-500 mb-2 flex items-center gap-1.5 animate-in slide-in-from-bottom-2 fade-in">
-                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                        <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold border border-red-100 flex items-center gap-3 animate-in fade-in zoom-in-95">
+                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                             {error}
                         </div>
                     )}
 
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={isLoading}
-                        className={`w-full h-12 rounded-xl text-base font-bold shadow-lg transition-all active:scale-[0.98] ${mode === 'blocking' ? 'bg-gray-900 hover:bg-black' : 'bg-blue-600 hover:bg-blue-700'}`}
-                    >
-                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                            mode === 'booking' ? 'Confirm Booking' : 'Confirm Block'
+                    {/* Client Information Module */}
+                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
+                        {mode === 'booking' ? (
+                            <div className="divide-y divide-gray-50">
+                                <div className="px-5 py-4">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Client Name</p>
+                                    <input
+                                        type="text"
+                                        placeholder="E.g. John Doe"
+                                        value={clientName}
+                                        onChange={e => setClientName(e.target.value)}
+                                        className="w-full text-lg font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                    />
+                                </div>
+                                <div className="px-5 py-4">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Contact Email</p>
+                                    <input
+                                        type="email"
+                                        placeholder="jane@example.com"
+                                        value={clientEmail}
+                                        onChange={e => setClientEmail(e.target.value)}
+                                        className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-6 text-center">
+                                <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                    <X className="w-6 h-6 text-red-500" />
+                                </div>
+                                <p className="text-sm font-bold text-gray-900">Blocking Off-Duty Time</p>
+                                <p className="text-xs text-gray-500 mt-1">Prevent any bookings during this slot</p>
+                            </div>
                         )}
-                    </Button>
+                    </div>
+
+                    {/* Selection Group: Date & Time */}
+                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 space-y-4">
+                        <div className="flex justify-between items-center group">
+                            <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</span>
+                            <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform">
+                                <input
+                                    type="date"
+                                    value={date}
+                                    onChange={e => setDate(e.target.value)}
+                                    className="text-sm font-black text-primary-600 bg-transparent outline-none cursor-pointer"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center group">
+                            <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Starts</span>
+                            <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative">
+                                <select
+                                    value={time}
+                                    onChange={e => setTime(e.target.value)}
+                                    className="text-sm font-black text-primary-600 bg-transparent outline-none appearance-none cursor-pointer pr-4"
+                                    style={{ direction: 'rtl' }}
+                                >
+                                    <option value="" disabled>Select Time</option>
+                                    {timeOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                                <ChevronRight className="w-4 h-4 text-primary-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" />
+                            </div>
+                        </div>
+
+                        {/* MINI TIMELINE VISUALIZER */}
+                        <div className="pt-4 border-t border-gray-50">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
+                            <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
+                                <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
+                                <span className="text-primary-600 font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
+                                <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
+                            </div>
+                            <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
+                                {selectedService ? (
+                                    <div className="w-2/3 h-10 bg-primary-50 border-2 border-primary-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
+                                        <div className="w-2 h-2 rounded-full bg-primary-600 mr-3 shadow-[0_0_8px_rgba(var(--primary),0.5)]"></div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-black text-primary-900 truncate uppercase tracking-tight">{selectedService.name}</p>
+                                            <p className="text-[9px] font-bold text-primary-600 opacity-70 uppercase">{selectedService.durationMinutes}m duration</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Select a Service</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Professional Metadata Module */}
+                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
+                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Service</p>
+                            <div className="flex items-center gap-2">
+                                <select
+                                    value={serviceId}
+                                    onChange={e => setServiceId(e.target.value)}
+                                    className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
+                                    style={{ direction: 'rtl' }}
+                                >
+                                    {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+                                <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
+                            <div className="flex items-center gap-2">
+                                <select
+                                    value={staffId}
+                                    onChange={e => setStaffId(e.target.value)}
+                                    className="text-sm font-bold text-gray-500 bg-transparent outline-none appearance-none pr-6 z-10 cursor-pointer"
+                                    style={{ direction: 'rtl' }}
+                                >
+                                    {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+                                <ChevronRight className="w-4 h-4 text-gray-300 absolute right-4 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        <div
+                            className="p-5 flex justify-between items-center active:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => setMode(prev => prev === 'booking' ? 'blocking' : 'booking')}
+                        >
+                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Booking Mode</p>
+                            <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${mode === 'booking' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                    {mode === 'booking' ? 'Appointment' : 'Block Time'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Notes Area */}
+                    <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 pb-safe-bottom">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Internal Notes</p>
+                        <textarea
+                            placeholder="Add specifics about this booking..."
+                            className="w-full h-24 text-sm font-bold text-gray-900 placeholder-gray-300 bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100"
+                        ></textarea>
+                    </div>
+
                 </div>
             </div>
         </div>

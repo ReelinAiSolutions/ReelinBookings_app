@@ -379,7 +379,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                 </div>
 
                 {/* Footer */}
-                <div className="flex gap-3 p-6 border-t border-gray-200 bg-gray-50">
+                <div className="flex gap-3 p-6 border-t border-gray-200 bg-white sticky bottom-0 z-20">
                     <Button
                         variant="outline"
                         onClick={onClose}

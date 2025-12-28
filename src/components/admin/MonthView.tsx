@@ -92,22 +92,19 @@ export default function MonthView({ currentDate, appointments, onDaySelect, onMo
                                 {format(day, 'd')}
                             </span>
 
-                            {/* Event Dots */}
-                            <div className="flex gap-1 flex-wrap justify-center px-2 max-w-full">
-                                {hasEvents && (
-                                    <div className="flex gap-0.5">
-                                        {events.slice(0, 3).map((apt, i) => (
-                                            <div
-                                                key={i}
-                                                className={`w-1.5 h-1.5 rounded-full ${isCurrentMonth ? 'bg-blue-400' : 'bg-blue-200'}`}
-                                            ></div>
-                                        ))}
-                                        {events.length > 3 && (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+                            {/* Smart Booking Indicator */}
+                            {hasEvents && (
+                                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
+                                    {events.length === 1 ? (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400/60 shadow-sm shadow-blue-500/20"></div>
+                                    ) : (
+                                        <div className="flex items-center gap-[2px] px-1.5 py-0.5 rounded-full bg-blue-50/50 border border-blue-100/50 shadow-sm shadow-blue-500/10">
+                                            <div className="w-1 h-1 rounded-full bg-[#007AFF]"></div>
+                                            <span className="text-[9px] font-black text-[#007AFF] leading-none mb-[0.5px] tracking-tight">{events.length}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     );
                 })}

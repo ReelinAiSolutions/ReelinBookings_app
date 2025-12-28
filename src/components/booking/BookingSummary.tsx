@@ -120,6 +120,15 @@ export default function BookingSummary({
                                     placeholder="john@example.com"
                                 />
                             </div>
+                            <div className="pt-2">
+                                <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1 uppercase tracking-wide">Special Requests / Notes</label>
+                                <textarea
+                                    value={formData.notes}
+                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                    className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-primary-500 rounded-xl outline-none transition-all font-medium text-gray-900 shadow-sm placeholder:text-gray-300 min-h-[100px] resize-none"
+                                    placeholder="Anything we should know? (Gate code, allergies, preferences...)"
+                                />
+                            </div>
 
                         </div>
                     </div>

@@ -2,6 +2,20 @@ import React, { useState, useMemo } from 'react';
 import { Appointment, Service, Staff, Organization } from '@/types';
 import { Clock } from 'lucide-react';
 
+const PulseStyle = () => (
+    <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes gravityPulse {
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .live-pulse {
+            animation: gravityPulse 2s infinite ease-in-out;
+        }
+    `}} />
+);
+
 interface VerticalDayTimelineProps {
     appointments: Appointment[];
     staff: Staff[];
@@ -10,15 +24,15 @@ interface VerticalDayTimelineProps {
     businessHours?: Organization['business_hours'];
     date?: Date | string;
     onAppointmentClick?: (id: string) => void;
+    onSelectSlot?: (date: Date, time: string, staffId?: string) => void;
     colorMode?: 'staff' | 'service';
 }
 
-const HOUR_HEIGHT = 68; // 68px per hour to fit ~8h on screen
+const HOUR_HEIGHT = 68;
 
-export default function VerticalDayTimeline({ appointments, staff, services, availability = [], businessHours, date, onAppointmentClick, colorMode = 'staff' }: VerticalDayTimelineProps) {
+export default function VerticalDayTimeline({ appointments, staff, services, availability = [], businessHours, date, onAppointmentClick, onSelectSlot, colorMode = 'staff' }: VerticalDayTimelineProps) {
     const [focusedId, setFocusedId] = useState<string | null>(null);
 
-    // Dynamic Business Hours Logic
     const { startHour, endHour, viewDayIndex } = useMemo(() => {
         let viewDate = new Date();
         if (date) {
@@ -34,30 +48,22 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayName = days[dayIndex];
 
-        if (!businessHours) return { startHour: 9, endHour: 21, viewDayIndex: dayIndex }; // Default 12h
-
+        if (!businessHours) return { startHour: 9, endHour: 21, viewDayIndex: dayIndex };
         const todaySettings = businessHours[dayName] || businessHours[dayName.toLowerCase()];
-
         if (!todaySettings || !todaySettings.isOpen) return { startHour: 9, endHour: 21, viewDayIndex: dayIndex };
 
         const [openH] = todaySettings.open.split(':').map(Number);
         const [closeH, closeM] = todaySettings.close.split(':').map(Number);
         const s = openH;
-        // If close is 17:00, show 17. If 17:30, show 18.
         const closeTime = closeM > 0 ? closeH + 1 : closeH;
-
-        // Enforce MINIMUM 12 hours depth to fill the mobile screen
-        // If s=9, 9+12 = 21 (9pm). If e=17 (5pm), we force e to 21.
         const e = Math.max(closeTime, s + 12);
-
-        // Add +1 to endHour to create a clean "bottom row" past the last label
         return { startHour: s, endHour: e + 1, viewDayIndex: dayIndex };
     }, [businessHours, date]);
 
     const START_HOUR = startHour;
     const END_HOUR = endHour;
     const TOTAL_HOURS = END_HOUR - START_HOUR;
-    const TOP_PADDING = 20; // Pro space before the first hour
+    const TOP_PADDING = 20;
     const BOTTOM_BUFFER = 100;
     const TOTAL_HEIGHT_PX = (TOTAL_HOURS * HOUR_HEIGHT) + TOP_PADDING + BOTTOM_BUFFER;
 
@@ -85,40 +91,45 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
         currentTimeTopPx = ((minutesSinceStart / 60) * HOUR_HEIGHT) + TOP_PADDING;
     }
 
-    const handleCardClick = (e: React.MouseEvent, id: string) => {
-        e.stopPropagation();
-        if (onAppointmentClick) onAppointmentClick(id);
-    };
-
-    const handleGridClick = () => {
-        setFocusedId(null);
+    const handleSlotClick = (hour: number, staffId: string) => {
+        if (!onSelectSlot) return;
+        const hStr = hour.toString().padStart(2, '0');
+        const timeStr = `${hStr}:00`;
+        let targetDate = new Date();
+        if (date) {
+            if (typeof date === 'string') {
+                const [y, m, d] = date.split('-').map(Number);
+                targetDate = new Date(y, m - 1, d);
+            } else {
+                targetDate = date;
+            }
+        }
+        onSelectSlot(targetDate, timeStr, staffId);
     };
 
     return (
-        <div className="flex flex-1 relative bg-white h-full overflow-hidden min-w-0" onClick={handleGridClick}>
-            <div className="flex w-full h-full min-w-0 overflow-auto">
+        <div className="flex flex-1 relative bg-transparent h-auto lg:h-full lg:overflow-hidden min-w-0" onClick={() => setFocusedId(null)}>
+            <PulseStyle />
+            <div className="flex w-full h-auto lg:h-full min-w-0 overflow-visible lg:overflow-auto no-scrollbar">
                 <div className="flex w-full relative" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
 
-                    {/* Static Time Column - LOCKED LEFT */}
+                    {/* Static Time Column */}
                     <div
-                        className="relative z-[100] bg-white border-r border-gray-200/80 flex-shrink-0 w-12 flex flex-col sticky left-0 shadow-[4px_0_20px_rgba(0,0,0,0.06)]"
+                        className="relative z-[100] bg-white/5 backdrop-blur-md border-r border-gray-100 flex-shrink-0 w-14 flex flex-col sticky left-0"
                         style={{ height: `${TOTAL_HEIGHT_PX}px` }}
                     >
-                        {/* ROCK SOLID TOP-LEFT HEADER */}
-                        <div className="h-10 bg-white z-[110] border-b border-gray-100 flex items-center justify-center flex-shrink-0 sticky top-0 shadow-sm">
-                            <Clock className="w-3.5 h-3.5 text-gray-500" />
+                        <div className="h-10 bg-transparent z-[110] border-b border-gray-100 flex items-center justify-center flex-shrink-0 sticky top-0">
+                            <Clock className="w-3.5 h-3.5 text-gray-400" />
                         </div>
                         <div className="relative w-full h-full">
                             {hours.map((hour, i) => {
                                 const topPx = (i * HOUR_HEIGHT) + TOP_PADDING;
                                 return (
-                                    <div key={hour} className={`absolute w-full text-center ${i === 0 ? '' : 'transform -translate-y-1/2'}`} style={{ top: `${topPx}px` }}>
-                                        {i !== hours.length && (
-                                            <span className="text-[10px] font-bold text-gray-400 leading-none block">
-                                                {hour > 12 ? hour - 12 : hour}
-                                                <span className="text-[8px] font-normal text-gray-300 ml-0.5">{hour >= 12 ? 'p' : 'a'}</span>
-                                            </span>
-                                        )}
+                                    <div key={hour} className={`absolute w-full text-right pr-3 ${i === 0 ? '' : 'transform -translate-y-1/2'}`} style={{ top: `${topPx}px` }}>
+                                        <span className="text-[10px] font-black text-gray-400 leading-none block uppercase">
+                                            {hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour)}
+                                            <span className="text-[8px] font-bold text-gray-300 ml-1">{hour >= 12 ? 'PM' : 'AM'}</span>
+                                        </span>
                                     </div>
                                 )
                             })}
@@ -126,88 +137,75 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                     </div>
 
                     {/* Staff Columns */}
-                    <div className="flex flex-1 relative h-full divide-x divide-gray-100" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
+                    <div className="flex flex-1 relative h-full divide-x divide-gray-100/50" style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
                         {Array.from(new Set(staff.map(s => s.name.toLowerCase()))).map((normalizedName) => {
                             const staffGroup = staff.filter(s => s.name.toLowerCase() === normalizedName);
                             const primaryStaff = staffGroup[0];
-                            const staffIds = staffGroup.map(s => s.id);
-                            const memberAppointments = renderAppointments.filter(apt => staffIds.includes(apt.staffId));
-
+                            const memberAppointments = renderAppointments.filter(apt => staffGroup.some(s => s.id === apt.staffId));
                             const memberRule = availability.find(r => r.staffId === primaryStaff.id && r.dayOfWeek === todayDayOfWeek);
                             const showOffDuty = memberRule && !memberRule.isWorking;
 
                             return (
-                                <div key={primaryStaff.id} className="flex-1 min-w-[9rem] relative flex flex-col h-full bg-white first:border-l-0">
-                                    <div className="h-10 flex-shrink-0 bg-white z-[50] border-b border-gray-100 flex items-center justify-center gap-1.5 p-1 shadow-sm sticky top-0">
-                                        <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-600 border border-gray-200 overflow-hidden">
-                                            {primaryStaff.avatar ? <img src={primaryStaff.avatar} alt={primaryStaff.name} className="w-full h-full object-cover" /> : primaryStaff.name.charAt(0)}
+                                <div key={primaryStaff.id} className="flex-1 min-w-[10rem] relative flex flex-col h-full bg-transparent group/col">
+                                    <div className="h-10 flex-shrink-0 bg-white/10 backdrop-blur-xl z-[50] border-b border-gray-100/50 flex items-center justify-center p-1 sticky top-0">
+                                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-md rounded-full border border-white shadow-sm transition-all hover:scale-105">
+                                            <div className="w-5 h-5 rounded-full bg-gray-100 overflow-hidden border border-gray-100">
+                                                {primaryStaff.avatar ? <img src={primaryStaff.avatar} alt={primaryStaff.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-gray-400">{primaryStaff.name.charAt(0)}</div>}
+                                            </div>
+                                            <span className="text-[11px] font-black text-gray-900 truncate max-w-[5rem] uppercase tracking-tight">{primaryStaff.name.split(' ')[0]}</span>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${primaryStaff.id.includes('1') ? 'bg-primary-500' : 'bg-green-500'}`}></div>
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-900 truncate max-w-[5rem] uppercase tracking-tight">{primaryStaff.name.split(' ')[0]}</span>
                                     </div>
 
-                                    <div className={`relative w-full flex-1 ${showOffDuty ? 'bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAyIiBoZWlnaHQ9IjIwMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMSAxOUwxOSAxTTAgMjBMMjAgMCIgc3Ryb2tlPSIjZjNmNGY2IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=")] opacity-60' : ''}`} style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
-
-                                        {/* FULL WIDTH GRID LINES */}
+                                    <div className={`relative w-full flex-1 ${showOffDuty ? 'bg-stripes-gray' : ''}`} style={{ height: `${TOTAL_HEIGHT_PX}px` }}>
+                                        {/* Clickable Grid Slots */}
                                         {hours.map((hour, i) => (
-                                            <div key={`bg-${hour}`} className="absolute w-full border-t border-gray-200 z-0" style={{ top: `${(i * HOUR_HEIGHT) + TOP_PADDING}px` }}></div>
-                                        ))}
-
-                                        {/* Half-Hour Guidelines */}
-                                        {hours.map((hour, i) => i < hours.length - 1 && (
-                                            <div key={`half-${hour}`} className="absolute w-full border-t border-dashed border-gray-100 z-0" style={{ top: `${((i + 0.5) * HOUR_HEIGHT) + TOP_PADDING}px` }}></div>
-                                        ))}
-
-                                        {showOffDuty && (
-                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                                                <span className="text-[9px] font-bold text-gray-300 bg-white/80 px-2 py-0.5 rounded border border-gray-100 uppercase tracking-widest">Off</span>
+                                            <div
+                                                key={`slot-${hour}`}
+                                                className="absolute w-full border-t border-gray-100/30 z-0 bg-transparent hover:bg-white/5 transition-colors cursor-pointer"
+                                                style={{ top: `${(i * HOUR_HEIGHT) + TOP_PADDING}px`, height: `${HOUR_HEIGHT}px` }}
+                                                onClick={() => !showOffDuty && handleSlotClick(hour, primaryStaff.id)}
+                                            >
+                                                <div className="absolute top-1/2 w-full border-t border-dashed border-gray-50/20 pointer-events-none"></div>
                                             </div>
-                                        )}
+                                        ))}
 
                                         {currentTimeTopPx !== -1 && (
-                                            <div className="absolute w-full flex items-center z-40 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full -ml-0.5 shadow-sm"></div>
-                                                <div className="h-px bg-red-400 w-full opacity-40"></div>
+                                            <div className="absolute w-full flex items-center z-[60] pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
+                                                <div className="w-3 h-3 bg-red-500 rounded-full -ml-1.5 shadow-lg live-pulse border-2 border-white"></div>
+                                                <div className="h-0.5 bg-red-500/50 w-full"></div>
                                             </div>
                                         )}
 
+                                        {/* Appointments */}
                                         {memberAppointments.map(apt => {
                                             const [h, m] = apt.timeSlot.split(':').map(Number);
                                             const aptStartMins = (h - START_HOUR) * 60 + m;
                                             const service = services?.find(s => s.id === apt.serviceId);
                                             const durationMins = service?.durationMinutes || 60;
-
                                             const topPx = (aptStartMins / 60) * HOUR_HEIGHT + TOP_PADDING;
                                             const heightPx = (durationMins / 60) * HOUR_HEIGHT;
 
                                             const colors = [
-                                                { bg: 'bg-blue-500/10 hover:bg-blue-500/20', border: 'border-blue-500', text: 'text-blue-900' },
-                                                { bg: 'bg-purple-500/10 hover:bg-purple-500/20', border: 'border-purple-500', text: 'text-purple-900' },
-                                                { bg: 'bg-emerald-500/10 hover:bg-emerald-500/20', border: 'border-emerald-500', text: 'text-emerald-900' },
-                                                { bg: 'bg-orange-500/10 hover:bg-orange-500/20', border: 'border-orange-500', text: 'text-orange-900' },
-                                                { bg: 'bg-pink-500/10 hover:bg-pink-500/20', border: 'border-pink-500', text: 'text-pink-900' },
+                                                { bg: 'bg-primary-500/10 hover:bg-primary-500/20', border: 'border-primary-500', text: 'text-primary-900', pill: 'bg-primary-500' },
+                                                { bg: 'bg-emerald-500/10 hover:bg-emerald-500/20', border: 'border-emerald-500', text: 'text-emerald-900', pill: 'bg-emerald-500' },
+                                                { bg: 'bg-purple-500/10 hover:bg-purple-500/20', border: 'border-purple-500', text: 'text-purple-900', pill: 'bg-purple-500' },
+                                                { bg: 'bg-amber-500/10 hover:bg-amber-500/20', border: 'border-amber-500', text: 'text-amber-900', pill: 'bg-amber-500' },
                                             ];
 
-                                            let colorIndex = 0;
-                                            if (colorMode === 'service') {
-                                                const service = services?.find(s => s.id === apt.serviceId);
-                                                const hash = service?.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) || 0;
-                                                colorIndex = hash % colors.length;
-                                            } else {
-                                                const sortedStaff = [...staff].sort((a, b) => a.name.localeCompare(b.name));
-                                                const staffIdx = sortedStaff.findIndex(s => s.id === apt.staffId);
-                                                colorIndex = staffIdx >= 0 ? staffIdx % colors.length : 0;
-                                            }
-                                            const staffColor = colors[colorIndex];
+                                            const colorIdx = staff.findIndex(s => s.id === apt.staffId) % colors.length;
+                                            const staffColor = colors[colorIdx];
 
                                             return (
-                                                <div key={apt.id} onClick={(e) => handleCardClick(e, apt.id)}
-                                                    className={`absolute left-0.5 right-0.5 rounded border-l-[3px] px-1.5 py-1 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-md backdrop-blur-sm z-10 ${apt.status === 'CONFIRMED' ? `${staffColor.bg} ${staffColor.border}` : 'bg-gray-100/80 border-gray-400'}`}
-                                                    style={{ top: `${topPx}px`, height: `${heightPx}px`, minHeight: '32px' }}>
-                                                    <div className={`flex flex-col leading-none h-full ${apt.status === 'CONFIRMED' ? staffColor.text : 'text-gray-900'}`}>
-                                                        <span className="text-[9px] font-bold line-clamp-1">{apt.clientName}</span>
-                                                        <span className={`text-[8px] font-medium opacity-90 line-clamp-1`}>{service?.name || 'Service'}</span>
-                                                        <span className="text-[8px] font-semibold opacity-70 mt-auto">{apt.timeSlot}</span>
+                                                <div key={apt.id} onClick={(e) => { e.stopPropagation(); if (onAppointmentClick) onAppointmentClick(apt.id); }}
+                                                    className={`absolute left-1 right-1 rounded-2xl border-l-[4px] px-3 py-2 flex flex-col cursor-pointer transition-all overflow-hidden shadow-sm hover:shadow-lg backdrop-blur-md z-20 group/apt ${apt.status === 'CONFIRMED' ? `${staffColor.bg} ${staffColor.border}` : 'bg-gray-100/60 border-gray-400'}`}
+                                                    style={{ top: `${topPx}px`, height: `${heightPx}px`, minHeight: '38px' }}>
+                                                    <div className={`flex items-center gap-2 leading-none mb-1`}>
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${staffColor.pill}`}></div>
+                                                        <span className="text-[11px] font-black text-gray-900 truncate">{apt.clientName}</span>
                                                     </div>
+                                                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tight truncate">{service?.name || 'Service'}</span>
+                                                    <span className="text-[9px] font-black text-gray-400 mt-auto">{apt.timeSlot}</span>
                                                 </div>
                                             );
                                         })}
