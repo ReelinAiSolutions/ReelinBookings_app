@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, Plus, Calendar as CalendarIcon, Users } from 'lucide-react';
+import { ChevronLeft, Plus, Users } from 'lucide-react';
 import { Appointment, Staff, Service, Organization } from '@/types';
 import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth } from 'date-fns';
-
-// Design Labs Calendar v2.0 - Pixel-perfect mobile experience
 
 const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
@@ -116,10 +114,6 @@ export default function WeeklyCalendar({
 
     const onTouchEnd = () => {
         if (!touchStart.current || !touchEnd.current) return;
-
-        // Only allow swipe to change dates in personal view
-        if (viewMode !== 'personal') return;
-
         const distance = touchStart.current - touchEnd.current;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
@@ -140,83 +134,138 @@ export default function WeeklyCalendar({
         onSelectSlot(selectedDate, timeStr, staffId);
     };
 
-    // Render Month View
-    const renderMonthView = () => {
-        const daysInMonth = getDaysInMonth(selectedDate);
-        const firstDayOfMonth = startOfMonth(selectedDate);
-        const startDayOffset = getDay(firstDayOfMonth);
+    // -- YEAR VIEW --
+    const renderYearBlock = (year: number) => (
+        <div key={year} className="mb-12">
+            <h2 className={`text-3xl font-bold px-4 mb-4 border-b border-gray-50/0 ${year === selectedDate.getFullYear() ? 'text-indigo-600' : 'text-gray-900'}`}>{year}</h2>
+            <div className="grid grid-cols-3 gap-x-2 gap-y-6 px-2">
+                {months.map((m, i) => {
+                    const monthDate = new Date(year, i, 1);
+                    const days = getDaysInMonth(monthDate);
+                    const offset = getDay(monthDate);
+                    return (
+                        <div
+                            key={m}
+                            className="flex flex-col gap-1 cursor-pointer active:bg-gray-50 rounded-lg p-1 transition-colors"
+                            onClick={() => {
+                                setDirection('forward');
+                                setCalendarLevel('month');
+                                setSelectedDate(monthDate);
+                            }}
+                        >
+                            <h3 className={`text-[13px] font-bold pl-0.5 ${i === selectedDate.getMonth() && year === selectedDate.getFullYear() ? 'text-indigo-600' : 'text-gray-900'}`}>{m}</h3>
+                            <div className="grid grid-cols-7 gap-y-[2px] gap-x-0 pointer-events-none">
+                                {Array.from({ length: offset }).map((_, k) => <div key={`e-${k}`} className="w-full h-[10px]"></div>)}
+                                {Array.from({ length: days }).map((_, d) => {
+                                    const dayNum = d + 1;
+                                    const isToday = isSameDay(new Date(year, i, dayNum), now);
+                                    return (
+                                        <div key={d} className={`w-full h-[10px] flex items-center justify-center text-[7px] font-medium leading-none ${isToday ? 'bg-indigo-600 text-white rounded-full' : 'text-gray-800'}`}>
+                                            {dayNum}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+
+    const renderYearView = () => {
+        const currentYear = selectedDate.getFullYear();
+        return (
+            <div className={`flex-1 overflow-y-auto bg-white pb-20 pt-2 ${getAnimClass()} scrollbar-hide`}>
+                {renderYearBlock(currentYear)}
+                <div className="h-px bg-gray-100 mx-4 mb-8"></div>
+                {renderYearBlock(currentYear + 1)}
+            </div>
+        );
+    };
+
+    // -- MONTH VIEW --
+    const renderMonthBlock = (date: Date) => {
+        const daysInMonth = getDaysInMonth(date);
+        const startDayOffset = getDay(startOfMonth(date));
+        const monthName = format(date, 'MMMM');
+        const year = date.getFullYear();
 
         return (
-            <div className={`flex-1 overflow-y-auto bg-white ${getAnimClass()}`}>
-                {/* Weekday Headers */}
-                <div className="grid grid-cols-7 border-b border-gray-100 pb-2 pt-2 sticky top-0 bg-white z-20 shadow-sm">
-                    {weekDayLabels.map((d, i) => (
-                        <div key={i} className="text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{d}</div>
+            <div key={`${monthName}-${year}`} className="mb-8">
+                <h3 className="sticky top-0 bg-white/95 backdrop-blur-sm py-2 px-4 text-xl font-bold text-gray-900 z-10 border-b border-gray-50/50">
+                    {monthName} <span className="text-gray-400 font-normal ml-1">{year}</span>
+                </h3>
+                <div className="grid grid-cols-7 auto-rows-fr">
+                    {Array.from({ length: startDayOffset }).map((_, i) => (
+                        <div key={`empty-${i}`} className="h-14 border-b border-gray-50 border-r border-gray-50 bg-gray-50/5"></div>
                     ))}
-                </div>
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                        const dayNum = i + 1;
+                        const cellDate = new Date(year, date.getMonth(), dayNum);
+                        const cellDateString = cellDate.toLocaleDateString('en-CA', { timeZone: 'America/Vancouver' });
+                        const eventCount = appointments.filter(apt => apt.date === cellDateString).length;
+                        const isSelectedDay = isSameDay(cellDate, selectedDate);
+                        const isTodayDay = isSameDay(cellDate, now);
 
-                {/* Calendar Grid */}
-                <div className="pb-20 pt-2">
-                    <div className="grid grid-cols-7 auto-rows-fr">
-                        {/* Empty cells for offset */}
-                        {Array.from({ length: startDayOffset }).map((_, i) => (
-                            <div key={`empty-${i}`} className="h-14 border-b border-gray-50 border-r border-gray-50 bg-gray-50/5"></div>
-                        ))}
+                        return (
+                            <div
+                                key={i}
+                                className="h-16 border-b border-gray-50 border-r border-gray-50 relative cursor-pointer active:bg-gray-50 transition-colors"
+                                onClick={() => {
+                                    setDirection('forward');
+                                    setCalendarLevel('day');
+                                    setSelectedDate(cellDate);
+                                }}
+                            >
+                                <span className={`absolute top-1 left-1/2 -translate-x-1/2 text-sm font-medium ${isSelectedDay || isTodayDay
+                                    ? 'bg-[#007AFF] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5'
+                                    : 'text-gray-900'
+                                    }`}>
+                                    {dayNum}
+                                </span>
 
-                        {/* Day cells */}
-                        {Array.from({ length: daysInMonth }).map((_, i) => {
-                            const dayNum = i + 1;
-                            const cellDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), dayNum);
-                            const cellDateString = cellDate.toLocaleDateString('en-CA', { timeZone: 'America/Vancouver' });
-                            const dayAppointments = appointments.filter(apt => apt.date === cellDateString);
-                            const eventCount = dayAppointments.length;
-                            const isSelectedDay = isSameDay(cellDate, selectedDate);
-                            const isTodayDay = isSameDay(cellDate, now);
-
-                            return (
-                                <div
-                                    key={i}
-                                    className="h-16 border-b border-gray-50 border-r border-gray-50 relative cursor-pointer active:bg-gray-50 transition-colors"
-                                    onClick={() => {
-                                        setDirection('forward');
-                                        setCalendarLevel('day');
-                                        setSelectedDate(cellDate);
-                                    }}
-                                >
-                                    <span className={`absolute top-1 left-1/2 -translate-x-1/2 text-sm font-medium ${isSelectedDay || isTodayDay
-                                        ? 'bg-[#007AFF] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5'
-                                        : 'text-gray-900'
-                                        }`}>
-                                        {dayNum}
-                                    </span>
-
-                                    {/* Booking Indicators */}
-                                    {eventCount > 0 && (
-                                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center">
-                                            {eventCount === 1 ? (
-                                                <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                                            ) : (
-                                                <div className="flex items-center gap-[1px] px-1 py-0.5 rounded-full bg-gray-100/80">
-                                                    <div className="w-1 h-1 rounded-full bg-[#007AFF]"></div>
-                                                    <span className="text-[9px] font-black text-[#007AFF] leading-none mb-[0.5px] tracking-tight">{eventCount}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
+                                {eventCount > 0 && (
+                                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                                        {eventCount === 1 ? (
+                                            <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                        ) : (
+                                            <div className="flex items-center gap-[1px] px-1 py-0.5 rounded-full bg-gray-100/80">
+                                                <div className="w-1 h-1 rounded-full bg-[#007AFF]"></div>
+                                                <span className="text-[9px] font-black text-[#007AFF] leading-none mb-[0.5px] tracking-tight">{eventCount}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         );
     };
 
+    const renderMonthView = () => (
+        <div className={`flex-1 overflow-y-auto bg-white ${getAnimClass()} scrollbar-hide`}>
+            {/* Weekday Headers */}
+            <div className="grid grid-cols-7 border-b border-gray-100 pb-2 pt-2 sticky top-0 bg-white z-20 shadow-sm">
+                {weekDayLabels.map((d, i) => (
+                    <div key={i} className="text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{d}</div>
+                ))}
+            </div>
+
+            <div className="pb-20 pt-2">
+                {renderMonthBlock(selectedDate)}
+                {renderMonthBlock(addDays(startOfMonth(selectedDate), 32))} {/* Next Month */}
+            </div>
+        </div>
+    );
+
     // Render Day View
     const renderDayView = () => (
         <div
             ref={scrollContainerRef}
-            className={`flex-1 w-full overflow-auto bg-white relative ${getAnimClass()}`}
+            className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide`}
             style={{ scrollBehavior: 'smooth' }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
@@ -243,10 +292,10 @@ export default function WeeklyCalendar({
             {/* Grid Container */}
             <div className="relative w-full flex" style={{ height: '1600px' }}>
                 {/* Time Column */}
-                <div className="w-16 lg:w-20 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
+                <div className="w-16 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
                     {hours.map((h, i) => (
-                        <div key={h} className="absolute w-16 lg:w-20 text-right pr-2 lg:pr-3" style={{ top: `${i * 60}px` }}>
-                            <span className="text-[10px] lg:text-xs font-medium text-gray-400 relative -top-2">
+                        <div key={h} className="absolute w-16 text-right pr-2" style={{ top: `${i * 60}px` }}>
+                            <span className="text-[10px] font-medium text-gray-400 relative -top-2">
                                 {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
                             </span>
                         </div>
@@ -254,11 +303,11 @@ export default function WeeklyCalendar({
                 </div>
 
                 {/* Content Area */}
-                <div className="flex relative items-start flex-1">
+                <div className="flex relative items-start">
                     {viewMode === 'personal' ? (
                         <div
                             key={selectedDateString}
-                            className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
+                            className={`w-full relative min-w-[300px] ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
                             style={{ height: '1600px' }}
                         >
                             {/* Grid Lines */}
@@ -360,10 +409,10 @@ export default function WeeklyCalendar({
                     {calendarLevel === 'month' && (
                         <div
                             className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50"
-                            onClick={() => { setDirection('backward'); setCalendarLevel('day'); }}
+                            onClick={() => { setDirection('backward'); setCalendarLevel('year'); }}
                         >
                             <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
-                            <span className="text-[17px] font-normal">Day</span>
+                            <span className="text-[17px] font-normal">{selectedDate.getFullYear()}</span>
                         </div>
                     )}
                     {calendarLevel === 'day' && (
@@ -381,7 +430,7 @@ export default function WeeklyCalendar({
                 <div className="flex items-end justify-between mt-1">
                     <div className="flex items-center gap-2">
                         <h1 className="text-[30px] font-black tracking-tight text-gray-900 leading-tight">
-                            {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : format(selectedDate, 'MMMM')}
+                            {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : calendarLevel === 'month' ? format(selectedDate, 'MMMM') : selectedDate.getFullYear()}
                         </h1>
                         {!isSameDay(selectedDate, now) && (
                             <button
@@ -403,7 +452,7 @@ export default function WeeklyCalendar({
                                 className={`text-indigo-600 ${viewMode === 'team' ? 'bg-indigo-100 rounded-full p-1.5' : ''}`}
                                 onClick={() => setViewMode(prev => prev === 'personal' ? 'team' : 'personal')}
                             >
-                                <Users className="w-6 h-6" strokeWidth={2} />
+                                <Users className={`w-6 h-6`} strokeWidth={2} />
                             </button>
                         )}
                         <button
@@ -453,8 +502,9 @@ export default function WeeklyCalendar({
             )}
 
             {/* Main Content */}
-            {calendarLevel === 'day' && renderDayView()}
+            {calendarLevel === 'year' && renderYearView()}
             {calendarLevel === 'month' && renderMonthView()}
+            {calendarLevel === 'day' && renderDayView()}
         </div>
     );
 }
