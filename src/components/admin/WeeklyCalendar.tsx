@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, Plus, Users } from 'lucide-react';
-import { Appointment, Staff, Service, Organization } from '@/types';
+import { Appointment, Staff, Service, Organization, AppointmentStatus } from '@/types';
 import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth } from 'date-fns';
 
 const PulseStyle = () => (
@@ -128,7 +128,7 @@ export default function WeeklyCalendar({
     // -- HELPERS --
     const getAppointmentsForDate = (date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        return appointments.filter(apt => apt.date === dateStr && apt.status !== 'cancelled');
+        return appointments.filter(apt => apt.date === dateStr && apt.status !== AppointmentStatus.CANCELLED);
     };
 
     // -- RENDERERS --
@@ -299,9 +299,9 @@ export default function WeeklyCalendar({
                 )}
 
                 <div className="relative w-full flex" style={{ height: '1600px' }}>
-                    <div className="w-16 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
+                    <div className="w-12 shrink-0 border-r border-gray-50 bg-white z-30 sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
-                            <div key={h} className="absolute w-16 text-right pr-2" style={{ top: `${i * 60}px` }}>
+                            <div key={h} className="absolute w-12 text-right pr-2" style={{ top: `${i * 60}px` }}>
                                 <span className="text-[10px] font-medium text-gray-400 relative -top-2">
                                     {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
                                 </span>
@@ -309,11 +309,11 @@ export default function WeeklyCalendar({
                         ))}
                     </div>
 
-                    <div className="flex relative items-start w-full">
+                    <div className="flex-1 relative items-start min-w-0">
                         {viewMode === 'personal' ? (
                             <div
                                 key={selectedDate.toISOString()}
-                                className={`w-full relative min-w-[300px] ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
+                                className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
                                 style={{ height: '1600px' }}
                             >
                                 {hours.map((h, i) => (
@@ -341,7 +341,7 @@ export default function WeeklyCalendar({
                                             className="absolute left-2 right-2 rounded-[4px] bg-indigo-50 border-l-[3px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-sm animate-in zoom-in-95 duration-200"
                                             style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
                                         >
-                                            <div className="text-sm font-bold leading-tight text-indigo-700">{apt.title || apt.clientName}</div>
+                                            <div className="text-sm font-bold leading-tight text-indigo-700">{apt.clientName}</div>
                                             <div className="text-xs text-indigo-500 mt-0.5">
                                                 {apt.timeSlot}
                                             </div>
