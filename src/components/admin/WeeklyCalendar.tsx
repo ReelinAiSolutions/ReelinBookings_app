@@ -311,8 +311,8 @@ export default function WeeklyCalendar({
                                     }}
                                 >
                                     <span className={`absolute top-1 left-1/2 -translate-x-1/2 text-sm font-medium ${isSelectedDay || isTodayDay
-                                            ? 'bg-[#007AFF] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5'
-                                            : 'text-gray-900'
+                                        ? 'bg-[#007AFF] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5'
+                                        : 'text-gray-900'
                                         }`}>
                                         {dayNum}
                                     </span>
@@ -343,105 +343,108 @@ export default function WeeklyCalendar({
         <div className="w-full h-full bg-white text-gray-900 flex flex-col font-sans overflow-hidden select-none relative">
             <PulseStyle />
 
-            {/* Header */}
-            <header className="pt-6 pb-2 px-5 bg-[#F2F2F7]/90 backdrop-blur-md sticky top-0 z-50 flex flex-col shrink-0 transition-all">
-                {/* Back Link */}
-                <div className="h-6 flex items-start">
-                    {calendarLevel === 'month' && (
-                        <div
-                            className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50"
-                            onClick={() => { setDirection('backward'); setCalendarLevel('day'); }}
-                        >
-                            <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
-                            <span className="text-[17px] font-normal">Day</span>
-                        </div>
-                    )}
-                    {calendarLevel === 'day' && (
-                        <div
-                            className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50"
-                            onClick={() => { setDirection('backward'); setCalendarLevel('month'); }}
-                        >
-                            <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
-                            <span className="text-[17px] font-normal">Month</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Title & Actions */}
-                <div className="flex items-end justify-between mt-1">
-                    <div className="flex items-center gap-2">
-                        <h1 className="text-[30px] font-black tracking-tight text-gray-900 leading-tight">
-                            {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : format(selectedDate, 'MMMM')}
-                        </h1>
-                        {!isSameDay(selectedDate, now) && (
-                            <button
-                                className="text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors mb-1.5"
-                                onClick={() => {
-                                    setDirection('forward');
-                                    setCalendarLevel('day');
-                                    setSelectedDate(new Date());
-                                }}
+            {/* Sticky Header Container */}
+            <div className="sticky top-0 z-50 bg-[#F2F2F7]">
+                {/* Header */}
+                <header className="pt-6 pb-2 px-5 bg-[#F2F2F7]/90 backdrop-blur-md flex flex-col shrink-0 transition-all">
+                    {/* Back Link */}
+                    <div className="h-6 flex items-start">
+                        {calendarLevel === 'month' && (
+                            <div
+                                className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50"
+                                onClick={() => { setDirection('backward'); setCalendarLevel('day'); }}
                             >
-                                Today
-                            </button>
+                                <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
+                                <span className="text-[17px] font-normal">Day</span>
+                            </div>
+                        )}
+                        {calendarLevel === 'day' && (
+                            <div
+                                className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50"
+                                onClick={() => { setDirection('backward'); setCalendarLevel('month'); }}
+                            >
+                                <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
+                                <span className="text-[17px] font-normal">Month</span>
+                            </div>
                         )}
                     </div>
 
-                    <div className="flex items-center gap-2.5 mb-2">
-                        {calendarLevel === 'day' && (
+                    {/* Title & Actions */}
+                    <div className="flex items-end justify-between mt-1">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-[30px] font-black tracking-tight text-gray-900 leading-tight">
+                                {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : format(selectedDate, 'MMMM')}
+                            </h1>
+                            {!isSameDay(selectedDate, now) && (
+                                <button
+                                    className="text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors mb-1.5"
+                                    onClick={() => {
+                                        setDirection('forward');
+                                        setCalendarLevel('day');
+                                        setSelectedDate(new Date());
+                                    }}
+                                >
+                                    Today
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-2.5 mb-2">
+                            {calendarLevel === 'day' && (
+                                <button
+                                    className="text-indigo-600"
+                                    onClick={() => setViewMode(prev => prev === 'personal' ? 'team' : 'personal')}
+                                >
+                                    <Users className="w-6 h-6" strokeWidth={2} />
+                                </button>
+                            )}
+                            <CalendarIcon className="w-6 h-6 text-indigo-600" strokeWidth={2} />
                             <button
                                 className="text-indigo-600"
-                                onClick={() => setViewMode(prev => prev === 'personal' ? 'team' : 'personal')}
+                                onClick={() => onSelectSlot(selectedDate, "09:00")}
                             >
-                                <Users className="w-6 h-6" strokeWidth={2} />
+                                <Plus className="w-6 h-6" strokeWidth={2} />
                             </button>
-                        )}
-                        <CalendarIcon className="w-6 h-6 text-indigo-600" strokeWidth={2} />
-                        <button
-                            className="text-indigo-600"
-                            onClick={() => onSelectSlot(selectedDate, "09:00")}
-                        >
-                            <Plus className="w-6 h-6" strokeWidth={2} />
-                        </button>
+                        </div>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            {/* Date Selector (Day View Only) */}
-            {calendarLevel === 'day' && (
-                <div className="bg-[#F2F2F7] border-b border-gray-200/50 pb-3 shrink-0 z-40 pt-2 transition-all">
-                    <div className="flex justify-between px-5 mb-2">
-                        {weekDayLabels.map((day, i) => (
-                            <div key={i} className="w-10 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                                {day}
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-between px-5 text-[17px]">
-                        {weekDays.map((date) => {
-                            const isSelected = isSameDay(date, selectedDate);
-                            const isTodayDate = isSameDay(date, now);
-                            return (
-                                <div
-                                    key={date.toISOString()}
-                                    className="w-10 flex flex-col items-center justify-center cursor-pointer"
-                                    onClick={() => setSelectedDate(date)}
-                                >
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
+                {/* Date Selector (Day View Only) */}
+                {calendarLevel === 'day' && (
+                    <div className="bg-[#F2F2F7] border-b border-gray-200/50 pb-3 shrink-0 pt-2 transition-all">
+                        <div className="flex justify-between px-5 mb-2">
+                            {weekDayLabels.map((day, i) => (
+                                <div key={i} className="w-10 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                    {day}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex justify-between px-5 text-[17px]">
+                            {weekDays.map((date) => {
+                                const isSelected = isSameDay(date, selectedDate);
+                                const isTodayDate = isSameDay(date, now);
+                                return (
+                                    <div
+                                        key={date.toISOString()}
+                                        className="w-10 flex flex-col items-center justify-center cursor-pointer"
+                                        onClick={() => setSelectedDate(date)}
+                                    >
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
                                             ? 'bg-[#007AFF] text-white shadow-sm'
                                             : isTodayDate
                                                 ? 'text-[#007AFF]'
                                                 : 'text-gray-900 bg-transparent'
-                                        }`}>
-                                        {format(date, 'd')}
+                                            }`}>
+                                            {format(date, 'd')}
+                                        </div>
+                                        {isTodayDate && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF] mt-1"></div>}
                                     </div>
-                                    {isTodayDate && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF] mt-1"></div>}
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Main Content */}
             {calendarLevel === 'day' && renderDayView()}
