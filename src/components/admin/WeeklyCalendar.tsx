@@ -207,7 +207,7 @@ export default function WeeklyCalendar({
                 </h3>
                 <div className="grid grid-cols-7 auto-rows-fr">
                     {Array.from({ length: startDayOffset }).map((_, i) => (
-                        <div key={`empty-${i}`} className="h-14 border-b border-gray-50 border-r border-gray-50 bg-gray-50/5"></div>
+                        <div key={`empty-${i}`} className="h-14 border-b border-gray-200 border-r border-gray-200 bg-gray-50/5"></div>
                     ))}
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                         const dayNum = i + 1;
@@ -219,7 +219,7 @@ export default function WeeklyCalendar({
                         return (
                             <div
                                 key={i}
-                                className="h-16 border-b border-gray-50 border-r border-gray-50 relative cursor-pointer active:bg-gray-50 transition-colors"
+                                className="h-16 border-b border-gray-200 border-r border-gray-200 relative cursor-pointer active:bg-gray-50 transition-colors"
                                 onClick={() => {
                                     setDirection('forward');
                                     setCalendarLevel('day');
