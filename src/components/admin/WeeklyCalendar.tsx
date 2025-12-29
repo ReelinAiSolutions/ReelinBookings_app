@@ -320,13 +320,13 @@ export default function WeeklyCalendar({
         const year = date.getFullYear();
 
         return (
-            <div key={`${monthName}-${year}`} id={`month-${format(date, 'yyyy-MM')}`} className="mb-8">
-                <h3 className="sticky top-0 bg-white/95 backdrop-blur-sm py-2 px-4 text-xl font-bold text-gray-900 z-10 border-b border-gray-50/50">
-                    {monthName} <span className="text-gray-400 font-normal ml-1">{year}</span>
+            <div key={`${monthName}-${year}`} id={`month-${format(date, 'yyyy-MM')}`} className="mb-12">
+                <h3 className="sticky top-0 bg-white/95 backdrop-blur-sm py-4 px-6 text-2xl font-bold text-gray-900 z-10 border-b border-gray-50/50 flex items-baseline gap-2">
+                    {monthName} <span className="text-gray-400 font-normal text-xl">{year}</span>
                 </h3>
-                <div className="grid grid-cols-7 auto-rows-fr">
+                <div className="grid grid-cols-7 auto-rows-fr border-l border-gray-100">
                     {Array.from({ length: startDayOffset }).map((_, i) => (
-                        <div key={`empty-${i}`} className="h-14 border-b border-gray-200 border-r border-gray-200 bg-gray-50/5"></div>
+                        <div key={`empty-${i}`} className="h-32 border-b border-gray-100 border-r border-gray-100 bg-gray-50/20"></div>
                     ))}
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                         const dayNum = i + 1;
@@ -338,29 +338,38 @@ export default function WeeklyCalendar({
                         return (
                             <div
                                 key={i}
-                                className="h-16 border-b border-gray-200 border-r border-gray-200 relative cursor-pointer active:bg-gray-50 transition-colors"
+                                className="h-32 border-b border-gray-100 border-r border-gray-100 relative cursor-pointer hover:bg-gray-50 transition-colors group"
                                 onClick={() => {
                                     setDirection('forward');
                                     setCalendarLevel('day');
                                     setSelectedDate(cellDate);
                                 }}
                             >
-                                <span className={`absolute top-1 left-1/2 -translate-x-1/2 text-sm font-medium ${isSelectedDay || isTodayDay
-                                    ? 'bg-[#007AFF] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5'
-                                    : 'text-gray-900'
+                                <span className={`absolute top-3 left-3 text-lg font-semibold flex items-center justify-center transition-all ${isSelectedDay || isTodayDay
+                                    ? 'bg-red-500 text-white w-10 h-10 rounded-full shadow-sm'
+                                    : 'text-gray-700 group-hover:text-gray-900'
                                     }`}>
                                     {dayNum}
                                 </span>
 
                                 {/* Smart Booking Indicator */}
                                 {eventCount > 0 && (
-                                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                                    <div className="absolute bottom-3 left-3 right-3">
                                         {eventCount === 1 ? (
-                                            <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                            <div className="flex items-center gap-2 pl-1">
+                                                <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
+                                                <span className="text-xs text-gray-500 font-medium truncate hidden sm:block">1 Booking</span>
+                                            </div>
                                         ) : (
-                                            <div className="flex items-center gap-[1px] px-1 py-0.5 rounded-full bg-gray-100/80">
-                                                <div className="w-1 h-1 rounded-full bg-[#007AFF]"></div>
-                                                <span className="text-[9px] font-black text-[#007AFF] leading-none mb-[0.5px] tracking-tight">{eventCount}</span>
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2 pl-1">
+                                                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                                                    <span className="text-xs text-indigo-600 font-semibold truncate hidden sm:block">{eventCount} Bookings</span>
+                                                </div>
+                                                {/* Visual Density Bar */}
+                                                <div className="mx-1 h-1 bg-indigo-100 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-indigo-500 opacity-50" style={{ width: `${Math.min(100, eventCount * 20)}%` }}></div>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
