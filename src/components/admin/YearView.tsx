@@ -64,8 +64,8 @@ export default function YearView({ currentDate, onMonthSelect, onYearChange, onT
             </div>
 
             {/* Year Grid - Scrollable with padding for bottom nav */}
-            <div className="flex-1 overflow-y-auto p-1 pb-24 md:pb-6 no-scrollbar">
-                <div className="grid grid-cols-3 md:grid-cols-4 gap-x-1 gap-y-4 max-w-7xl mx-auto">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12 max-w-[1600px] mx-auto">
                     {months.map((month) => {
                         const isCurrentMonth = isSameMonth(month.date, today);
 
@@ -73,16 +73,16 @@ export default function YearView({ currentDate, onMonthSelect, onYearChange, onT
                             <div
                                 key={month.name}
                                 onClick={() => onMonthSelect(month.date)}
-                                className="cursor-pointer group hover:bg-gray-50 rounded-lg p-1 transition-colors duration-200 flex flex-col items-center justify-start"
+                                className="cursor-pointer group hover:bg-gray-50 rounded-2xl p-4 transition-colors duration-200 flex flex-col items-start justify-start border border-transparent hover:border-gray-100"
                             >
-                                <h3 className={`font-bold text-xs sm:text-sm mb-1 ${isCurrentMonth ? 'text-blue-600' : 'text-gray-900 group-hover:text-blue-600'} transition-colors`}>
+                                <h3 className={`font-bold text-lg mb-4 ${isCurrentMonth ? 'text-red-500' : 'text-gray-900 group-hover:text-red-500'} transition-colors`}>
                                     {month.name}
                                 </h3>
 
-                                <div className="grid grid-cols-7 gap-y-[1px] gap-x-[1px] sm:gap-1 text-center w-full max-w-[140px]">
+                                <div className="grid grid-cols-7 gap-y-2 gap-x-1 w-full text-center">
                                     {/* Weekday Headers */}
                                     {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
-                                        <div key={i} className="text-gray-300 font-medium text-[6px] sm:text-[9px] mb-0.5">
+                                        <div key={i} className="text-gray-300 font-bold text-xs uppercase tracking-wider mb-2">
                                             {day}
                                         </div>
                                     ))}
@@ -99,8 +99,8 @@ export default function YearView({ currentDate, onMonthSelect, onYearChange, onT
                                             <div
                                                 key={day.toISOString()}
                                                 className={`
-                                                    flex items-center justify-center rounded-full font-medium text-[7px] sm:text-[10px] leading-none py-0.5
-                                                    ${isToday ? 'bg-blue-600 text-white font-bold' : 'text-gray-600'}
+                                                    mx-auto flex items-center justify-center rounded-full font-semibold text-sm w-8 h-8
+                                                    ${isToday ? 'bg-red-500 text-white font-bold shadow-sm' : 'text-gray-700 hover:bg-gray-100'}
                                                 `}
                                             >
                                                 {format(day, 'd')}
