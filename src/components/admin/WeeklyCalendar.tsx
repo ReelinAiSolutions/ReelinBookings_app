@@ -259,8 +259,8 @@ export default function WeeklyCalendar({
 
     const renderYearBlock = (year: number) => (
         <div key={year} id={`year-${year}`} className="mb-12">
-            <h2 className={`text-3xl font-bold px-4 mb-4 border-b border-gray-50/0 ${year === getYear(selectedDate) ? 'text-indigo-600' : 'text-gray-900'}`}>{year}</h2>
-            <div className="grid grid-cols-3 gap-x-2 gap-y-6 px-2">
+            <h2 className={`text-4xl font-bold px-8 mb-8 border-b border-gray-50/0 ${year === getYear(selectedDate) ? 'text-red-600' : 'text-gray-900'}`}>{year}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 px-8 max-w-[1600px] mx-auto">
                 {months.map((m, i) => {
                     const monthDate = new Date(year, i, 1);
                     const days = getDaysInMonth(monthDate);
@@ -268,22 +268,22 @@ export default function WeeklyCalendar({
                     return (
                         <div
                             key={m}
-                            className="flex flex-col gap-1 cursor-pointer active:bg-gray-50 rounded-lg p-1 transition-colors"
+                            className="flex flex-col gap-4 cursor-pointer hover:bg-gray-50 rounded-2xl p-6 transition-colors border border-transparent hover:border-gray-100"
                             onClick={() => {
                                 setDirection('forward');
                                 setCalendarLevel('month');
                                 setSelectedDate(monthDate);
                             }}
                         >
-                            <h3 className={`text-[13px] font-bold pl-0.5 ${i === selectedDate.getMonth() && year === selectedDate.getFullYear() ? 'text-indigo-600' : 'text-gray-900'}`}>{m}</h3>
-                            <div className="grid grid-cols-7 gap-y-[2px] gap-x-0 pointer-events-none">
-                                {Array.from({ length: offset }).map((_, k) => <div key={`e-${k}`} className="w-full h-[10px]"></div>)}
+                            <h3 className={`text-xl font-bold pl-1 ${i === selectedDate.getMonth() && year === selectedDate.getFullYear() ? 'text-red-600' : 'text-gray-900'}`}>{m}</h3>
+                            <div className="grid grid-cols-7 gap-y-3 gap-x-1 pointer-events-none">
+                                {Array.from({ length: offset }).map((_, k) => <div key={`e-${k}`} className="w-full h-4"></div>)}
                                 {Array.from({ length: days }).map((_, d) => {
                                     const dayNum = d + 1;
                                     const currentDayDate = new Date(year, i, dayNum);
                                     const isToday = isSameDay(currentDayDate, new Date());
                                     return (
-                                        <div key={d} className={`w-full h-[10px] flex items-center justify-center text-[7px] font-medium leading-none ${isToday ? 'bg-indigo-600 text-white rounded-full' : 'text-gray-800'}`}>
+                                        <div key={d} className={`w-full h-8 flex items-center justify-center text-sm font-semibold rounded-full ${isToday ? 'bg-red-500 text-white shadow-sm' : 'text-gray-700'}`}>
                                             {dayNum}
                                         </div>
                                     );
