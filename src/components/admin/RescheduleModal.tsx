@@ -226,7 +226,10 @@ export default function RescheduleModal({
                                     <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</p>
                                     <div className="flex items-center gap-2 pointer-events-none">
                                         <span className="text-sm font-bold text-primary-600">
-                                            {date ? format(new Date(date + 'T00:00:00'), 'MMM d, yyyy') : 'Select Date'}
+                                            {date ? (() => {
+                                                const [y, m, d] = date.split('-').map(Number);
+                                                return format(new Date(y, m - 1, d), 'MMM d, yyyy');
+                                            })() : 'Select Date'}
                                         </span>
                                         <ChevronRight className="w-4 h-4 text-gray-300" />
                                     </div>

@@ -330,7 +330,10 @@ export default function CreateAppointmentModal({
                                             className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
                                         />
                                         <p className="text-sm font-black text-primary-600 pointer-events-none">
-                                            {date ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Select Date'}
+                                            {date ? (() => {
+                                                const [y, m, d] = date.split('-').map(Number);
+                                                return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                            })() : 'Select Date'}
                                         </p>
                                     </div>
                                 </div>
