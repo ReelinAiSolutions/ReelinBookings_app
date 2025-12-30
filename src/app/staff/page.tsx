@@ -53,8 +53,11 @@ export default function StaffPage() {
                 setCurrentUser(fetchedProfile.user);
                 setUserProfile(fetchedProfile.profile);
 
-                // Redirect owners/admins to /admin
-                if (fetchedProfile.profile.role === 'owner' || fetchedProfile.profile.role === 'admin' || fetchedProfile.profile.role === 'ADMIN') {
+                // Redirect owners/admins to /admin unless in test view
+                const params = new URLSearchParams(window.location.search);
+                const isTestView = params.get('test_view') === 'true';
+
+                if (!isTestView && (fetchedProfile.profile.role === 'owner' || fetchedProfile.profile.role === 'admin' || fetchedProfile.profile.role === 'ADMIN')) {
                     router.push('/admin');
                 }
             }

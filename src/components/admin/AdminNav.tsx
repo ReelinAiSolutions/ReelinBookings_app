@@ -1,9 +1,9 @@
-import { Calendar, BarChart3, Settings } from 'lucide-react';
+import { Calendar, BarChart3, Settings, Users } from 'lucide-react';
 import { Organization } from '@/types';
 
 interface AdminNavProps {
-    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team';
-    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team') => void;
+    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients';
+    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients') => void;
     currentOrg: Organization | null;
 }
 
@@ -11,6 +11,8 @@ export default function AdminNav({ activeTab, setActiveTab, currentOrg }: AdminN
     const navItems = [
         { id: 'operations', icon: Calendar },
         { id: 'analytics', icon: BarChart3 },
+        { id: 'team', icon: Users },
+        { id: 'clients', icon: Users },
         { id: 'settings', icon: Settings },
     ] as const;
 

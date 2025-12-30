@@ -7,6 +7,7 @@ import DashboardCharts from '@/components/admin/DashboardCharts';
 import AppointmentList from '@/components/admin/AppointmentList';
 import ServiceManager from '@/components/admin/ServiceManager';
 import StaffManager from '@/components/admin/StaffManager';
+import ClientManager from '@/components/admin/ClientManager';
 import AnalyticsView from '@/components/admin/AnalyticsView';
 import PerformanceView from '@/components/admin/PerformanceView';
 import WeeklyCalendar from '@/components/admin/WeeklyCalendar';
@@ -16,6 +17,7 @@ import BlockModal from '@/components/admin/BlockModal';
 import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
 import StaffDashboard from '@/components/barber/BarberDashboard';
 import ProfileManager from '@/components/admin/ProfileManager'; // Restored import
+import SettingsManager from '@/components/admin/SettingsManager'; // Added Settings Manager
 import AdminNav from '@/components/admin/AdminNav'; // New import
 import BrandingInjector from '@/components/BrandingInjector';
 import { useRouter } from 'next/navigation';
@@ -69,7 +71,7 @@ const MOCK_STATS = [
 ];
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team'>('operations');
+    const [activeTab, setActiveTab] = useState<'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients'>('operations');
     const [appointments, setAppointments] = useState<any[]>([]);
     const [stats, setStats] = useState({ totalRevenue: 0, totalBookings: 0, activeStaff: 0 });
     const [services, setServices] = useState<any[]>([]);
@@ -301,8 +303,6 @@ export default function AdminDashboard() {
             className="min-h-screen bg-[#F8F9FD] relative overflow-hidden flex"
             style={brandingStyle}
         >
-            <AmbientBackground />
-            <div className="absolute inset-0 ambient-mesh pointer-events-none" />
             <BrandingInjector primaryColor={currentOrg?.primary_color} />
             {/* Desktop Sidebar (Fixed) */}
             <AdminSidebar
@@ -316,26 +316,7 @@ export default function AdminDashboard() {
             <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh] overflow-hidden' : 'block min-h-screen'}`}>
                 <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden lg:p-10' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
                     {/* Mobile Header (Only for non-operations tabs) */}
-                    {activeTab !== 'operations' && (
-                        <div className="lg:hidden sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 h-16 flex items-center justify-between -mx-4 -mt-4 mb-4 transition-all duration-300">
-                            {/* Left: Organization Logo & Name */}
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="p-1.5 bg-white/50 rounded-xl shadow-sm border border-gray-100/50 backdrop-blur-sm">
-                                    {currentOrg?.logo_url ? (
-                                        <img src={currentOrg.logo_url} alt="Logo" className="w-8 h-8 flex-shrink-0 object-contain" />
-                                    ) : (
-                                        <img src="/icon-180.png" alt="Reelin Logo" className="w-8 h-8 flex-shrink-0 object-contain rounded-md" />
-                                    )}
-                                </div>
-                                <div className="flex flex-col min-w-0 justify-center">
-                                    <h1 className="text-base font-black text-gray-900 tracking-tight leading-none truncate">
-                                        {currentOrg?.name || 'Reelin Bookings'}
-                                    </h1>
-                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-none mt-1">Management Hub</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
 
 
                     {/* OPERATIONS (New Home) */}
@@ -386,6 +367,14 @@ export default function AdminDashboard() {
                         )
                     }
 
+                    {activeTab === 'clients' && (
+                        <ClientManager
+                            appointments={appointments}
+                            services={services}
+                            isStaffView={false}
+                        />
+                    )}
+
                     {
                         activeTab === 'analytics' && (
                             <div className="flex-1 flex flex-col h-full animate-in fade-in duration-300">
@@ -407,6 +396,20 @@ export default function AdminDashboard() {
                                     onUpdate={loadDashboardData}
                                     org={currentOrg}
                                     onUpdateOrg={(updated) => setCurrentOrg(updated)}
+                                />
+                            </div>
+                        )
+                    }
+
+                    {
+                        activeTab === 'settings' && currentOrg && (
+                            <div className="animate-in fade-in duration-300">
+                                <SettingsManager
+                                    org={currentOrg}
+                                    onUpdate={(updated) => {
+                                        setCurrentOrg(updated);
+                                        loadDashboardData();
+                                    }}
                                 />
                             </div>
                         )

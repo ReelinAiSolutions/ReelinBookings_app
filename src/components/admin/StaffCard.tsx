@@ -5,9 +5,9 @@ import { Clock, Mail, Scissors, Edit2, Trash2, Calendar, Star, TrendingUp } from
 interface StaffCardProps {
     staff: Staff;
     services: Service[];
-    onEdit: (staff: Staff) => void;
-    onSchedule: (staff: Staff) => void;
-    onDelete: (staff: Staff) => void;
+    onEdit?: (staff: Staff) => void;
+    onSchedule?: (staff: Staff) => void;
+    onDelete?: (staff: Staff) => void;
     appointmentCount?: number;
 }
 
@@ -125,31 +125,38 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                 )}
 
                 {/* Action Buttons */}
+                {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-                    <button
-                        onClick={() => onEdit(staff)}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg font-medium text-sm hover:bg-blue-100 transition-colors"
-                    >
-                        <Edit2 className="w-4 h-4" />
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => onSchedule(staff)}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-50 text-green-600 rounded-lg font-medium text-sm hover:bg-green-100 transition-colors"
-                    >
-                        <Calendar className="w-4 h-4" />
-                        Schedule
-                    </button>
+                    {onEdit && (
+                        <button
+                            onClick={() => onEdit(staff)}
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg font-medium text-sm hover:bg-blue-100 transition-colors"
+                        >
+                            <Edit2 className="w-4 h-4" />
+                            Edit
+                        </button>
+                    )}
+                    {onSchedule && (
+                        <button
+                            onClick={() => onSchedule(staff)}
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-50 text-green-600 rounded-lg font-medium text-sm hover:bg-green-100 transition-colors"
+                        >
+                            <Calendar className="w-4 h-4" />
+                            Schedule
+                        </button>
+                    )}
                 </div>
 
                 {/* Delete Button */}
-                <button
-                    onClick={() => onDelete(staff)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg font-medium text-sm hover:bg-red-100 transition-colors"
-                >
-                    <Trash2 className="w-4 h-4" />
-                    Remove from Team
-                </button>
+                {onDelete && (
+                    <button
+                        onClick={() => onDelete(staff)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg font-medium text-sm hover:bg-red-100 transition-colors mt-2"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        Remove from Team
+                    </button>
+                )}
             </div>
         </div>
     );

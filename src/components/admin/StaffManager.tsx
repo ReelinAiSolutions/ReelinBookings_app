@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments } from '@/services/dataService';
 import { Service, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Plus, Search, Grid, List } from 'lucide-react';
+import { Plus, Search, Grid, List, Users2 } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useToast } from '@/context/ToastContext';
 import StaffCard from './StaffCard';
@@ -11,8 +11,9 @@ import StaffFormModal from './StaffFormModal';
 interface StaffManagerProps {
     staff: Staff[];
     services: Service[];
-    orgId: string;
-    onRefresh: () => void;
+    orgId?: string; // Optional for read-only
+    onRefresh?: () => void;
+    readOnly?: boolean;
 }
 
 const DEFAULT_SCHEDULE = [
@@ -25,7 +26,7 @@ const DEFAULT_SCHEDULE = [
     { dayOfWeek: 0, dayName: 'Sunday', startTime: '10:00', endTime: '15:00', isWorking: false },
 ];
 
-export default function StaffManager({ staff, services, orgId, onRefresh }: StaffManagerProps) {
+export default function StaffManager({ staff, services, orgId = '', onRefresh = () => { }, readOnly = false }: StaffManagerProps) {
     const { toast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
@@ -49,6 +50,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     }, [staff, searchQuery]);
 
     const handleSave = async (data: Partial<Staff>, avatarFile: File | null) => {
+        if (readOnly) return;
         try {
             if (!data.name?.trim()) {
                 toast('Name is required', 'error');
@@ -110,6 +112,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     };
 
     const handleEdit = async (member: Staff) => {
+        if (readOnly) return;
         setEditingStaff(member);
 
         // Load schedule
@@ -132,11 +135,12 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     };
 
     const handleSchedule = async (member: Staff) => {
-        // Same as edit but switch to schedule tab
+        if (readOnly) return;
         await handleEdit(member);
     };
 
     const handleDelete = async (member: Staff) => {
+        if (readOnly) return;
         if (!confirm(`Are you sure you want to remove ${member.name} from your team?`)) return;
 
         try {
@@ -156,13 +160,14 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     };
 
     const handleAddNew = () => {
+        if (readOnly) return;
         setEditingStaff(null);
         setModalSchedule(DEFAULT_SCHEDULE);
         setIsModalOpen(true);
     };
 
     const handleSaveSchedule = async (schedule: any[]) => {
-        if (!editingStaff) return;
+        if (readOnly || !editingStaff) return;
 
         try {
             await upsertAvailability(schedule, editingStaff.id, orgId);
@@ -175,7 +180,7 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     };
 
     const handleSaveServices = async (serviceIds: string[]) => {
-        if (!editingStaff) return;
+        if (readOnly || !editingStaff) return;
 
         try {
             await updateStaffServices(editingStaff.id, serviceIds);
@@ -189,117 +194,116 @@ export default function StaffManager({ staff, services, orgId, onRefresh }: Staf
     };
 
     return (
-        <div className="bg-white/80 backdrop-blur-md rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-white/40 flex flex-col h-full relative overflow-hidden">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 z-50"></div>
-
-            {/* Header & Controls */}
-            <div className="p-6 border-b border-indigo-50/50 bg-white/40 space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                            Team Roster <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        </h2>
-                        <p className="text-sm text-gray-500 font-medium">Manage staff and schedules</p>
-                    </div>
-                    <Button onClick={handleAddNew} size="lg" className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30 rounded-full transition-all hover:scale-105 active:scale-95">
-                        <Plus className="w-5 h-5 mr-2" />
-                        Add Member
-                    </Button>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative group">
-                    <div className="absolute inset-0 bg-green-200/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors z-10" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search team members..."
-                        className="w-full pl-12 pr-4 py-3.5 bg-white/80 border border-indigo-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all shadow-sm group-hover:shadow-md relative z-0"
-                    />
-                </div>
-
-                {/* View Toggle */}
-                <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                        {filteredStaff.length} {filteredStaff.length === 1 ? 'team member' : 'team members'}
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 className="text-3xl font-black text-gray-900 tracking-tight">
+                        {readOnly ? 'Meet The Team' : 'Team Roster'}
+                    </h2>
+                    <p className="text-gray-500 font-medium mt-1">
+                        {readOnly ? 'Your colleagues and team members' : 'Manage your staff and their schedules'}
                     </p>
-                    <div className="hidden md:flex gap-1 bg-gray-100 p-1 rounded-lg">
+                </div>
+
+                {/* Actions & Filters */}
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Search */}
+                    <div className="relative group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search team..."
+                            className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-primary-100 focus:border-primary-500 transition-all outline-none w-48 md:w-64"
+                        />
+                    </div>
+
+                    {/* View Toggle */}
+                    <div className="flex bg-white p-1 rounded-lg border border-gray-200">
                         <button
                             onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
-                                }`}
+                            className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                         >
                             <Grid className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
-                                }`}
+                            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                         >
                             <List className="w-4 h-4" />
                         </button>
                     </div>
+
+                    {!readOnly && (
+                        <Button onClick={handleAddNew} className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-4 py-2 font-bold shadow-lg shadow-primary-600/20 transition-all active:scale-95">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Member
+                        </Button>
+                    )}
                 </div>
             </div>
 
             {/* Team Grid/List */}
-            <div className="p-6">
+            <div className="flex-1">
                 {filteredStaff.length === 0 ? (
-                    <div className="text-center py-16">
-                        <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Plus className="w-12 h-12 text-gray-400" />
+                    <div className="h-96 flex flex-col items-center justify-center text-center bg-white rounded-3xl border border-gray-100 border-dashed">
+                        <div className="w-16 h-16 mb-4 bg-gray-50 rounded-full flex items-center justify-center">
+                            <Users2 className="w-8 h-8 text-gray-300" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {searchQuery ? 'No team members found' : 'No team members yet'}
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">
+                            {searchQuery ? 'No members found' : 'No team members'}
                         </h3>
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-gray-500 mb-6 text-sm max-w-xs mx-auto">
                             {searchQuery
-                                ? 'Try adjusting your search'
-                                : 'Get started by adding your first team member'}
+                                ? 'Try adjusting your search terms'
+                                : 'Get started by adding your first team member to the roster'}
                         </p>
-                        {!searchQuery && (
-                            <Button onClick={handleAddNew} className="bg-green-600 hover:bg-green-700 text-white">
-                                <Plus className="w-5 h-5 mr-2" />
-                                Add Your First Team Member
+                        {!readOnly && !searchQuery && (
+                            <Button onClick={handleAddNew} variant="outline">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add Team Member
                             </Button>
                         )}
                     </div>
                 ) : (
                     <div className={
                         viewMode === 'grid'
-                            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-                            : 'space-y-4'
+                            ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                            : 'space-y-3'
                     }>
                         {filteredStaff.map((member) => (
-                            <StaffCard
-                                key={member.id}
-                                staff={member}
-                                services={services}
-                                onEdit={handleEdit}
-                                onSchedule={handleSchedule}
-                                onDelete={handleDelete}
-                            />
+                            <div key={member.id} className={readOnly ? "pointer-events-none" : ""}>
+                                <StaffCard
+                                    staff={member}
+                                    services={services}
+                                    onEdit={readOnly ? undefined : handleEdit}
+                                    onSchedule={readOnly ? undefined : handleSchedule}
+                                    onDelete={readOnly ? undefined : handleDelete}
+                                />
+                            </div>
                         ))}
                     </div>
                 )}
             </div>
 
-            {/* Form Modal */}
-            <StaffFormModal
-                isOpen={isModalOpen}
-                onClose={() => {
-                    setIsModalOpen(false);
-                    setEditingStaff(null);
-                }}
-                onSave={handleSave}
-                editingStaff={editingStaff}
-                services={services}
-                onSaveSchedule={handleSaveSchedule}
-                onSaveServices={handleSaveServices}
-                initialSchedule={modalSchedule}
-            />
+            {/* Form Modal - Only render if not readOnly */}
+            {!readOnly && (
+                <StaffFormModal
+                    isOpen={isModalOpen}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setEditingStaff(null);
+                    }}
+                    onSave={handleSave}
+                    editingStaff={editingStaff}
+                    services={services}
+                    onSaveSchedule={handleSaveSchedule}
+                    onSaveServices={handleSaveServices}
+                    initialSchedule={modalSchedule}
+                />
+            )}
         </div>
     );
 }

@@ -108,5 +108,13 @@ export interface Organization {
     business_hours?: Record<string, { open: string; close: string; isOpen: boolean }>;
     settings?: {
         color_mode?: 'staff' | 'service';
+        scheduling?: {
+            min_notice_hours?: number;
+            max_advance_days?: number;
+            buffer_minutes?: number;
+        };
+        policies?: {
+            cancellation_policy?: string;
+        };
     };
 }

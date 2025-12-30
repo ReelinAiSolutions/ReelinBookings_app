@@ -183,9 +183,9 @@ export const getAppointments = async (orgId?: string): Promise<Appointment[]> =>
         id: item.id,
         serviceId: item.service_id,
         staffId: item.staff_id,
-        clientId: item.client_email, // Approximate for list view
-        clientName: item.client_name,
-        clientEmail: item.client_email,
+        clientId: item.client_email || 'unknown',
+        clientName: item.client_name || 'Unknown Client',
+        clientEmail: item.client_email || '',
         date: item.date,
         timeSlot: item.time_slot,
         status: item.status

@@ -1,11 +1,11 @@
 import React from 'react';
-import { Calendar, BarChart3, User, ExternalLink } from 'lucide-react';
+import { Calendar, BarChart3, User, ExternalLink, Settings, Users } from 'lucide-react';
 import Link from 'next/link';
 import { Organization } from '@/types';
 
 interface StaffSidebarProps {
-    activeTab: 'schedule' | 'performance' | 'profile';
-    setActiveTab: (tab: 'schedule' | 'performance' | 'profile') => void;
+    activeTab: 'schedule' | 'performance' | 'settings' | 'team' | 'clients';
+    setActiveTab: (tab: 'schedule' | 'performance' | 'settings' | 'team' | 'clients') => void;
     currentOrg: Organization | null;
 }
 
@@ -13,7 +13,9 @@ export default function StaffSidebar({ activeTab, setActiveTab, currentOrg }: St
     const navItems = [
         { id: 'schedule', label: 'My Schedule', icon: Calendar },
         { id: 'performance', label: 'My Stats', icon: BarChart3 },
-        { id: 'profile', label: 'My Profile', icon: User },
+        { id: 'team', label: 'Team', icon: Users },
+        { id: 'clients', label: 'My Clients', icon: User },
+        { id: 'settings', label: 'Settings', icon: Settings },
     ] as const;
 
     return (

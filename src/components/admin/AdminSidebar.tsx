@@ -3,8 +3,8 @@ import { Calendar, Users, BarChart3, Settings, User, ExternalLink, Key, Briefcas
 import { Organization } from '@/types';
 
 interface AdminSidebarProps {
-    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team';
-    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team') => void;
+    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients';
+    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients') => void;
     currentOrg: Organization | null;
 }
 
@@ -17,6 +17,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
     const managementItems = [
         { id: 'profile', label: 'Profile', icon: User },
         { id: 'team', label: 'Team Members', icon: Users },
+        { id: 'clients', label: 'Clients', icon: Users },
         { id: 'services', label: 'Services', icon: Briefcase },
         { id: 'settings', label: 'Business Ops', icon: Settings },
     ] as const;
@@ -29,10 +30,9 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
                     <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center shadow-lg group-hover:rotate-6 transition-all">
                         <Calendar className="w-6 h-6" strokeWidth={2.5} />
                     </div>
-                    <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] font-[950] text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Elite</span>
-                        <h1 className="text-sm font-[950] text-[#111827] tracking-tight truncate leading-tight">
-                            {currentOrg?.name || 'Dashboard'}
+                    <div className="flex flex-col min-w-0 justify-center">
+                        <h1 className="text-xl font-[950] text-[#111827] tracking-tight truncate leading-tight">
+                            {currentOrg?.name || 'Reelin'}
                         </h1>
                     </div>
                 </div>

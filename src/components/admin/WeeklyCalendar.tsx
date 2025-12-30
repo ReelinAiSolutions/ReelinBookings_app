@@ -31,17 +31,21 @@ interface WeeklyCalendarProps {
     appointments: Appointment[];
     staff: Staff[];
     services: Service[];
+    availability?: any[];
     businessHours?: Organization['business_hours'];
     onSelectSlot: (date: Date, time: string, staffId?: string) => void;
     onAppointmentClick: (appointment: Appointment) => void;
+    colorMode?: 'staff' | 'service';
 }
 
 export default function WeeklyCalendar({
     appointments,
     staff,
     services,
+    availability,
     onSelectSlot,
-    onAppointmentClick
+    onAppointmentClick,
+    colorMode
 }: WeeklyCalendarProps) {
 
     // -- STATE --
@@ -436,7 +440,7 @@ export default function WeeklyCalendar({
                     </div>
                 )}
 
-                <div className="relative w-full flex" style={{ height: '1600px' }}>
+                <div className="relative w-full flex" style={{ height: `${hours.length * 60 + 24}px` }}>
                     <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-30 sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
                             <div key={h} className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 60}px` }}>
@@ -460,7 +464,7 @@ export default function WeeklyCalendar({
                             <div
                                 key={selectedDate.toISOString()}
                                 className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
-                                style={{ height: '1600px' }}
+                                style={{ height: `${hours.length * 60 + 24}px` }}
                             >
                                 {hours.map((h, i) => (
                                     <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 60}px` }} onClick={() => handleGridClick(h)}></div>
