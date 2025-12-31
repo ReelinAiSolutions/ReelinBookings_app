@@ -241,33 +241,67 @@ export default function WeeklyCalendar({
     };
 
     const isDraggingRef = useRef(false);
+    const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const pendingStartRef = useRef<{ x: number, y: number } | null>(null);
 
     // -- DRAG HANDLERS --
     const handlePointerDown = (e: React.PointerEvent, apt: Appointment, topPx: number) => {
-        e.preventDefault();
-        e.stopPropagation();
+        // Allow default behavior (scrolling) initially
+        // e.preventDefault(); 
+
+        // We stop propagation so we don't trigger grid clicks immediately
+        // e.stopPropagation(); 
 
         const card = e.currentTarget as HTMLDivElement;
-        card.setPointerCapture(e.pointerId);
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const pointerId = e.pointerId;
 
         isDraggingRef.current = false;
+        pendingStartRef.current = { x: startX, y: startY };
 
-        setDragState({
-            id: apt.id,
-            originalStaffId: apt.staffId,
-            startX: e.clientX,
-            startY: e.clientY,
-            initialTop: topPx,
-            currentTop: topPx,
-            currentStaffId: apt.staffId,
-            currentTimeSlot: apt.timeSlot // Initialize currentTimeSlot
-        });
+        // Start Long Press Timer
+        longPressTimerRef.current = setTimeout(() => {
+            // Trigger Drag Mode
+            isDraggingRef.current = true;
+            try {
+                card.setPointerCapture(pointerId);
+                if (navigator.vibrate) navigator.vibrate(30); // Haptic feedback
+            } catch (e) {
+                // Ignore capture errors
+            }
+
+            setDragState({
+                id: apt.id,
+                originalStaffId: apt.staffId,
+                startX: startX,
+                startY: startY,
+                initialTop: topPx,
+                currentTop: topPx,
+                currentStaffId: apt.staffId,
+                currentTimeSlot: apt.timeSlot
+            });
+            pendingStartRef.current = null; // Clear pending
+        }, 400); // 400ms delay
     };
 
     const handlePointerMove = (e: React.PointerEvent) => {
-        if (!dragState) return;
-        e.preventDefault();
+        // 1. Check for Scroll cancellation (Cancel Drag if moved before timer)
+        if (!dragState && pendingStartRef.current && longPressTimerRef.current) {
+            const moveDist = Math.hypot(e.clientX - pendingStartRef.current.x, e.clientY - pendingStartRef.current.y);
+            if (moveDist > 10) {
+                // User is scrolling, cancel drag timer
+                clearTimeout(longPressTimerRef.current);
+                longPressTimerRef.current = null;
+                pendingStartRef.current = null;
+            }
+            return;
+        }
 
+        if (!dragState) return;
+        e.preventDefault(); // Prevent scroll while dragging
+
+        // 2. Drag Logic
         const moveDistance = Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY);
         if (moveDistance > 5) {
             isDraggingRef.current = true;
@@ -309,12 +343,21 @@ export default function WeeklyCalendar({
     };
 
     const handlePointerUp = async (e: React.PointerEvent) => {
+        // Always clear timer on up
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+        pendingStartRef.current = null;
+
         if (!dragState) return;
         const { id, currentTop, originalStaffId } = dragState;
 
         // Release
         const card = e.currentTarget as HTMLDivElement;
-        card.releasePointerCapture(e.pointerId);
+        try {
+            card.releasePointerCapture(e.pointerId);
+        } catch (e) { /* ignore */ }
         setDragState(null);
 
         // Delay clearing the drag ref so onClick can detect it
