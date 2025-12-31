@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import DashboardStats from '@/components/admin/DashboardStats';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import DashboardCharts from '@/components/admin/DashboardCharts';
@@ -41,6 +42,7 @@ import {
 import Link from 'next/link';
 import { ExternalLink, Plus, Lock, X } from 'lucide-react';
 import { Organization, Appointment } from '@/types';
+import { createBrowserClient } from '@supabase/ssr';
 
 const AmbientBackground = () => (
     <style dangerouslySetInnerHTML={{
@@ -82,6 +84,11 @@ export default function AdminDashboard() {
     const [currentUser, setCurrentUser] = useState<any>(null); // New state
     const [userProfile, setUserProfile] = useState<any>(null); // New state
     const router = useRouter();
+
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     // Modal State
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -155,7 +162,51 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         loadDashboardData();
+
+        // Initial Tab Sync
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const tabParam = params.get('tab');
+            if (tabParam && ['operations', 'analytics', 'settings', 'profile', 'invites', 'services', 'team', 'clients'].includes(tabParam)) {
+                setActiveTab(tabParam as any);
+            }
+        }
     }, []);
+
+    // Sync Tab to URL
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            if (url.searchParams.get('tab') !== activeTab) {
+                url.searchParams.set('tab', activeTab);
+                window.history.replaceState({}, '', url);
+            }
+        }
+    }, [activeTab]);
+
+    useEffect(() => {
+        if (!currentOrg?.id) return;
+
+        const channel = supabase
+            .channel('admin-dashboard-realtime')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'appointments',
+                    filter: `org_id=eq.${currentOrg.id}`
+                },
+                () => {
+                    loadDashboardData();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [currentOrg?.id]);
 
     const handleAppointmentClick = (apt: Appointment) => {
         setSelectedAppointment(apt);
@@ -169,6 +220,17 @@ export default function AdminDashboard() {
 
     const onCancel = async (id: string) => {
         await cancelAppointment(id);
+        await loadDashboardData();
+    };
+
+    // Drag & Drop Handler
+    const handleAppointmentDrop = async (apt: Appointment, newDate: Date, newTime: string, newStaffId?: string) => {
+        const dateStr = format(newDate, 'yyyy-MM-dd');
+        await updateAppointment(apt.id, {
+            date: dateStr,
+            timeSlot: newTime,
+            staffId: newStaffId || apt.staffId
+        });
         await loadDashboardData();
     };
 
@@ -303,6 +365,8 @@ export default function AdminDashboard() {
             className="min-h-screen bg-[#F8F9FD] relative overflow-hidden flex"
             style={brandingStyle}
         >
+            <AmbientBackground />
+            <div className="absolute inset-0 ambient-mesh pointer-events-none fixed z-0" />
             <BrandingInjector primaryColor={currentOrg?.primary_color} />
             {/* Desktop Sidebar (Fixed) */}
             <AdminSidebar
@@ -314,7 +378,7 @@ export default function AdminDashboard() {
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
             <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh] overflow-hidden' : 'block min-h-screen'}`}>
-                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden lg:p-10' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
+                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden lg:p-2' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
                     {/* Mobile Header (Only for non-operations tabs) */}
 
 
@@ -332,6 +396,7 @@ export default function AdminDashboard() {
                                         businessHours={currentOrg?.business_hours}
                                         onSelectSlot={handleSelectSlot}
                                         onAppointmentClick={handleAppointmentClick}
+                                        onAppointmentUpdate={handleAppointmentDrop}
                                     />
                                 </div>
                             </div>

@@ -467,72 +467,68 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
     )
 
     return (
-        <div className="absolute inset-0 flex flex-col bg-[#F8F9FD] overflow-hidden">
-            {/* Header - EXACT REPLICA OF ADMIN */}
-            <header className="pt-8 pb-4 px-10 bg-white/80 backdrop-blur-xl sticky top-0 z-50 shrink-0 border-b border-gray-100">
-                <div className="max-w-[1800px] mx-auto w-full flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <h1 className="text-3xl font-black tracking-tight text-gray-900 leading-tight mb-2">
-                            Analytics
-                        </h1>
-                        <nav className="flex items-center gap-1 p-1 bg-gray-100/80 rounded-2xl w-fit">
-                            <button
-                                onClick={() => setActiveTab('my_stats')}
-                                className={`px-5 py-2.5 rounded-xl transition-all capitalize text-sm font-bold ${activeTab === 'my_stats' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'}`}
-                            >
-                                My Stats
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('clients')}
-                                className={`px-5 py-2.5 rounded-xl transition-all capitalize text-sm font-bold ${activeTab === 'clients' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'}`}
-                            >
-                                Clients
-                            </button>
-                        </nav>
-                    </div>
+        <div className="flex flex-col space-y-8 animate-in fade-in duration-500 max-w-[1800px] mx-auto w-full">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-3xl font-black tracking-tight text-gray-900 leading-tight mb-2">
+                        Analytics
+                    </h2>
+                    <nav className="flex items-center gap-1 p-1 bg-white border border-gray-100 rounded-2xl w-fit">
+                        <button
+                            onClick={() => setActiveTab('my_stats')}
+                            className={`px-5 py-2.5 rounded-xl transition-all capitalize text-sm font-bold ${activeTab === 'my_stats' ? 'bg-primary-50 text-primary-700 shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                        >
+                            My Stats
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('clients')}
+                            className={`px-5 py-2.5 rounded-xl transition-all capitalize text-sm font-bold ${activeTab === 'clients' ? 'bg-primary-50 text-primary-700 shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                        >
+                            Clients
+                        </button>
+                    </nav>
+                </div>
 
-                    {/* Time Range Selector */}
-                    <div className="flex items-center gap-2">
-                        {timeRange === 'custom' && (
-                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-right-4">
-                                <input
-                                    type="date"
-                                    value={customDateRange.start}
-                                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                                    className="text-xs font-bold text-gray-900 bg-transparent border-none focus:ring-0 p-1"
-                                />
-                                <span className="text-gray-400">-</span>
-                                <input
-                                    type="date"
-                                    value={customDateRange.end}
-                                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                                    className="text-xs font-bold text-gray-900 bg-transparent border-none focus:ring-0 p-1"
-                                />
-                            </div>
-                        )}
-
-                        <div className="bg-gray-100/80 p-1 rounded-2xl flex text-xs font-bold">
-                            {(['week', 'month', 'year', 'custom'] as TimeRange[]).map(r => (
-                                <button
-                                    key={r}
-                                    onClick={() => setTimeRange(r)}
-                                    className={`px-4 py-2.5 rounded-xl transition-all capitalize ${timeRange === r ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'}`}
-                                >
-                                    {r === 'custom' ? 'Custom' : `This ${r}`}
-                                </button>
-                            ))}
+                {/* Time Range Selector */}
+                <div className="flex items-center gap-2">
+                    {timeRange === 'custom' && (
+                        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-right-4">
+                            <input
+                                type="date"
+                                value={customDateRange.start}
+                                onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                className="text-xs font-bold text-gray-900 bg-transparent border-none focus:ring-0 p-1"
+                            />
+                            <span className="text-gray-400">-</span>
+                            <input
+                                type="date"
+                                value={customDateRange.end}
+                                onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                className="text-xs font-bold text-gray-900 bg-transparent border-none focus:ring-0 p-1"
+                            />
                         </div>
+                    )}
+
+                    <div className="bg-white p-1 rounded-2xl border border-gray-100 flex text-xs font-bold">
+                        {(['week', 'month', 'year', 'custom'] as TimeRange[]).map(r => (
+                            <button
+                                key={r}
+                                onClick={() => setTimeRange(r)}
+                                className={`px-4 py-2.5 rounded-xl transition-all capitalize ${timeRange === r ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                            >
+                                {r === 'custom' ? 'Custom' : `This ${r}`}
+                            </button>
+                        ))}
                     </div>
                 </div>
-            </header>
+            </div>
 
             {/* Main Content */}
-            <main className="flex-1 px-10 pt-8 pb-32 overflow-y-auto w-full scroll-smooth">
-                <div className="max-w-[1800px] mx-auto w-full">
-                    {activeTab === 'my_stats' && renderMyStats()}
-                    {activeTab === 'clients' && renderClients()}
-                </div>
-            </main>
+            <div className="w-full">
+                {activeTab === 'my_stats' && renderMyStats()}
+                {activeTab === 'clients' && renderClients()}
+            </div>
         </div>
     );
 }

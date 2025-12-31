@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Users, BarChart3, Settings, User, ExternalLink, Key, Briefcase } from 'lucide-react';
+import { Calendar, Users, BarChart3, Settings, User, ExternalLink, Key, Briefcase, Contact } from 'lucide-react';
 import { Organization } from '@/types';
 
 interface AdminSidebarProps {
@@ -17,7 +17,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
     const managementItems = [
         { id: 'profile', label: 'Profile', icon: User },
         { id: 'team', label: 'Team Members', icon: Users },
-        { id: 'clients', label: 'Clients', icon: Users },
+        { id: 'clients', label: 'Clients', icon: Contact },
         { id: 'services', label: 'Services', icon: Briefcase },
         { id: 'settings', label: 'Business Ops', icon: Settings },
     ] as const;
@@ -27,12 +27,17 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
             {/* Logo Area */}
             <div className="h-20 flex items-center px-6 border-b border-gray-100/20">
                 <div className="flex items-center gap-3 group cursor-pointer" onClick={() => setActiveTab('operations')}>
-                    <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center shadow-lg group-hover:rotate-6 transition-all">
-                        <Calendar className="w-6 h-6" strokeWidth={2.5} />
-                    </div>
+                    {currentOrg?.logo_url ? (
+                        <img suppressHydrationWarning src={currentOrg.logo_url} alt="Logo" className="w-10 h-10 rounded-2xl object-contain bg-white shadow-sm p-1" />
+                    ) : (
+                        <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center shadow-lg group-hover:rotate-6 transition-all">
+                            <Calendar className="w-6 h-6" strokeWidth={2.5} />
+                        </div>
+                    )}
                     <div className="flex flex-col min-w-0 justify-center">
-                        <h1 className="text-xl font-[950] text-[#111827] tracking-tight truncate leading-tight">
-                            {currentOrg?.name || 'Reelin'}
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Reelin Bookings</span>
+                        <h1 className="text-sm font-[950] text-[#111827] tracking-tight truncate leading-tight">
+                            {currentOrg?.name || 'Dashboard'}
                         </h1>
                     </div>
                 </div>
@@ -82,22 +87,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
                 </div>
             </nav>
 
-            {/* Footer / Profile Card */}
-            <div className="p-4 bg-transparent">
-                <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/60 backdrop-blur-md border border-white hover:bg-white transition-all cursor-pointer group shadow-sm">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden relative border-2 border-white shadow-inner">
-                        <img
-                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                            alt="Avatar"
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                        <span className="text-[13px] font-[950] text-[#111827] truncate leading-tight">Felix V.</span>
-                        <span className="text-[10px] font-[800] text-gray-400 uppercase tracking-tight">Agency Owner</span>
-                    </div>
-                </div>
-            </div>
+            {/* Footer Removed */}
         </aside>
     );
 }

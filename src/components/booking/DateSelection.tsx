@@ -27,13 +27,13 @@ export default function DateSelection({
     isLoading = false
 }: DateSelectionProps) {
 
-    // Generate next 14 days for calendar
+    // Generate next 30 days for calendar
     const calendarDays = useMemo(() => {
-        return Array.from({ length: 14 }, (_, i) => addDays(startOfToday(), i));
+        return Array.from({ length: 30 }, (_, i) => addDays(startOfToday(), i));
     }, []);
 
     return (
-        <div className="p-6 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col h-full mx-auto max-w-3xl relative pb-32">
+        <div className="p-6 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col h-full mx-auto max-w-5xl relative pb-32">
             <div className="flex items-center gap-3 mb-8">
                 <button onClick={onBack} className="p-3 -ml-3 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900 active:scale-95">
                     <ArrowLeft className="w-6 h-6" />
@@ -45,40 +45,54 @@ export default function DateSelection({
                 <div className="hidden md:block text-sm font-bold text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">Step 3 of 4</div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-3 gap-3">
                 {calendarDays.map((date) => {
                     const isSelected = selectedDate ? isSameDay(date, selectedDate) : false;
                     return (
                         <div
                             key={date.toISOString()}
-                            className={`rounded-2xl transition-all duration-300 border ${isSelected
-                                ? 'bg-white border-gray-200 shadow-xl shadow-gray-200/50 ring-1 ring-black/5'
-                                : 'bg-white border-transparent hover:bg-gray-50'
+                            className={`rounded-[2rem] transition-all duration-300 border ${isSelected
+                                ? 'col-span-3 bg-white border-gray-900 shadow-xl shadow-gray-200/50 ring-1 ring-black/5'
+                                : 'col-span-1 bg-white border-transparent hover:bg-gray-50 hover:shadow-lg'
                                 }`}
                         >
                             <button
                                 onClick={() => onSelectDate(isSelected ? null : date)}
-                                className="w-full flex items-center justify-between p-5 text-left"
+                                className={`w-full flex items-center p-6 transition-all ${isSelected
+                                    ? 'justify-between text-left'
+                                    : 'flex-col justify-center text-center gap-3 min-h-[160px]'
+                                    }`}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-full flex flex-col items-center justify-center shrink-0 transition-colors ${isSelected ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'
+                                <div className={`flex items-center ${isSelected ? 'gap-4' : 'flex-col gap-1'}`}>
+                                    <div className={`rounded-full flex flex-col items-center justify-center shrink-0 transition-colors ${isSelected
+                                        ? 'w-12 h-12 bg-gray-900 text-white'
+                                        : 'w-8 h-8 bg-gray-100 text-gray-500'
                                         }`}>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">{format(date, 'EEE')}</span>
-                                        <span className="text-lg font-black leading-none">{format(date, 'd')}</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className={`text-lg font-bold ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>
-                                            {format(date, 'MMMM do')}
+                                        <span className={`${isSelected ? 'text-xs uppercase tracking-wider font-bold' : 'text-[10px] uppercase tracking-wider font-bold'}`}>
+                                            {format(date, 'EEE')}
                                         </span>
-                                        <span className="text-sm font-medium text-gray-400">
-                                            {isSelected ? 'Viewing slots' : 'Tap to view slots'}
+                                        <span className={`${isSelected ? 'text-3xl' : 'text-2xl'} font-black leading-none`}>
+                                            {format(date, 'd')}
                                         </span>
                                     </div>
+
+                                    {isSelected && (
+                                        <div className="flex flex-col">
+                                            <span className="text-lg font-bold text-gray-900">
+                                                {format(date, 'MMMM do')}
+                                            </span>
+                                            <span className="text-sm font-medium text-gray-400">
+                                                Viewing slots
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isSelected ? 'bg-gray-100 rotate-90 text-gray-900' : 'text-gray-300'
-                                    }`}>
-                                    <ChevronRight className="w-5 h-5" />
-                                </div>
+
+                                {isSelected && (
+                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center rotate-90 text-gray-900">
+                                        <ChevronRight className="w-5 h-5" />
+                                    </div>
+                                )}
                             </button>
 
                             {/* Accordion Content */}

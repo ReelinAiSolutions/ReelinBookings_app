@@ -11,7 +11,7 @@ interface StaffSidebarProps {
 
 export default function StaffSidebar({ activeTab, setActiveTab, currentOrg }: StaffSidebarProps) {
     const navItems = [
-        { id: 'schedule', label: 'My Schedule', icon: Calendar },
+        { id: 'schedule', label: 'Calendar', icon: Calendar },
         { id: 'performance', label: 'My Stats', icon: BarChart3 },
         { id: 'team', label: 'Team', icon: Users },
         { id: 'clients', label: 'My Clients', icon: User },
@@ -19,14 +19,20 @@ export default function StaffSidebar({ activeTab, setActiveTab, currentOrg }: St
     ] as const;
 
     return (
-        <aside className="hidden lg:flex flex-col w-64 h-screen bg-white border-r border-gray-200 fixed left-0 top-0 z-50">
+        <aside className="hidden lg:flex flex-col w-64 h-screen bg-white/40 backdrop-blur-3xl border-r border-gray-100/50 fixed left-0 top-0 z-50 transition-all duration-300">
             {/* Logo Area */}
-            <div className="h-16 flex items-center px-6 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                    <img suppressHydrationWarning src={currentOrg?.logo_url || '/logo.png'} alt="Logo" className="w-8 h-8 rounded-lg object-contain bg-gray-50 border border-gray-100" />
-                    <div className="flex flex-col min-w-0">
+            <div className="h-20 flex items-center px-6 border-b border-gray-100/20">
+                <div className="flex items-center gap-3 group cursor-pointer" onClick={() => setActiveTab('schedule')}>
+                    {currentOrg?.logo_url ? (
+                        <img suppressHydrationWarning src={currentOrg.logo_url} alt="Logo" className="w-10 h-10 rounded-2xl object-contain bg-white shadow-sm p-1" />
+                    ) : (
+                        <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center shadow-lg group-hover:rotate-6 transition-all">
+                            <Calendar className="w-6 h-6" strokeWidth={2.5} />
+                        </div>
+                    )}
+                    <div className="flex flex-col min-w-0 justify-center">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Reelin Bookings</span>
-                        <h1 className="text-sm font-black text-gray-900 tracking-tight truncate leading-tight">
+                        <h1 className="text-sm font-[950] text-[#111827] tracking-tight truncate leading-tight">
                             {currentOrg?.name || 'Dashboard'}
                         </h1>
                     </div>
@@ -34,38 +40,27 @@ export default function StaffSidebar({ activeTab, setActiveTab, currentOrg }: St
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            <nav className="flex-1 p-5 space-y-1 overflow-y-auto mt-4 px-3">
+                <p className="px-4 text-[11px] font-[950] text-gray-400 uppercase tracking-[0.2em] mb-4">Workspace</p>
                 {navItems.map((item) => {
                     const isActive = activeTab === item.id;
                     return (
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id as any)}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${isActive
-                                ? 'bg-primary-50 text-primary-700'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-[800] transition-all group ${isActive
+                                ? 'bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)] text-[#111827] border border-gray-100'
+                                : 'text-gray-400 hover:bg-white/60 hover:text-[#111827]'
                                 }`}
                         >
-                            <item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                            <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#4F46E5]' : 'text-gray-400 group-hover:text-gray-900'}`} strokeWidth={isActive ? 2.5 : 2} />
                             {item.label}
                         </button>
                     );
                 })}
             </nav>
 
-            {/* Footer / Live Link */}
-            <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-                {currentOrg && (
-                    <Link
-                        href={`/${currentOrg.slug}`}
-                        target="_blank"
-                        className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-gray-500 hover:text-primary-600 transition-colors uppercase tracking-wider"
-                    >
-                        <ExternalLink className="w-4 h-4" />
-                        View Live Site
-                    </Link>
-                )}
-            </div>
+            {/* Footer Removed */}
         </aside>
     );
 }

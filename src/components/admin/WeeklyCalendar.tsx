@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { ChevronLeft, Plus, Users } from 'lucide-react';
+import { ChevronLeft, Plus, Users, ListFilter } from 'lucide-react';
 import { Appointment, Staff, Service, Organization, AppointmentStatus } from '@/types';
 import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth, subMonths, subYears, eachMonthOfInterval, endOfYear } from 'date-fns';
 
@@ -35,7 +35,21 @@ interface WeeklyCalendarProps {
     businessHours?: Organization['business_hours'];
     onSelectSlot: (date: Date, time: string, staffId?: string) => void;
     onAppointmentClick: (appointment: Appointment) => void;
+    onAppointmentUpdate?: (appointment: Appointment, newDate: Date, newTime: string, newStaffId?: string) => Promise<void>;
     colorMode?: 'staff' | 'service';
+    showStaffFilter?: boolean;
+    currentStaffId?: string;
+}
+
+interface DragState {
+    id: string;
+    originalStaffId: string;
+    startX: number;
+    startY: number;
+    initialTop: number;
+    currentTop: number;
+    currentStaffId: string;
+    currentTimeSlot: string; // Dynamic Time HH:mm
 }
 
 export default function WeeklyCalendar({
@@ -45,12 +59,18 @@ export default function WeeklyCalendar({
     availability,
     onSelectSlot,
     onAppointmentClick,
-    colorMode
+    onAppointmentUpdate,
+    colorMode,
+    showStaffFilter = true,
+    currentStaffId
 }: WeeklyCalendarProps) {
 
     // -- STATE --
+    const [dragState, setDragState] = useState<DragState | null>(null);
     const [calendarLevel, setCalendarLevel] = useState<'day' | 'month' | 'year'>('day');
     const [viewMode, setViewMode] = useState<'personal' | 'team'>('personal');
+    const [filterStaffId, setFilterStaffId] = useState<string>(currentStaffId || 'ALL');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
     const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
@@ -71,6 +91,7 @@ export default function WeeklyCalendar({
     const prevScrollHeight = useRef(0);
 
     // -- CONSTANTS --
+    const now = new Date();
     const hours = Array.from({ length: 24 }).map((_, i) => i);
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const weekDayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -94,7 +115,7 @@ export default function WeeklyCalendar({
         if (scrollContainerRef.current) {
             const targetHour = Math.max(0, hour - 2);
             scrollContainerRef.current.scrollTo({
-                top: targetHour * 60,
+                top: targetHour * 120,
                 behavior: 'smooth'
             });
         }
@@ -105,7 +126,7 @@ export default function WeeklyCalendar({
             // Initial scroll (no smooth)
             const currentHour = new Date().getHours();
             const targetHour = Math.max(0, currentHour - 2);
-            scrollContainerRef.current.scrollTop = targetHour * 60;
+            scrollContainerRef.current.scrollTop = targetHour * 120;
         } else if (calendarLevel === 'month') {
             // Init Month Range: -6 to +12 months
             const start = subMonths(selectedDate, 6);
@@ -214,14 +235,127 @@ export default function WeeklyCalendar({
     };
 
     const handleGridClick = (hour: number, staffId?: string) => {
+        if (dragState) return; // Prevent click when dropping
         const timeStr = `${hour.toString().padStart(2, '0')}:00`;
         onSelectSlot(selectedDate, timeStr, staffId);
+    };
+
+    const isDraggingRef = useRef(false);
+
+    // -- DRAG HANDLERS --
+    const handlePointerDown = (e: React.PointerEvent, apt: Appointment, topPx: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const card = e.currentTarget as HTMLDivElement;
+        card.setPointerCapture(e.pointerId);
+
+        isDraggingRef.current = false;
+
+        setDragState({
+            id: apt.id,
+            originalStaffId: apt.staffId,
+            startX: e.clientX,
+            startY: e.clientY,
+            initialTop: topPx,
+            currentTop: topPx,
+            currentStaffId: apt.staffId,
+            currentTimeSlot: apt.timeSlot // Initialize currentTimeSlot
+        });
+    };
+
+    const handlePointerMove = (e: React.PointerEvent) => {
+        if (!dragState) return;
+        e.preventDefault();
+
+        const moveDistance = Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY);
+        if (moveDistance > 5) {
+            isDraggingRef.current = true;
+        }
+
+        // 1. Calculate Vertical Move
+        const deltaY = e.clientY - dragState.startY;
+        let newTop = dragState.initialTop + deltaY;
+
+        // Clamp to valid range (0 to 24*120)
+        newTop = Math.max(0, Math.min(newTop, 24 * 120 - 60)); // -60 assumption for min height
+
+        // Snap to 15 mins (30px)
+        const snappedTop = Math.round(newTop / 30) * 30;
+
+        // Calculate Time
+        const totalMinutes = snappedTop / 2;
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+        const newTimeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+
+        // 2. Calculate Horizontal Move (Team View Only)
+        let newStaffId = dragState.originalStaffId;
+        if (viewMode === 'team') {
+            // Simple heuristic: If moved significantly X, find which column
+            // But we don't have column refs.
+            // We can use the elementFromPoint logic or just trust the visual feedback?
+            // For MVP, lets just do vertical drag in Personal View, and simplified vertical in Team.
+            // Actually, the user asked for "smooth drag and drop rescheduling" which implies time change.
+            // Switching staff is harder without knowing column widths.
+            // Let's stick to time change first.
+        }
+
+        setDragState(prev => prev ? ({
+            ...prev,
+            currentTop: snappedTop,
+            currentTimeSlot: newTimeSlot // Update currentTimeSlot
+        }) : null);
+    };
+
+    const handlePointerUp = async (e: React.PointerEvent) => {
+        if (!dragState) return;
+        const { id, currentTop, originalStaffId } = dragState;
+
+        // Release
+        const card = e.currentTarget as HTMLDivElement;
+        card.releasePointerCapture(e.pointerId);
+        setDragState(null);
+
+        // Delay clearing the drag ref so onClick can detect it
+        setTimeout(() => {
+            isDraggingRef.current = false;
+        }, 100);
+
+        // Calculate new time
+        // 120px = 60 mins -> 2 px/min
+        const totalMinutes = currentTop / 2;
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+        const newTimeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+
+        // Find the appointment
+        const apt = appointments.find(a => a.id === id);
+        if (apt && apt.timeSlot !== newTimeSlot && onAppointmentUpdate) {
+            const updatedApt = { ...apt, timeSlot: newTimeSlot };
+
+            // Open Modal with NEW Data immediately (Optimistic Confirmation)
+            onAppointmentClick(updatedApt);
+
+            try {
+                // Use the appointment's existing date since we only support vertical (time) drag for now
+                const currentAptDate = new Date(`${apt.date}T00:00:00`);
+                await onAppointmentUpdate(apt, currentAptDate, newTimeSlot, originalStaffId);
+            } catch (err) {
+                console.error("Failed to update appointment", err);
+                // Toast handled by parent?
+            }
+        }
     };
 
     // -- HELPERS --
     const getAppointmentsForDate = (date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        return appointments.filter(apt => apt.date === dateStr && apt.status !== AppointmentStatus.CANCELLED);
+        return appointments.filter(apt =>
+            apt.date === dateStr &&
+            apt.status !== AppointmentStatus.CANCELLED &&
+            (viewMode === 'team' || filterStaffId === 'ALL' || apt.staffId === filterStaffId)
+        );
     };
 
     const formatTo12Hour = (timeStr: string) => {
@@ -412,12 +546,12 @@ export default function WeeklyCalendar({
         const isToday = isSameDay(selectedDate, now);
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
-        const currentTimeTopPx = isToday ? (currentHour * 60) + currentMinute : -1;
+        const currentTimeTopPx = isToday ? ((currentHour * 60) + currentMinute) * 2 : -1;
 
         return (
             <div
                 ref={scrollContainerRef}
-                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide pb-24`}
+                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide pb-20 lg:pb-0`}
                 style={{ scrollBehavior: 'smooth' }}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
@@ -440,10 +574,10 @@ export default function WeeklyCalendar({
                     </div>
                 )}
 
-                <div className="relative w-full flex" style={{ height: `${hours.length * 60 + 24}px` }}>
+                <div className="relative w-full flex" style={{ height: `${hours.length * 120}px` }}>
                     <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-30 sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
-                            <div key={h} className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 60}px` }}>
+                            <div key={h} className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
                                 <span className="text-[10px] font-medium text-gray-400 relative -top-2">
                                     {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
                                 </span>
@@ -464,34 +598,91 @@ export default function WeeklyCalendar({
                             <div
                                 key={selectedDate.toISOString()}
                                 className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
-                                style={{ height: `${hours.length * 60 + 24}px` }}
+                                style={{ height: `${hours.length * 120 + 24}px` }}
                             >
                                 {hours.map((h, i) => (
-                                    <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 60}px` }} onClick={() => handleGridClick(h)}></div>
+                                    <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h)}></div>
                                 ))}
 
-                                {dayAppointments.map(apt => {
-                                    const [h, m] = apt.timeSlot.split(':').map(Number);
-                                    const service = services.find(s => s.id === apt.serviceId);
-                                    const duration = service?.durationMinutes || 60;
-                                    const topPx = (h * 60) + m;
-                                    const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
-                                    const isPast = aptDate < now;
+                                {(() => {
+                                    // Layout Helper: Calculate overlapping groups for side-by-side display
+                                    const getMinutes = (t: string) => { const parts = t.split(':'); return parseInt(parts[0]) * 60 + parseInt(parts[1]); };
 
-                                    return (
-                                        <div
-                                            key={apt.id}
-                                            onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
-                                            className={`absolute left-2 right-2 rounded-[4px] bg-indigo-50 border-l-[3px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-sm animate-in zoom-in-95 duration-200 appointment-card transition-transform ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}`}
-                                            style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
-                                        >
-                                            <div className="text-sm font-bold leading-tight text-indigo-700">{apt.clientName}</div>
-                                            <div className="text-xs text-indigo-500 mt-0.5">
-                                                {formatTo12Hour(apt.timeSlot)}
+                                    // Sort appointments by time (and ID for stability)
+                                    const sortedApts = [...dayAppointments].sort((a, b) => {
+                                        const tA = getMinutes(a.timeSlot);
+                                        const tB = getMinutes(b.timeSlot);
+                                        return tA - tB || a.id.localeCompare(b.id);
+                                    });
+
+                                    return sortedApts.map((apt) => {
+                                        const start = getMinutes(apt.timeSlot);
+                                        const service = services.find(s => s.id === apt.serviceId);
+                                        const duration = service?.durationMinutes || 60;
+                                        const end = start + duration;
+
+                                        // Find all concurrent events (any overlap)
+                                        const concurrent = sortedApts.filter(a => {
+                                            const aStart = getMinutes(a.timeSlot);
+                                            const aService = services.find(s => s.id === a.serviceId);
+                                            const aDuration = aService?.durationMinutes || 60;
+                                            const aEnd = aStart + aDuration;
+                                            return (start < aEnd && end > aStart); // Intersection test
+                                        });
+
+                                        const total = concurrent.length;
+                                        const index = concurrent.findIndex(a => a.id === apt.id);
+
+                                        // Calculate Width & Position (with small gaps)
+                                        const widthPct = 98 / total;
+                                        const leftPct = (index * widthPct);
+
+                                        const [h, m] = apt.timeSlot.split(':').map(Number);
+                                        const topPx = ((h * 60) + m) * 2;
+                                        const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
+                                        const isPast = aptDate < now;
+
+                                        const isDragging = dragState?.id === apt.id;
+                                        const displayTop = isDragging ? dragState.currentTop : topPx;
+                                        const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot; // Use displayTime
+
+                                        return (
+                                            <div
+                                                key={apt.id}
+                                                onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
+                                                onPointerMove={handlePointerMove}
+                                                onPointerUp={handlePointerUp}
+                                                onClick={(e) => {
+                                                    // Prevent click if just dragged
+                                                    if (isDraggingRef.current) {
+                                                        e.stopPropagation();
+                                                        return;
+                                                    }
+                                                    if (!isDragging) {
+                                                        e.stopPropagation();
+                                                        onAppointmentClick(apt);
+                                                    }
+                                                }}
+                                                className={`absolute rounded-[6px] bg-indigo-50 border-l-[4px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-center gap-0.5 hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 hover:ring-indigo-500 ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-indigo-400 opacity-90 cursor-grabbing' : ''}`}
+                                                style={{
+                                                    top: `${displayTop}px`,
+                                                    height: `${duration * 2}px`,
+                                                    left: `calc(${leftPct}% + 1px)`,
+                                                    width: `calc(${widthPct}% - 2px)`,
+                                                    transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                }}
+                                            >
+                                                <div className="text-sm font-[800] leading-tight text-indigo-700 truncate">{apt.clientName}</div>
+                                                <div className="text-xs font-bold leading-tight text-indigo-600/90 truncate">{staff.find(s => s.id === apt.staffId)?.name || 'Staff'}</div>
+                                                <div className="text-xs font-semibold leading-tight text-indigo-500/90 truncate">{services.find(s => s.id === apt.serviceId)?.name || 'Service'}</div>
+                                                <div className="text-[11px] font-medium leading-tight text-indigo-400/90 truncate mt-0.5">
+                                                    {formatTo12Hour(displayTime)}
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+
+                                    });
+                                })()}
                             </div>
                         ) : (
                             <div className="flex w-full h-full">
@@ -502,26 +693,49 @@ export default function WeeklyCalendar({
                                     return (
                                         <div key={member.id} className="flex-1 min-w-[120px] border-l border-gray-300 relative first:border-l-0 group h-full">
                                             {hours.map(h => (
-                                                <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${h * 60}px` }} onClick={() => handleGridClick(h, member.id)}></div>
+                                                <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${h * 120}px` }} onClick={() => handleGridClick(h, member.id)}></div>
                                             ))}
 
                                             {memberAppointments.map(apt => {
                                                 const [h, m] = apt.timeSlot.split(':').map(Number);
                                                 const service = services.find(s => s.id === apt.serviceId);
                                                 const duration = service?.durationMinutes || 60;
-                                                const topPx = (h * 60) + m;
+                                                const topPx = ((h * 60) + m) * 2;
                                                 const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
                                                 const isPast = aptDate < now;
+
+                                                const isDragging = dragState?.id === apt.id;
+                                                const displayTop = isDragging ? dragState.currentTop : topPx;
+                                                const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot; // Use displayTime
 
                                                 return (
                                                     <div
                                                         key={apt.id}
-                                                        onClick={(e) => { e.stopPropagation(); onAppointmentClick(apt); }}
-                                                        className={`absolute left-1 right-1 rounded-[3px] ${colorScheme.bg} border-l-[3px] ${colorScheme.border} p-1.5 overflow-hidden z-10 shadow-sm animate-in zoom-in-95 appointment-card transition-transform ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}`}
-                                                        style={{ top: `${topPx}px`, height: `${duration}px`, minHeight: '40px' }}
+                                                        onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
+                                                        onPointerMove={handlePointerMove}
+                                                        onPointerUp={handlePointerUp}
+                                                        onClick={(e) => {
+                                                            // Prevent click if just dragged
+                                                            if (isDraggingRef.current) {
+                                                                e.stopPropagation();
+                                                                return;
+                                                            }
+                                                            if (!isDragging) {
+                                                                e.stopPropagation();
+                                                                onAppointmentClick(apt);
+                                                            }
+                                                        }}
+                                                        className={`absolute left-0.5 right-0.5 rounded-[6px] ${colorScheme.bg} border-l-[4px] ${colorScheme.border} p-2 overflow-hidden z-10 shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-center gap-0.5 hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 hover:ring-indigo-500 ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-indigo-400 opacity-90 cursor-grabbing' : ''}`}
+                                                        style={{
+                                                            top: `${displayTop}px`,
+                                                            height: `${duration * 2}px`,
+                                                            transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                        }}
                                                     >
-                                                        <div className={`text-xs font-bold leading-tight ${colorScheme.text} truncate`}>{apt.clientName}</div>
-                                                        <div className={`text-[10px] font-medium ${colorScheme.text} opacity-80 truncate`}>{formatTo12Hour(apt.timeSlot)}</div>
+                                                        <div className={`text-sm font-[800] leading-tight ${colorScheme.text} truncate`}>{apt.clientName}</div>
+                                                        <div className={`text-xs font-bold leading-tight ${colorScheme.text} opacity-90 truncate`}>{member.name}</div>
+                                                        <div className={`text-xs font-semibold leading-tight ${colorScheme.text} opacity-80 truncate`}>{service?.name || 'Service'}</div>
+                                                        <div className={`text-[11px] font-medium leading-tight ${colorScheme.text} opacity-75 truncate mt-0.5`}>{formatTo12Hour(displayTime)}</div>
                                                     </div>
                                                 );
                                             })}
@@ -566,7 +780,7 @@ export default function WeeklyCalendar({
                             <h1 className="text-[30px] font-black tracking-tight text-gray-900 leading-tight">
                                 {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : calendarLevel === 'month' ? format(selectedDate, 'MMMM') : getYear(selectedDate)}
                             </h1>
-                            {!isSameDay(selectedDate, new Date()) && (
+                            {(!isSameDay(selectedDate, new Date()) || calendarLevel !== 'day') && (
                                 <button
                                     className="text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors mb-1.5"
                                     onClick={() => {
@@ -576,12 +790,46 @@ export default function WeeklyCalendar({
                                         setTimeout(() => scrollToTime(), 100);
                                     }}
                                 >
-                                    Today
+                                    Go to Today
                                 </button>
                             )}
                         </div>
 
                         <div className="flex items-center gap-2.5 mb-2">
+                            {/* Filter Button */}
+                            {showStaffFilter && (
+                                <div className="relative">
+                                    <button
+                                        className={`text-indigo-600 transition-all ${filterStaffId !== 'ALL' || isFilterOpen ? 'bg-indigo-50 rounded-full p-1.5' : ''}`}
+                                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                    >
+                                        <ListFilter className="w-6 h-6" strokeWidth={2} />
+                                    </button>
+                                    {isFilterOpen && (
+                                        <>
+                                            <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)}></div>
+                                            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                                <div
+                                                    className={`px-4 py-3 text-sm font-medium hover:bg-gray-50 cursor-pointer border-b border-gray-50 ${filterStaffId === 'ALL' ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-700'}`}
+                                                    onClick={() => { setFilterStaffId('ALL'); setIsFilterOpen(false); }}
+                                                >
+                                                    All Staff
+                                                </div>
+                                                {staff.map(s => (
+                                                    <div
+                                                        key={s.id}
+                                                        className={`px-4 py-3 text-sm font-medium hover:bg-gray-50 cursor-pointer ${filterStaffId === s.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-700'}`}
+                                                        onClick={() => { setFilterStaffId(s.id); setIsFilterOpen(false); }}
+                                                    >
+                                                        {s.name}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+
                             {calendarLevel === 'day' && (
                                 <button
                                     className={`text-indigo-600 ${viewMode === 'team' ? 'bg-indigo-100 rounded-full p-1.5' : ''}`}

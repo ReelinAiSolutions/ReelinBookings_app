@@ -14,6 +14,7 @@ import {
 } from '@/services/dataService';
 import { useRouter } from 'next/navigation';
 import { Organization, Appointment } from '@/types';
+import { createBrowserClient } from '@supabase/ssr';
 
 export default function StaffPage() {
     const [appointments, setAppointments] = useState<any[]>([]);
@@ -25,6 +26,11 @@ export default function StaffPage() {
     const [userProfile, setUserProfile] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     const loadStaffData = async () => {
         try {
@@ -71,6 +77,30 @@ export default function StaffPage() {
     useEffect(() => {
         loadStaffData();
     }, []);
+
+    useEffect(() => {
+        if (!currentOrg?.id) return;
+
+        const channel = supabase
+            .channel('staff-dashboard-realtime')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'appointments',
+                    filter: `org_id=eq.${currentOrg.id}`
+                },
+                () => {
+                    loadStaffData();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [currentOrg?.id]);
 
     const onStatusUpdate = async (id: string, newStatus: string) => {
         await updateAppointment(id, { status: newStatus });

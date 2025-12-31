@@ -367,7 +367,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             <BarChart layout="vertical" data={categoryStats.length > 0 ? categoryStats : [{ name: 'No Data', value: 0 }]} margin={{ left: 0, right: 30, top: 0, bottom: 0 }}>
                                 <XAxis type="number" hide />
                                 <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={100} tick={{ fill: '#6B7280', fontSize: 11, fontWeight: 700 }} />
-                                <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontWeight: 'bold' }} formatter={(value: number) => `$${value}`} />
+                                <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontWeight: 'bold' }} formatter={(value: any) => `$${value}`} />
                                 <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                                     {categoryStats.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={['#4F46E5', '#818CF8', '#C7D2FE'][index % 3] || '#E5E7EB'} />
@@ -442,8 +442,8 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <div className="text-xl font-black">{staffLeaderboard[0].utilization}%</div>
                             </div>
                             <div>
-                                <div className="text-xs text-emerald-200 font-bold uppercase">Rating</div>
-                                <div className="text-xl font-black">5.0</div>
+                                <div className="text-xs text-emerald-200 font-bold uppercase">Avg Ticket</div>
+                                <div className="text-xl font-black">${Math.round(staffLeaderboard[0].bookings > 0 ? staffLeaderboard[0].revenue / staffLeaderboard[0].bookings : 0)}</div>
                             </div>
                         </div>
                     </div>
@@ -516,14 +516,18 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 pt-2">
-                                <div className="bg-gray-50 rounded-2xl p-3 text-center">
-                                    <div className="text-2xl font-black text-gray-900">{member.bookings}</div>
-                                    <div className="text-[10px] font-bold text-gray-400 uppercase">Bookings</div>
+                            <div className="grid grid-cols-3 gap-2 pt-2">
+                                <div className="bg-gray-50 rounded-2xl p-2 text-center">
+                                    <div className="text-xl font-black text-gray-900">{member.bookings}</div>
+                                    <div className="text-[9px] font-bold text-gray-400 uppercase">Bookings</div>
                                 </div>
-                                <div className="bg-gray-50 rounded-2xl p-3 text-center">
-                                    <div className="text-2xl font-black text-gray-900">{member.utilization}%</div>
-                                    <div className="text-[10px] font-bold text-gray-400 uppercase">Efficiency</div>
+                                <div className="bg-gray-50 rounded-2xl p-2 text-center">
+                                    <div className="text-xl font-black text-gray-900">{member.utilization}%</div>
+                                    <div className="text-[9px] font-bold text-gray-400 uppercase">Efficiency</div>
+                                </div>
+                                <div className="bg-gray-50 rounded-2xl p-2 text-center">
+                                    <div className="text-xl font-black text-gray-900">${Math.round(member.bookings > 0 ? member.revenue / member.bookings : 0)}</div>
+                                    <div className="text-[9px] font-bold text-gray-400 uppercase">Avg Ticket</div>
                                 </div>
                             </div>
                         </div>
@@ -667,7 +671,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
     );
 
     return (
-        <div className="absolute inset-0 flex flex-col bg-gray-50/50 overflow-hidden">
+        <div className="w-full h-full flex flex-col bg-gray-50/50 overflow-hidden">
             {/* Header */}
             <header className="pt-8 pb-4 px-10 bg-white/80 backdrop-blur-xl sticky top-0 z-50 shrink-0 border-b border-gray-100">
                 <div className="max-w-[1800px] mx-auto w-full flex flex-col md:flex-row md:items-end justify-between gap-4">

@@ -52,17 +52,30 @@ export default function CreateAppointmentModal({
     const [error, setError] = useState<string | null>(null);
 
     // Initial Synced State
+    // Initial Synced State
     useEffect(() => {
         if (isOpen) {
             // Reset form on open
             if (defaultDate) setDate(typeof defaultDate === 'string' ? defaultDate : defaultDate.toISOString().split('T')[0]);
             if (defaultTime) setTime(defaultTime);
-            if (preselectedStaffId) setStaffId(preselectedStaffId);
+
+            // Ensure Staff is selected
+            if (preselectedStaffId) {
+                setStaffId(preselectedStaffId);
+            } else if ((!staffId || !staff.find(s => s.id === staffId)) && staff.length > 0) {
+                setStaffId(staff[0].id);
+            }
+
+            // Ensure Service is selected
+            if ((!serviceId || !services.find(s => s.id === serviceId)) && services.length > 0) {
+                setServiceId(services[0].id);
+            }
+
             setError(null);
             setClientName('');
             setClientEmail('');
         }
-    }, [isOpen, defaultDate, defaultTime, preselectedStaffId]);
+    }, [isOpen, defaultDate, defaultTime, preselectedStaffId, services, staff]);
 
     // -- HELPER: Time Options --
     const generateTimeOptions = () => {
@@ -328,8 +341,9 @@ export default function CreateAppointmentModal({
                                             value={date}
                                             onChange={e => setDate(e.target.value)}
                                             className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                            onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
                                         />
-                                        <p className="text-sm font-black text-primary-600 pointer-events-none">
+                                        <p className="text-sm font-black text-[#007AFF] pointer-events-none">
                                             {date ? (() => {
                                                 const [y, m, d] = date.split('-').map(Number);
                                                 return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -365,7 +379,7 @@ export default function CreateAppointmentModal({
                                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                                             ))}
                                         </select>
-                                        <p className={`text-sm font-black pointer-events-none ${time ? 'text-primary-600' : 'text-gray-400'}`}>
+                                        <p className={`text-sm font-black pointer-events-none ${time ? 'text-[#007AFF]' : 'text-gray-400'}`}>
                                             {time ? getDisplayTime(time) : (
                                                 timeOptions.length === 0
                                                     ? (
@@ -381,7 +395,7 @@ export default function CreateAppointmentModal({
                                                     : 'Select Time'
                                             )}
                                         </p>
-                                        <ChevronRight className="w-3.5 h-3.5 text-primary-400 rotate-90 pointer-events-none" />
+                                        <ChevronRight className="w-3.5 h-3.5 text-[#007AFF]/50 rotate-90 pointer-events-none" />
                                     </div>
                                 </div>
 
@@ -390,16 +404,16 @@ export default function CreateAppointmentModal({
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
                                     <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
                                         <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
-                                        <span className="text-primary-600 font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
+                                        <span className="text-[#007AFF] font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
                                         <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
                                     </div>
                                     <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
                                         {selectedService ? (
-                                            <div className="w-2/3 h-10 bg-primary-50 border-2 border-primary-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
-                                                <div className="w-2 h-2 rounded-full bg-primary-600 mr-3 shadow-[0_0_8px_rgba(var(--primary),0.5)]"></div>
+                                            <div className="w-2/3 h-10 bg-blue-50 border-2 border-blue-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
+                                                <div className="w-2 h-2 rounded-full bg-[#007AFF] mr-3 shadow-[0_0_8px_rgba(0,122,255,0.5)]"></div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[10px] font-black text-primary-900 truncate uppercase tracking-tight">{selectedService.name}</p>
-                                                    <p className="text-[9px] font-bold text-primary-600 opacity-70 uppercase">{selectedService.durationMinutes}m duration</p>
+                                                    <p className="text-[10px] font-black text-blue-900 truncate uppercase tracking-tight">{selectedService.name}</p>
+                                                    <p className="text-[9px] font-bold text-[#007AFF] opacity-70 uppercase">{selectedService.durationMinutes}m duration</p>
                                                 </div>
                                             </div>
                                         ) : (

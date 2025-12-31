@@ -202,6 +202,54 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
             <form onSubmit={handleSave} className="space-y-4">
 
+                {/* 0. Booking Link (NEW) */}
+                <AccordionItem
+                    title="Booking Link"
+                    subtitle="Share this link with your customers"
+                    icon={Globe}
+                    colorClass="bg-indigo-50 text-indigo-600"
+                    isOpen={openSection === 'link'}
+                    onToggle={() => toggleSection('link')}
+                >
+                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Your Public Booking URL</label>
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1 relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Globe className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type="text"
+                                    readOnly
+                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/${org.slug}`}
+                                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                />
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`${window.location.origin}/${org.slug}`);
+                                    toast('Link copied to clipboard!', 'success');
+                                }}
+                                className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-bold shadow-sm transition-all active:scale-95"
+                            >
+                                Copy Link
+                            </Button>
+                            <a
+                                href={`/${org.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5"
+                            >
+                                Open Page
+                            </a>
+                        </div>
+                        <p className="mt-3 text-xs text-gray-400 font-medium ml-1">
+                            This is the unique URL where your clients can book appointments.
+                        </p>
+                    </div>
+                </AccordionItem>
+
                 {/* 1. Brand Appearance */}
                 <AccordionItem
                     title="Brand Appearance"
