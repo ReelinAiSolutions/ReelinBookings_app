@@ -39,17 +39,21 @@ export default function NotificationManager() {
     const checkSupport = async () => {
         const isSecure = window.isSecureContext;
         const hasSW = 'serviceWorker' in navigator;
-        const hasPush = 'PushManager' in window;
+        const hasPushConstructor = 'PushManager' in window;
+        const hasPushInSWProto = 'pushManager' in ServiceWorkerRegistration.prototype;
         const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+        // Final verdict: many browsers need to see the constructor or the prototype instance
+        const hasPush = hasPushConstructor || hasPushInSWProto;
         const supported = isSecure && hasSW && hasPush;
 
-        console.log('Push Support Diagnostics:', { isSecure, hasSW, hasPush, isStandalone, protocol: window.location.protocol, hostname: window.location.hostname });
+        console.log('Push Support Diagnostics:', { isSecure, hasSW, hasPush, isStandalone, userAgent: navigator.userAgent });
         setIsSupported(supported);
 
         if (!supported) {
             setError({
                 message: 'Device Support Check Failed',
-                diagnostic: `Secure: ${isSecure ? 'Yes' : 'No'} | SW: ${hasSW ? 'Yes' : 'No'} | Push: ${hasPush ? 'Yes' : 'No'} | Standalone: ${isStandalone ? 'Yes' : 'No'}`
+                diagnostic: `Secure: ${isSecure ? 'Yes' : 'No'} | SW: ${hasSW ? 'Yes' : 'No'} | Push: ${hasPush ? 'Yes' : 'No'} (C:${hasPushConstructor ? 'Y' : 'N'}/P:${hasPushInSWProto ? 'Y' : 'N'}) | Standalone: ${isStandalone ? 'Yes' : 'No'}`
             });
         }
 
