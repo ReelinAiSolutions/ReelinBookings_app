@@ -22,6 +22,7 @@ import {
     Globe
 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
+import NotificationManager from '../admin/NotificationManager';
 
 interface StaffSettingsProps {
     currentUser: any;
@@ -184,6 +185,10 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                     </h1>
                     <p className="text-gray-500 text-sm font-bold mt-1 ml-14">Manage your profile and account.</p>
                 </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto mb-6">
+                <NotificationManager />
             </div>
 
             <form onSubmit={handleSave} className="max-w-4xl mx-auto space-y-6">

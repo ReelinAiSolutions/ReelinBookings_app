@@ -84,7 +84,7 @@ export default function CreateAppointmentModal({
 
     // -- HELPER: Time Options --
     const generateTimeOptions = () => {
-        if (!date) return [];
+        if (!date || !staffId) return [];
 
         const [y, m, d] = date.split('-').map(Number);
         const localDate = new Date(y, m - 1, d);
@@ -101,6 +101,18 @@ export default function CreateAppointmentModal({
         const startMinutes = toMinutes(hours.open);
         const endMinutes = toMinutes(hours.close);
 
+        const currentService = services.find(s => s.id === serviceId);
+        const duration = mode === 'blocking' ? customDuration : (currentService?.durationMinutes || 60);
+        const buffer = mode === 'blocking' ? 0 : (currentService?.bufferTimeMinutes || 0);
+
+        // Pre-filter appointments for the selected date and staff
+        const relevantApts = appointments.filter(apt =>
+            apt.date === date &&
+            apt.staffId === staffId &&
+            apt.status !== 'CANCELLED' &&
+            apt.status !== 'ARCHIVED'
+        );
+
         const options = [];
         let currentMinutes = startMinutes;
 
@@ -113,7 +125,24 @@ export default function CreateAppointmentModal({
             const displayH = h > 12 ? h - 12 : (h === 0 || h === 12 ? 12 : h);
             const displayT = `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
 
-            options.push({ value: t, label: displayT, hour: h });
+            // Conflict Check for "Elite" experience: only show available slots
+            const slotStart = currentMinutes;
+            const slotEnd = slotStart + duration + buffer;
+
+            const isBusy = relevantApts.some(apt => {
+                const aptStart = toMinutes(apt.timeSlot);
+                const aptService = services.find(s => s.id === apt.serviceId);
+                const aptDuration = apt.durationMinutes || aptService?.durationMinutes || 60;
+                const aptBuffer = apt.bufferMinutes || aptService?.bufferTimeMinutes || 0;
+                const aptEnd = aptStart + aptDuration + aptBuffer;
+
+                return (slotStart < aptEnd && slotEnd > aptStart);
+            });
+
+            if (!isBusy) {
+                options.push({ value: t, label: displayT, hour: h });
+            }
+
             currentMinutes += (slotInterval || 60);
         }
         return options;
@@ -245,131 +274,124 @@ export default function CreateAppointmentModal({
                         </div>
                     )}
 
-                    <div className="md:grid md:grid-cols-2 md:gap-8 space-y-4 md:space-y-0 text-left">
-                        {/* LEFT COLUMN: Client & Config */}
-                        <div className="space-y-4">
-                            {/* Client Information Module */}
-                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
-                                {mode === 'booking' ? (
-                                    <div className="divide-y divide-gray-50">
-                                        <div className="px-5 py-4">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                                                Client Name
-                                            </p>
-                                            <input
-                                                type="text"
-                                                placeholder="E.g. John Doe"
-                                                value={clientName}
-                                                onChange={e => setClientName(e.target.value)}
-                                                className="w-full text-lg font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
-                                            />
-                                        </div>
-                                        <div className="px-5 py-4">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Contact Email</p>
-                                            <input
-                                                type="email"
-                                                placeholder="jane@example.com"
-                                                value={clientEmail}
-                                                onChange={e => setClientEmail(e.target.value)}
-                                                className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
-                                            />
-                                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-left">
+                        {/* 1. Client Information Module */}
+                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden flex flex-col">
+                            {mode === 'booking' ? (
+                                <div className="divide-y divide-gray-50 flex-1 flex flex-col">
+                                    <div className="px-5 py-4 flex-1">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                            Client Name
+                                        </p>
+                                        <input
+                                            type="text"
+                                            placeholder="E.g. John Doe"
+                                            value={clientName}
+                                            onChange={e => setClientName(e.target.value)}
+                                            className="w-full text-lg font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                        />
                                     </div>
-                                ) : (
-                                    <div className="p-6 text-center">
-                                        <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <X className="w-6 h-6 text-red-500" />
-                                        </div>
-                                        <p className="text-sm font-bold text-gray-900">Blocking Off-Duty Time</p>
-                                        <p className="text-xs text-gray-500 mt-1">Prevent any bookings during this slot</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Professional Metadata Module */}
-                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
-                                {/* Service Overlay Row */}
-                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                                    <select
-                                        value={serviceId}
-                                        onChange={e => setServiceId(e.target.value)}
-                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
-                                    >
-                                        {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                    </select>
-
-                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Service</p>
-                                    <div className="flex items-center gap-2 pointer-events-none">
-                                        <span className="text-sm font-bold text-gray-500 text-right truncate max-w-[150px]">
-                                            {selectedService ? selectedService.name : 'Select Service'}
-                                        </span>
-                                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                                    <div className="px-5 py-4 flex-1">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Contact Email</p>
+                                        <input
+                                            type="email"
+                                            placeholder="jane@example.com"
+                                            value={clientEmail}
+                                            onChange={e => setClientEmail(e.target.value)}
+                                            className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                        />
                                     </div>
                                 </div>
-
-                                {/* Staff Overlay Row */}
-                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                                    <select
-                                        value={staffId}
-                                        onChange={e => setStaffId(e.target.value)}
-                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
-                                    >
-                                        {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                    </select>
-
-                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
-                                    <div className="flex items-center gap-2 pointer-events-none">
-                                        <span className="text-sm font-bold text-gray-500 text-right truncate max-w-[150px]">
-                                            {selectedStaff ? selectedStaff.name : 'Select Staff'}
-                                        </span>
-                                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                            ) : (
+                                <div className="p-6 text-center flex-1 flex flex-col justify-center">
+                                    <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                        <X className="w-6 h-6 text-red-500" />
                                     </div>
+                                    <p className="text-sm font-bold text-gray-900">Blocking Off-Duty Time</p>
+                                    <p className="text-xs text-gray-500 mt-1">Prevent any bookings during this slot</p>
                                 </div>
-
-                                <div
-                                    className="p-5 flex justify-between items-center active:bg-gray-50 cursor-pointer transition-colors"
-                                    onClick={() => setMode(prev => prev === 'booking' ? 'blocking' : 'booking')}
-                                >
-                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Booking Mode</p>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${mode === 'booking' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                            {mode === 'booking' ? 'Appointment' : 'Block Time'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            )}
                         </div>
 
-                        {/* Custom Duration Selector (Blocking Only) */}
-                        {mode === 'blocking' && (
-                            <div className="p-5 border-t border-gray-50 animate-in slide-in-from-top-2 duration-300">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Duration (Minutes)</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {[5, 10, 15, 20, 30, 45, 60].map(dur => (
-                                        <button
-                                            key={dur}
-                                            onClick={() => setCustomDuration(dur)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${customDuration === dur
-                                                ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105'
-                                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                                                }`}
-                                        >
-                                            {dur}m
-                                        </button>
-                                    ))}
+                        {/* 2. Professional Metadata Module (Service/Staff) */}
+                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden flex flex-col">
+                            {/* Service Overlay Row */}
+                            <div className="p-5 flex-1 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                <select
+                                    value={serviceId}
+                                    onChange={e => setServiceId(e.target.value)}
+                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                >
+                                    {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+
+                                <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Service</p>
+                                <div className="flex items-center gap-2 pointer-events-none">
+                                    <span className="text-sm font-bold text-gray-500 text-right truncate max-w-[150px]">
+                                        {selectedService ? selectedService.name : 'Select Service'}
+                                    </span>
+                                    <ChevronRight className="w-4 h-4 text-gray-300" />
                                 </div>
                             </div>
-                        )}
-                    </div>
 
-                    {/* RIGHT COLUMN: Schedule & Notes */}
-                    <div className="space-y-4">
-                        {/* Selection Group: Date & Time */}
-                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 space-y-4">
-                            {/* Date Row - Modified to Overlay Pill */}
+                            {/* Staff Overlay Row */}
+                            <div className="p-5 flex-1 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
+                                <select
+                                    value={staffId}
+                                    onChange={e => setStaffId(e.target.value)}
+                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                >
+                                    {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+
+                                <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
+                                <div className="flex items-center gap-2 pointer-events-none">
+                                    <span className="text-sm font-bold text-gray-500 text-right truncate max-w-[150px]">
+                                        {selectedStaff ? selectedStaff.name : 'Select Staff'}
+                                    </span>
+                                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                                </div>
+                            </div>
+
+                            <div
+                                className="p-5 flex justify-between items-center active:bg-gray-50 cursor-pointer transition-colors"
+                                onClick={() => setMode(prev => prev === 'booking' ? 'blocking' : 'booking')}
+                            >
+                                <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Mode</p>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${mode === 'booking' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                        {mode === 'booking' ? 'Appointment' : 'Block Time'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Custom Duration Selector (Blocking Only - Inset) */}
+                            {mode === 'blocking' && (
+                                <div className="p-4 bg-gray-50/50 border-t border-gray-50 animate-in slide-in-from-top-2 duration-300">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 text-center">Duration (Minutes)</p>
+                                    <div className="flex flex-wrap justify-center gap-2">
+                                        {[5, 10, 15, 20, 30, 45, 60].map(dur => (
+                                            <button
+                                                key={dur}
+                                                onClick={() => setCustomDuration(dur)}
+                                                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border ${customDuration === dur
+                                                    ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                {dur}m
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 3. Selection Group: Date & Time */}
+                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 flex flex-col justify-center space-y-5">
+                            {/* Date Row */}
                             <div className="flex justify-between items-center group relative">
                                 <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</span>
-                                {/* Interactive Pill */}
                                 <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden">
                                     <input
                                         type="date"
@@ -387,10 +409,9 @@ export default function CreateAppointmentModal({
                                 </div>
                             </div>
 
-                            {/* Time Row - Modified to Overlay Pill */}
+                            {/* Time Row */}
                             <div className="flex justify-between items-center group relative">
                                 <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Starts</span>
-                                {/* Interactive Pill */}
                                 <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden flex items-center gap-1.5">
                                     <select
                                         value={time}
@@ -399,7 +420,6 @@ export default function CreateAppointmentModal({
                                     >
                                         <option value="" disabled>
                                             {timeOptions.length === 0 ? (
-                                                // Check if it's likely closed
                                                 (() => {
                                                     if (!date || !businessHours) return 'No slots';
                                                     const [y, m, d] = date.split('-').map(Number);
@@ -424,8 +444,8 @@ export default function CreateAppointmentModal({
                             </div>
                         </div>
 
-                        {/* MINI TIMELINE VISUALIZER */}
-                        <div className="pt-4 border-t border-gray-50">
+                        {/* 4. MINI TIMELINE VISUALIZER */}
+                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 flex flex-col justify-center">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
                             <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
                                 <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
@@ -434,11 +454,11 @@ export default function CreateAppointmentModal({
                             </div>
                             <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
                                 {selectedService ? (
-                                    <div className="w-2/3 h-10 bg-blue-50 border-2 border-blue-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
+                                    <div className="w-3/4 h-10 bg-blue-50 border-2 border-blue-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
                                         <div className="w-2 h-2 rounded-full bg-[#007AFF] mr-3 shadow-[0_0_8px_rgba(0,122,255,0.5)]"></div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[10px] font-black text-blue-900 truncate uppercase tracking-tight">{mode === 'blocking' ? 'Blocked Time' : selectedService.name}</p>
-                                            <p className="text-[9px] font-bold text-[#007AFF] opacity-70 uppercase">{mode === 'blocking' ? customDuration : selectedService.durationMinutes}m duration</p>
+                                            <p className="text-[9px] font-bold text-[#007AFF] opacity-70 uppercase leading-none">{mode === 'blocking' ? customDuration : selectedService.durationMinutes}m duration</p>
                                         </div>
                                     </div>
                                 ) : (
@@ -447,8 +467,8 @@ export default function CreateAppointmentModal({
                             </div>
                         </div>
 
-                        {/* Notes Area */}
-                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 pb-safe-bottom">
+                        {/* 5. Notes Area (Full Width) */}
+                        <div className="md:col-span-2 bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 pb-safe-bottom">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Internal Notes</p>
                             <textarea
                                 placeholder="Add specifics about this booking..."

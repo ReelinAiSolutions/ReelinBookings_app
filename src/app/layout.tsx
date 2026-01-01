@@ -40,6 +40,7 @@ export const metadata: Metadata = {
 
 import AuthProvider from "@/components/AuthProvider";
 import ResizeListener from "@/components/ResizeListener";
+import PWARegistration from "@/components/PWARegistration";
 
 export default function RootLayout({
   children,
@@ -51,6 +52,7 @@ export default function RootLayout({
       <body
         className={`${plusJakarta.variable} font-sans antialiased`}
       >
+        <PWARegistration />
         <ResizeListener />
         <ToastProvider>
           <ErrorBoundary>

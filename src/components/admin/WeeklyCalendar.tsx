@@ -1,8 +1,36 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import AgendaView from './AgendaView';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MoreHorizontal, User, Users, AlignJustify, Grid, Plus, Filter } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MoreHorizontal, User, Users, AlignJustify, Grid, Plus, Filter, CalendarCheck, CalendarX, Info, X, Search } from 'lucide-react';
 import { Appointment, Service, Staff, Organization, AppointmentStatus } from '@/types';
 import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth, subMonths, subYears, eachMonthOfInterval, endOfYear } from 'date-fns';
+
+// -- EMPTY STATE COMPONENT --
+const EmptyState = ({ onAction, mode = 'day' }: { onAction: () => void, mode?: 'day' | 'team' }) => (
+    <div className={`absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white/50 backdrop-blur-[2px] z-[5] animate-in fade-in zoom-in duration-500 ${mode === 'team' ? 'min-h-[600px]' : ''}`}>
+        <div className="w-24 h-24 bg-blue-50 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-sm ring-1 ring-blue-100 rotate-3 group hover:rotate-6 transition-transform">
+            <CalendarCheck className="w-12 h-12 text-blue-500" />
+        </div>
+        <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-3 px-4 leading-tight">
+            Schedule is Clear
+        </h3>
+        <p className="text-gray-500 font-medium text-lg max-w-[320px] mb-10 leading-relaxed">
+            No bookings today. Time to focus on growth or take a well-deserved breather.
+        </p>
+        <button
+            onClick={(e) => { e.stopPropagation(); onAction(); }}
+            className="group relative flex items-center gap-3 bg-gray-900 text-white px-8 py-4 rounded-[1.5rem] font-bold text-lg hover:bg-black transition-all hover:scale-[1.03] active:scale-[0.98] shadow-xl"
+        >
+            <span>Create Booking</span>
+            <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                <Plus className="w-4 h-4" />
+            </div>
+        </button>
+
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-indigo-200/20 rounded-full blur-3xl -z-10"></div>
+        <div className="absolute bottom-40 right-10 w-48 h-48 bg-emerald-200/20 rounded-full blur-3xl -z-10"></div>
+    </div>
+);
 
 const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
@@ -51,6 +79,8 @@ interface DragState {
     currentTop: number;
     currentStaffId: string;
     currentTimeSlot: string; // Dynamic Time HH:mm
+    deltaX: number;
+    hasConflict: boolean;
 }
 
 export default function WeeklyCalendar({
@@ -80,6 +110,7 @@ export default function WeeklyCalendar({
     const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
     const [renderedMonths, setRenderedMonths] = useState<Date[]>([]);
     const [renderedYears, setRenderedYears] = useState<number[]>([]);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     // Sync filterStaffId and viewMode with currentStaffId prop
     useEffect(() => {
@@ -277,7 +308,9 @@ export default function WeeklyCalendar({
             initialTop: topPx,
             currentTop: topPx,
             currentStaffId: apt.staffId,
-            currentTimeSlot: apt.timeSlot
+            currentTimeSlot: apt.timeSlot,
+            deltaX: 0,
+            hasConflict: false
         });
     };
 
@@ -308,19 +341,18 @@ export default function WeeklyCalendar({
 
         // Find the appointment
         const apt = appointments.find(a => a.id === id);
-        if (apt && apt.timeSlot !== newTimeSlot && onAppointmentUpdate) {
-            const updatedApt = { ...apt, timeSlot: newTimeSlot };
+        if (apt && (apt.timeSlot !== newTimeSlot || (dragState.currentStaffId && dragState.currentStaffId !== originalStaffId)) && onAppointmentUpdate) {
+            const updatedApt = { ...apt, timeSlot: newTimeSlot, staffId: dragState.currentStaffId || originalStaffId };
 
             // Open Modal with NEW Data immediately (Optimistic Confirmation)
             onAppointmentClick(updatedApt);
 
             try {
-                // Use the appointment's existing date since we only support vertical (time) drag for now
+                // Support horizontal (staff) reassignment
                 const currentAptDate = new Date(`${apt.date}T00:00:00`);
-                await onAppointmentUpdate(apt, currentAptDate, newTimeSlot, originalStaffId);
+                await onAppointmentUpdate(apt, currentAptDate, newTimeSlot, dragState.currentStaffId || originalStaffId);
             } catch (err) {
                 console.error("Failed to update appointment", err);
-                // Toast handled by parent?
             }
         }
     };
@@ -378,13 +410,57 @@ export default function WeeklyCalendar({
         const m = totalMinutes % 60;
         const newTimeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 
-        // 2. Calculate Horizontal Move (Team View Only)
-        // ... (existing simplified logic)
+        // Calculate Horizontal Move (Team View Only)
+        const deltaX = e.clientX - dragState.startX;
+        let newStaffId = dragState.originalStaffId;
+
+        if (viewMode === 'team' && scrollContainerRef.current) {
+            const timeColumnWidth = window.innerWidth >= 1024 ? 80 : 48;
+            const scrollLeft = scrollContainerRef.current.scrollLeft;
+            const containerRect = scrollContainerRef.current.getBoundingClientRect();
+
+            // Mouse position relative to the grid start (after time column)
+            const relativeX = e.clientX - containerRect.left - timeColumnWidth + scrollLeft;
+
+            // Total width of the staff area
+            const gridWidth = scrollContainerRef.current.querySelector('.flex-1.relative')?.clientWidth || (containerRect.width - timeColumnWidth);
+            const columnWidth = gridWidth / staff.length;
+
+            const staffIndex = Math.floor(relativeX / columnWidth);
+            const clampedIndex = Math.max(0, Math.min(staffIndex, staff.length - 1));
+            newStaffId = staff[clampedIndex]?.id || dragState.originalStaffId;
+        }
+
+        // CONFLICT CHECK
+        const isConflict = appointments.some(a => {
+            if (a.id === dragState.id || a.status === 'CANCELLED' || a.status === 'ARCHIVED') return false;
+            if (a.staffId !== newStaffId) return false;
+            if (a.date !== format(selectedDate, 'yyyy-MM-dd')) return false;
+
+            // Time check
+            const aStart = parseInt(a.timeSlot.split(':')[0]) * 60 + parseInt(a.timeSlot.split(':')[1]);
+            const aService = services.find(s => s.id === a.serviceId);
+            const aDuration = a.durationMinutes || aService?.durationMinutes || 60;
+            const aBuffer = aService?.bufferTimeMinutes || 0;
+            const aEnd = aStart + aDuration + aBuffer;
+
+            const dStart = h * 60 + m;
+            const dApt = appointments.find(ap => ap.id === dragState.id);
+            const dService = services.find(s => s.id === dApt?.serviceId);
+            const dDuration = dApt?.durationMinutes || dService?.durationMinutes || 60;
+            const dBuffer = dService?.bufferTimeMinutes || 0;
+            const dEnd = dStart + dDuration + dBuffer;
+
+            return (dStart < aEnd && dEnd > aStart);
+        });
 
         setDragState(prev => prev ? ({
             ...prev,
             currentTop: snappedTop,
-            currentTimeSlot: newTimeSlot // Update currentTimeSlot
+            currentTimeSlot: newTimeSlot,
+            currentStaffId: newStaffId,
+            deltaX,
+            hasConflict: isConflict
         }) : null);
     };
 
@@ -637,6 +713,7 @@ export default function WeeklyCalendar({
     // -- DAY VIEW --
     const renderDayView = () => {
         const dayAppointments = getAppointmentsForDate(selectedDate);
+        const isDayEmpty = dayAppointments.length === 0 && viewMode === 'personal';
         const now = new Date();
         const isToday = isSameDay(selectedDate, now);
         const currentHour = now.getHours();
@@ -695,6 +772,7 @@ export default function WeeklyCalendar({
                                 className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
                                 style={{ height: `${hours.length * 120 + 24}px` }}
                             >
+                                {isDayEmpty && <EmptyState onAction={() => onSelectSlot(selectedDate, '09:00')} />}
                                 {hours.map((h, i) => (
                                     <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h)}></div>
                                 ))}
@@ -772,61 +850,97 @@ export default function WeeklyCalendar({
                                             (apt as any).isBlocked;
 
                                         return (
-                                            <div
-                                                key={apt.id}
-                                                onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
-                                                onPointerMove={handlePointerMove}
-                                                onPointerUp={handlePointerUp}
-                                                onClick={(e) => {
-                                                    // Prevent click if just dragged
-                                                    if (isDraggingRef.current) {
-                                                        e.stopPropagation();
-                                                        return;
-                                                    }
-                                                    if (!isDragging) {
-                                                        e.stopPropagation();
-                                                        onAppointmentClick(apt);
-                                                    }
-                                                }}
-                                                className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-indigo-50 border-indigo-500 text-indigo-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-indigo-400 opacity-90 cursor-grabbing' : ''}`}
-                                                style={{
-                                                    top: `${displayTop}px`,
-                                                    height: `${Math.max(24, duration * 2)}px`,
-                                                    left: `calc(${leftPct}% + 1px)`,
-                                                    width: `calc(${widthPct}% - 2px)`,
-                                                    transition: isDragging ? 'none' : 'all 0.2s ease-out'
-                                                }}
-                                            >
-                                                {duration >= 25 ? (
-                                                    <div className="flex flex-col h-full gap-0">
-                                                        <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : 'text-indigo-400'}`}>
-                                                            {isBlocked ? 'Blocked Time' : (services.find(s => s.id === apt.serviceId)?.name || 'Service')}
-                                                        </div>
-                                                        <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : 'text-indigo-700'} truncate`}>
-                                                            {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
-                                                        </div>
-                                                        <div className="flex items-center justify-between mt-auto pb-0.5">
-                                                            <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : 'text-indigo-600/90'} truncate`}>
-                                                                {isBlocked ? (staff.find(s => s.id === apt.staffId)?.name || 'All Staff') : (staff.find(s => s.id === apt.staffId)?.name || 'Staff')}
-                                                            </div>
-                                                            <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : 'text-indigo-500'}`}>
-                                                                {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2 overflow-hidden h-full">
-                                                        {duration >= 15 && (
-                                                            <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : 'text-indigo-700'} truncate shrink-0`}>
-                                                                {isBlocked ? 'BLOCKED' : apt.clientName}
-                                                            </div>
-                                                        )}
-                                                        <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : 'text-indigo-400/90'} truncate`}>
-                                                            {formatTo12Hour(displayTime)} ({duration}m)
-                                                        </div>
+                                            <React.Fragment key={apt.id}>
+                                                {/* GHOST / PHANTOM CARD */}
+                                                {isDragging && (
+                                                    <div
+                                                        className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-50 border-slate-200 text-slate-300 border-l-[3px]' : 'bg-indigo-50 border-indigo-200 text-indigo-300 border-l-[4px]'} py-1 px-2 opacity-30 z-10 pointer-events-none`}
+                                                        style={{
+                                                            top: `${topPx}px`,
+                                                            height: `${Math.max(24, duration * 2)}px`,
+                                                            left: `calc(${leftPct}% + 1px)`,
+                                                            width: `calc(${widthPct}% - 2px)`
+                                                        }}
+                                                    >
+                                                        <div className="text-[10px] font-bold opacity-50 uppercase tracking-tighter truncate">Original</div>
                                                     </div>
                                                 )}
-                                            </div>
+
+                                                <div
+                                                    onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
+                                                    onPointerMove={handlePointerMove}
+                                                    onPointerUp={handlePointerUp}
+                                                    onClick={(e) => {
+                                                        // Prevent click if just dragged
+                                                        if (isDraggingRef.current) {
+                                                            e.stopPropagation();
+                                                            return;
+                                                        }
+                                                        if (!isDragging) {
+                                                            e.stopPropagation();
+                                                            onAppointmentClick(apt);
+                                                        }
+                                                    }}
+                                                    className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-indigo-50 border-indigo-500 text-indigo-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''}`}
+                                                    style={{
+                                                        top: `${displayTop}px`,
+                                                        height: `${Math.max(24, duration * 2)}px`,
+                                                        left: `calc(${leftPct}% + 1px)`,
+                                                        width: `calc(${widthPct}% - 2px)`,
+                                                        transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
+                                                        transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                    }}
+                                                >
+                                                    {duration >= 25 ? (
+                                                        <div className="flex flex-col h-full gap-0">
+                                                            <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : 'text-indigo-400'}`}>
+                                                                {isBlocked ? 'Blocked Time' : (services.find(s => s.id === apt.serviceId)?.name || 'Service')}
+                                                            </div>
+                                                            <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : (isDragging && dragState.hasConflict ? 'text-red-900' : 'text-indigo-700')} truncate`}>
+                                                                {isDragging && dragState.hasConflict && <span className="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-red-500 text-white font-black animate-pulse">CONFLICT</span>}
+                                                                {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
+                                                            </div>
+                                                            <div className="flex items-center justify-between mt-auto pb-0.5">
+                                                                <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : 'text-indigo-600/90'} truncate`}>
+                                                                    {isBlocked ? (staff.find(s => s.id === apt.staffId)?.name || 'All Staff') : (staff.find(s => s.id === apt.staffId)?.name || 'Staff')}
+                                                                </div>
+                                                                <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : 'text-indigo-500'}`}>
+                                                                    {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 overflow-hidden h-full">
+                                                            {duration >= 15 && (
+                                                                <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : 'text-indigo-700'} truncate shrink-0`}>
+                                                                    {isBlocked ? 'BLOCKED' : apt.clientName}
+                                                                </div>
+                                                            )}
+                                                            <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : 'text-indigo-400/90'} truncate`}>
+                                                                {formatTo12Hour(displayTime)} ({duration}m)
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {/* BUFFFER VISUALIZATION */}
+                                                {(apt.bufferMinutes || 0) > 0 && (
+                                                    <div
+                                                        className="absolute z-20 opacity-30 pointer-events-none transition-all"
+                                                        style={{
+                                                            top: `${displayTop + (duration * 2)}px`,
+                                                            height: `${(apt.bufferMinutes || 0) * 2}px`,
+                                                            left: `calc(${leftPct}% + 4px)`,
+                                                            width: `calc(${widthPct}% - 8px)`,
+                                                            transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
+                                                            background: isDragging && dragState.hasConflict
+                                                                ? 'repeating-linear-gradient(45deg, #ef4444, #ef4444 4px, transparent 4px, transparent 8px)'
+                                                                : 'repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 4px, transparent 4px, transparent 8px)',
+                                                            borderRadius: '0 0 4px 4px',
+                                                            transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                        }}
+                                                    />
+                                                )}
+                                            </React.Fragment>
                                         );
 
                                     });
@@ -839,7 +953,7 @@ export default function WeeklyCalendar({
                                     const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
 
                                     return (
-                                        <div key={member.id} className="flex-1 min-w-[120px] border-l border-gray-300 relative first:border-l-0 group h-full">
+                                        <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 relative first:border-l-0 group h-full transition-all duration-300`}>
                                             {hours.map(h => (
                                                 <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${h * 120}px` }} onClick={() => handleGridClick(h, member.id)}></div>
                                             ))}
@@ -859,89 +973,121 @@ export default function WeeklyCalendar({
                                                 const isBlocked = apt.clientName?.toLowerCase().startsWith('blocked') || apt.clientId === 'blocked@internal.system';
 
                                                 return (
-                                                    <div
-                                                        key={apt.id}
-                                                        onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
-                                                        onPointerMove={handlePointerMove}
-                                                        onPointerUp={handlePointerUp}
-                                                        onClick={(e) => {
-                                                            // Prevent click if just dragged
-                                                            if (isDraggingRef.current) {
-                                                                e.stopPropagation();
-                                                                return;
-                                                            }
-                                                            if (!isDragging) {
-                                                                e.stopPropagation();
-                                                                onAppointmentClick(apt);
-                                                            }
-                                                        }}
-                                                        className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} border-l-[4px]`} py-1 px-2 overflow-hidden z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-indigo-400 opacity-90 cursor-grabbing' : ''}`}
-                                                        style={{
-                                                            top: `${displayTop}px`,
-                                                            height: `${Math.max(24, duration * 2)}px`,
-                                                            transition: isDragging ? 'none' : 'all 0.2s ease-out'
-                                                        }}
-                                                    >
-                                                        {duration >= 25 ? (
-                                                            <div className="flex flex-col h-full gap-0">
-                                                                <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-75`}>
-                                                                    {isBlocked ? 'Blocked Time' : (service?.name || 'Service')}
-                                                                </div>
-                                                                <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : colorScheme.text} truncate`}>
-                                                                    {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
-                                                                </div>
-                                                                <div className="flex items-center justify-between mt-auto pb-0.5">
-                                                                    <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-90 truncate`}>
-                                                                        {isBlocked ? (member.name || 'All Staff') : member.name}
-                                                                    </div>
-                                                                    <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : colorScheme.text} opacity-80`}>
-                                                                        {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center gap-2 overflow-hidden h-full">
-                                                                {duration >= 15 && (
-                                                                    <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : colorScheme.text} truncate shrink-0`}>
-                                                                        {isBlocked ? 'BLOCKED' : apt.clientName}
-                                                                    </div>
-                                                                )}
-                                                                <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-75 truncate`}>
-                                                                    {formatTo12Hour(displayTime)} ({duration}m)
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        {/* RESIZE HANDLE */}
-                                                        {!isPast && (
+                                                    <React.Fragment key={apt.id}>
+                                                        {/* PHANTOM / GHOST CARD (Original Position) */}
+                                                        {isDragging && (
                                                             <div
-                                                                className="absolute bottom-0 left-0 w-full h-3 cursor-ns-resize z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                                                                onPointerDown={(e) => {
-                                                                    e.stopPropagation();
-                                                                    e.preventDefault();
-                                                                    const card = e.currentTarget.parentElement as HTMLDivElement;
-                                                                    card.setPointerCapture(e.pointerId);
-
-                                                                    const initialHeight = duration * 2;
-
-                                                                    setResizeState({
-                                                                        id: apt.id,
-                                                                        initialHeight,
-                                                                        startY: e.clientY,
-                                                                        currentHeight: initialHeight
-                                                                    });
-                                                                }}
-                                                                onPointerUp={(e) => {
-                                                                    e.stopPropagation();
-                                                                    const card = e.currentTarget.parentElement as HTMLDivElement;
-                                                                    try { card.releasePointerCapture(e.pointerId); } catch (err) { }
-                                                                    handleResizeEnd(e);
+                                                                className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-50 border-slate-200 text-slate-300 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} border-l-[4px]`} py-1 px-2 opacity-30 z-10 pointer-events-none`}
+                                                                style={{
+                                                                    top: `${topPx}px`,
+                                                                    height: `${Math.max(24, duration * 2)}px`
                                                                 }}
                                                             >
-                                                                <div className={`w-8 h-1 rounded-full ${colorScheme.bg.replace('bg-', 'bg-').replace('50', '400/50')}`}></div>
+                                                                <div className="text-[10px] font-bold opacity-50 uppercase tracking-tighter truncate">Original</div>
                                                             </div>
                                                         )}
-                                                    </div>
+
+                                                        <div
+                                                            onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
+                                                            onPointerMove={handlePointerMove}
+                                                            onPointerUp={handlePointerUp}
+                                                            onClick={(e) => {
+                                                                // Prevent click if just dragged
+                                                                if (isDraggingRef.current) {
+                                                                    e.stopPropagation();
+                                                                    return;
+                                                                }
+                                                                if (!isDragging) {
+                                                                    e.stopPropagation();
+                                                                    onAppointmentClick(apt);
+                                                                }
+                                                            }}
+                                                            className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} border-l-[4px]`} py-1 px-2 overflow-hidden z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''}`}
+                                                            style={{
+                                                                top: `${displayTop}px`,
+                                                                height: `${Math.max(24, duration * 2)}px`,
+                                                                transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
+                                                                transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                            }}
+                                                        >
+                                                            {duration >= 25 ? (
+                                                                <div className="flex flex-col h-full gap-0">
+                                                                    <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-75`}>
+                                                                        {isBlocked ? 'Blocked Time' : (service?.name || 'Service')}
+                                                                    </div>
+                                                                    <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : colorScheme.text} truncate`}>
+                                                                        {isDragging && dragState.hasConflict && <span className="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-red-500 text-white font-black animate-pulse">CONFLICT</span>}
+                                                                        {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
+                                                                    </div>
+                                                                    <div className="flex items-center justify-between mt-auto pb-0.5">
+                                                                        <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-90 truncate`}>
+                                                                            {isBlocked ? (member.name || 'All Staff') : member.name}
+                                                                        </div>
+                                                                        <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : colorScheme.text} opacity-80`}>
+                                                                            {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center gap-2 overflow-hidden h-full">
+                                                                    {duration >= 15 && (
+                                                                        <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : colorScheme.text} truncate shrink-0`}>
+                                                                            {isBlocked ? 'BLOCKED' : apt.clientName}
+                                                                        </div>
+                                                                    )}
+                                                                    <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-75 truncate`}>
+                                                                        {formatTo12Hour(displayTime)} ({duration}m)
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* RESIZE HANDLE */}
+                                                            {!isPast && (
+                                                                <div
+                                                                    className="absolute bottom-0 left-0 w-full h-3 cursor-ns-resize z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                                                                    onPointerDown={(e) => {
+                                                                        e.stopPropagation();
+                                                                        e.preventDefault();
+                                                                        const card = e.currentTarget.parentElement as HTMLDivElement;
+                                                                        card.setPointerCapture(e.pointerId);
+
+                                                                        const initialHeight = duration * 2;
+
+                                                                        setResizeState({
+                                                                            id: apt.id,
+                                                                            initialHeight,
+                                                                            startY: e.clientY,
+                                                                            currentHeight: initialHeight
+                                                                        });
+                                                                    }}
+                                                                    onPointerUp={(e) => {
+                                                                        e.stopPropagation();
+                                                                        const card = e.currentTarget.parentElement as HTMLDivElement;
+                                                                        try { card.releasePointerCapture(e.pointerId); } catch (err) { }
+                                                                        handleResizeEnd(e);
+                                                                    }}
+                                                                >
+                                                                    <div className={`w-8 h-1 rounded-full ${colorScheme.bg.replace('bg-', 'bg-').replace('50', '400/50')}`}></div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* BUFFER VISUALIZATION */}
+                                                        {(apt.bufferMinutes || 0) > 0 && (
+                                                            <div
+                                                                className="absolute left-1 right-1 opacity-30 z-20 pointer-events-none transition-all"
+                                                                style={{
+                                                                    top: `${displayTop + (duration * 2)}px`,
+                                                                    height: `${(apt.bufferMinutes || 0) * 2}px`,
+                                                                    transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
+                                                                    background: isDragging && dragState.hasConflict
+                                                                        ? 'repeating-linear-gradient(45deg, #ef4444, #ef4444 4px, transparent 4px, transparent 8px)'
+                                                                        : 'repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 4px, transparent 4px, transparent 8px)',
+                                                                    borderRadius: '0 0 4px 4px',
+                                                                    transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </React.Fragment>
                                                 );
                                             })}
                                         </div>
@@ -958,6 +1104,14 @@ export default function WeeklyCalendar({
     return (
         <div className="w-full h-full bg-white text-gray-900 flex flex-col font-sans overflow-hidden select-none relative">
             <PulseStyle />
+
+            {/* Helper for Centered Filter Label */}
+            {(() => {
+                const selectedStaffForFilter = staff.find(s => s.id === filterStaffId);
+                const filterLabel = filterStaffId === 'ALL' ? 'All Staff' : selectedStaffForFilter?.name || 'Unknown';
+
+                return null; // This is a placeholder for logic, I'll use filterLabel below
+            })()}
 
             {/* STICKY HEADER WRAPPER */}
             <div className="sticky top-0 z-50 bg-[#F2F2F7]/90 backdrop-blur-md transition-all">
@@ -980,14 +1134,15 @@ export default function WeeklyCalendar({
                     </div>
 
                     {/* Row 2: Title & Primary Actions */}
-                    <div className="flex items-end justify-between mt-1">
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-[30px] font-black tracking-tight text-gray-900 leading-tight">
+                    <div className="flex items-center justify-between mt-1 gap-2">
+                        {/* LEFT: TITLE & TODAY */}
+                        <div className="flex-1 flex items-center gap-2 min-w-0">
+                            <h1 className="text-[24px] sm:text-[30px] font-black tracking-tight text-gray-900 leading-tight truncate">
                                 {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : calendarLevel === 'month' ? format(selectedDate, 'MMMM') : getYear(selectedDate)}
                             </h1>
                             {(!isSameDay(selectedDate, new Date()) || calendarLevel !== 'day') && (
                                 <button
-                                    className="text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors mb-1.5"
+                                    className="text-[11px] sm:text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-2 sm:px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors shrink-0"
                                     onClick={() => {
                                         setDirection('forward');
                                         setCalendarLevel('day');
@@ -995,59 +1150,163 @@ export default function WeeklyCalendar({
                                         setTimeout(() => scrollToTime(), 100);
                                     }}
                                 >
-                                    Go to Today
+                                    Today
                                 </button>
                             )}
                         </div>
 
-                        <div className="flex items-center gap-2.5 mb-2">
-                            {/* Filter Button */}
-                            {showStaffFilter && (
+                        {/* CENTER: STAFF IDENTITY (FLEX CENTERED) */}
+                        {showStaffFilter && (
+                            <div className="flex-shrink-0 z-[60]">
                                 <div className="relative">
                                     <button
-                                        className={`text-indigo-600 transition-all ${filterStaffId !== 'ALL' || isFilterOpen ? 'bg-indigo-50 rounded-full p-1.5' : ''}`}
                                         onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                        className={`flex items-center gap-1 px-2 py-1.5 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-indigo-100/80 text-indigo-700' : 'hover:bg-gray-100 text-gray-900'}`}
                                     >
-                                        <Filter className="w-5 h-5 text-gray-500" />
+                                        <span className="text-[15px] sm:text-[17px] font-black tracking-tight truncate max-w-[80px] sm:max-w-[150px]">
+                                            {filterStaffId === 'ALL' ? 'All Staff' : staff.find(s => s.id === filterStaffId)?.name || 'Unknown'}
+                                        </span>
+                                        <ChevronRight className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isFilterOpen ? 'rotate-90' : ''}`} />
                                     </button>
+
                                     {isFilterOpen && (
                                         <>
                                             <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)}></div>
-                                            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                                <div
-                                                    className={`px-4 py-3 text-sm font-medium hover:bg-gray-50 cursor-pointer border-b border-gray-50 ${filterStaffId === 'ALL' ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-700'}`}
-                                                    onClick={() => { setFilterStaffId('ALL'); setIsFilterOpen(false); }}
-                                                >
-                                                    All Staff
-                                                </div>
-                                                {staff.map(s => (
+                                            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-white/40 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                                <div className="p-1">
                                                     <div
-                                                        key={s.id}
-                                                        className={`px-4 py-3 text-sm font-medium hover:bg-gray-50 cursor-pointer ${filterStaffId === s.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-700'}`}
-                                                        onClick={() => { setFilterStaffId(s.id); setIsFilterOpen(false); }}
+                                                        className={`px-4 py-3 text-sm font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 cursor-pointer mb-1 transition-colors ${filterStaffId === 'ALL' ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-500'}`}
+                                                        onClick={() => { setFilterStaffId('ALL'); setIsFilterOpen(false); }}
                                                     >
-                                                        {s.name}
+                                                        All Staff
                                                     </div>
-                                                ))}
+                                                    <div className="h-px bg-gray-100 mx-2 mb-1"></div>
+                                                    {staff.map(s => (
+                                                        <div
+                                                            key={s.id}
+                                                            className={`px-4 py-3 text-sm font-bold rounded-xl hover:bg-gray-50 cursor-pointer transition-colors ${filterStaffId === s.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-700'}`}
+                                                            onClick={() => { setFilterStaffId(s.id); setIsFilterOpen(false); }}
+                                                        >
+                                                            {s.name}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </>
                                     )}
                                 </div>
-                            )}
+                            </div>
+                        )}
+
+                        {/* RIGHT: ACTION BUTTONS (FLEX END) */}
+                        <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5">
+                            {/* JUMP TO DATE PICKER */}
+                            <div className="relative group">
+                                <button
+                                    className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 transition-all duration-200 rounded-full ${isDatePickerOpen ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                                    onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                                >
+                                    <CalendarIcon className="w-4 h-4" />
+                                    <span className="text-[11px] font-black uppercase tracking-widest hidden xl:block">Quick View</span>
+                                </button>
+
+                                {isDatePickerOpen && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)}></div>
+                                        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 animate-in zoom-in-95 duration-200 origin-top-right">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <button onClick={() => setSelectedDate(subMonths(selectedDate, 1))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                                    <ChevronLeft className="w-5 h-5 text-gray-400" />
+                                                </button>
+                                                <div className="text-sm font-black text-gray-900 tracking-tight">
+                                                    {format(selectedDate, 'MMMM yyyy')}
+                                                </div>
+                                                <button onClick={() => setSelectedDate(addMonths(selectedDate, 1))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                                                </button>
+                                            </div>
+
+                                            <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                                                    <div key={i} className="text-[10px] font-bold text-gray-400 uppercase">{d}</div>
+                                                ))}
+                                            </div>
+
+                                            <div className="grid grid-cols-7 gap-1">
+                                                {(() => {
+                                                    const start = startOfMonth(selectedDate);
+                                                    const daysInMonth = getDaysInMonth(selectedDate);
+                                                    const startDay = getDay(start);
+
+                                                    const days = [];
+                                                    for (let i = 0; i < startDay; i++) days.push(<div key={`pad-${i}`} />);
+
+                                                    for (let d = 1; d <= daysInMonth; d++) {
+                                                        const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), d);
+                                                        const isSelected = isSameDay(date, selectedDate);
+                                                        const isToday = isSameDay(date, new Date());
+
+                                                        days.push(
+                                                            <button
+                                                                key={d}
+                                                                onClick={() => {
+                                                                    setSelectedDate(date);
+                                                                    setIsDatePickerOpen(false);
+                                                                    if (calendarLevel !== 'day') setCalendarLevel('day');
+                                                                }}
+                                                                className={`h-8 w-8 rounded-full text-xs font-bold transition-all ${isSelected
+                                                                    ? 'bg-indigo-600 text-white shadow-md scale-110'
+                                                                    : isToday
+                                                                        ? 'text-indigo-600 bg-indigo-50'
+                                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                                    }`}
+                                                            >
+                                                                {d}
+                                                            </button>
+                                                        );
+                                                    }
+                                                    return days;
+                                                })()}
+                                            </div>
+
+                                            <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between gap-2">
+                                                <button
+                                                    onClick={() => { setSelectedDate(new Date()); setIsDatePickerOpen(false); setCalendarLevel('day'); }}
+                                                    className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors flex-1"
+                                                >
+                                                    Today
+                                                </button>
+                                                <button
+                                                    onClick={() => { setCalendarLevel('month'); setIsDatePickerOpen(false); }}
+                                                    className="text-[11px] font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex-1"
+                                                >
+                                                    Month View
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
 
                             {calendarLevel === 'day' && (
                                 <button
-                                    className={`text-indigo-600 ${viewMode === 'team' ? 'bg-indigo-100 rounded-full p-1.5' : ''}`}
+                                    className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 transition-all duration-200 rounded-full ${viewMode === 'team' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
                                     onClick={() => setViewMode(prev => prev === 'personal' ? 'team' : 'personal')}
                                 >
-                                    <Users className="w-6 h-6" strokeWidth={2} />
+                                    <Users className="w-4 h-4" strokeWidth={2.5} />
+                                    <span className="text-[11px] font-black uppercase tracking-widest hidden xl:block">
+                                        {viewMode === 'personal' ? 'Team View' : 'Personal View'}
+                                    </span>
                                 </button>
                             )}
+
                             <button
-                                className="text-indigo-600"
+                                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-[#007AFF] text-white rounded-full transition-all duration-200 hover:bg-blue-600 active:scale-95 shadow-lg shadow-blue-500/20"
                                 onClick={() => onSelectSlot(selectedDate, "09:00")}
                             >
-                                <Plus className="w-6 h-6" strokeWidth={2} />
+                                <Plus className="w-4 h-4" strokeWidth={3} />
+                                <span className="text-[11px] font-black uppercase tracking-widest hidden xl:block">Add New</span>
                             </button>
                         </div>
                     </div>

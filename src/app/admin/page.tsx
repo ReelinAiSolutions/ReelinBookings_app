@@ -414,6 +414,11 @@ export default function AdminDashboard() {
                                         onSelectSlot={handleSelectSlot}
                                         onAppointmentClick={handleAppointmentClick}
                                         onAppointmentUpdate={handleAppointmentDrop}
+                                        currentStaffId={(() => {
+                                            if (userProfile?.profile?.role === 'admin') return 'ALL';
+                                            const staffMember = staff.find(s => s.email === userProfile?.user?.email);
+                                            return staffMember?.id || 'ALL';
+                                        })()}
                                     />
                                 </div>
                             </div>

@@ -6,6 +6,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/context/ToastContext';
 import { Organization } from '@/types';
+import NotificationManager from './NotificationManager';
 
 interface SettingsManagerProps {
     org: Organization;
@@ -86,7 +87,8 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
             friday: { open: '09:00', close: '17:00', isOpen: true },
             saturday: { open: '10:00', close: '16:00', isOpen: true },
             sunday: { open: '10:00', close: '16:00', isOpen: false }
-        }
+        },
+        notify_all_bookings: org.settings?.notifications?.all_bookings || false
     });
 
     const [calendarColor, setCalendarColor] = useState<'staff' | 'service'>(org.settings?.color_mode || 'staff');
@@ -116,7 +118,8 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 friday: { open: '09:00', close: '17:00', isOpen: true },
                 saturday: { open: '10:00', close: '16:00', isOpen: true },
                 sunday: { open: '10:00', close: '16:00', isOpen: false }
-            }
+            },
+            notify_all_bookings: org.settings?.notifications?.all_bookings || false
         });
         setCalendarColor(org.settings?.color_mode || 'staff');
         setPreviewUrl(org.logo_url || null);
@@ -168,7 +171,11 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                     business_hours: bookingSettings.business_hours,
                     settings: {
                         ...org.settings,
-                        color_mode: calendarColor
+                        color_mode: calendarColor,
+                        notifications: {
+                            ...org.settings?.notifications,
+                            all_bookings: bookingSettings.notify_all_bookings
+                        }
                     }
                 })
                 .eq('id', org.id)
@@ -199,6 +206,10 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 <h1 className="text-[32px] font-black text-gray-900 tracking-tight leading-none mb-2">Settings</h1>
                 <p className="text-gray-500 font-medium">Manage your brand, business details, and preferences</p>
             </header>
+
+            <div className="max-w-3xl">
+                <NotificationManager />
+            </div>
 
             <form onSubmit={handleSave} className="space-y-4">
 

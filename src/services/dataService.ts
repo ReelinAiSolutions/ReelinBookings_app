@@ -497,3 +497,30 @@ export const getTimeSlots = async (staffId: string, date: Date, duration: number
 
     return slots;
 };
+// --- PUSH NOTIFICATIONS ---
+
+export const savePushSubscription = async (userId: string, subscription: any) => {
+    const { data, error } = await supabase
+        .from('push_subscriptions')
+        .upsert([{ user_id: userId, subscription }], { onConflict: 'user_id, subscription' });
+    if (error) throw error;
+    return data;
+};
+
+export const deletePushSubscription = async (userId: string, subscription: any) => {
+    const { error } = await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('user_id', userId)
+        .eq('subscription', JSON.stringify(subscription));
+    if (error) throw error;
+};
+
+export const getUserSubscriptions = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('push_subscriptions')
+        .select('*')
+        .eq('user_id', userId);
+    if (error) throw error;
+    return data;
+};

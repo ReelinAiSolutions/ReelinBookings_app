@@ -119,5 +119,8 @@ export interface Organization {
         policies?: {
             cancellation_policy?: string;
         };
+        notifications?: {
+            all_bookings?: boolean;
+        };
     };
 }
