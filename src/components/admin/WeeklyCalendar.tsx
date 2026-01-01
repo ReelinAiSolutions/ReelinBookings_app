@@ -653,12 +653,12 @@ export default function WeeklyCalendar({
                 onTouchEnd={onTouchEnd}
             >
                 {viewMode === 'team' && (
-                    <div className="flex w-full sticky top-0 z-40 bg-white border-b border-gray-300 shadow-sm">
+                    <div className="flex w-full sticky top-0 z-[45] bg-white border-b border-gray-300 shadow-sm">
                         <div className="w-12 lg:w-20 shrink-0 sticky left-0 z-50 bg-white border-r border-gray-300"></div>
                         {staff.map((member, idx) => {
                             const colorScheme = staffColors[idx % staffColors.length];
                             return (
-                                <div key={member.id} className="flex-1 min-w-[120px] text-center border-l border-gray-300 first:border-l-0 py-2 bg-white sticky top-0">
+                                <div key={member.id} className="flex-1 min-w-[120px] text-center border-l border-gray-300 first:border-l-0 py-2 bg-white sticky top-0 z-40">
                                     <div className="flex items-center justify-center gap-1.5">
                                         <div className={`w-2 h-2 rounded-full ${colorScheme.dot}`}></div>
                                         <div className="text-xs font-bold text-gray-900 truncate px-1">{member.name}</div>
@@ -670,7 +670,7 @@ export default function WeeklyCalendar({
                 )}
 
                 <div className="relative w-full flex" style={{ height: `${hours.length * 120}px` }}>
-                    <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-30 sticky left-0 h-full select-none">
+                    <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-[45] sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
                             <div key={h} className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
                                 <span className="text-[10px] font-medium text-gray-400 relative -top-2">
