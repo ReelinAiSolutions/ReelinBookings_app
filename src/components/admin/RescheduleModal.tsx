@@ -154,7 +154,7 @@ export default function RescheduleModal({
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 pt-2">
                     <div className="md:grid md:grid-cols-2 md:gap-8 space-y-6 md:space-y-0 text-left">
-                        {/* LEFT COLUMN: Client & Actions */}
+                        {/* LEFT COLUMN: Data & Selection */}
                         <div className="space-y-6">
                             {/* Client Info Group */}
                             <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5">
@@ -173,50 +173,7 @@ export default function RescheduleModal({
                                 </div>
                             </div>
 
-                            {/* Customer Notes (Editable) */}
-                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider">Customer Request / Notes</h3>
-                                    <div className="h-px bg-gray-100 flex-1"></div>
-                                </div>
-                                <textarea
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="Add notes or special requests..."
-                                    className="w-full h-24 text-[15px] font-medium text-gray-700 leading-relaxed italic bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100 focus:ring-1 focus:ring-primary-100 transition-all"
-                                />
-                            </div>
-
-                            {/* Destructive Actions */}
-                            {appointment.status !== 'CANCELLED' && (
-                                <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
-                                    <button
-                                        onClick={handleCancelApt}
-                                        className="w-full p-4 text-[17px] font-normal text-red-600 active:bg-gray-50 transition-colors text-center"
-                                    >
-                                        Cancel Booking
-                                    </button>
-                                </div>
-                            )}
-
-                            {appointment.status === 'CANCELLED' && (
-                                <div className="space-y-3">
-                                    <Button onClick={handleRestoreApt} disabled={isLoading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg">
-                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Uncancel Booking'}
-                                    </Button>
-                                    <button
-                                        onClick={handleArchiveApt}
-                                        className="w-full py-4 text-gray-400 font-bold text-sm uppercase tracking-widest hover:text-gray-600"
-                                    >
-                                        Archive (Hide)
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* RIGHT COLUMN: Editor & Notes */}
-                        <div className="space-y-6">
-                            {/* Editor Group */}
+                            {/* Editor Group - Moved here for priority */}
                             <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
 
                                 {/* Staff */}
@@ -309,14 +266,57 @@ export default function RescheduleModal({
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Notes */}
+                        {/* RIGHT COLUMN: Notes & Settings */}
+                        <div className="space-y-6">
+                            {/* Customer Notes (Editable) */}
+                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider">Customer Request / Notes</h3>
+                                    <div className="h-px bg-gray-100 flex-1"></div>
+                                </div>
+                                <textarea
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    placeholder="Add notes or special requests..."
+                                    className="w-full h-24 text-[15px] font-medium text-gray-700 leading-relaxed italic bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100 focus:ring-1 focus:ring-primary-100 transition-all"
+                                />
+                            </div>
+
+                            {/* Instructions */}
                             <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
                                 <p className="text-xs text-gray-500 leading-relaxed">
                                     Moving this appointment will free up the original slot. <br />
                                     Use "Block Time" if you want to keep both closed.
                                 </p>
                             </div>
+
+                            {/* Destructive Actions - Last Option */}
+                            {appointment.status !== 'CANCELLED' && (
+                                <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
+                                    <button
+                                        onClick={handleCancelApt}
+                                        className="w-full p-4 text-[17px] font-normal text-red-600 active:bg-gray-50 transition-colors text-center"
+                                    >
+                                        Cancel Booking
+                                    </button>
+                                </div>
+                            )}
+
+                            {appointment.status === 'CANCELLED' && (
+                                <div className="space-y-3">
+                                    <Button onClick={handleRestoreApt} disabled={isLoading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg">
+                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Uncancel Booking'}
+                                    </Button>
+                                    <button
+                                        onClick={handleArchiveApt}
+                                        className="w-full py-4 text-gray-400 font-bold text-sm uppercase tracking-widest hover:text-gray-600"
+                                    >
+                                        Archive (Hide)
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
