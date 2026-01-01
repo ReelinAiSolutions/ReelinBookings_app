@@ -40,15 +40,16 @@ export default function NotificationManager() {
         const isSecure = window.isSecureContext;
         const hasSW = 'serviceWorker' in navigator;
         const hasPush = 'PushManager' in window;
+        const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
         const supported = isSecure && hasSW && hasPush;
 
-        console.log('Push Support Diagnostics:', { isSecure, hasSW, hasPush, protocol: window.location.protocol, hostname: window.location.hostname });
+        console.log('Push Support Diagnostics:', { isSecure, hasSW, hasPush, isStandalone, protocol: window.location.protocol, hostname: window.location.hostname });
         setIsSupported(supported);
 
-        if (!isSecure && !isLocalhost()) {
+        if (!supported) {
             setError({
-                message: 'Push notifications require a secure connection (HTTPS).',
-                diagnostic: `Protocol: ${window.location.protocol}`
+                message: 'Device Support Check Failed',
+                diagnostic: `Secure: ${isSecure ? 'Yes' : 'No'} | SW: ${hasSW ? 'Yes' : 'No'} | Push: ${hasPush ? 'Yes' : 'No'} | Standalone: ${isStandalone ? 'Yes' : 'No'}`
             });
         }
 
@@ -169,9 +170,20 @@ export default function NotificationManager() {
                     </p>
 
                     {!isSupported ? (
-                        <div className="flex items-center gap-2 p-3 bg-amber-50 text-amber-700 rounded-lg text-sm border border-amber-100">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
-                            <p>To enable, please tap the <strong>Share</strong> button in Safari and select <strong>"Add to Home Screen"</strong>.</p>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 p-3 bg-amber-50 text-amber-700 rounded-lg text-sm border border-amber-100 font-medium">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                <p>To enable, please tap the <strong>Share</strong> button in Safari and select <strong>"Add to Home Screen"</strong>.</p>
+                            </div>
+
+                            {error && (
+                                <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl text-[10px] font-mono text-gray-400">
+                                    <p className="uppercase font-bold mb-1 opacity-50">Debug Diagnostics:</p>
+                                    <p>{error.diagnostic}</p>
+                                    <p className="mt-1">Hostname: {window.location.hostname}</p>
+                                    <p>iOS Standalone: {(window.navigator as any).standalone ? 'Yes' : 'No'}</p>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <>
