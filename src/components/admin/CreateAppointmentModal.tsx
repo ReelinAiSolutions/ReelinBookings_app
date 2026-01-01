@@ -12,6 +12,9 @@ interface CreateAppointmentModalProps {
         clientEmail: string;
         date: string;
         timeSlot: string;
+        notes?: string;
+        durationMinutes?: number;
+        bufferMinutes?: number;
     }) => Promise<void>;
     defaultDate: Date | null;
     defaultTime: string | null;
@@ -49,9 +52,10 @@ export default function CreateAppointmentModal({
     const [serviceId, setServiceId] = useState<string>(services[0]?.id || '');
     const [clientName, setClientName] = useState('');
     const [clientEmail, setClientEmail] = useState('');
+    const [notes, setNotes] = useState('');
+    const [customDuration, setCustomDuration] = useState<number>(60);
     const [error, setError] = useState<string | null>(null);
 
-    // Initial Synced State
     // Initial Synced State
     useEffect(() => {
         if (isOpen) {
@@ -74,6 +78,7 @@ export default function CreateAppointmentModal({
             setError(null);
             setClientName('');
             setClientEmail('');
+            setNotes('');
         }
     }, [isOpen, defaultDate, defaultTime, preselectedStaffId, services, staff]);
 
@@ -125,7 +130,7 @@ export default function CreateAppointmentModal({
         return `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
     };
 
-    // Helper for visual slider preview (Mock usage)
+    // Helper for visual slider preview
     const getSliderHour = (t: string) => {
         const [h] = t.split(':').map(Number);
         return h || 12;
@@ -140,9 +145,12 @@ export default function CreateAppointmentModal({
 
         const parseTime = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
         const checkService = services.find(s => s.id === serviceId);
-        const checkDuration = checkService?.durationMinutes || 60;
+        // Use custom duration for blocks, otherwise service default
+        const checkDuration = mode === 'blocking' ? customDuration : (checkService?.durationMinutes || 60);
+        const checkBuffer = mode === 'blocking' ? 0 : (checkService?.bufferTimeMinutes || 0);
+
         const newStart = parseTime(time);
-        const newEnd = newStart + checkDuration;
+        const newEnd = newStart + checkDuration + checkBuffer;
 
         if (availability && availability.length > 0) {
             const [y, m, d] = date.split('-').map(Number);
@@ -156,8 +164,10 @@ export default function CreateAppointmentModal({
         const conflict = relevantApts.find(apt => {
             const existingStart = parseTime(apt.timeSlot);
             const aptService = services.find(s => s.id === apt.serviceId);
-            const existingDuration = aptService?.durationMinutes || 60;
-            const existingEnd = existingStart + existingDuration;
+            const existingDuration = apt.durationMinutes || aptService?.durationMinutes || 60;
+            const existingBuffer = apt.bufferMinutes || aptService?.bufferTimeMinutes || 0;
+            const existingEnd = existingStart + existingDuration + existingBuffer;
+
             return (newStart < existingEnd && newEnd > existingStart);
         });
 
@@ -174,7 +184,10 @@ export default function CreateAppointmentModal({
                 clientName: mode === 'blocking' ? 'Blocked Time' : (clientName || 'Walk-in'),
                 clientEmail: mode === 'blocking' ? 'blocked@internal' : (clientEmail || ''),
                 date,
-                timeSlot: time
+                timeSlot: time,
+                notes: notes,
+                durationMinutes: mode === 'blocking' ? customDuration : undefined,
+                bufferMinutes: checkBuffer
             });
             onClose();
         } catch (error) {
@@ -327,112 +340,141 @@ export default function CreateAppointmentModal({
                             </div>
                         </div>
 
-                        {/* RIGHT COLUMN: Schedule & Notes */}
-                        <div className="space-y-4">
-                            {/* Selection Group: Date & Time */}
-                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 space-y-4">
-                                {/* Date Row - Modified to Overlay Pill */}
-                                <div className="flex justify-between items-center group relative">
-                                    <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</span>
-                                    {/* Interactive Pill */}
-                                    <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden">
-                                        <input
-                                            type="date"
-                                            value={date}
-                                            onChange={e => setDate(e.target.value)}
-                                            className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
-                                            onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
-                                        />
-                                        <p className="text-sm font-black text-[#007AFF] pointer-events-none">
-                                            {date ? (() => {
-                                                const [y, m, d] = date.split('-').map(Number);
-                                                return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                                            })() : 'Select Date'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Time Row - Modified to Overlay Pill */}
-                                <div className="flex justify-between items-center group relative">
-                                    <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Starts</span>
-                                    {/* Interactive Pill */}
-                                    <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden flex items-center gap-1.5">
-                                        <select
-                                            value={time}
-                                            onChange={e => setTime(e.target.value)}
-                                            className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                        {/* Custom Duration Selector (Blocking Only) */}
+                        {mode === 'blocking' && (
+                            <div className="p-5 border-t border-gray-50 animate-in slide-in-from-top-2 duration-300">
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Duration (Minutes)</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {[5, 10, 15, 20, 30, 45, 60].map(dur => (
+                                        <button
+                                            key={dur}
+                                            onClick={() => setCustomDuration(dur)}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${customDuration === dur
+                                                ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                                                }`}
                                         >
-                                            <option value="" disabled>
-                                                {timeOptions.length === 0 ? (
-                                                    // Check if it's likely closed
-                                                    (() => {
-                                                        if (!date || !businessHours) return 'No slots';
-                                                        const [y, m, d] = date.split('-').map(Number);
-                                                        const dayName = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                                                        const hours = businessHours[dayName];
-                                                        if (!hours || !hours.isOpen) return 'Business Closed';
-                                                        return 'No slots available';
-                                                    })()
-                                                ) : 'Select Time'}
-                                            </option>
-                                            {timeOptions.map(opt => (
-                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                            ))}
-                                        </select>
-                                        <p className={`text-sm font-black pointer-events-none ${time ? 'text-[#007AFF]' : 'text-gray-400'}`}>
-                                            {time ? getDisplayTime(time) : (
-                                                timeOptions.length === 0
-                                                    ? (
-                                                        (() => {
-                                                            if (!date || !businessHours) return 'No slots';
-                                                            const [y, m, d] = date.split('-').map(Number);
-                                                            const dayName = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                                                            const hours = businessHours[dayName];
-                                                            if (!hours || !hours.isOpen) return 'Closed';
-                                                            return 'No slots';
-                                                        })()
-                                                    )
-                                                    : 'Select Time'
-                                            )}
-                                        </p>
-                                        <ChevronRight className="w-3.5 h-3.5 text-[#007AFF]/50 rotate-90 pointer-events-none" />
-                                    </div>
+                                            {dur}m
+                                        </button>
+                                    ))}
                                 </div>
+                            </div>
+                        )}
+                    </div>
 
-                                {/* MINI TIMELINE VISUALIZER */}
-                                <div className="pt-4 border-t border-gray-50">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
-                                    <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
-                                        <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
-                                        <span className="text-[#007AFF] font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
-                                        <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
-                                    </div>
-                                    <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
-                                        {selectedService ? (
-                                            <div className="w-2/3 h-10 bg-blue-50 border-2 border-blue-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
-                                                <div className="w-2 h-2 rounded-full bg-[#007AFF] mr-3 shadow-[0_0_8px_rgba(0,122,255,0.5)]"></div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-[10px] font-black text-blue-900 truncate uppercase tracking-tight">{selectedService.name}</p>
-                                                    <p className="text-[9px] font-bold text-[#007AFF] opacity-70 uppercase">{selectedService.durationMinutes}m duration</p>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Select a Service</span>
-                                        )}
-                                    </div>
+                    {/* RIGHT COLUMN: Schedule & Notes */}
+                    <div className="space-y-4">
+                        {/* Selection Group: Date & Time */}
+                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 space-y-4">
+                            {/* Date Row - Modified to Overlay Pill */}
+                            <div className="flex justify-between items-center group relative">
+                                <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</span>
+                                {/* Interactive Pill */}
+                                <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden">
+                                    <input
+                                        type="date"
+                                        value={date}
+                                        onChange={e => setDate(e.target.value)}
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                        onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                                    />
+                                    <p className="text-sm font-black text-[#007AFF] pointer-events-none">
+                                        {date ? (() => {
+                                            const [y, m, d] = date.split('-').map(Number);
+                                            return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                        })() : 'Select Date'}
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Notes Area */}
-                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 pb-safe-bottom">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Internal Notes</p>
-                                <textarea
-                                    placeholder="Add specifics about this booking..."
-                                    className="w-full h-24 text-sm font-bold text-gray-900 placeholder-gray-300 bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100"
-                                ></textarea>
+                            {/* Time Row - Modified to Overlay Pill */}
+                            <div className="flex justify-between items-center group relative">
+                                <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Starts</span>
+                                {/* Interactive Pill */}
+                                <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden flex items-center gap-1.5">
+                                    <select
+                                        value={time}
+                                        onChange={e => setTime(e.target.value)}
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                    >
+                                        <option value="" disabled>
+                                            {timeOptions.length === 0 ? (
+                                                // Check if it's likely closed
+                                                (() => {
+                                                    if (!date || !businessHours) return 'No slots';
+                                                    const [y, m, d] = date.split('-').map(Number);
+                                                    const dayName = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                                                    const hours = businessHours[dayName];
+                                                    if (!hours || !hours.isOpen) return 'Business Closed';
+                                                    return 'No slots available';
+                                                })()
+                                            ) : 'Select Time'}
+                                        </option>
+                                        {timeOptions.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                    <p className={`text-sm font-black pointer-events-none ${time ? 'text-[#007AFF]' : 'text-gray-400'}`}>
+                                        {time ? getDisplayTime(time) : (
+                                            timeOptions.length === 0 ? 'No slots' : 'Select Time'
+                                        )}
+                                    </p>
+                                    <ChevronRight className="w-3.5 h-3.5 text-[#007AFF]/50 rotate-90 pointer-events-none" />
+                                </div>
                             </div>
                         </div>
+
+                        {/* MINI TIMELINE VISUALIZER */}
+                        <div className="pt-4 border-t border-gray-50">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
+                            <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
+                                <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
+                                <span className="text-[#007AFF] font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
+                                <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
+                            </div>
+                            <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
+                                {selectedService ? (
+                                    <div className="w-2/3 h-10 bg-blue-50 border-2 border-blue-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
+                                        <div className="w-2 h-2 rounded-full bg-[#007AFF] mr-3 shadow-[0_0_8px_rgba(0,122,255,0.5)]"></div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-black text-blue-900 truncate uppercase tracking-tight">{mode === 'blocking' ? 'Blocked Time' : selectedService.name}</p>
+                                            <p className="text-[9px] font-bold text-[#007AFF] opacity-70 uppercase">{mode === 'blocking' ? customDuration : selectedService.durationMinutes}m duration</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Select a Service</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Notes Area */}
+                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 pb-safe-bottom">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Internal Notes</p>
+                            <textarea
+                                placeholder="Add specifics about this booking..."
+                                value={notes}
+                                onChange={e => setNotes(e.target.value)}
+                                className="w-full h-24 text-sm font-bold text-gray-900 placeholder-gray-300 bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100"
+                            ></textarea>
+                        </div>
                     </div>
+                </div>
+
+                {/* Buttons - Fixed Bottom */}
+                <div className="p-5 border-t border-gray-100 flex gap-3 bg-white/80 backdrop-blur-md rounded-b-[40px]">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98]"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        className="flex-[2] py-4 bg-[#007AFF] hover:bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                        {mode === 'blocking' ? 'Confirm Block' : 'Book Appointment'}
+                        <ChevronRight className="w-4 h-4" strokeWidth={3} />
+                    </button>
                 </div>
             </div>
         </div>

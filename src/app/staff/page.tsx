@@ -49,6 +49,16 @@ export default function StaffPage() {
                 getUserProfile()
             ]);
 
+            console.log('[StaffPage] Data Loaded:', {
+                appointmentsCount: fetchedApts?.length,
+                staffCount: fetchedStaff?.length,
+                email: fetchedProfile?.user?.email
+            });
+
+            if (fetchedStaff) {
+                console.log('[StaffPage] Staff List Emails:', fetchedStaff.map(s => s.email));
+            }
+
             setAppointments(fetchedApts || []);
             setServices(fetchedServices || []);
             setStaff(fetchedStaff || []);
@@ -58,6 +68,9 @@ export default function StaffPage() {
             if (fetchedProfile) {
                 setCurrentUser(fetchedProfile.user);
                 setUserProfile(fetchedProfile.profile);
+
+                const matched = fetchedStaff.find(s => s.email?.toLowerCase().trim() === fetchedProfile.user.email?.toLowerCase().trim());
+                console.log('[StaffPage] Matched Staff:', matched?.name, 'ID:', matched?.id);
 
                 // Redirect owners/admins to /admin unless in test view
                 const params = new URLSearchParams(window.location.search);
@@ -103,7 +116,7 @@ export default function StaffPage() {
     }, [currentOrg?.id]);
 
     const onStatusUpdate = async (id: string, newStatus: string) => {
-        await updateAppointment(id, { status: newStatus });
+        await updateAppointment(id, { status: newStatus as any });
         await loadStaffData();
     };
 
@@ -119,7 +132,7 @@ export default function StaffPage() {
     }
 
     // Find matching staff record by email
-    const matchedStaff = currentUser?.email ? staff.find(s => s.email === currentUser.email) : null;
+    const matchedStaff = currentUser?.email ? staff.find(s => s.email?.toLowerCase().trim() === currentUser.email.toLowerCase().trim()) : null;
     const displayStaffId = matchedStaff?.id;
 
     return (

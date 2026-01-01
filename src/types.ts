@@ -12,7 +12,8 @@ export enum AppointmentStatus {
     ARCHIVED = 'ARCHIVED',
     ARRIVED = 'ARRIVED',
     IN_PROGRESS = 'IN_PROGRESS',
-    NO_SHOW = 'NO_SHOW'
+    NO_SHOW = 'NO_SHOW',
+    BLOCKED = 'BLOCKED'
 }
 
 export interface User {
@@ -76,6 +77,8 @@ export interface Appointment {
     timeSlot: string; // "10:00"
     status: AppointmentStatus;
     notes?: string;
+    durationMinutes?: number;
+    bufferMinutes?: number;
 }
 
 export interface TimeSlot {

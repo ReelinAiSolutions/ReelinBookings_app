@@ -1,6 +1,6 @@
 import React from 'react';
 import { Staff, Service } from '@/types';
-import { Clock, Mail, Scissors, Edit2, Trash2, Calendar, Star, TrendingUp } from 'lucide-react';
+import { Mail, Scissors, Edit2, Trash2, Calendar, TrendingUp, MoreHorizontal, Clock } from 'lucide-react';
 
 interface StaffCardProps {
     staff: Staff;
@@ -15,148 +15,128 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
     const hasAvatar = staff.avatar && staff.avatar.trim() !== '';
     const specialtyServices = services.filter(s => staff.specialties.includes(s.id));
 
-    // Generate gradient based on name for consistency (using explicit HEX for mobile safety)
+    // Refined Apple-style gradients
     const getGradientStyle = (name: string) => {
         const gradients = [
-            'linear-gradient(135deg, #3b82f6 0%, #9333ea 100%)', // blue-500 to purple-600
-            'linear-gradient(135deg, #22c55e 0%, #0d9488 100%)', // green-500 to teal-600
-            'linear-gradient(135deg, #f97316 0%, #db2777 100%)', // orange-500 to pink-600
-            'linear-gradient(135deg, #6366f1 0%, #2563eb 100%)', // indigo-500 to blue-600
-            'linear-gradient(135deg, #ef4444 0%, #ea580c 100%)', // red-500 to orange-600
-            'linear-gradient(135deg, #a855f7 0%, #db2777 100%)', // purple-500 to pink-600
+            'linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%)', // Soft Teal
+            'linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)', // Soft Blue
+            'linear-gradient(120deg, #fccb90 0%, #d57eeb 100%)', // Soft Orange/Purple
+            'linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%)', // Soft Purple/Blue
+            'linear-gradient(120deg, #f093fb 0%, #f5576c 100%)', // Pink/Red
         ];
         const index = name.charCodeAt(0) % gradients.length;
         return { background: gradients[index] };
     };
 
     return (
-        <div className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
-            {/* Header with Avatar */}
-            <div
-                className="relative h-32"
-                style={getGradientStyle(staff.name)}
-            >
-                {/* Decorative Pattern */}
-                <div className="absolute inset-0 opacity-10" style={{
-                    backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-                    backgroundSize: '20px 20px'
-                }} />
+        <div className="group relative bg-white rounded-3xl border border-gray-100/50 shadow-[0_2px_10px_rgba(0,0,0,0.02)] overflow-hidden transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1">
+            {/* Header Background */}
+            <div className="h-28 relative overflow-hidden" style={getGradientStyle(staff.name)}>
+                {/* Glass Texture Overlay */}
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
 
-                {/* Avatar */}
-                <div className="absolute -bottom-12 left-6">
-                    <div className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden">
-                        {hasAvatar ? (
-                            <img src={staff.avatar} alt={staff.name} className="w-full h-full object-cover" />
-                        ) : (
-                            <div
-                                className="w-full h-full flex items-center justify-center"
-                                style={getGradientStyle(staff.name)}
-                            >
-                                <span className="text-3xl font-bold text-white">
-                                    {staff.name.charAt(0).toUpperCase()}
-                                </span>
-                            </div>
-                        )}
-                    </div>
+                {/* Stats Badge - Floats on top right */}
+                <div className="absolute top-4 right-4 flex gap-2">
+                    {appointmentCount > 0 && (
+                        <div className="px-3 py-1.5 bg-white/30 backdrop-blur-md rounded-full border border-white/20 shadow-sm flex items-center gap-1.5 transition-transform group-hover:scale-105">
+                            <TrendingUp className="w-3.5 h-3.5 text-white drop-shadow-sm" strokeWidth={3} />
+                            <span className="text-[11px] font-black text-white drop-shadow-sm tracking-wide">{appointmentCount} BOOKINGS</span>
+                        </div>
+                    )}
                 </div>
-
-                {/* Stats Badge */}
-                {appointmentCount > 0 && (
-                    <div className="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full flex items-center gap-1.5 shadow-sm">
-                        <TrendingUp className="w-3.5 h-3.5 text-green-600" />
-                        <span className="text-xs font-bold text-gray-900">{appointmentCount} bookings</span>
-                    </div>
-                )}
             </div>
 
-            {/* Content */}
-            <div className="pt-14 px-6 pb-6 space-y-4">
-                {/* Name & Role */}
-                <div>
-                    <h3 className="text-xl font-bold text-gray-900 leading-tight">
-                        {staff.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 font-medium mt-1">
-                        {staff.role || 'Team Member'}
-                    </p>
+            {/* Avatar - Floating Overlap */}
+            <div className="absolute top-14 left-6">
+                <div className="w-20 h-20 rounded-[2rem] border-4 border-white shadow-xl overflow-hidden bg-white group-hover:scale-105 transition-transform duration-300 ease-out">
+                    {hasAvatar ? (
+                        <img src={staff.avatar} alt={staff.name} className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
+                            <span className="text-2xl font-black">{staff.name.charAt(0).toUpperCase()}</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Content Area */}
+            <div className="pt-10 px-6 pb-6">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 className="text-lg font-[900] text-gray-900 leading-tight tracking-tight group-hover:text-[#007AFF] transition-colors">
+                            {staff.name}
+                        </h3>
+                        <p className="text-sm font-semibold text-gray-400 mt-1 flex items-center gap-1.5">
+                            {staff.role || 'Team Member'}
+                        </p>
+                    </div>
                 </div>
 
-                {/* Email */}
-                {staff.email && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Mail className="w-4 h-4 text-gray-400" />
-                        <span className="truncate">{staff.email}</span>
-                    </div>
-                )}
-
-                {/* Specialties */}
-                {specialtyServices.length > 0 && (
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <Scissors className="w-4 h-4 text-gray-400" />
-                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                Specialties
-                            </span>
+                {/* Info Grid */}
+                <div className="space-y-3 mb-6">
+                    {/* Email */}
+                    {staff.email && (
+                        <div className="flex items-center gap-2.5 text-sm font-medium text-gray-500 bg-gray-50/50 p-2 rounded-lg group-hover:bg-gray-50 transition-colors">
+                            <Mail className="w-4 h-4 text-gray-400" />
+                            <span className="truncate">{staff.email}</span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
-                            {specialtyServices.slice(0, 3).map(service => (
-                                <span
-                                    key={service.id}
-                                    className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full"
-                                >
-                                    {service.name}
-                                </span>
-                            ))}
-                            {specialtyServices.length > 3 && (
-                                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                                    +{specialtyServices.length - 3} more
-                                </span>
+                    )}
+
+                    {/* Specialties Pills */}
+                    <div>
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                            {specialtyServices.length > 0 ? (
+                                <>
+                                    {specialtyServices.slice(0, 3).map(service => (
+                                        <span key={service.id} className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase tracking-wider rounded-md border border-gray-200">
+                                            {service.name}
+                                        </span>
+                                    ))}
+                                    {specialtyServices.length > 3 && (
+                                        <span className="px-2 py-1 bg-gray-50 text-gray-400 text-[10px] font-bold rounded-md border border-gray-100">
+                                            +{specialtyServices.length - 3}
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <span className="text-xs font-medium text-gray-300 italic pl-1">No specialties assigned</span>
                             )}
                         </div>
                     </div>
-                )}
+                </div>
 
-                {/* No Specialties Message */}
-                {specialtyServices.length === 0 && (
-                    <div className="flex items-center gap-2 text-xs text-gray-400 italic">
-                        <Scissors className="w-3.5 h-3.5" />
-                        No services assigned yet
-                    </div>
-                )}
-
-                {/* Action Buttons */}
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-                    {onEdit && (
-                        <button
-                            onClick={() => onEdit(staff)}
-                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg font-medium text-sm hover:bg-blue-100 transition-colors"
-                        >
-                            <Edit2 className="w-4 h-4" />
-                            Edit
-                        </button>
-                    )}
+                {/* Actions Bar - Pro Style */}
+                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
                     {onSchedule && (
                         <button
-                            onClick={() => onSchedule(staff)}
-                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-50 text-green-600 rounded-lg font-medium text-sm hover:bg-green-100 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); onSchedule(staff); }}
+                            className="flex items-center justify-center gap-2 h-10 bg-gray-900 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-gray-800 transition-all active:scale-95 shadow-lg shadow-gray-200"
                         >
-                            <Calendar className="w-4 h-4" />
+                            <Calendar className="w-3.5 h-3.5" />
                             Schedule
                         </button>
                     )}
-                </div>
 
-                {/* Delete Button */}
-                {onDelete && (
-                    <button
-                        onClick={() => onDelete(staff)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg font-medium text-sm hover:bg-red-100 transition-colors mt-2"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                        Remove from Team
-                    </button>
-                )}
+                    {onEdit && (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onEdit(staff); }}
+                                className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+                            >
+                                <Edit2 className="w-3.5 h-3.5" />
+                                Edit
+                            </button>
+                            {onDelete && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onDelete(staff); }}
+                                    className="w-10 h-10 flex items-center justify-center bg-white border border-red-100 text-red-500 rounded-xl hover:bg-red-50 hover:border-red-200 transition-all active:scale-95"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

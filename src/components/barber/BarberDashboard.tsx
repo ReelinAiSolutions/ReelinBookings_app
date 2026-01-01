@@ -121,10 +121,20 @@ export default function StaffDashboard({
         setSelectedAppointment(apt);
     };
 
-    const handleReschedule = async (id: string, date: string, time: string, staffId: string) => {
-        await updateAppointment(id, { date, timeSlot: time, staffId });
+    const handleReschedule = async (
+        id: string,
+        date: string,
+        time: string,
+        staffId: string,
+        options: { notes?: string; durationMinutes?: number; bufferMinutes?: number }
+    ) => {
+        await updateAppointment(id, {
+            date,
+            timeSlot: time,
+            staffId,
+            notes: options.notes
+        });
         if (onRefresh) await onRefresh();
-        // Also trigger status update prop if just to be safe, though separate
     };
 
     const handleCancel = async (id: string) => {
@@ -151,7 +161,7 @@ export default function StaffDashboard({
         '--brand-primary': currentOrg.primary_color,
     } as React.CSSProperties : {};
 
-    const effectiveStaffId = currentStaffId || currentUser.id;
+    const effectiveStaffId = currentStaffId || 'NOT_FOUND';
 
     return (
         <div

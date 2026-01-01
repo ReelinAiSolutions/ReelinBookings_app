@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { ChevronLeft, Plus, Users, ListFilter } from 'lucide-react';
-import { Appointment, Staff, Service, Organization, AppointmentStatus } from '@/types';
+import AgendaView from './AgendaView';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MoreHorizontal, User, Users, AlignJustify, Grid, Plus, Filter } from 'lucide-react';
+import { Appointment, Service, Staff, Organization, AppointmentStatus } from '@/types';
 import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth, subMonths, subYears, eachMonthOfInterval, endOfYear } from 'date-fns';
 
 const PulseStyle = () => (
@@ -67,8 +68,11 @@ export default function WeeklyCalendar({
 
     // -- STATE --
     const [dragState, setDragState] = useState<DragState | null>(null);
-    const [calendarLevel, setCalendarLevel] = useState<'day' | 'month' | 'year'>('day');
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [viewMode, setViewMode] = useState<'personal' | 'team'>('personal');
+    const [calendarLevel, setCalendarLevel] = useState<'day' | 'week' | 'month' | 'year'>('day');
+    const [isListMode, setIsListMode] = useState(false);
+    // Resize State, setViewMode] = useState<'personal' | 'team'>('personal');
     const [filterStaffId, setFilterStaffId] = useState<string>(currentStaffId || 'ALL');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -77,9 +81,19 @@ export default function WeeklyCalendar({
     const [renderedMonths, setRenderedMonths] = useState<Date[]>([]);
     const [renderedYears, setRenderedYears] = useState<number[]>([]);
 
-    // Swipe State
-    // Swipe State
-    // Swipe State
+    // Sync filterStaffId and viewMode with currentStaffId prop
+    useEffect(() => {
+        if (!currentStaffId || currentStaffId === 'NOT_FOUND') {
+            // Admin or unmapped user: Default to Team View (All Staff)
+            setFilterStaffId('ALL');
+            setViewMode('team');
+        } else if (currentStaffId !== 'ALL') {
+            // Staff member: Default to Personal View
+            setFilterStaffId(currentStaffId);
+            setViewMode('personal');
+        }
+    }, [currentStaffId]);
+
     // Swipe State
     const touchStart = useRef<number | null>(null);
     const touchEnd = useRef<number | null>(null);
@@ -267,50 +281,7 @@ export default function WeeklyCalendar({
         });
     };
 
-    const handlePointerMove = (e: React.PointerEvent) => {
-        if (!dragState) return;
-        e.preventDefault();
 
-        // Drag Logic
-        const moveDistance = Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY);
-        if (moveDistance > 5) {
-            isDraggingRef.current = true;
-        }
-
-        // 1. Calculate Vertical Move
-        const deltaY = e.clientY - dragState.startY;
-        let newTop = dragState.initialTop + deltaY;
-
-        // Clamp to valid range (0 to 24*120)
-        newTop = Math.max(0, Math.min(newTop, 24 * 120 - 60)); // -60 assumption for min height
-
-        // Snap to 15 mins (30px)
-        const snappedTop = Math.round(newTop / 30) * 30;
-
-        // Calculate Time
-        const totalMinutes = snappedTop / 2;
-        const h = Math.floor(totalMinutes / 60);
-        const m = totalMinutes % 60;
-        const newTimeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-
-        // 2. Calculate Horizontal Move (Team View Only)
-        let newStaffId = dragState.originalStaffId;
-        if (viewMode === 'team') {
-            // Simple heuristic: If moved significantly X, find which column
-            // But we don't have column refs.
-            // We can use the elementFromPoint logic or just trust the visual feedback?
-            // For MVP, lets just do vertical drag in Personal View, and simplified vertical in Team.
-            // Actually, the user asked for "smooth drag and drop rescheduling" which implies time change.
-            // Switching staff is harder without knowing column widths.
-            // Let's stick to time change first.
-        }
-
-        setDragState(prev => prev ? ({
-            ...prev,
-            currentTop: snappedTop,
-            currentTimeSlot: newTimeSlot // Update currentTimeSlot
-        }) : null);
-    };
 
     const handlePointerUp = async (e: React.PointerEvent) => {
         if (!dragState) return;
@@ -354,14 +325,132 @@ export default function WeeklyCalendar({
         }
     };
 
-    // -- HELPERS --
+    // -- RESIZE LOGIC --
+    interface ResizeState {
+        id: string;
+        initialHeight: number;
+        startY: number;
+        currentHeight: number;
+    }
+    const [resizeState, setResizeState] = useState<ResizeState | null>(null);
+
+    const handlePointerMove = (e: React.PointerEvent) => {
+        // Handle Resize
+        if (resizeState) {
+            e.preventDefault();
+            e.stopPropagation(); // Stop dragging logic
+
+            const deltaY = e.clientY - resizeState.startY;
+            let newHeight = resizeState.initialHeight + deltaY;
+
+            // Min height 30px (15 mins)
+            newHeight = Math.max(30, newHeight);
+
+            // Snap to 15 mins (30px)
+            const snappedHeight = Math.round(newHeight / 30) * 30;
+
+            setResizeState(prev => prev ? ({ ...prev, currentHeight: snappedHeight }) : null);
+            return;
+        }
+
+        if (!dragState) return;
+        e.preventDefault();
+
+        // Drag Logic
+        const moveDistance = Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY);
+        if (moveDistance > 5) {
+            isDraggingRef.current = true;
+        }
+
+        // 1. Calculate Vertical Move
+        const deltaY = e.clientY - dragState.startY;
+        let newTop = dragState.initialTop + deltaY;
+
+        // Clamp to valid range (0 to 24*120)
+        newTop = Math.max(0, Math.min(newTop, 24 * 120 - 60)); // -60 assumption for min height
+
+        // Snap to 15 mins (30px)
+        const snappedTop = Math.round(newTop / 30) * 30;
+
+        // Calculate Time
+        const totalMinutes = snappedTop / 2;
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+        const newTimeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+
+        // 2. Calculate Horizontal Move (Team View Only)
+        // ... (existing simplified logic)
+
+        setDragState(prev => prev ? ({
+            ...prev,
+            currentTop: snappedTop,
+            currentTimeSlot: newTimeSlot // Update currentTimeSlot
+        }) : null);
+    };
+
+    const handleResizeEnd = async (e: React.PointerEvent) => {
+        if (!resizeState) return;
+        const { id, currentHeight } = resizeState;
+
+        setResizeState(null);
+
+        const newDurationMinutes = currentHeight / 2;
+
+        const apt = appointments.find(a => a.id === id);
+        // Only update if duration changed
+        if (apt) {
+            const currentDuration = apt.durationMinutes || services.find(s => s.id === apt.serviceId)?.durationMinutes || 60;
+            if (newDurationMinutes !== currentDuration && onAppointmentUpdate) {
+                // We need to call update with new duration.
+                // The current onAppointmentUpdate signature focuses on position (date/time/staff).
+                // We might need to overload it or manually call dataService here if the prop doesn't support duration.
+                // However, onAppointmentUpdate calls updateAppointment which supports partial updates in our previous edit.
+                // Let's assume onAppointmentUpdate can handle a Partial<Appointment> or we bypass it?
+                // Actually, WeeklyCalendar props define onAppointmentUpdate signature: 
+                // (appointment: Appointment, newDate: Date, newTime: string, newStaffId?: string)
+
+                // It does NOT support duration directly.
+                // We should probably just call the dataService directly or ask the parent to handle it.
+                // But wait, we imported updateAppointment from dataService. Let's use that directly for duration.
+
+                try {
+                    await import('@/services/dataService').then(mod =>
+                        mod.updateAppointment(apt.id, { durationMinutes: newDurationMinutes })
+                    );
+                    if (onAppointmentUpdate) {
+                        // Refresh parent
+                        const currentAptDate = new Date(`${apt.date}T00:00:00`);
+                        await onAppointmentUpdate(apt, currentAptDate, apt.timeSlot, apt.staffId);
+                    }
+                } catch (err) {
+                    console.error("Resize failed", err);
+                }
+            }
+        }
+    };
     const getAppointmentsForDate = (date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        return appointments.filter(apt =>
-            apt.date === dateStr &&
-            apt.status !== AppointmentStatus.CANCELLED &&
-            (viewMode === 'team' || filterStaffId === 'ALL' || apt.staffId === filterStaffId)
-        );
+        return appointments.filter(apt => {
+            // Basic filtering: date must match and not be cancelled/archived
+            const isMatch = apt.date === dateStr &&
+                apt.status !== AppointmentStatus.CANCELLED &&
+                apt.status !== AppointmentStatus.ARCHIVED;
+
+            if (!isMatch) return false;
+
+            // In team view, show everyone's appointments
+            if (viewMode === 'team') return true;
+
+            // In personal view, show if:
+            // 1. It belongs to the current filter (which defaults to currentStaffId)
+            if (filterStaffId === 'ALL' || apt.staffId === filterStaffId) return true;
+
+            // 2. It's a "Blocked Time" that is global/shop-wide (no specific staffId)
+            const isBlocked = apt.status === 'BLOCKED' || (apt as any).isBlocked; // Keep support for dynamic property
+            if (isBlocked && (!apt.staffId || apt.staffId === 'ALL')) return true;
+
+            return false;
+        });
     };
 
     const formatTo12Hour = (timeStr: string) => {
@@ -624,24 +713,50 @@ export default function WeeklyCalendar({
                                     return sortedApts.map((apt) => {
                                         const start = getMinutes(apt.timeSlot);
                                         const service = services.find(s => s.id === apt.serviceId);
-                                        const duration = service?.durationMinutes || 60;
+                                        const duration = apt.durationMinutes || service?.durationMinutes || 60;
                                         const end = start + duration;
 
                                         // Find all concurrent events (any overlap)
-                                        const concurrent = sortedApts.filter(a => {
+                                        // We find the "clique" of overlapping events to ensure consistent widths
+                                        const overlappingEvents = sortedApts.filter(a => {
                                             const aStart = getMinutes(a.timeSlot);
                                             const aService = services.find(s => s.id === a.serviceId);
-                                            const aDuration = aService?.durationMinutes || 60;
+                                            const aDuration = a.durationMinutes || aService?.durationMinutes || 60;
                                             const aEnd = aStart + aDuration;
-                                            return (start < aEnd && end > aStart); // Intersection test
+                                            // Ensure back-to-back (end == start) don't overlap by using a tiny buffer
+                                            return (start < aEnd - 0.1 && end > aStart + 0.1);
                                         });
 
-                                        const total = concurrent.length;
-                                        const index = concurrent.findIndex(a => a.id === apt.id);
+                                        // To handle complex overlaps (e.g. A overlaps B, B overlaps C, but A doesn't overlap C),
+                                        // we use a simple column-based approach:
+                                        const columns: string[][] = [];
+                                        overlappingEvents.forEach(evt => {
+                                            let placed = false;
+                                            for (let col of columns) {
+                                                const lastInColId = col[col.length - 1];
+                                                const lastInCol = sortedApts.find(a => a.id === lastInColId)!;
+                                                const lastStart = getMinutes(lastInCol.timeSlot);
+                                                const lastService = services.find(s => s.id === lastInCol.serviceId);
+                                                const lastDuration = lastInCol.durationMinutes || lastService?.durationMinutes || 60;
+                                                const lastEnd = lastStart + lastDuration;
 
-                                        // Calculate Width & Position (with small gaps)
-                                        const widthPct = 98 / total;
-                                        const leftPct = (index * widthPct);
+                                                const evtStart = getMinutes(evt.timeSlot);
+                                                // Allow back-to-back to share column
+                                                if (evtStart >= lastEnd - 0.1) {
+                                                    col.push(evt.id);
+                                                    placed = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (!placed) columns.push([evt.id]);
+                                        });
+
+                                        const totalCols = columns.length;
+                                        const colIndex = columns.findIndex(col => col.includes(apt.id));
+
+                                        // Calculate Width & Position
+                                        const widthPct = 98 / totalCols;
+                                        const leftPct = (colIndex * widthPct);
 
                                         const [h, m] = apt.timeSlot.split(':').map(Number);
                                         const topPx = ((h * 60) + m) * 2;
@@ -650,7 +765,11 @@ export default function WeeklyCalendar({
 
                                         const isDragging = dragState?.id === apt.id;
                                         const displayTop = isDragging ? dragState.currentTop : topPx;
-                                        const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot; // Use displayTime
+                                        const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot;
+                                        const isBlocked = apt.status === AppointmentStatus.BLOCKED ||
+                                            apt.clientName?.toLowerCase().startsWith('blocked') ||
+                                            apt.clientId === 'blocked@internal.system' ||
+                                            (apt as any).isBlocked;
 
                                         return (
                                             <div
@@ -669,21 +788,44 @@ export default function WeeklyCalendar({
                                                         onAppointmentClick(apt);
                                                     }
                                                 }}
-                                                className={`absolute rounded-[6px] bg-indigo-50 border-l-[4px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-center gap-0.5 hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 hover:ring-indigo-500 ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-indigo-400 opacity-90 cursor-grabbing' : ''}`}
+                                                className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-indigo-50 border-indigo-500 text-indigo-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-indigo-400 opacity-90 cursor-grabbing' : ''}`}
                                                 style={{
                                                     top: `${displayTop}px`,
-                                                    height: `${duration * 2}px`,
+                                                    height: `${Math.max(24, duration * 2)}px`,
                                                     left: `calc(${leftPct}% + 1px)`,
                                                     width: `calc(${widthPct}% - 2px)`,
                                                     transition: isDragging ? 'none' : 'all 0.2s ease-out'
                                                 }}
                                             >
-                                                <div className="text-sm font-[800] leading-tight text-indigo-700 truncate">{apt.clientName}</div>
-                                                <div className="text-xs font-bold leading-tight text-indigo-600/90 truncate">{staff.find(s => s.id === apt.staffId)?.name || 'Staff'}</div>
-                                                <div className="text-xs font-semibold leading-tight text-indigo-500/90 truncate">{services.find(s => s.id === apt.serviceId)?.name || 'Service'}</div>
-                                                <div className="text-[11px] font-medium leading-tight text-indigo-400/90 truncate mt-0.5">
-                                                    {formatTo12Hour(displayTime)}
-                                                </div>
+                                                {duration >= 25 ? (
+                                                    <div className="flex flex-col h-full gap-0">
+                                                        <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : 'text-indigo-400'}`}>
+                                                            {isBlocked ? 'Blocked Time' : (services.find(s => s.id === apt.serviceId)?.name || 'Service')}
+                                                        </div>
+                                                        <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : 'text-indigo-700'} truncate`}>
+                                                            {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
+                                                        </div>
+                                                        <div className="flex items-center justify-between mt-auto pb-0.5">
+                                                            <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : 'text-indigo-600/90'} truncate`}>
+                                                                {isBlocked ? (staff.find(s => s.id === apt.staffId)?.name || 'All Staff') : (staff.find(s => s.id === apt.staffId)?.name || 'Staff')}
+                                                            </div>
+                                                            <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : 'text-indigo-500'}`}>
+                                                                {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 overflow-hidden h-full">
+                                                        {duration >= 15 && (
+                                                            <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : 'text-indigo-700'} truncate shrink-0`}>
+                                                                {isBlocked ? 'BLOCKED' : apt.clientName}
+                                                            </div>
+                                                        )}
+                                                        <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : 'text-indigo-400/90'} truncate`}>
+                                                            {formatTo12Hour(displayTime)} ({duration}m)
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         );
 
@@ -714,6 +856,8 @@ export default function WeeklyCalendar({
                                                 const displayTop = isDragging ? dragState.currentTop : topPx;
                                                 const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot; // Use displayTime
 
+                                                const isBlocked = apt.clientName?.toLowerCase().startsWith('blocked') || apt.clientId === 'blocked@internal.system';
+
                                                 return (
                                                     <div
                                                         key={apt.id}
@@ -731,17 +875,72 @@ export default function WeeklyCalendar({
                                                                 onAppointmentClick(apt);
                                                             }
                                                         }}
-                                                        className={`absolute left-0.5 right-0.5 rounded-[6px] ${colorScheme.bg} border-l-[4px] ${colorScheme.border} p-2 overflow-hidden z-10 shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-center gap-0.5 hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 hover:ring-indigo-500 ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-indigo-400 opacity-90 cursor-grabbing' : ''}`}
+                                                        className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} border-l-[4px]`} py-1 px-2 overflow-hidden z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-indigo-400 opacity-90 cursor-grabbing' : ''}`}
                                                         style={{
                                                             top: `${displayTop}px`,
-                                                            height: `${duration * 2}px`,
+                                                            height: `${Math.max(24, duration * 2)}px`,
                                                             transition: isDragging ? 'none' : 'all 0.2s ease-out'
                                                         }}
                                                     >
-                                                        <div className={`text-sm font-[800] leading-tight ${colorScheme.text} truncate`}>{apt.clientName}</div>
-                                                        <div className={`text-xs font-bold leading-tight ${colorScheme.text} opacity-90 truncate`}>{member.name}</div>
-                                                        <div className={`text-xs font-semibold leading-tight ${colorScheme.text} opacity-80 truncate`}>{service?.name || 'Service'}</div>
-                                                        <div className={`text-[11px] font-medium leading-tight ${colorScheme.text} opacity-75 truncate mt-0.5`}>{formatTo12Hour(displayTime)}</div>
+                                                        {duration >= 25 ? (
+                                                            <div className="flex flex-col h-full gap-0">
+                                                                <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-75`}>
+                                                                    {isBlocked ? 'Blocked Time' : (service?.name || 'Service')}
+                                                                </div>
+                                                                <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : colorScheme.text} truncate`}>
+                                                                    {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
+                                                                </div>
+                                                                <div className="flex items-center justify-between mt-auto pb-0.5">
+                                                                    <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-90 truncate`}>
+                                                                        {isBlocked ? (member.name || 'All Staff') : member.name}
+                                                                    </div>
+                                                                    <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : colorScheme.text} opacity-80`}>
+                                                                        {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 overflow-hidden h-full">
+                                                                {duration >= 15 && (
+                                                                    <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : colorScheme.text} truncate shrink-0`}>
+                                                                        {isBlocked ? 'BLOCKED' : apt.clientName}
+                                                                    </div>
+                                                                )}
+                                                                <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : colorScheme.text} opacity-75 truncate`}>
+                                                                    {formatTo12Hour(displayTime)} ({duration}m)
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* RESIZE HANDLE */}
+                                                        {!isPast && (
+                                                            <div
+                                                                className="absolute bottom-0 left-0 w-full h-3 cursor-ns-resize z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                                                                onPointerDown={(e) => {
+                                                                    e.stopPropagation();
+                                                                    e.preventDefault();
+                                                                    const card = e.currentTarget.parentElement as HTMLDivElement;
+                                                                    card.setPointerCapture(e.pointerId);
+
+                                                                    const initialHeight = duration * 2;
+
+                                                                    setResizeState({
+                                                                        id: apt.id,
+                                                                        initialHeight,
+                                                                        startY: e.clientY,
+                                                                        currentHeight: initialHeight
+                                                                    });
+                                                                }}
+                                                                onPointerUp={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const card = e.currentTarget.parentElement as HTMLDivElement;
+                                                                    try { card.releasePointerCapture(e.pointerId); } catch (err) { }
+                                                                    handleResizeEnd(e);
+                                                                }}
+                                                            >
+                                                                <div className={`w-8 h-1 rounded-full ${colorScheme.bg.replace('bg-', 'bg-').replace('50', '400/50')}`}></div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 );
                                             })}
@@ -809,7 +1008,7 @@ export default function WeeklyCalendar({
                                         className={`text-indigo-600 transition-all ${filterStaffId !== 'ALL' || isFilterOpen ? 'bg-indigo-50 rounded-full p-1.5' : ''}`}
                                         onClick={() => setIsFilterOpen(!isFilterOpen)}
                                     >
-                                        <ListFilter className="w-6 h-6" strokeWidth={2} />
+                                        <Filter className="w-5 h-5 text-gray-500" />
                                     </button>
                                     {isFilterOpen && (
                                         <>

@@ -213,8 +213,19 @@ export default function AdminDashboard() {
         setIsRescheduleModalOpen(true);
     };
 
-    const onReschedule = async (id: string, newDate: string, newTime: string, newStaffId: string) => {
-        await updateAppointment(id, { date: newDate, timeSlot: newTime, staffId: newStaffId });
+    const onReschedule = async (
+        id: string,
+        newDate: string,
+        newTime: string,
+        newStaffId: string,
+        options: { notes?: string; durationMinutes?: number; bufferMinutes?: number }
+    ) => {
+        await updateAppointment(id, {
+            date: newDate,
+            timeSlot: newTime,
+            staffId: newStaffId,
+            notes: options.notes
+        });
         await loadDashboardData();
     };
 
@@ -254,6 +265,9 @@ export default function AdminDashboard() {
         clientEmail: string;
         date: string;
         timeSlot: string;
+        notes?: string;
+        durationMinutes?: number;
+        bufferMinutes?: number;
     }) => {
         if (!currentOrg) return;
 
@@ -264,7 +278,10 @@ export default function AdminDashboard() {
             clientName: data.clientName,
             clientEmail: data.clientEmail,
             date: data.date,
-            timeSlot: data.timeSlot
+            timeSlot: data.timeSlot,
+            notes: data.notes,
+            durationMinutes: data.durationMinutes,
+            bufferMinutes: data.bufferMinutes
         }, currentOrg.id);
 
         await loadDashboardData();
@@ -291,7 +308,7 @@ export default function AdminDashboard() {
     };
 
     const onStatusUpdate = async (id: string, newStatus: string) => {
-        await updateAppointment(id, { status: newStatus });
+        await updateAppointment(id, { status: newStatus as any });
         await loadDashboardData();
     };
 

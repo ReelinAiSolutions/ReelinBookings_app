@@ -8,7 +8,17 @@ interface RescheduleModalProps {
     isOpen: boolean;
     appointment: Appointment | null;
     onClose: () => void;
-    onReschedule: (id: string, newDate: string, newTime: string, newStaffId: string) => Promise<void>;
+    onReschedule: (
+        id: string,
+        newDate: string,
+        newTime: string,
+        newStaffId: string,
+        options: {
+            notes?: string;
+            durationMinutes?: number;
+            bufferMinutes?: number;
+        }
+    ) => Promise<void>;
     onCancel: (id: string) => Promise<void>;
     onRestore?: (id: string) => Promise<void>;
     onArchive?: (id: string) => Promise<void>;
@@ -34,6 +44,8 @@ export default function RescheduleModal({
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [staffId, setStaffId] = useState('');
+    const [notes, setNotes] = useState('');
+    const [isAddingNote, setIsAddingNote] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     // Initialize state when opening
@@ -42,6 +54,8 @@ export default function RescheduleModal({
             setDate(appointment.date);
             setTime(appointment.timeSlot);
             setStaffId(appointment.staffId);
+            setNotes(appointment.notes || '');
+            setIsAddingNote(false);
         }
     }, [appointment]);
 
@@ -50,7 +64,7 @@ export default function RescheduleModal({
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            await onReschedule(appointment.id, date, time, staffId);
+            await onReschedule(appointment.id, date, time, staffId, { notes });
             onClose();
         } catch (error) {
             alert('Failed to reschedule: ' + (error as Error).message);
@@ -160,6 +174,30 @@ export default function RescheduleModal({
                                     {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
                                 </div>
                             </div>
+
+                            {/* Customer Notes (Editable) */}
+                            {(appointment.notes || isAddingNote) ? (
+                                <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider">Customer Request / Notes</h3>
+                                        <div className="h-px bg-gray-100 flex-1"></div>
+                                    </div>
+                                    <textarea
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                        placeholder="Add notes or special requests..."
+                                        className="w-full h-24 text-[15px] font-medium text-gray-700 leading-relaxed italic bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100 focus:ring-1 focus:ring-primary-100 transition-all"
+                                        autoFocus={isAddingNote && !appointment.notes}
+                                    />
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setIsAddingNote(true)}
+                                    className="w-full py-4 border-2 border-dashed border-gray-100 rounded-3xl text-gray-400 text-xs font-black uppercase tracking-widest hover:bg-white hover:border-primary-100 hover:text-primary-500 transition-all active:scale-[0.98]"
+                                >
+                                    + Add Internal Note
+                                </button>
+                            )}
 
                             {/* Destructive Actions */}
                             {appointment.status !== 'CANCELLED' && (

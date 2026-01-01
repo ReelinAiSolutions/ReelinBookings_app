@@ -1,18 +1,26 @@
 import { createClient } from '@/lib/supabase';
 import { Service, Staff, Appointment, TimeSlot } from '@/types';
+import { format } from 'date-fns';
+
+console.log('--- DATA SERVICE RELOADED (RESCUE v3) ---');
 
 const supabase = createClient();
 
-// Helper to get the current user's organization
+// --- AUTH & PROFILE ---
+
 export const getCurrentUserOrganization = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
         .from('profiles')
         .select('org_id')
         .eq('id', user.id)
         .single();
+
+    if (error) {
+        console.error('[getCurrentUserOrganization] Profile Error:', error);
+    }
 
     return profile?.org_id;
 };
@@ -30,6 +38,8 @@ export const getUserProfile = async () => {
     return { user, profile };
 };
 
+// --- ORGANIZATIONS ---
+
 export const getOrganizationBySlug = async (slug: string) => {
     const { data, error } = await supabase
         .from('organizations')
@@ -41,7 +51,6 @@ export const getOrganizationBySlug = async (slug: string) => {
     return data;
 };
 
-// ...
 export const getOrganizationById = async (id: string) => {
     const { data, error } = await supabase
         .from('organizations')
@@ -67,6 +76,8 @@ export const getOrganizationById = async (id: string) => {
     return data;
 };
 
+// --- SERVICES ---
+
 export const getServices = async (orgId: string): Promise<Service[]> => {
     const { data, error } = await supabase
         .from('services')
@@ -80,145 +91,10 @@ export const getServices = async (orgId: string): Promise<Service[]> => {
 
     return data.map((item: any) => ({
         ...item,
-        durationMinutes: item.duration_minutes
+        durationMinutes: item.duration_minutes,
+        imageUrl: item.image_url
     }));
 };
-
-export const getStaff = async (orgId: string): Promise<Staff[]> => {
-    const { data, error } = await supabase
-        .from('staff')
-        .select(`
-            *,
-            staff_services (
-                service_id
-            )
-        `)
-        .eq('org_id', orgId);
-
-    if (error) {
-        console.error('Error fetching staff:', error);
-        return [];
-    }
-
-    return data.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        role: item.role,
-        avatar: item.avatar_url,
-        email: item.email, // Added email
-        specialties: item.staff_services.map((ss: any) => ss.service_id)
-    }));
-};
-
-// ...
-
-export const createStaff = async (staff: Omit<Staff, 'id'>, orgId: string) => {
-    // 1. Create Staff Member
-    const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .insert([
-            {
-                name: staff.name,
-                role: staff.role,
-                avatar_url: staff.avatar,
-                email: staff.email, // Added email
-                org_id: orgId
-            }
-        ])
-        .select()
-        .single();
-
-    if (staffError) throw staffError;
-
-    // 2. Link Services (Many-to-Many)
-    // For MVP we skip linking services on create, can add later
-
-    return {
-        ...staffData,
-        avatar: staffData.avatar_url,
-        specialties: []
-    };
-};
-
-export const updateStaff = async (id: string, updates: Partial<Omit<Staff, 'id'>>, orgId: string) => {
-    const payload: any = {};
-    if (updates.name) payload.name = updates.name;
-    if (updates.role) payload.role = updates.role;
-    if (updates.avatar) payload.avatar_url = updates.avatar;
-    if (updates.email) payload.email = updates.email; // Added email
-
-    const { error } = await supabase
-        .from('staff')
-        .update(payload)
-        .eq('id', id)
-        .eq('org_id', orgId);
-
-    if (error) throw error;
-};
-export const getAppointments = async (orgId?: string): Promise<Appointment[]> => {
-    // If orgId is provided (public/specific check), filter by it.
-    // If not, relying on RLS for admin view (which looks up profile)
-    // For simplicity in this step, we will assume admin page passes it or rely on RLS if authenticated.
-
-    let query = supabase
-        .from('appointments')
-        .select('*')
-        .neq('status', 'ARCHIVED') // Hides "Confirm Cancelled" / Dismissed appointments
-        .order('date', { ascending: false })
-        .order('time_slot', { ascending: false })
-        .limit(1000); // Increased from 50 for MVP scalability
-
-    if (orgId) {
-        query = query.eq('org_id', orgId);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-        console.error('Error fetching appointments:', error);
-        return [];
-    }
-
-    return data.map((item: any) => ({
-        id: item.id,
-        serviceId: item.service_id,
-        staffId: item.staff_id,
-        clientId: item.client_email || 'unknown',
-        clientName: item.client_name || 'Unknown Client',
-        clientEmail: item.client_email || '',
-        date: item.date,
-        timeSlot: item.time_slot,
-        status: item.status
-    }));
-};
-
-export const createAppointment = async (appointment: Omit<Appointment, 'id' | 'status'>, orgId: string) => {
-    // Check for double booking using the RPC function
-    const { data, error } = await supabase
-        .rpc('create_appointment_secure', {
-            p_org_id: orgId,
-            p_staff_id: appointment.staffId,
-            p_service_id: appointment.serviceId,
-            p_date: appointment.date,
-            p_time_slot: appointment.timeSlot,
-            p_client_name: appointment.clientName,
-            p_client_email: appointment.clientEmail
-        });
-
-    if (error) {
-        throw error;
-    }
-
-    // Check application-level error (e.g. Slot already booked)
-    if (!data.success) {
-        throw new Error(data.error || 'Failed to create appointment');
-    }
-
-    // Return the newly created ID, or just success
-    return { id: data.data };
-};
-
-// --- Write Operations ---
 
 export const createService = async (service: Omit<Service, 'id'>, orgId: string) => {
     const { data, error } = await supabase
@@ -271,30 +147,72 @@ export const deleteService = async (id: string, orgId: string) => {
     if (error) throw error;
 };
 
+// --- STAFF ---
 
+export const getStaff = async (orgId: string): Promise<Staff[]> => {
+    const { data, error } = await supabase
+        .from('staff')
+        .select(`
+            *,
+            staff_services (
+                service_id
+            )
+        `)
+        .eq('org_id', orgId);
 
-export const updateStaffServices = async (staffId: string, serviceIds: string[]) => {
-    // 1. Delete existing links
-    const { error: deleteError } = await supabase
-        .from('staff_services')
-        .delete()
-        .eq('staff_id', staffId);
-
-    if (deleteError) throw deleteError;
-
-    // 2. Insert new links
-    if (serviceIds.length > 0) {
-        const links = serviceIds.map(serviceId => ({
-            staff_id: staffId,
-            service_id: serviceId
-        }));
-
-        const { error: insertError } = await supabase
-            .from('staff_services')
-            .insert(links);
-
-        if (insertError) throw insertError;
+    if (error) {
+        console.error('Error fetching staff:', error);
+        return [];
     }
+
+    return data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        role: item.role,
+        avatar: item.avatar_url,
+        email: item.email,
+        specialties: item.staff_services?.map((ss: any) => ss.service_id) || []
+    }));
+};
+
+export const createStaff = async (staff: Omit<Staff, 'id'>, orgId: string) => {
+    const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .insert([
+            {
+                name: staff.name,
+                role: staff.role,
+                avatar_url: staff.avatar,
+                email: staff.email,
+                org_id: orgId
+            }
+        ])
+        .select()
+        .single();
+
+    if (staffError) throw staffError;
+
+    return {
+        ...staffData,
+        avatar: staffData.avatar_url,
+        specialties: []
+    };
+};
+
+export const updateStaff = async (id: string, updates: Partial<Omit<Staff, 'id'>>, orgId: string) => {
+    const payload: any = {};
+    if (updates.name) payload.name = updates.name;
+    if (updates.role) payload.role = updates.role;
+    if (updates.avatar) payload.avatar_url = updates.avatar;
+    if (updates.email) payload.email = updates.email;
+
+    const { error } = await supabase
+        .from('staff')
+        .update(payload)
+        .eq('id', id)
+        .eq('org_id', orgId);
+
+    if (error) throw error;
 };
 
 export const deleteStaff = async (id: string, orgId: string) => {
@@ -303,7 +221,135 @@ export const deleteStaff = async (id: string, orgId: string) => {
         .delete()
         .eq('id', id)
         .eq('org_id', orgId);
+    if (error) throw error;
+};
 
+export const updateStaffServices = async (staffId: string, serviceIds: string[]) => {
+    await supabase.from('staff_services').delete().eq('staff_id', staffId);
+
+    if (serviceIds.length > 0) {
+        const { error } = await supabase
+            .from('staff_services')
+            .insert(serviceIds.map(sid => ({ staff_id: staffId, service_id: sid })));
+        if (error) throw error;
+    }
+};
+
+// --- APPOINTMENTS ---
+
+export const getAppointments = async (orgId: string, startDate?: string, endDate?: string): Promise<Appointment[]> => {
+    let query = supabase
+        .from('appointments')
+        .select(`
+            *,
+            services (
+                name,
+                duration_minutes,
+                buffer_time_minutes
+            )
+        `)
+        .eq('org_id', orgId);
+
+    if (startDate) query = query.gte('date', startDate);
+    if (endDate) query = query.lte('date', endDate);
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error fetching appointments:', JSON.stringify(error, null, 2));
+        return [];
+    }
+
+    if (!data || data.length === 0) {
+        console.warn(`[getAppointments] No appointments found for Org: ${orgId}`);
+    }
+
+    return (data || []).map((item: any) => {
+        const service = Array.isArray(item.services) ? item.services[0] : item.services;
+
+        return {
+            id: item.id,
+            serviceId: item.service_id,
+            staffId: item.staff_id,
+            clientId: '',
+            clientName: item.client_name || 'Unknown',
+            clientEmail: item.client_email || '',
+            date: item.date,
+            timeSlot: item.time_slot,
+            status: item.status as any,
+            notes: item.notes,
+            durationMinutes: item.duration_minutes || service?.duration_minutes || 60,
+            bufferMinutes: item.buffer_minutes || service?.buffer_time_minutes || 0
+        };
+    });
+};
+
+export const createAppointment = async (appointment: Partial<Appointment>, orgId: string) => {
+    const { data, error } = await supabase.rpc('create_appointment_v2', {
+        p_org_id: orgId,
+        p_service_id: appointment.serviceId,
+        p_staff_id: appointment.staffId,
+        p_client_name: appointment.clientName,
+        p_client_email: appointment.clientEmail,
+        p_date: appointment.date,
+        p_time_slot: appointment.timeSlot,
+        p_notes: appointment.notes
+    });
+
+    if (error) throw error;
+
+    // Apply custom duration if provided
+    if (appointment.durationMinutes || appointment.bufferMinutes) {
+        const updates: any = {};
+        if (appointment.durationMinutes) updates.duration_minutes = appointment.durationMinutes;
+        if (appointment.bufferMinutes) updates.buffer_minutes = appointment.bufferMinutes;
+
+        await supabase
+            .from('appointments')
+            .update(updates)
+            .eq('id', data);
+    }
+
+    return { id: data };
+};
+
+export const updateAppointment = async (id: string, updates: Partial<Appointment>) => {
+    const payload: any = {};
+    if (updates.date) payload.date = updates.date;
+    if (updates.timeSlot) payload.time_slot = updates.timeSlot;
+    if (updates.staffId) payload.staff_id = updates.staffId;
+    if (updates.status) payload.status = updates.status;
+    if (updates.durationMinutes) payload.duration_minutes = updates.durationMinutes;
+    if (updates.notes !== undefined) payload.notes = updates.notes;
+
+    const { error } = await supabase
+        .from('appointments')
+        .update(payload)
+        .eq('id', id);
+    if (error) throw error;
+};
+
+export const cancelAppointment = async (id: string) => {
+    const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'cancelled' })
+        .eq('id', id);
+    if (error) throw error;
+};
+
+export const uncancelAppointment = async (id: string) => {
+    const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'confirmed' })
+        .eq('id', id);
+    if (error) throw error;
+};
+
+export const archiveAppointment = async (id: string) => {
+    const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'archived' })
+        .eq('id', id);
     if (error) throw error;
 };
 
@@ -313,419 +359,104 @@ export const checkActiveAppointments = async (type: 'staff' | 'service', id: str
         .from('appointments')
         .select('*', { count: 'exact', head: true })
         .eq(column, id)
-        .in('status', ['CONFIRMED', 'PENDING'])
-        .gte('date', new Date().toISOString().split('T')[0]); // Only future/today
+        .not('status', 'in', '("cancelled", "archived")');
 
-    if (error) throw error;
+    if (error) {
+        console.error('Error checking active appointments:', error);
+        return 0;
+    }
     return count || 0;
 };
 
-export const getAvailability = async (staffId: string) => {
-    const { data, error } = await supabase
-        .from('availability')
-        .select('*')
-        .eq('staff_id', staffId)
-        .order('day_of_week', { ascending: true });
-
-    if (error) {
-        console.error('Error fetching availability:', error);
-        return [];
-    }
-
-    return data.map((item: any) => ({
-        id: item.id,
-        staffId: item.staff_id,
-        dayOfWeek: item.day_of_week,
-        startTime: item.start_time,
-        endTime: item.end_time,
-        isWorking: item.is_working
-    }));
-};
+// --- AVAILABILITY ---
 
 export const getAllAvailability = async (orgId: string) => {
     const { data, error } = await supabase
         .from('availability')
         .select('*')
         .eq('org_id', orgId);
-
-    if (error) {
-        console.error('Error fetching all availability:', error);
-        return [];
-    }
-
-    return (data || []).map((item: any) => ({
-        id: item.id,
-        staffId: item.staff_id,
-        dayOfWeek: item.day_of_week,
-        startTime: item.start_time,
-        endTime: item.end_time,
-        isWorking: item.is_working
-    }));
+    return data || [];
 };
 
-export const upsertAvailability = async (availabilityList: any[], staffId: string, orgId: string) => {
-    // Transform camelCase to snake_case for DB
-    const startData = availabilityList.map(item => ({
-        staff_id: staffId,
-        org_id: orgId,
-        day_of_week: item.dayOfWeek,
-        start_time: item.startTime,
-        end_time: item.endTime,
-        is_working: item.isWorking
-    }));
-
-    // We can't use simple upsert because we need to match on (staff_id, day_of_week).
-    // Supabase upsert works if there is a unique constraint.
-    // We added "unique(staff_id, day_of_week)" in the migration, so upsert should work!
-
+export const getAvailability = async (staffId: string) => {
     const { data, error } = await supabase
         .from('availability')
-        .upsert(startData, { onConflict: 'staff_id,day_of_week' })
-        .select();
-
-    if (error) throw error;
-    return data;
-};
-
-// ...
-export const getAppointmentsByEmail = async (email: string) => {
-    const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-            *,
-            services (name),
-            staff (name)
-        `)
-        .eq('client_email', email)
-        .order('date', { ascending: true })
-        .gte('date', new Date().toISOString().split('T')[0]); // Only show today/future
-
-    if (error) {
-        console.error('Error fetching bookings:', error);
-        return [];
-    }
-
-    return data.map((item: any) => ({
-        id: item.id,
-        serviceId: item.service_id,
-        staffId: item.staff_id,
-        clientId: item.client_email,
-        clientName: item.client_name,
-        clientEmail: item.client_email,
-        date: item.date,
-        timeSlot: item.time_slot,
-        status: item.status,
-        // Optional enrichments if we updated types
-        // serviceName: item.services?.name,
-        // staffName: item.staff?.name
-    }));
-};
-
-export const cancelAppointment = async (id: string) => {
-    const { error } = await supabase
-        .from('appointments')
-        .update({ status: 'CANCELLED' })
-        .eq('id', id);
-
-    if (error) throw error;
-};
-
-export const updateAppointment = async (id: string, updates: { date?: string; timeSlot?: string; status?: string; staffId?: string }) => {
-    // If moving time OR changing staff, verify availability first
-    if (updates.date || updates.timeSlot || updates.staffId) {
-        // Fetch current appointment to get current details (fallback)
-        const { data: currentApt } = await supabase
-            .from('appointments')
-            .select('staff_id, date, time_slot')
-            .eq('id', id)
-            .single();
-
-        if (!currentApt) throw new Error('Appointment not found');
-
-        // Determine target values
-        const targetStaffId = updates.staffId || currentApt.staff_id;
-        const targetDate = updates.date || currentApt.date;
-        const targetTime = updates.timeSlot || currentApt.time_slot;
-
-        // Check for conflicts on the TARGET staff's schedule
-        const { data: conflict } = await supabase
-            .from('appointments')
-            .select('id')
-            .eq('staff_id', targetStaffId)
-            .eq('date', targetDate)
-            .eq('time_slot', targetTime)
-            .neq('id', id) // Exclude self
-            .neq('status', 'CANCELLED')
-            .single();
-
-        if (conflict) {
-            throw new Error('This time slot is already booked for the selected staff member.');
-        }
-    }
-
-    const payload: any = {};
-    if (updates.date) payload.date = updates.date;
-    if (updates.timeSlot) payload.time_slot = updates.timeSlot;
-    if (updates.status) payload.status = updates.status;
-    if (updates.staffId) payload.staff_id = updates.staffId;
-
-    const { error } = await supabase
-        .from('appointments')
-        .update(payload)
-        .eq('id', id);
-
-    if (error) throw error;
-};
-
-export const uncancelAppointment = async (id: string) => {
-    // 1. Check for conflicts before restoring
-    const { data: currentApt } = await supabase
-        .from('appointments')
         .select('*')
-        .eq('id', id)
-        .single();
+        .eq('staff_id', staffId);
+    if (error) throw error;
+    return data || [];
+};
 
-    if (!currentApt) throw new Error('Appointment not found');
+export const upsertAvailability = async (schedule: any[], staffId: string, orgId: string) => {
+    const payloads = schedule.map(s => ({
+        staff_id: staffId,
+        org_id: orgId,
+        day_of_week: s.dayOfWeek,
+        start_time: s.startTime,
+        end_time: s.endTime,
+        is_working: s.isWorking
+    }));
 
-    const { data: conflict } = await supabase
-        .from('appointments')
-        .select('id')
-        .eq('staff_id', currentApt.staff_id)
-        .eq('date', currentApt.date)
-        .eq('time_slot', currentApt.time_slot)
-        .neq('id', id)
-        .neq('status', 'CANCELLED')
-        .neq('status', 'ARCHIVED')
-        .single();
-
-    if (conflict) {
-        throw new Error('Cannot restore: Time slot is now taken.');
-    }
-
-    const { error } = await supabase
-        .from('appointments')
-        .update({ status: 'CONFIRMED' })
-        .eq('id', id);
-
+    await supabase.from('availability').delete().eq('staff_id', staffId);
+    const { error } = await supabase.from('availability').insert(payloads);
     if (error) throw error;
 };
 
-export const archiveAppointment = async (id: string) => {
-    // We use a specific status 'ARCHIVED' to hide it from the board
-    const { error } = await supabase
-        .from('appointments')
-        .update({ status: 'ARCHIVED' })
-        .eq('id', id);
+// --- TIME SLOTS LOGIC ---
 
-    if (error) throw error;
-};
+export const getTimeSlots = async (staffId: string, date: Date, duration: number, orgId: string): Promise<TimeSlot[]> => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const dayOfWeek = date.getDay();
 
-// --- Time Slot Logic ---
-
-const timeToMinutes = (time: string) => {
-    const [h, m] = time.split(':').map(Number);
-    return h * 60 + m;
-};
-
-const minutesToTime = (minutes: number) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-};
-
-export const getTimeSlots = async (staffId: string, date: Date, serviceDuration: number, orgId: string): Promise<TimeSlot[]> => {
-    // 1. Get Day of Week & Date String
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const dayName = days[date.getDay()];
-
-    // SAFE LOCAL DATE STRING: Avoids UTC shifts
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    const dateStr = `${y}-${m}-${d}`;
-
-    // 2. Fetch Org Settings for Interval & Business Hours
     const { data: org } = await supabase
         .from('organizations')
-        .select('business_hours, slot_interval')
+        .select('slot_interval, business_hours')
         .eq('id', orgId)
         .single();
 
-    if (!org) return [];
+    const interval = org?.slot_interval || 30;
 
-    const orgHours = org.business_hours?.[dayName];
-    const interval = org.slot_interval || 60;
-
-    // Global Shop Close Check
-    if (!orgHours || !orgHours.isOpen) return [];
-
-    // 3. Fetch Staff Availability
-    // We strictly respect the Staff's availability table.
-    const { data: staffRule } = await supabase
+    const { data: availability } = await supabase
         .from('availability')
         .select('*')
         .eq('staff_id', staffId)
-        .eq('day_of_week', date.getDay())
+        .eq('day_of_week', dayOfWeek)
+        .eq('is_working', true)
         .single();
 
-    if (!staffRule || !staffRule.is_working) return [];
+    if (!availability) return [];
 
-    // 4. Calculate Effective Range
-    // Staff rule defines their shift. Org hours define absolute limits.
-    const shiftStart = timeToMinutes(staffRule.start_time);
-    const shiftEnd = timeToMinutes(staffRule.end_time);
-
-    const shopOpen = timeToMinutes(orgHours.open);
-    const shopClose = timeToMinutes(orgHours.close);
-
-    // The effective start is the max of shift/shop start
-    // The effective end is the min of shift/shop end
-    let currentMinutes = Math.max(shiftStart, shopOpen);
-    const absoluteEnd = Math.min(shiftEnd, shopClose);
-
-    // 5. Timezone & "Today" Logic
-    // We must calculate "Now" in the Organization's Timezone to determine if a slot is in the past.
-    // If org has no timezone, default to 'America/New_York' (or system default, but consistent).
-    const orgTimezone = (org as any).timezone || 'America/New_York';
-
-    // Get "Now" in Org Timezone
-    // We use a simple trick: formatting "now" into the target timezone, then parsing it back as local components
-    const now = new Date();
-    const nowInOrgStr = now.toLocaleString('en-US', { timeZone: orgTimezone, hour12: false });
-    const nowInOrg = new Date(nowInOrgStr);
-
-    // Check if the requested date (YYYY-MM-DD from client) is "Today" in Org Time
-    // safe date creation from YYYY-MM-DD
-    const [reqY, reqM, reqD] = dateStr.split('-').map(Number);
-    const isTodayInOrg = (
-        nowInOrg.getFullYear() === reqY &&
-        (nowInOrg.getMonth() + 1) === reqM &&
-        nowInOrg.getDate() === reqD
-    );
-
-    // If it's today, we need to block past slots + lead time
-    let startLimit = currentMinutes;
-    if (isTodayInOrg) {
-        const MIN_NOTICE_MINUTES = 60; // Increased to 1 hour for safety
-        const currentOrgMinutes = nowInOrg.getHours() * 60 + nowInOrg.getMinutes();
-        startLimit = Math.max(startLimit, currentOrgMinutes + MIN_NOTICE_MINUTES);
-
-        // Snap to next interval
-        const remainder = startLimit % interval;
-        if (remainder > 0) {
-            startLimit += (interval - remainder);
-        }
-    }
-
-    // Use the calculated limit
-    currentMinutes = Math.max(currentMinutes, startLimit);
-
-    // 5. Fetch Existing Appointments (with Duration) for Collision Detection
-    const { data: existingApts } = await supabase
+    const { data: appointments } = await supabase
         .from('appointments')
-        .select(`
-            time_slot,
-            services ( duration_minutes )
-        `)
-        .eq('staff_id', staffId) // SCOPED: Checks ONLY this staff member
+        .select('time_slot, duration_minutes, buffer_minutes')
+        .eq('staff_id', staffId)
         .eq('date', dateStr)
-        .in('status', ['CONFIRMED', 'PENDING']);
-
-    const busyRanges = existingApts?.map((apt: any) => ({
-        start: timeToMinutes(apt.time_slot),
-        end: timeToMinutes(apt.time_slot) + (apt.services?.duration_minutes || 60)
-    })) || [];
+        .not('status', 'in', '("cancelled", "archived")');
 
     const slots: TimeSlot[] = [];
+    let current = new Date(`${dateStr}T${availability.start_time}`);
+    const end = new Date(`${dateStr}T${availability.end_time}`);
 
-    // 6. Generate Slots
-    while (currentMinutes + serviceDuration <= absoluteEnd) {
-        const slotStart = currentMinutes;
-        const slotEnd = currentMinutes + serviceDuration;
+    while (current < end) {
+        const timeStr = format(current, 'HH:mm');
 
-        // Collision Check: Intersecting ranges
-        // (StartA < EndB) && (EndA > StartB)
-        const isBlocked = busyRanges.some(busy =>
-            slotStart < busy.end && slotEnd > busy.start
-        );
+        const isBusy = (appointments || []).some(apt => {
+            const aptStart = new Date(`${dateStr}T${apt.time_slot}`);
+            const aptEnd = new Date(aptStart.getTime() + (apt.duration_minutes + (apt.buffer_minutes || 0)) * 60000);
 
-        if (!isBlocked) {
-            slots.push({
-                time: minutesToTime(slotStart),
-                available: true
-            });
-        }
+            const slotStart = new Date(`${dateStr}T${timeStr}`);
+            const slotEnd = new Date(slotStart.getTime() + duration * 60000);
 
-        // Increment by the global interval
-        currentMinutes += interval;
+            return (slotStart < aptEnd && slotEnd > aptStart);
+        });
+
+        slots.push({
+            time: timeStr,
+            available: !isBusy
+        });
+
+        current = new Date(current.getTime() + interval * 60000);
     }
 
     return slots;
-};
-
-// --- Invitations ---
-
-export const getInvitations = async (orgId?: string) => {
-    // If orgId provided, we could filter. 
-    // ADMIN view: see all invites created by this user or for this org.
-    // For MVP: Fetch all valid invites.
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
-
-    // Simple policy: fetch all invitations
-    const { data, error } = await supabase
-        .from('invitations')
-        .select(`
-            *,
-            organizations (name)
-        `)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching invitations:', error);
-        return [];
-    }
-
-    return data.map((item: any) => ({
-        ...item,
-        orgName: item.organizations?.name
-    }));
-};
-
-export const createInvitation = async (code: string, role: string, orgId?: string) => {
-    // Check if code exists
-    const { data: existing } = await supabase
-        .from('invitations')
-        .select('id')
-        .eq('code', code)
-        .single();
-
-    if (existing) {
-        throw new Error('This code already exists.');
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Must be logged in");
-
-    const { data, error } = await supabase
-        .from('invitations')
-        .insert([{
-            code,
-            role,
-            org_id: orgId || null,
-            created_by: user.id
-        }])
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
-};
-
-export const deleteInvitation = async (id: string) => {
-    const { error } = await supabase
-        .from('invitations')
-        .delete()
-        .eq('id', id);
-    if (error) throw error;
 };
