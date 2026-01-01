@@ -6,6 +6,32 @@ console.log('--- DATA SERVICE RELOADED (RESCUE v3) ---');
 
 const supabase = createClient();
 
+// --- INVITATIONS (SUPER ADMIN) ---
+export const getInvitations = async () => {
+    const { data, error } = await supabase
+        .from('invitations')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data;
+};
+
+export const createInvitation = async (code: string, role: string = 'owner') => {
+    const { data, error } = await supabase
+        .from('invitations')
+        .insert([{ code, role }]);
+    if (error) throw error;
+    return data;
+};
+
+export const deleteInvitation = async (id: string) => {
+    const { error } = await supabase
+        .from('invitations')
+        .delete()
+        .eq('id', id);
+    if (error) throw error;
+};
+
 // --- AUTH & PROFILE ---
 
 export const getCurrentUserOrganization = async () => {
@@ -282,6 +308,17 @@ export const getAppointments = async (orgId: string, startDate?: string, endDate
             bufferMinutes: item.buffer_minutes || service?.buffer_time_minutes || 0
         };
     });
+};
+
+export const getAppointmentsByEmail = async (email: string): Promise<Appointment[]> => {
+    const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('clientEmail', email)
+        .order('date', { ascending: false })
+        .order('timeSlot', { ascending: false });
+    if (error) throw error;
+    return data || [];
 };
 
 export const createAppointment = async (appointment: Partial<Appointment>, orgId: string) => {
