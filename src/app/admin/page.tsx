@@ -142,6 +142,14 @@ export default function AdminDashboard() {
                 if (fetchedProfile) {
                     setCurrentUser(fetchedProfile.user);
                     setUserProfile(fetchedProfile.profile);
+
+                    // --- SMART REDIRECT FOR STAFF ---
+                    const role = fetchedProfile.profile.role?.toLowerCase();
+                    if (role && role !== 'owner' && role !== 'admin') {
+                        const params = new URLSearchParams(window.location.search);
+                        router.push(`/staff?${params.toString()}`);
+                        return;
+                    }
                 }
             } catch (metaError) {
                 console.error("Metadata Load Error (Non-Critical):", metaError);
@@ -288,7 +296,7 @@ export default function AdminDashboard() {
     };
 
 
-    const onConfirmBlock = async (staffId: string, note: string) => {
+    const onConfirmBlock = async (staffId: string, note: string, durationMinutes: number) => {
         if (!currentOrg || !blockSelection.date || !blockSelection.time) return;
 
         const dateStr = blockSelection.date.toISOString().split('T')[0];
@@ -300,7 +308,8 @@ export default function AdminDashboard() {
             clientEmail: 'blocked@internal.system',
             clientId: 'blocked@internal.system',
             date: dateStr,
-            timeSlot: blockSelection.time
+            timeSlot: blockSelection.time,
+            durationMinutes: durationMinutes
         }, currentOrg.id);
 
         setIsBlockingMode(false);
@@ -333,39 +342,14 @@ export default function AdminDashboard() {
 
     if (isUnauthorized) {
         return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6 text-white overflow-hidden relative">
-                {/* Background Glow */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-
-                <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl relative z-10 text-center animate-in zoom-in-95 duration-500">
-                    <div className="w-20 h-20 bg-primary-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary-500/20 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
-                        <Lock className="w-10 h-10 text-primary-400" />
+            <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-white overflow-hidden relative">
+                <div className="flex flex-col items-center gap-6 animate-pulse">
+                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
+                        <Lock className="w-8 h-8 text-primary-400" />
                     </div>
-
-                    <h2 className="text-3xl font-black mb-4 tracking-tight">Access Restricted</h2>
-                    <p className="text-gray-400 font-medium mb-10 leading-relaxed">
-                        You are currently logged in as <span className="text-white font-bold">{currentUser?.email}</span>.
-                        This account does not have Admin permissions.
-                    </p>
-
-                    <div className="grid gap-4">
-                        <Link
-                            href="/staff"
-                            className="bg-white text-gray-900 h-14 rounded-2xl flex items-center justify-center font-black text-sm uppercase tracking-widest hover:bg-primary-50 transition-all shadow-xl active:scale-95"
-                        >
-                            Go to Team Portal
-                        </Link>
-                        <button
-                            onClick={async () => {
-                                const { createClient } = await import('@/lib/supabase');
-                                const supabase = createClient();
-                                await supabase.auth.signOut();
-                                window.location.href = '/login';
-                            }}
-                            className="h-14 rounded-2xl border border-white/10 text-white font-black text-sm uppercase tracking-widest hover:bg-white/5 transition-all active:scale-95"
-                        >
-                            Sign out of this session
-                        </button>
+                    <div className="text-center">
+                        <h2 className="text-2xl font-black mb-2">Redirecting to Team Portal...</h2>
+                        <p className="text-gray-400 font-medium">Please wait while we secure your session.</p>
                     </div>
                 </div>
             </div>
@@ -379,7 +363,7 @@ export default function AdminDashboard() {
 
     return (
         <div
-            className="min-h-screen bg-[#F8F9FD] relative overflow-hidden flex"
+            className="min-h-screen bg-white relative overflow-hidden flex"
             style={brandingStyle}
         >
             <AmbientBackground />
@@ -394,8 +378,8 @@ export default function AdminDashboard() {
 
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
-            <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh] overflow-hidden' : 'block min-h-screen'}`}>
-                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden lg:p-2' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
+            <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'block min-h-screen'}`} style={activeTab === 'operations' ? { overscrollBehavior: 'none' } : {}}>
+                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden p-0' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
                     {/* Mobile Header (Only for non-operations tabs) */}
 
 

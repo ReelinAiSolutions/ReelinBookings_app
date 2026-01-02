@@ -11,14 +11,17 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can subscribe their own devices" ON push_subscriptions;
 CREATE POLICY "Users can subscribe their own devices" 
 ON push_subscriptions FOR INSERT 
 WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view their own subscriptions" ON push_subscriptions;
 CREATE POLICY "Users can view their own subscriptions" 
 ON push_subscriptions FOR SELECT 
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own subscriptions" ON push_subscriptions;
 CREATE POLICY "Users can delete their own subscriptions" 
 ON push_subscriptions FOR DELETE 
 USING (auth.uid() = user_id);
@@ -72,7 +75,7 @@ BEGIN
             v_staff_user_id,
             '🆕 New Booking!',
             v_client_name || ' booked ' || v_service_name || ' at ' || v_time,
-            '/admin?tab=schedule',
+            '/staff?tab=schedule&appointmentId=' || NEW.id,
             'new-booking-' || NEW.id
         );
     END IF;
@@ -81,6 +84,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS appointment_push_notification ON appointments;
 CREATE TRIGGER appointment_push_notification
 AFTER INSERT ON appointments
 FOR EACH ROW EXECUTE FUNCTION handle_appointment_push_trigger();
@@ -107,7 +111,7 @@ BEGIN
                 r.staff_user_id,
                 '⏰ Upcoming Booking',
                 'Your session with ' || r.client_name || ' starts in 30 mins (' || r.time_slot || ')',
-                '/admin?tab=schedule',
+                '/staff?tab=schedule&appointmentId=' || r.id,
                 'reminder-' || r.id
             );
         END IF;

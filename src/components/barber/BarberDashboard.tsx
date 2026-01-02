@@ -165,7 +165,7 @@ export default function StaffDashboard({
 
     return (
         <div
-            className="min-h-screen bg-[#F8F9FD] flex flex-col lg:block overflow-x-hidden relative"
+            className="min-h-screen bg-white flex flex-col lg:block overflow-x-hidden relative"
             style={brandingStyle}
         >
             <AmbientBackground />
@@ -179,10 +179,10 @@ export default function StaffDashboard({
             />
 
             {/* Main Content Area */}
-            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'schedule' ? 'lg:flex lg:flex-col lg:h-[100dvh] block min-h-screen' : 'block min-h-screen'}`}>
+            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'schedule' ? 'flex flex-col h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'block min-h-screen'}`} style={activeTab === 'schedule' ? { overscrollBehavior: 'none' } : {}}>
 
                 {/* Content Container */}
-                <div className={` min-h-0 bg-[#F8F9FD] ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col p-4 pb-24 lg:p-2 lg:pb-2 min-h-0' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
+                <div className={` min-h-0 bg-white ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col p-0 lg:p-2 lg:pb-2 min-h-0' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
 
 
                     {activeTab === 'schedule' && (

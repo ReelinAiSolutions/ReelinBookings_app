@@ -268,6 +268,8 @@ export const getAppointments = async (orgId: string, startDate?: string, endDate
         .from('appointments')
         .select(`
             *,
+            duration_minutes,
+            buffer_minutes,
             services (
                 name,
                 duration_minutes,
@@ -286,12 +288,14 @@ export const getAppointments = async (orgId: string, startDate?: string, endDate
         return [];
     }
 
-    if (!data || data.length === 0) {
-        console.warn(`[getAppointments] No appointments found for Org: ${orgId}`);
-    }
-
     return (data || []).map((item: any) => {
         const service = Array.isArray(item.services) ? item.services[0] : item.services;
+        const mappedDuration = item.duration_minutes !== null ? item.duration_minutes : (service?.duration_minutes || 60);
+
+        // Debug Log for Blocked items
+        if (item.client_name === 'Blocked Time' || item.status === 'BLOCKED') {
+            console.log(`[DataService] Blocked Item ${item.id}: Raw Dur=${item.duration_minutes}, Mapped=${mappedDuration}`);
+        }
 
         return {
             id: item.id,
@@ -304,8 +308,8 @@ export const getAppointments = async (orgId: string, startDate?: string, endDate
             timeSlot: item.time_slot,
             status: item.status as any,
             notes: item.notes,
-            durationMinutes: item.duration_minutes || service?.duration_minutes || 60,
-            bufferMinutes: item.buffer_minutes || service?.buffer_time_minutes || 0
+            durationMinutes: mappedDuration,
+            bufferMinutes: item.buffer_minutes !== null ? item.buffer_minutes : (service?.buffer_time_minutes || 0)
         };
     });
 };
@@ -330,22 +334,12 @@ export const createAppointment = async (appointment: Partial<Appointment>, orgId
         p_client_email: appointment.clientEmail,
         p_date: appointment.date,
         p_time_slot: appointment.timeSlot,
-        p_notes: appointment.notes
+        p_notes: appointment.notes,
+        p_duration_minutes: appointment.durationMinutes,
+        p_buffer_minutes: appointment.bufferMinutes
     });
 
     if (error) throw error;
-
-    // Apply custom duration if provided
-    if (appointment.durationMinutes || appointment.bufferMinutes) {
-        const updates: any = {};
-        if (appointment.durationMinutes) updates.duration_minutes = appointment.durationMinutes;
-        if (appointment.bufferMinutes) updates.buffer_minutes = appointment.bufferMinutes;
-
-        await supabase
-            .from('appointments')
-            .update(updates)
-            .eq('id', data);
-    }
 
     return { id: data };
 };
@@ -369,7 +363,7 @@ export const updateAppointment = async (id: string, updates: Partial<Appointment
 export const cancelAppointment = async (id: string) => {
     const { error } = await supabase
         .from('appointments')
-        .update({ status: 'cancelled' })
+        .update({ status: 'CANCELLED' })
         .eq('id', id);
     if (error) throw error;
 };
@@ -377,7 +371,7 @@ export const cancelAppointment = async (id: string) => {
 export const uncancelAppointment = async (id: string) => {
     const { error } = await supabase
         .from('appointments')
-        .update({ status: 'confirmed' })
+        .update({ status: 'CONFIRMED' })
         .eq('id', id);
     if (error) throw error;
 };
@@ -385,7 +379,7 @@ export const uncancelAppointment = async (id: string) => {
 export const archiveAppointment = async (id: string) => {
     const { error } = await supabase
         .from('appointments')
-        .update({ status: 'archived' })
+        .update({ status: 'ARCHIVED' })
         .eq('id', id);
     if (error) throw error;
 };

@@ -21,7 +21,19 @@ export default function LandingPage() {
 
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        router.push('/admin');
+        // Fetch role to determine redirect
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        const role = profile?.role?.toLowerCase();
+        if (role === 'owner' || role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/staff');
+        }
       } else {
         setIsLoading(false);
       }

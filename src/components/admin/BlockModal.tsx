@@ -9,12 +9,13 @@ interface BlockModalProps {
     time: string | null;
     staff: Staff[];
     onClose: () => void;
-    onConfirm: (staffId: string, note: string) => Promise<void>;
+    onConfirm: (staffId: string, note: string, durationMinutes: number) => Promise<void>;
 }
 
 export default function BlockModal({ isOpen, date, time, staff, onClose, onConfirm }: BlockModalProps) {
     const [selectedStaffId, setSelectedStaffId] = useState(staff[0]?.id || '');
     const [note, setNote] = useState('');
+    const [duration, setDuration] = useState(60);
     const [isLoading, setIsLoading] = useState(false);
 
     // Update default staff when staff list loads
@@ -33,8 +34,9 @@ export default function BlockModal({ isOpen, date, time, staff, onClose, onConfi
         }
         setIsLoading(true);
         try {
-            await onConfirm(selectedStaffId, note || 'Busy');
+            await onConfirm(selectedStaffId, note || 'Busy', duration);
             setNote(''); // Reset
+            setDuration(60);
             onClose();
         } catch (error) {
             alert('Failed to block time: ' + (error as Error).message);
@@ -75,6 +77,24 @@ export default function BlockModal({ isOpen, date, time, staff, onClose, onConfi
                                 <option key={s.id} value={s.id}>{s.name}</option>
                             ))}
                         </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                        <div className="flex flex-wrap gap-2">
+                            {[15, 20, 30, 45, 60, 90].map(dur => (
+                                <button
+                                    key={dur}
+                                    onClick={() => setDuration(dur)}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all border ${duration === dur
+                                        ? 'bg-gray-900 text-white border-gray-900 shadow-sm'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                                        }`}
+                                >
+                                    {dur}m
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, BellOff, CheckCircle2, AlertCircle, Smartphone, RefreshCcw } from 'lucide-react';
 import { savePushSubscription, getUserProfile } from '@/services/dataService';
 
-const VAPID_PUBLIC_KEY = 'BNWeS6Kp7y4-cLxSWofcOV1ReeIrXSUMoZ7BqixSGq-Cflqnw3Ka839z7oZGKFsuxd2eXahWIE9ieMkE5vofUXU';
+const VAPID_PUBLIC_KEY = 'BH4VKL1kQkq-TB90SgTYYS-N2AfZpfh6Tau7LA7yv2WOb-7gxhiXA72Xut5nKASWtZ2AFH2ezTLw_Lv0AeLtdTc';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -192,9 +192,28 @@ export default function NotificationManager() {
                     ) : (
                         <>
                             {isSubscribed ? (
-                                <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-2 rounded-lg w-fit">
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    <span>Notifications Active</span>
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-2 rounded-lg w-fit">
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        <span>Notifications Active</span>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const reg = await navigator.serviceWorker.ready;
+                                                await reg.showNotification(' Test Alert', {
+                                                    body: 'If you see this, your phone is configured correctly!',
+                                                    icon: '/icon-192.png',
+                                                    vibrate: [200, 100, 200]
+                                                } as any);
+                                            } catch (e) {
+                                                alert('Local Test Failed: ' + e);
+                                            }
+                                        }}
+                                        className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors w-fit"
+                                    >
+                                        Send Test Alert (Local)
+                                    </button>
                                 </div>
                             ) : (
                                 <button

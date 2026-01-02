@@ -50,8 +50,10 @@ const PulseStyle = () => (
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        .appointment-card:active {
-            transform: scale(0.98);
+        .pulse-highlight {
+            animation: gravityPulse 2s 3 ease-in-out;
+            border: 2px solid #4F46E5 !important;
+            z-index: 50 !important;
         }
     `}} />
 );
@@ -88,6 +90,7 @@ export default function WeeklyCalendar({
     staff,
     services,
     availability,
+    businessHours,
     onSelectSlot,
     onAppointmentClick,
     onAppointmentUpdate,
@@ -95,6 +98,48 @@ export default function WeeklyCalendar({
     showStaffFilter = true,
     currentStaffId
 }: WeeklyCalendarProps) {
+    // -- BUSINESS HOURS CALCULATION --
+    const { minHour, maxHour, calendarHours } = React.useMemo(() => {
+        // Default to 12 AM - 11 PM
+        let min = 0;
+        let max = 23;
+
+        if (businessHours && Object.values(businessHours).some(day => day.isOpen)) {
+            const openHours = Object.values(businessHours)
+                .filter(day => day.isOpen)
+                .map(day => parseInt(day.open.split(':')[0]));
+
+            const closeHours = Object.values(businessHours)
+                .filter(day => day.isOpen)
+                .map(day => {
+                    const [h, m] = day.close.split(':').map(Number);
+                    // If closing at 17:30, we should show the 17:00 (5 PM) slot fully
+                    return h;
+                });
+
+            if (openHours.length > 0) {
+                min = Math.min(...openHours);
+                // Ensure we at least show until the closing hour
+                max = Math.max(...closeHours);
+
+                // Add a small buffer at the top and bottom for readability if possible
+                // but keep it within 0-23
+                min = Math.max(0, min - 1);
+                max = Math.min(23, max + 1);
+            }
+        }
+
+        const hoursArray = Array.from({ length: max - min + 1 }).map((_, i) => min + i);
+        return { minHour: min, maxHour: max, calendarHours: hoursArray };
+    }, [businessHours]);
+
+    // Helper to calculate top position with offset
+    const getOffsetTop = (timeStr: string) => {
+        const [h, m] = timeStr.split(':').map(Number);
+        const totalMinutes = (h * 60) + m;
+        const minMinutes = minHour * 60;
+        return Math.max(0, (totalMinutes - minMinutes) * 2);
+    };
 
     // -- STATE --
     const [dragState, setDragState] = useState<DragState | null>(null);
@@ -111,6 +156,36 @@ export default function WeeklyCalendar({
     const [renderedMonths, setRenderedMonths] = useState<Date[]>([]);
     const [renderedYears, setRenderedYears] = useState<number[]>([]);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const [highlightedAptId, setHighlightedAptId] = useState<string | null>(null);
+
+    // -- URL DEEP LINKING LOGIC --
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const aptId = params.get('appointmentId');
+
+        if (aptId) {
+            const targetApt = appointments.find(a => a.id === aptId);
+            if (targetApt) {
+                // 1. Switch Date
+                const aptDate = new Date(targetApt.date + 'T12:00:00'); // Use mid-day to avoid TZ shifts
+                setSelectedDate(aptDate);
+
+                // 2. Highlight
+                setHighlightedAptId(aptId);
+                setTimeout(() => setHighlightedAptId(null), 10000); // Clear highlight after 10s
+
+                // 3. Scroll after date switch and layout
+                const [h] = targetApt.timeSlot.split(':').map(Number);
+                setTimeout(() => {
+                    scrollToTime(h);
+                }, 500);
+
+                // 4. Remove param from URL to prevent re-triggering on refresh
+                const newUrl = window.location.pathname + (window.location.search.replace(/(\?|&)appointmentId=[^&]+/, '').replace(/^&/, '?'));
+                window.history.replaceState({}, '', newUrl || '/');
+            }
+        }
+    }, [appointments.length > 0]); // Run once we have appointments
 
     // Sync filterStaffId and viewMode with currentStaffId prop
     useEffect(() => {
@@ -125,6 +200,15 @@ export default function WeeklyCalendar({
         }
     }, [currentStaffId]);
 
+    // AUTOMATION: Switch View Mode based on Filter
+    useEffect(() => {
+        if (filterStaffId === 'ALL') {
+            setViewMode('team');
+        } else {
+            setViewMode('personal');
+        }
+    }, [filterStaffId]);
+
     // Swipe State
     const touchStart = useRef<number | null>(null);
     const touchEnd = useRef<number | null>(null);
@@ -137,7 +221,7 @@ export default function WeeklyCalendar({
 
     // -- CONSTANTS --
     const now = new Date();
-    const hours = Array.from({ length: 24 }).map((_, i) => i);
+    const hours = calendarHours;
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const weekDayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -158,42 +242,79 @@ export default function WeeklyCalendar({
     // -- SCROLL START & INFINITE SCROLL INIT --
     const scrollToTime = (hour: number = new Date().getHours()) => {
         if (scrollContainerRef.current) {
-            const targetHour = Math.max(0, hour - 2);
+            const targetHour = Math.max(minHour, hour - 2);
+            const relativeHour = targetHour - minHour;
             scrollContainerRef.current.scrollTo({
-                top: targetHour * 120,
+                top: relativeHour * 120,
                 behavior: 'smooth'
             });
         }
     };
 
+    // -- ROBUST VIEW TRANSITION SCROLLING --
     useEffect(() => {
-        if (calendarLevel === 'day' && scrollContainerRef.current) {
-            // Initial scroll (no smooth)
-            const currentHour = new Date().getHours();
-            const targetHour = Math.max(0, currentHour - 2);
-            scrollContainerRef.current.scrollTop = targetHour * 120;
-        } else if (calendarLevel === 'month') {
-            // Init Month Range: -6 to +12 months
+        if (!scrollContainerRef.current) return;
+
+        const timer = setTimeout(() => {
+            const container = scrollContainerRef.current;
+            if (!container) return;
+
+            if (calendarLevel === 'day') {
+                const dayAppointments = getAppointmentsForDate(selectedDate);
+                const now = new Date();
+                const isToday = isSameDay(selectedDate, now);
+                let scrollHour = minHour;
+
+                if (isToday) {
+                    const currentHour = now.getHours();
+                    if (currentHour < maxHour) {
+                        scrollHour = Math.max(minHour, currentHour - 2);
+                    } else if (dayAppointments.length > 0) {
+                        const sorted = [...dayAppointments].sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
+                        const firstHour = parseInt(sorted[0].timeSlot.split(':')[0]);
+                        scrollHour = Math.max(minHour, firstHour - 1);
+                    }
+                } else if (dayAppointments.length > 0) {
+                    const sorted = [...dayAppointments].sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
+                    const firstHour = parseInt(sorted[0].timeSlot.split(':')[0]);
+                    scrollHour = Math.max(minHour, firstHour - 1);
+                }
+
+                container.scrollTo({
+                    top: (scrollHour - minHour) * 120,
+                    behavior: 'auto'
+                });
+            } else if (calendarLevel === 'month' && renderedMonths.length > 0) {
+                const targetId = `month-${format(selectedDate, 'yyyy-MM')}`;
+                const el = document.getElementById(targetId);
+                if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+            } else if (calendarLevel === 'year' && renderedYears.length > 0) {
+                const el = document.getElementById(`year-${getYear(selectedDate)}`);
+                if (el) {
+                    // Apple style: Align year to top of container
+                    const container = scrollContainerRef.current;
+                    if (container) {
+                        const offsetTop = el.offsetTop;
+                        container.scrollTo({ top: offsetTop - 20, behavior: 'auto' });
+                    }
+                }
+            }
+        }, 50);
+
+        return () => clearTimeout(timer);
+    }, [calendarLevel, selectedDate, appointments, viewMode, filterStaffId, renderedMonths.length, renderedYears.length]);
+
+    // Handle initialization of ranges when switching level
+    useEffect(() => {
+        if (calendarLevel === 'month') {
             const start = subMonths(selectedDate, 6);
             const end = addMonths(selectedDate, 12);
-            const months = eachMonthOfInterval({ start, end });
-            setRenderedMonths(months);
-            // Scroll to selected date after render (timeout for layout)
-            setTimeout(() => {
-                const el = document.getElementById(`month-${format(selectedDate, 'yyyy-MM')}`);
-                if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
-            }, 10);
+            setRenderedMonths(eachMonthOfInterval({ start, end }));
         } else if (calendarLevel === 'year') {
-            // Init Year Range: -2 to +5 years
             const currentYear = getYear(selectedDate);
-            const years = Array.from({ length: 8 }).map((_, i) => currentYear - 2 + i);
-            setRenderedYears(years);
-            setTimeout(() => {
-                const el = document.getElementById(`year-${currentYear}`);
-                if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
-            }, 10);
+            setRenderedYears(Array.from({ length: 8 }).map((_, i) => currentYear - 2 + i));
         }
-    }, [calendarLevel]); // Re-init when level changes. Note: selectedDate change shouldn't reset, unless stepping level.
+    }, [calendarLevel]);
 
     // Handle Scroll Position Restoration
     useLayoutEffect(() => {
@@ -333,8 +454,8 @@ export default function WeeklyCalendar({
         }, 100);
 
         // Calculate new time
-        // 120px = 60 mins -> 2 px/min
-        const totalMinutes = currentTop / 2;
+        // Offset considerations: currentTop is relative to grid start
+        const totalMinutes = (currentTop / 2) + (minHour * 60);
         const h = Math.floor(totalMinutes / 60);
         const m = totalMinutes % 60;
         const newTimeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
@@ -398,14 +519,14 @@ export default function WeeklyCalendar({
         const deltaY = e.clientY - dragState.startY;
         let newTop = dragState.initialTop + deltaY;
 
-        // Clamp to valid range (0 to 24*120)
-        newTop = Math.max(0, Math.min(newTop, 24 * 120 - 60)); // -60 assumption for min height
+        // Clamp to valid range (0 to hours.length * 120)
+        newTop = Math.max(0, Math.min(newTop, hours.length * 120 - 60)); // -60 assumption for min height
 
         // Snap to 15 mins (30px)
         const snappedTop = Math.round(newTop / 30) * 30;
 
         // Calculate Time
-        const totalMinutes = snappedTop / 2;
+        const totalMinutes = (snappedTop / 2) + (minHour * 60);
         const h = Math.floor(totalMinutes / 60);
         const m = totalMinutes % 60;
         const newTimeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
@@ -567,32 +688,60 @@ export default function WeeklyCalendar({
     // -- RENDERERS --
 
     const renderYearBlock = (year: number) => (
-        <div key={year} id={`year-${year}`} className="mb-12">
-            <h2 className={`text-4xl font-bold px-8 mb-8 border-b border-gray-50/0 ${year === getYear(selectedDate) ? 'text-red-600' : 'text-gray-900'}`}>{year}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 px-8 max-w-[1600px] mx-auto">
+        <div key={year} id={`year-${year}`} className="mb-8 last:mb-0">
+            {/* Apple style: Clean, left-aligned year title with thin divider */}
+            <div className="px-5 mb-4">
+                <h2 className={`text-3xl font-bold tracking-tight ${year === getYear(selectedDate) ? 'text-red-500' : 'text-gray-900'}`}>
+                    {year}
+                </h2>
+                <div className="h-px bg-gray-100 mt-2 w-full"></div>
+            </div>
+
+            {/* Dense 3-column grid for months */}
+            <div className="grid grid-cols-3 gap-x-2 gap-y-6 px-4">
                 {months.map((m, i) => {
                     const monthDate = new Date(year, i, 1);
                     const days = getDaysInMonth(monthDate);
                     const offset = getDay(monthDate);
+                    const isSelectedMonth = i === selectedDate.getMonth() && year === selectedDate.getFullYear();
+
                     return (
                         <div
                             key={m}
-                            className="flex flex-col gap-4 cursor-pointer hover:bg-gray-50 rounded-2xl p-6 transition-colors border border-transparent hover:border-gray-100"
+                            className="flex flex-col gap-1.5 cursor-pointer active:opacity-60 transition-opacity"
                             onClick={() => {
                                 setDirection('forward');
                                 setCalendarLevel('month');
                                 setSelectedDate(monthDate);
                             }}
                         >
-                            <h3 className={`text-xl font-bold pl-1 ${i === selectedDate.getMonth() && year === selectedDate.getFullYear() ? 'text-red-600' : 'text-gray-900'}`}>{m}</h3>
-                            <div className="grid grid-cols-7 gap-y-3 gap-x-1 pointer-events-none">
-                                {Array.from({ length: offset }).map((_, k) => <div key={`e-${k}`} className="w-full h-4"></div>)}
+                            {/* Shortened month name: J, F, M... or Jan, Feb... Apple uses Full but we can use tiny bold */}
+                            <h3 className={`text-[13px] font-bold px-1 ${isSelectedMonth ? 'text-red-500' : 'text-gray-900 uppercase tracking-tight'}`}>
+                                {m.substring(0, 3)}
+                            </h3>
+
+                            <div className="grid grid-cols-7 gap-0.5">
+                                {/* Weekday headers? Apple skip them in year view. Let's skip or make them dots? 
+                                    Actually Apple just shows the grid of numbers. */}
+                                {Array.from({ length: offset }).map((_, k) => (
+                                    <div key={`e-${k}`} className="aspect-square"></div>
+                                ))}
                                 {Array.from({ length: days }).map((_, d) => {
                                     const dayNum = d + 1;
                                     const currentDayDate = new Date(year, i, dayNum);
                                     const isToday = isSameDay(currentDayDate, new Date());
+                                    const isSelected = isSameDay(currentDayDate, selectedDate);
+
                                     return (
-                                        <div key={d} className={`w-full h-8 flex items-center justify-center text-sm font-semibold rounded-full ${isToday ? 'bg-red-500 text-white shadow-sm' : 'text-gray-700'}`}>
+                                        <div
+                                            key={d}
+                                            className={`aspect-square flex items-center justify-center text-[7.5px] font-medium rounded-full transition-colors ${isToday
+                                                ? 'bg-red-500 text-white font-bold'
+                                                : isSelected
+                                                    ? 'bg-gray-100 text-gray-900 font-bold'
+                                                    : 'text-gray-600'
+                                                }`}
+                                        >
                                             {dayNum}
                                         </div>
                                     );
@@ -609,7 +758,7 @@ export default function WeeklyCalendar({
         return (
             <div
                 ref={scrollContainerRef}
-                className={`flex-1 overflow-y-auto bg-white pb-20 pt-2 ${getAnimClass()} scrollbar-hide`}
+                className={`flex-1 overflow-y-auto bg-white pb-[100px] ${getAnimClass()} scrollbar-hide`}
                 onScroll={(e) => handleInfiniteScroll(e, 'year')}
             >
                 {renderedYears.map((year, i) => (
@@ -630,10 +779,16 @@ export default function WeeklyCalendar({
 
         return (
             <div key={`${monthName}-${year}`} id={`month-${format(date, 'yyyy-MM')}`} className="mb-12">
-                <h3 className="sticky top-0 bg-white/95 backdrop-blur-sm py-4 px-6 text-2xl font-bold text-gray-900 z-10 border-b border-gray-50/50 flex items-baseline gap-2">
+                <h3 className="sticky top-[32px] bg-white/95 backdrop-blur-md py-4 px-6 text-2xl font-bold text-gray-900 z-10 border-b border-gray-100 flex items-baseline gap-2">
                     {monthName} <span className="text-gray-400 font-normal text-xl">{year}</span>
                 </h3>
-                <div className="grid grid-cols-7 auto-rows-fr border-l border-gray-100">
+                <div className="grid grid-cols-7 auto-rows-fr border-l border-gray-100 pt-8 pb-4">
+                    {/* Weekday headers for month view */}
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                        <div key={i} className="pb-4 text-center text-[11px] font-bold text-gray-400 border-b border-gray-100 uppercase tracking-widest">
+                            {day}
+                        </div>
+                    ))}
                     {Array.from({ length: startDayOffset }).map((_, i) => (
                         <div key={`empty-${i}`} className="h-32 border-b border-gray-100 border-r border-gray-100 bg-gray-50/20"></div>
                     ))}
@@ -661,26 +816,35 @@ export default function WeeklyCalendar({
                                     {dayNum}
                                 </span>
 
-                                {/* Smart Booking Indicator */}
                                 {eventCount > 0 && (
                                     <div className="absolute bottom-3 left-3 right-3">
-                                        {eventCount === 1 ? (
-                                            <div className="flex items-center gap-2 pl-1">
-                                                <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
-                                                <span className="text-xs text-gray-500 font-medium truncate hidden sm:block">1 Booking</span>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col gap-1">
+                                        {/* Desktop: Rich Indicator */}
+                                        <div className="hidden sm:block">
+                                            {eventCount === 1 ? (
                                                 <div className="flex items-center gap-2 pl-1">
-                                                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                                                    <span className="text-xs text-indigo-600 font-semibold truncate hidden sm:block">{eventCount} Bookings</span>
+                                                    <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
+                                                    <span className="text-xs text-gray-500 font-medium truncate">1 Booking</span>
                                                 </div>
-                                                {/* Visual Density Bar */}
-                                                <div className="mx-1 h-1 bg-indigo-100 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-indigo-500 opacity-50" style={{ width: `${Math.min(100, eventCount * 20)}%` }}></div>
+                                            ) : (
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2 pl-1">
+                                                        <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                                                        <span className="text-xs text-indigo-600 font-semibold truncate">{eventCount} Bookings</span>
+                                                    </div>
+                                                    {/* Visual Density Bar */}
+                                                    <div className="mx-1 h-1 bg-indigo-100 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-indigo-500 opacity-50" style={{ width: `${Math.min(100, eventCount * 20)}%` }}></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
+
+                                        {/* Mobile: Minimal Indicator (Just the Number) */}
+                                        <div className="sm:hidden flex justify-start pl-1">
+                                            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50/50 px-1.5 py-0.5 rounded-md border border-indigo-100/50">
+                                                {eventCount}
+                                            </span>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -704,7 +868,7 @@ export default function WeeklyCalendar({
                 ))}
             </div>
 
-            <div className="pb-20 pt-2">
+            <div className="pb-[100px]">
                 {renderedMonths.map(date => renderMonthBlock(date))}
             </div>
         </div>
@@ -718,12 +882,18 @@ export default function WeeklyCalendar({
         const isToday = isSameDay(selectedDate, now);
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
-        const currentTimeTopPx = isToday ? ((currentHour * 60) + currentMinute) * 2 : -1;
+
+        // Offset: current time is relative to minHour
+        const totalCurrentMinutes = (currentHour * 60) + currentMinute;
+        const minHourMinutes = minHour * 60;
+        const currentTimeTopPx = isToday && currentHour >= minHour && currentHour <= maxHour
+            ? (totalCurrentMinutes - minHourMinutes) * 2
+            : -1;
 
         return (
             <div
                 ref={scrollContainerRef}
-                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide pb-20 lg:pb-0`}
+                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide pb-[100px] lg:pb-0`}
                 style={{ scrollBehavior: 'smooth' }}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
@@ -749,11 +919,26 @@ export default function WeeklyCalendar({
                 <div className="relative w-full flex" style={{ height: `${hours.length * 120}px` }}>
                     <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-[45] sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
-                            <div key={h} className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
-                                <span className="text-[10px] font-medium text-gray-400 relative -top-2">
-                                    {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
-                                </span>
-                            </div>
+                            <React.Fragment key={h}>
+                                <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
+                                    <span className="text-[10px] font-black text-gray-900 relative -top-2">
+                                        {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
+                                    </span>
+                                </div>
+                                {h < maxHour && (
+                                    <>
+                                        <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 30}px` }}>
+                                            <span className="text-[8px] font-medium text-gray-400 opacity-50 relative -top-1.5">:15</span>
+                                        </div>
+                                        <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 60}px` }}>
+                                            <span className="text-[8px] font-bold text-gray-400 opacity-80 relative -top-1.5">:30</span>
+                                        </div>
+                                        <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 90}px` }}>
+                                            <span className="text-[8px] font-medium text-gray-400 opacity-50 relative -top-1.5">:45</span>
+                                        </div>
+                                    </>
+                                )}
+                            </React.Fragment>
                         ))}
                     </div>
 
@@ -772,7 +957,7 @@ export default function WeeklyCalendar({
                                 className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
                                 style={{ height: `${hours.length * 120 + 24}px` }}
                             >
-                                {isDayEmpty && <EmptyState onAction={() => onSelectSlot(selectedDate, '09:00')} />}
+                                {isDayEmpty && <EmptyState onAction={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)} />}
                                 {hours.map((h, i) => (
                                     <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h)}></div>
                                 ))}
@@ -837,7 +1022,8 @@ export default function WeeklyCalendar({
                                         const leftPct = (colIndex * widthPct);
 
                                         const [h, m] = apt.timeSlot.split(':').map(Number);
-                                        const topPx = ((h * 60) + m) * 2;
+                                        const totalMins = (h * 60) + m;
+                                        const topPx = (totalMins - (minHour * 60)) * 2;
                                         const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
                                         const isPast = aptDate < now;
 
@@ -848,6 +1034,8 @@ export default function WeeklyCalendar({
                                             apt.clientName?.toLowerCase().startsWith('blocked') ||
                                             apt.clientId === 'blocked@internal.system' ||
                                             (apt as any).isBlocked;
+
+                                        const isHighlighted = highlightedAptId === apt.id;
 
                                         return (
                                             <React.Fragment key={apt.id}>
@@ -881,7 +1069,7 @@ export default function WeeklyCalendar({
                                                             onAppointmentClick(apt);
                                                         }
                                                     }}
-                                                    className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-indigo-50 border-indigo-500 text-indigo-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''}`}
+                                                    className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-indigo-50 border-indigo-500 text-indigo-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
                                                     style={{
                                                         top: `${displayTop}px`,
                                                         height: `${Math.max(24, duration * 2)}px`,
@@ -954,15 +1142,15 @@ export default function WeeklyCalendar({
 
                                     return (
                                         <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 relative first:border-l-0 group h-full transition-all duration-300`}>
-                                            {hours.map(h => (
-                                                <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${h * 120}px` }} onClick={() => handleGridClick(h, member.id)}></div>
+                                            {hours.map((h, i) => (
+                                                <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h, member.id)}></div>
                                             ))}
 
                                             {memberAppointments.map(apt => {
                                                 const [h, m] = apt.timeSlot.split(':').map(Number);
                                                 const service = services.find(s => s.id === apt.serviceId);
-                                                const duration = service?.durationMinutes || 60;
-                                                const topPx = ((h * 60) + m) * 2;
+                                                const duration = apt.durationMinutes || service?.durationMinutes || 60;
+                                                const topPx = ((h * 60) + m - (minHour * 60)) * 2;
                                                 const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
                                                 const isPast = aptDate < now;
 
@@ -971,6 +1159,8 @@ export default function WeeklyCalendar({
                                                 const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot; // Use displayTime
 
                                                 const isBlocked = apt.clientName?.toLowerCase().startsWith('blocked') || apt.clientId === 'blocked@internal.system';
+
+                                                const isHighlighted = highlightedAptId === apt.id;
 
                                                 return (
                                                     <React.Fragment key={apt.id}>
@@ -1002,7 +1192,7 @@ export default function WeeklyCalendar({
                                                                     onAppointmentClick(apt);
                                                                 }
                                                             }}
-                                                            className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} border-l-[4px]`} py-1 px-2 overflow-hidden z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''}`}
+                                                            className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} border-l-[4px]`} py-1 px-2 overflow-hidden z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
                                                             style={{
                                                                 top: `${displayTop}px`,
                                                                 height: `${Math.max(24, duration * 2)}px`,
@@ -1114,9 +1304,9 @@ export default function WeeklyCalendar({
             })()}
 
             {/* STICKY HEADER WRAPPER */}
-            <div className="sticky top-0 z-50 bg-[#F2F2F7]/90 backdrop-blur-md transition-all">
+            <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md transition-all border-b border-gray-100">
                 {/* MAIN HEADER */}
-                <header className="pt-6 pb-2 px-5 flex flex-col shrink-0">
+                <header className="pt-6 pb-2 px-5 flex flex-col shrink-0 touch-none">
                     {/* Row 1: Back Link */}
                     <div className="h-6 flex items-start">
                         {calendarLevel === 'month' && (
@@ -1289,21 +1479,11 @@ export default function WeeklyCalendar({
                             </div>
 
 
-                            {calendarLevel === 'day' && (
-                                <button
-                                    className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 transition-all duration-200 rounded-full ${viewMode === 'team' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
-                                    onClick={() => setViewMode(prev => prev === 'personal' ? 'team' : 'personal')}
-                                >
-                                    <Users className="w-4 h-4" strokeWidth={2.5} />
-                                    <span className="text-[11px] font-black uppercase tracking-widest hidden xl:block">
-                                        {viewMode === 'personal' ? 'Team View' : 'Personal View'}
-                                    </span>
-                                </button>
-                            )}
+
 
                             <button
                                 className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-[#007AFF] text-white rounded-full transition-all duration-200 hover:bg-blue-600 active:scale-95 shadow-lg shadow-blue-500/20"
-                                onClick={() => onSelectSlot(selectedDate, "09:00")}
+                                onClick={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)}
                             >
                                 <Plus className="w-4 h-4" strokeWidth={3} />
                                 <span className="text-[11px] font-black uppercase tracking-widest hidden xl:block">Add New</span>
@@ -1315,7 +1495,7 @@ export default function WeeklyCalendar({
                 {/* DAY SPECIFIC DATE HEADER */}
                 {calendarLevel === 'day' && (
                     <div
-                        className="border-b border-gray-200/50 pb-3 shrink-0 pt-2 transition-all"
+                        className="flex flex-col select-none touch-none pb-4"
                         onTouchStart={onHeaderTouchStart}
                         onTouchMove={onHeaderTouchMove}
                         onTouchEnd={onHeaderTouchEnd}

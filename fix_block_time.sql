@@ -1,4 +1,19 @@
--- Create the v2 appointment function that supports notes and returns ID directly
+-- FIX BLOCKED TIME DURATION & CUSTOM LENGTHS
+-- Run this in your Supabase SQL Editor
+
+-- 1. Ensure columns exist (Safely)
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='duration_minutes') THEN
+        ALTER TABLE appointments ADD COLUMN duration_minutes INTEGER DEFAULT NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='buffer_minutes') THEN
+        ALTER TABLE appointments ADD COLUMN buffer_minutes INTEGER DEFAULT NULL;
+    END IF;
+END $$;
+
+-- 2. Update the Create Function to Accept Duration
 CREATE OR REPLACE FUNCTION public.create_appointment_v2(
   p_org_id UUID,
   p_service_id UUID,
@@ -18,7 +33,7 @@ AS $$
 DECLARE
   v_appointment_id UUID;
 BEGIN
-  -- 1. Check for basic conflicts (Optional since UI checks, but good for safety)
+  -- Check for basic conflicts
   IF EXISTS (
     SELECT 1 FROM public.appointments
     WHERE staff_id = p_staff_id
@@ -29,7 +44,7 @@ BEGIN
     RAISE EXCEPTION 'This slot is already booked.';
   END IF;
 
-  -- 2. Insert the appointment
+  -- Insert with custom duration/buffer
   INSERT INTO public.appointments (
     org_id,
     staff_id,
@@ -61,8 +76,5 @@ BEGIN
 END;
 $$;
 
--- Grant access to authenticated users and service role
-GRANT EXECUTE ON FUNCTION public.create_appointment_v2 TO authenticated, service_role, anon;
-
--- Force a reload of the schema cache
+-- 3. Reload Config
 NOTIFY pgrst, 'reload config';

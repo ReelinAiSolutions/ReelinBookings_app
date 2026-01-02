@@ -206,8 +206,16 @@ export default function CreateAppointmentModal({
         }
 
         setIsLoading(true);
+        console.log("Creating Appointment/Block:", {
+            mode,
+            customDuration,
+            checkDuration,
+            clientName,
+            time
+        });
+
         try {
-            await onConfirm({
+            const payload = {
                 serviceId,
                 staffId,
                 clientName: mode === 'blocking' ? 'Blocked Time' : (clientName || 'Walk-in'),
@@ -217,7 +225,10 @@ export default function CreateAppointmentModal({
                 notes: notes,
                 durationMinutes: mode === 'blocking' ? customDuration : undefined,
                 bufferMinutes: checkBuffer
-            });
+            };
+            console.log("Sending Payload:", payload);
+
+            await onConfirm(payload);
             onClose();
         } catch (error) {
             alert('Failed: ' + (error as Error).message);
@@ -453,12 +464,12 @@ export default function CreateAppointmentModal({
                                 <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
                             </div>
                             <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
-                                {selectedService ? (
-                                    <div className="w-3/4 h-10 bg-blue-50 border-2 border-blue-200 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300">
-                                        <div className="w-2 h-2 rounded-full bg-[#007AFF] mr-3 shadow-[0_0_8px_rgba(0,122,255,0.5)]"></div>
+                                {selectedService || mode === 'blocking' ? (
+                                    <div className={`w-3/4 h-10 border-2 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300 ${mode === 'blocking' ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
+                                        <div className={`w-2 h-2 rounded-full mr-3 shadow-sm ${mode === 'blocking' ? 'bg-red-500 shadow-red-500/50' : 'bg-[#007AFF] shadow-blue-500/50'}`}></div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-black text-blue-900 truncate uppercase tracking-tight">{mode === 'blocking' ? 'Blocked Time' : selectedService.name}</p>
-                                            <p className="text-[9px] font-bold text-[#007AFF] opacity-70 uppercase leading-none">{mode === 'blocking' ? customDuration : selectedService.durationMinutes}m duration</p>
+                                            <p className={`text-[10px] font-black truncate uppercase tracking-tight ${mode === 'blocking' ? 'text-red-900' : 'text-blue-900'}`}>{mode === 'blocking' ? 'Blocked Time' : selectedService?.name || 'Service'}</p>
+                                            <p className={`text-[9px] font-bold opacity-70 uppercase leading-none ${mode === 'blocking' ? 'text-red-600' : 'text-[#007AFF]'}`}>{mode === 'blocking' ? customDuration : selectedService?.durationMinutes}m duration</p>
                                         </div>
                                     </div>
                                 ) : (

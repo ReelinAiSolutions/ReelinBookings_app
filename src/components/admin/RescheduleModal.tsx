@@ -160,17 +160,27 @@ export default function RescheduleModal({
                             <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5">
                                 <div className="flex justify-between items-start mb-2">
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-900 leading-tight">{appointment.clientName}</h3>
-                                        <p className="text-sm font-medium text-gray-500">{appointment.clientEmail}</p>
+                                        <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                                            {(appointment.clientName === 'Blocked Time' || appointment.status === 'BLOCKED')
+                                                ? `Blocked Time${appointment.durationMinutes ? ` (${appointment.durationMinutes}m)` : ''}`
+                                                : appointment.clientName}
+                                        </h3>
+                                        {/** Only show email if not blocked time */}
+                                        {appointment.clientName !== 'Blocked Time' && appointment.status !== 'BLOCKED' && (
+                                            <p className="text-sm font-medium text-gray-500">{appointment.clientEmail}</p>
+                                        )}
                                     </div>
                                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${appointment.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                         {appointment.status || 'CONFIRMED'}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-xl w-fit">
-                                    <Calendar className="w-3.5 h-3.5" />
-                                    {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
-                                </div>
+                                {/* Hide Service for Blocked Time */}
+                                {appointment.clientName !== 'Blocked Time' && appointment.status !== 'BLOCKED' && (
+                                    <div className="flex items-center gap-2 text-sm font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-xl w-fit">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Editor Group - Moved here for priority */}
@@ -299,7 +309,7 @@ export default function RescheduleModal({
                                         onClick={handleCancelApt}
                                         className="w-full p-4 text-[17px] font-normal text-red-600 active:bg-gray-50 transition-colors text-center"
                                     >
-                                        Cancel Booking
+                                        {(appointment.clientName === 'Blocked Time' || appointment.status === 'BLOCKED') ? 'Unblock Time' : 'Cancel Booking'}
                                     </button>
                                 </div>
                             )}
