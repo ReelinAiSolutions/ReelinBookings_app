@@ -199,12 +199,10 @@ export default function RescheduleModal({
 
                                     <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
                                     <div className="flex items-center gap-2 pointer-events-none">
-                                        <div className="bg-[#007AFF]/10 px-4 py-1.5 rounded-xl">
-                                            <span className="text-base font-black text-[#007AFF]">
-                                                {staff.find(s => s.id === staffId)?.name || 'Select Staff'}
-                                            </span>
-                                        </div>
-                                        <ChevronRight className="w-5 h-5 text-gray-300" />
+                                        <span className="text-sm font-bold text-gray-500">
+                                            {staff.find(s => s.id === staffId)?.name || 'Select Staff'}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4 text-gray-300" />
                                     </div>
                                 </div>
 

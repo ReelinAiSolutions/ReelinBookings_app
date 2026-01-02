@@ -1345,12 +1345,12 @@ export default function WeeklyCalendar({
                                 <div className="relative">
                                     <button
                                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                        className={`flex items-center gap-1 px-2 py-1.5 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-indigo-100/80 text-indigo-700' : 'hover:bg-gray-100 text-gray-900'}`}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-[#007AFF]/10 ring-2 ring-[#007AFF] text-[#007AFF]' : 'bg-[#007AFF]/5 hover:bg-[#007AFF]/10 text-[#007AFF]'}`}
                                     >
-                                        <span className="text-[15px] sm:text-[17px] font-black tracking-tight truncate max-w-[80px] sm:max-w-[150px]">
+                                        <span className="text-base sm:text-lg font-black tracking-tight truncate max-w-[120px] sm:max-w-[200px]">
                                             {filterStaffId === 'ALL' ? 'All Staff' : staff.find(s => s.id === filterStaffId)?.name || 'Unknown'}
                                         </span>
-                                        <ChevronRight className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isFilterOpen ? 'rotate-90' : ''}`} />
+                                        <ChevronRight className={`w-4 h-4 text-[#007AFF] transition-transform duration-200 ${isFilterOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} />
                                     </button>
 
                                     {isFilterOpen && (
