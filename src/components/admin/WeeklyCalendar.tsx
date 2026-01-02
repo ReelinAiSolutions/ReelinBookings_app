@@ -1321,9 +1321,6 @@ export default function WeeklyCalendar({
                     <div className="flex items-center justify-between mt-1 gap-2">
                         {/* LEFT: TITLE & TODAY */}
                         <div className="flex-1 flex items-center gap-2 min-w-0">
-                            <h1 className="text-[24px] sm:text-[30px] font-black tracking-tight text-gray-900 leading-tight truncate">
-                                {calendarLevel === 'day' ? format(selectedDate, 'EEEE') : calendarLevel === 'month' ? format(selectedDate, 'MMMM') : getYear(selectedDate)}
-                            </h1>
                             {(!isSameDay(selectedDate, new Date()) || calendarLevel !== 'day') && (
                                 <button
                                     className="text-[11px] sm:text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-2 sm:px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors shrink-0"
