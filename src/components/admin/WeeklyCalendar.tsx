@@ -782,7 +782,7 @@ export default function WeeklyCalendar({
                 <h3 className="sticky top-[32px] bg-white/95 backdrop-blur-md py-4 px-6 text-2xl font-bold text-gray-900 z-10 border-b border-gray-100 flex items-baseline gap-2">
                     {monthName} <span className="text-gray-400 font-normal text-xl">{year}</span>
                 </h3>
-                <div className="grid grid-cols-7 auto-rows-fr border-l border-gray-100 pt-2 pb-4">
+                <div className="grid grid-cols-7 auto-rows-fr border-l border-gray-100 pt-8 pb-4">
                     {Array.from({ length: startDayOffset }).map((_, i) => (
                         <div key={`empty-${i}`} className="h-32 border-b border-gray-100 border-r border-gray-100 bg-gray-50/20"></div>
                     ))}
