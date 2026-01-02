@@ -213,7 +213,17 @@ export default function RescheduleModal({
                                         type="date"
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
-                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                        onClick={(e) => {
+                                            try {
+                                                // Force browser picker to open
+                                                if (typeof (e.currentTarget as any).showPicker === 'function') {
+                                                    (e.currentTarget as any).showPicker();
+                                                }
+                                            } catch (err) {
+                                                // Fallback
+                                            }
+                                        }}
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer text-transparent"
                                     />
 
                                     <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</p>
