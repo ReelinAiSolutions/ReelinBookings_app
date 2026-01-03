@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase';
 'use client';
+import { createClient } from '@/lib/supabase';
 
 import React, { useState } from 'react';
 

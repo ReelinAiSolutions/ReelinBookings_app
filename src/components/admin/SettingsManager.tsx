@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase';
 'use client';
+import { createClient } from '@/lib/supabase';
 
 import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2, Tag, ChevronDown, ChevronUp, ShieldAlert, CalendarDays, FileText, LogOut } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
