@@ -958,15 +958,6 @@ export default function WeeklyCalendar({
                 {/* CONTINUOUS VERTICAL SEPARATOR (HUGS FOOTER) */}
                 <div className="absolute top-0 bottom-0 left-0 w-12 lg:w-20 border-r border-gray-300 z-[44] pointer-events-none sticky" />
 
-                {/* TEAM VIEW GRID LINES (CONTINUOUS TO BOTTOM) */}
-                {viewMode === 'team' && (
-                    <div className="absolute top-0 bottom-0 left-12 lg:left-20 right-0 flex pointer-events-none z-0">
-                        {staff.map((_, idx) => (
-                            <div key={idx} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 first:border-l-0`} />
-                        ))}
-                    </div>
-                )}
-
                 {viewMode === 'team' && (
                     <div className="flex w-full sticky top-0 z-[45] bg-white border-b border-gray-300 shadow-sm">
                         <div className="w-12 lg:w-20 shrink-0 sticky left-0 z-50 bg-white"></div>
@@ -1170,7 +1161,7 @@ export default function WeeklyCalendar({
                                     const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
 
                                     return (
-                                        <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} relative group h-full transition-all duration-300`}>
+                                        <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 relative first:border-l-0 group h-full transition-all duration-300`}>
                                             {hours.map((h, i) => (
                                                 <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h, member.id)}></div>
                                             ))}
