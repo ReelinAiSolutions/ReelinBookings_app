@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Appointment, Service } from '@/types';
-import { Search, Mail, Calendar, DollarSign, User as UserIcon, ArrowUpDown, MoreHorizontal, Star, Phone, X, Clock, FileText } from 'lucide-react';
+import { Search, Filter, MoreVertical, Mail, Phone, Calendar, Clock, DollarSign, User as UserIcon, X, ChevronRight, ArrowUpDown, Star } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ClientManagerProps {
@@ -351,126 +352,125 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                 </div>
             </div>
 
-            {/* Client Profile Modal (Slide Over) */}
-            {
-                selectedClient && (
-                    <div className="fixed inset-0 z-[100] flex justify-end">
-                        {/* Backdrop */}
-                        <div
-                            className="absolute inset-0 bg-gray-900/20 backdrop-blur-sm animate-in fade-in duration-300"
-                            onClick={() => setSelectedClient(null)}
-                        />
+            {/* Client Profile Modal (Slide Over) - Portal to Body */}
+            {selectedClient && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[9999] flex justify-end font-sans">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-gray-900/20 backdrop-blur-sm animate-in fade-in duration-300"
+                        onClick={() => setSelectedClient(null)}
+                    />
 
-                        {/* Modal Content */}
-                        <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
-                            {/* Header */}
-                            <div className="p-8 border-b border-gray-100 bg-gray-50/50">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center text-2xl font-black shadow-lg ${selectedClient.totalSpend > 500 ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'}`}>
-                                            {getDisplayName(selectedClient.name).charAt(0).toUpperCase()}
-                                        </div>
-                                        <div>
-                                            <h2 className="text-xl font-black text-gray-900">{getDisplayName(selectedClient.name)}</h2>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                {selectedClient.totalSpend > 500 && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-md">VIP Client</span>}
-                                                <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-md">
-                                                    {selectedClient.visits} Visits
-                                                </span>
-                                            </div>
+                    {/* Modal Content */}
+                    <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+                        {/* Header */}
+                        <div className="p-8 border-b border-gray-100 bg-gray-50/50">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center text-2xl font-black shadow-lg ${selectedClient.totalSpend > 500 ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'}`}>
+                                        {getDisplayName(selectedClient.name).charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black text-gray-900">{getDisplayName(selectedClient.name)}</h2>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            {selectedClient.totalSpend > 500 && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-md">VIP Client</span>}
+                                            <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-md">
+                                                {selectedClient.visits} Visits
+                                            </span>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => setSelectedClient(null)}
-                                        className="p-2 bg-white rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors shadow-sm"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
                                 </div>
+                                <button
+                                    onClick={() => setSelectedClient(null)}
+                                    className="p-2 bg-white rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors shadow-sm"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
 
-                                {/* Contact Details */}
-                                <div className="mt-8 space-y-3">
+                            {/* Contact Details */}
+                            <div className="mt-8 space-y-3">
+                                <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                                    <div className="p-2 bg-[#F3E8FF] text-[#A855F7] rounded-lg">
+                                        <Mail className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</div>
+                                        <div className="text-sm font-bold text-gray-900">{getDisplayEmail(selectedClient.email)}</div>
+                                    </div>
+                                </div>
+                                {selectedClient.phone && (
                                     <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
-                                        <div className="p-2 bg-[#F3E8FF] text-[#A855F7] rounded-lg">
-                                            <Mail className="w-4 h-4" />
+                                        <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+                                            <Phone className="w-4 h-4" />
                                         </div>
                                         <div className="flex-1">
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</div>
-                                            <div className="text-sm font-bold text-gray-900">{getDisplayEmail(selectedClient.email)}</div>
+                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</div>
+                                            <div className="text-sm font-bold text-gray-900">{selectedClient.phone}</div>
                                         </div>
                                     </div>
-                                    {selectedClient.phone && (
-                                        <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
-                                            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
-                                                <Phone className="w-4 h-4" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</div>
-                                                <div className="text-sm font-bold text-gray-900">{selectedClient.phone}</div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                )}
                             </div>
+                        </div>
 
-                            {/* Recent History */}
-                            <div className="flex-1 overflow-y-auto p-8">
-                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-gray-400" />
-                                    Appointment History
-                                </h3>
+                        {/* Recent History */}
+                        <div className="flex-1 overflow-y-auto p-8">
+                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-gray-400" />
+                                Appointment History
+                            </h3>
 
-                                <div className="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-100">
-                                    {selectedClient.history.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((apt: any, idx: number) => (
-                                        <div key={idx} className="relative z-10 pl-10 group">
-                                            {/* Timeline Dot */}
-                                            <div className="absolute left-0 top-1.5 w-10 h-10 flex items-center justify-center">
-                                                <div className="w-3 h-3 rounded-full bg-[#F3E8FF] border-2 border-[#d946ef] group-hover:scale-125 transition-transform" />
-                                            </div>
-
-                                            <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="text-xs font-black text-gray-900 uppercase tracking-wider">
-                                                        {format(new Date(apt.date), 'MMMM d, yyyy')}
-                                                    </div>
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${apt.status === 'COMPLETED' ? 'bg-green-50 text-green-600' :
-                                                        apt.status === 'CANCELLED' ? 'bg-red-50 text-red-600' :
-                                                            'bg-gray-100 text-gray-500'
-                                                        }`}>
-                                                        {apt.status}
-                                                    </span>
-                                                </div>
-                                                <div className="text-sm font-bold text-gray-800 mb-1">{apt.serviceName}</div>
-                                                <div className="flex items-center justify-between text-xs text-gray-500 font-medium">
-                                                    <span>{apt.time}</span>
-                                                    <span className="font-bold text-gray-900">${apt.price}</span>
-                                                </div>
-                                                {apt.notes && (
-                                                    <div className="mt-3 pt-3 border-t border-gray-50 text-xs text-gray-600 italic bg-gray-50/50 p-2 rounded-lg">
-                                                        "{apt.notes}"
-                                                    </div>
-                                                )}
-                                            </div>
+                            <div className="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-100">
+                                {selectedClient.history.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((apt: any, idx: number) => (
+                                    <div key={idx} className="relative z-10 pl-10 group">
+                                        {/* Timeline Dot */}
+                                        <div className="absolute left-0 top-1.5 w-10 h-10 flex items-center justify-center">
+                                            <div className="w-3 h-3 rounded-full bg-[#F3E8FF] border-2 border-[#d946ef] group-hover:scale-125 transition-transform" />
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
 
-                            {/* Footer Stats */}
-                            <div className="p-6 pb-24 sm:pb-6 bg-gray-50 border-t border-gray-100 grid grid-cols-2 gap-4">
-                                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
-                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lifetime Value</div>
-                                    <div className="text-xl font-black text-gray-900">${selectedClient.totalSpend.toLocaleString()}</div>
-                                </div>
-                                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
-                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Sessions</div>
-                                    <div className="text-xl font-black text-gray-900">{selectedClient.visits}</div>
-                                </div>
+                                        <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="text-xs font-black text-gray-900 uppercase tracking-wider">
+                                                    {format(new Date(apt.date), 'MMMM d, yyyy')}
+                                                </div>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${apt.status === 'COMPLETED' ? 'bg-green-50 text-green-600' :
+                                                    apt.status === 'CANCELLED' ? 'bg-red-50 text-red-600' :
+                                                        'bg-gray-100 text-gray-500'
+                                                    }`}>
+                                                    {apt.status}
+                                                </span>
+                                            </div>
+                                            <div className="text-sm font-bold text-gray-800 mb-1">{apt.serviceName}</div>
+                                            <div className="flex items-center justify-between text-xs text-gray-500 font-medium">
+                                                <span>{apt.time}</span>
+                                                <span className="font-bold text-gray-900">${apt.price}</span>
+                                            </div>
+                                            {apt.notes && (
+                                                <div className="mt-3 pt-3 border-t border-gray-50 text-xs text-gray-600 italic bg-gray-50/50 p-2 rounded-lg">
+                                                    "{apt.notes}"
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Footer Stats - Increased Padding for Mobile Safe Area */}
+                        <div className="p-6 pb-24 sm:pb-6 bg-gray-50 border-t border-gray-100 grid grid-cols-2 gap-4">
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lifetime Value</div>
+                                <div className="text-xl font-black text-gray-900">${selectedClient.totalSpend.toLocaleString()}</div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Sessions</div>
+                                <div className="text-xl font-black text-gray-900">{selectedClient.visits}</div>
                             </div>
                         </div>
                     </div>
-                )
-            }
+                </div>,
+                document.body
+            )}
         </div>
     );
 }
