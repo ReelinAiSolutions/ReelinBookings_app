@@ -128,7 +128,7 @@ export default function StaffFormModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-2xl h-[92vh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-8 duration-300 border border-white/20">
+            <div className="bg-white rounded-t-[2rem] rounded-b-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-2xl h-[85vh] sm:h-auto sm:max-h-[90vh] mb-20 sm:mb-0 overflow-hidden flex flex-col animate-in slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-8 duration-300 border border-white/20">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
                     <h2 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
