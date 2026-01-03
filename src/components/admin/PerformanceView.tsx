@@ -602,13 +602,13 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <h3 className="text-2xl font-black text-gray-900">{occupancyRate}%</h3>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest max-w-[80px] leading-tight">Schedule Filled</p>
                             </div>
-                            <div className="relative w-12 h-12 -mt-2">
+                            <div className="relative w-12 h-12 -mt-3">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={[{ value: occupancyRate }, { value: 100 - occupancyRate }]}
-                                            innerRadius={15}
-                                            outerRadius={22}
+                                            innerRadius={10}
+                                            outerRadius={16}
                                             startAngle={90}
                                             endAngle={-270}
                                             dataKey="value"
