@@ -955,9 +955,12 @@ export default function WeeklyCalendar({
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
             >
+                {/* CONTINUOUS VERTICAL SEPARATOR (HUGS FOOTER) */}
+                <div className="absolute top-0 bottom-0 left-0 w-12 lg:w-20 border-r border-gray-300 z-[44] pointer-events-none sticky" />
+
                 {viewMode === 'team' && (
                     <div className="flex w-full sticky top-0 z-[45] bg-white border-b border-gray-300 shadow-sm">
-                        <div className="w-12 lg:w-20 shrink-0 sticky left-0 z-50 bg-white border-r border-gray-300"></div>
+                        <div className="w-12 lg:w-20 shrink-0 sticky left-0 z-50 bg-white"></div>
                         {staff.map((member, idx) => {
                             const colorScheme = staffColors[idx % staffColors.length];
                             return (
@@ -973,7 +976,7 @@ export default function WeeklyCalendar({
                 )}
 
                 <div className="relative w-full flex" style={{ height: `${hours.length * 120}px` }}>
-                    <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-[45] sticky left-0 h-full select-none">
+                    <div className="w-12 lg:w-20 shrink-0 bg-white z-[45] sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
                             <React.Fragment key={h}>
                                 <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
