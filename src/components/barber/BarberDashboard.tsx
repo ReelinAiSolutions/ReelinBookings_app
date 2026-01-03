@@ -117,11 +117,14 @@ export default function StaffDashboard({
         // Notify Staff (if not a block)
         if (data.clientEmail !== 'blocked@internal' && data.staffId) {
             try {
+                const targetStaff = staff.find(s => s.id === data.staffId);
+                const recipientId = targetStaff?.userId || data.staffId;
+
                 await fetch('/api/push-notifications', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId: data.staffId,
+                        userId: recipientId,
                         title: 'New Booking (Manual) 📅',
                         body: `${data.clientName} booked slot for ${data.timeSlot}`,
                         url: '/staff?tab=schedule',

@@ -59,6 +59,7 @@ export interface ServiceAddon {
 
 export interface Staff {
     id: string;
+    userId?: string; // Auth User ID for notifications
     name: string;
     role: string;
     specialties: string[]; // Service IDs

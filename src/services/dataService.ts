@@ -192,6 +192,7 @@ export const getStaff = async (orgId: string): Promise<Staff[]> => {
 
     return data.map((item: any) => ({
         id: item.id,
+        userId: item.user_id,
         name: item.name,
         role: item.role,
         avatar: item.avatar_url,

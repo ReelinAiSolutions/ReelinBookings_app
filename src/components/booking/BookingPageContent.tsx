@@ -307,11 +307,17 @@ export default function BookingPageContent({ slug }: { slug: string }) {
 
             // Send Push Notification to Staff
             try {
+                const targetStaff = selectedStaff.id === 'any'
+                    ? staffMembers.find(s => s.id === finalStaffId)
+                    : selectedStaff;
+
+                const recipientId = targetStaff?.userId || finalStaffId;
+
                 await fetch('/api/push-notifications', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId: finalStaffId,
+                        userId: recipientId,
                         title: 'New Booking! 📅',
                         body: `${formData.name} booked ${selectedService.name} for ${selectedTime}`,
                         url: '/staff?tab=schedule',
