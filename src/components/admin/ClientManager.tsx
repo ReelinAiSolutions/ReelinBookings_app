@@ -455,7 +455,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                             </div>
 
                             {/* Footer Stats */}
-                            <div className="p-6 bg-gray-50 border-t border-gray-100 grid grid-cols-2 gap-4">
+                            <div className="p-6 pb-24 sm:pb-6 bg-gray-50 border-t border-gray-100 grid grid-cols-2 gap-4">
                                 <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
                                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lifetime Value</div>
                                     <div className="text-xl font-black text-gray-900">${selectedClient.totalSpend.toLocaleString()}</div>
