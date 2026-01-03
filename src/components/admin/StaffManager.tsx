@@ -194,44 +194,48 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     };
 
     return (
-        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col h-full space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div>
-                    <h2 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">
+                    <h1 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">
                         {readOnly ? 'Meet The Team' : 'Team Roster'}
-                    </h2>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                        <Users2 className="w-4 h-4" />
-                        {readOnly ? 'Colleagues & Collaborators' : `${staff.length} Active Members`}
-                    </p>
+                    </h1>
+                    <div className="flex items-center gap-3 mt-4">
+                        <div className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100">
+                            {readOnly ? 'ACTIVE COLLABORATORS' : `${staff.length} MEMBERS`}
+                        </div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                            {readOnly ? 'Colleagues & Collaborators' : 'Verified Staff Members'}
+                        </p>
+                    </div>
                 </div>
 
                 {/* Actions & Filters */}
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Search */}
-                    <div className="relative group w-full md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <div className="relative group w-full md:w-96">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-all" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search team..."
-                            className="w-full pl-11 pr-4 py-3 bg-gray-100/80 border border-transparent rounded-[20px] text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                            placeholder="Search team roster..."
+                            className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-[24px] text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/30 transition-all outline-none shadow-sm"
                         />
                     </div>
 
                     {/* View Toggle */}
-                    <div className="flex bg-gray-100/80 p-1 rounded-[20px] border border-transparent shadow-sm">
+                    <div className="flex bg-gray-50 p-1.5 rounded-[24px] border border-gray-100 shadow-sm">
                         <button
                             onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200/50'}`}
+                            className={`p-2.5 rounded-xl transition-all duration-300 ${viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600 hover:bg-white/50'}`}
                         >
                             <Grid className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200/50'}`}
+                            className={`p-2.5 rounded-xl transition-all duration-300 ${viewMode === 'list' ? 'bg-white text-indigo-600 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600 hover:bg-white/50'}`}
                         >
                             <List className="w-4 h-4" />
                         </button>
@@ -240,9 +244,9 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                     {!readOnly && (
                         <button
                             onClick={handleAddNew}
-                            className="bg-gray-900 hover:bg-black text-white rounded-[20px] px-6 py-3 font-black text-xs uppercase tracking-widest shadow-xl shadow-gray-200 transition-all active:scale-95 flex items-center gap-2"
+                            className="bg-gray-900 hover:bg-black text-white rounded-[24px] px-8 py-4 font-black text-xs uppercase tracking-widest shadow-2xl shadow-gray-200 transition-all active:scale-95 flex items-center gap-2 group"
                         >
-                            <Plus className="w-4 h-4" strokeWidth={3} />
+                            <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
                             Add Member
                         </button>
                     )}
