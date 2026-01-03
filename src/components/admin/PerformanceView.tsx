@@ -1032,6 +1032,15 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             })
                             .map((client, index) => {
                                 const isTopClient = index === 0 && (clientSearch === '' && clientStaffFilter === 'all');
+                                const gradients = [
+                                    'bg-gradient-to-br from-indigo-500 to-purple-500',
+                                    'bg-gradient-to-br from-blue-500 to-cyan-500',
+                                    'bg-gradient-to-br from-violet-500 to-fuchsia-500',
+                                    'bg-gradient-to-br from-rose-500 to-pink-500',
+                                    'bg-gradient-to-br from-amber-500 to-orange-500 text-white'
+                                ];
+                                const avatarGradient = gradients[index % gradients.length];
+
                                 const statusStyles = {
                                     'VIP': 'bg-amber-50 text-amber-700 border-amber-100',
                                     'Active': 'bg-emerald-50 text-emerald-700 border-emerald-100',
@@ -1055,9 +1064,9 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
 
                                         <div className="relative z-10">
                                             <div className="flex items-center justify-between mb-4">
-                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm transition-all group-hover:scale-105 ${isTopClient
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm transition-all group-hover:scale-110 ${isTopClient
                                                     ? 'bg-emerald-600 text-white shadow-emerald-200'
-                                                    : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 group-hover:from-indigo-500 group-hover:to-purple-500 group-hover:text-white'
+                                                    : `${avatarGradient} text-white shadow-md shadow-black/5`
                                                     }`}>
                                                     {client.name.charAt(0)}
                                                 </div>
