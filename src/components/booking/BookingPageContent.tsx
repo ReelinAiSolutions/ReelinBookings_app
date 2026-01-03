@@ -321,7 +321,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                     finalRecipient: recipientId
                 });
 
-                await fetch('/api/push-notifications', {
+                const response = await fetch('/api/push-notifications', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -332,6 +332,13 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                         type: 'new_booking'
                     })
                 });
+
+                if (response.ok) {
+                    console.log('Push triggered successfully');
+                } else {
+                    const err = await response.json();
+                    console.error('Push trigger error:', err);
+                }
             } catch (pushError) {
                 console.error('Push notification failed:', pushError);
             }
