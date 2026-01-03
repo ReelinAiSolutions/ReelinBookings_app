@@ -113,6 +113,26 @@ export default function StaffDashboard({
             ...data,
             clientId: 'staff-created'
         }, currentOrg.id);
+
+        // Notify Staff (if not a block)
+        if (data.clientEmail !== 'blocked@internal' && data.staffId) {
+            try {
+                await fetch('/api/push-notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: data.staffId,
+                        title: 'New Booking (Manual) 📅',
+                        body: `${data.clientName} booked slot for ${data.timeSlot}`,
+                        url: '/staff?tab=schedule',
+                        type: 'new_booking'
+                    })
+                });
+            } catch (e) {
+                console.error("Push failed", e);
+            }
+        }
+
         if (onRefresh) await onRefresh();
         setIsCreateModalOpen(false);
     };

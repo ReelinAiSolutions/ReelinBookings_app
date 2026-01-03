@@ -305,6 +305,23 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 toast("Booking confirmed, but email failed to send. Please save your confirmation details.", "error"); // Using error style for visibility
             }
 
+            // Send Push Notification to Staff
+            try {
+                await fetch('/api/push-notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: finalStaffId,
+                        title: 'New Booking! 📅',
+                        body: `${formData.name} booked ${selectedService.name} for ${selectedTime}`,
+                        url: '/staff?tab=schedule',
+                        type: 'new_booking'
+                    })
+                });
+            } catch (pushError) {
+                console.error('Push notification failed:', pushError);
+            }
+
             setBookingComplete(true);
         } catch (error) {
             console.error("Booking failed", error);
