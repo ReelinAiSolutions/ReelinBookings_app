@@ -99,6 +99,27 @@ export default function AdminDashboard() {
 
     // Staff Filter State
     const [selectedStaffId, setSelectedStaffId] = useState<string>('ALL');
+    const notifyStaff = async (staffId: string, title: string, body: string, type: string = 'update') => {
+        try {
+            const target = staff.find(s => s.id === staffId);
+            const recipientId = target?.userId || staffId;
+
+            await fetch('/api/push-notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: recipientId,
+                    title,
+                    body,
+                    url: '/staff?tab=schedule',
+                    type
+                })
+            });
+        } catch (e) {
+            console.error("Staff notification failed:", e);
+        }
+    };
+
 
     const loadDashboardData = async () => {
         try {
@@ -116,8 +137,12 @@ export default function AdminDashboard() {
             // Non-Critical: Org Metadata (if it fails, we just show default branding)
 
             // Core Fetch
+            const now = new Date();
+            const startStr = format(new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
+            const endStr = format(new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
+
             const [fetchedApts, fetchedServices, fetchedStaff, fetchedAvailability] = await Promise.all([
-                getAppointments(orgId),
+                getAppointments(orgId, startStr, endStr),
                 getServices(orgId),
                 getStaff(orgId),
                 getAllAvailability(orgId)
@@ -233,11 +258,27 @@ export default function AdminDashboard() {
             notes: options.notes
         });
         await loadDashboardData();
+        // Notify Staff
+        notifyStaff(
+            newStaffId,
+            'Appointment Rescheduled 📅',
+            `Moved to ${newDate} at ${newTime}`,
+            'reschedule'
+        );
     };
 
     const onCancel = async (id: string) => {
         await cancelAppointment(id);
         await loadDashboardData();
+        const apt = appointments.find(a => a.id === id);
+        if (apt) {
+            notifyStaff(
+                apt.staffId,
+                'Appointment Cancelled ❌',
+                `${apt.clientName} cancelled for ${apt.date} at ${apt.timeSlot}`,
+                'cancellation'
+            );
+        }
     };
 
     // Drag & Drop Handler
@@ -249,6 +290,13 @@ export default function AdminDashboard() {
             staffId: newStaffId || apt.staffId
         });
         await loadDashboardData();
+        // Notify Staff
+        notifyStaff(
+            newStaffId || apt.staffId,
+            'Schedule Updated 🔄',
+            `Appointment for ${apt.clientName} moved to ${newTime}`,
+            'reschedule'
+        );
     };
 
     const [createSelection, setCreateSelection] = useState<{ date: Date | null, time: string | null, staffId: string | null }>({ date: null, time: null, staffId: null });
@@ -293,6 +341,13 @@ export default function AdminDashboard() {
         }, currentOrg.id);
 
         await loadDashboardData();
+        // Notify Staff
+        notifyStaff(
+            data.staffId,
+            'New Booking (Admin) 📅',
+            `${data.clientName} booked for ${data.timeSlot}`,
+            'new_booking'
+        );
     };
 
 
