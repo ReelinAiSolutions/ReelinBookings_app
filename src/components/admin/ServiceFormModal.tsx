@@ -182,9 +182,9 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     </div>
                                 </div>
                             ) : (
-                                <label className="flex flex-col items-center justify-center h-48 bg-gray-50/50 border-2 border-dashed border-gray-200 rounded-[24px] cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/10 transition-all group">
+                                <label className="flex flex-col items-center justify-center h-48 bg-gray-50/50 border-2 border-dashed border-gray-200 rounded-[24px] cursor-pointer hover:border-[#A855F7] hover:bg-[#A855F7]/10 transition-all group">
                                     <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 group-hover:scale-110 transition-transform duration-300">
-                                        <ImageIcon className="w-8 h-8 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                                        <ImageIcon className="w-8 h-8 text-gray-400 group-hover:text-[#A855F7] transition-colors" />
                                     </div>
                                     <span className="text-sm font-black text-gray-900 mt-4">Upload Display Photo</span>
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">PNG, JPG • Max 5MB</span>
@@ -210,7 +210,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="e.g., Signature Sculpt Cut"
-                                className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                             />
                         </div>
 
@@ -227,7 +227,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     placeholder="0.00"
                                     min="0"
                                     step="0.01"
-                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                                 />
                             </div>
                             <div>
@@ -241,7 +241,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     onChange={(e) => setFormData({ ...formData, durationMinutes: e.target.value })}
                                     placeholder="30"
                                     min="1"
-                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                                 />
                             </div>
                         </div>
@@ -255,7 +255,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 placeholder="Explain what makes this service unique..."
                                 rows={3}
-                                className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none resize-none"
+                                className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none resize-none"
                             />
                         </div>
                     </div>
@@ -283,7 +283,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                 setFormData({ ...formData, category: newCategory, categoryColor: color });
                             }}
                             placeholder="e.g. Consultations, Classes, VIP..."
-                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none mb-4"
+                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none mb-4"
                         />
 
                         {/* Quick Select Chips */}
@@ -303,7 +303,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                             setFormData({ ...formData, category: cat, categoryColor: color });
                                         }}
                                         className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${formData.category === cat
-                                            ? 'bg-indigo-50 text-indigo-600 border-indigo-200'
+                                            ? 'bg-indigo-50 text-[#A855F7] border-indigo-200'
                                             : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300 hover:text-gray-600'
                                             }`}
                                     >
@@ -317,7 +317,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                             value={formData.category}
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                             placeholder="Enter custom category label..."
-                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                         />
                     </div>
 
@@ -337,7 +337,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                             </div>
                             <button
                                 onClick={() => setFormData({ ...formData, isVisible: !formData.isVisible })}
-                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${formData.isVisible ? 'bg-indigo-600' : 'bg-gray-200'
+                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20 ${formData.isVisible ? 'bg-[#A855F7]' : 'bg-gray-200'
                                     }`}
                             >
                                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-all duration-200 ${formData.isVisible ? 'translate-x-6' : 'translate-x-1'
@@ -355,7 +355,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     value={formData.bufferTimeMinutes}
                                     onChange={(e) => setFormData({ ...formData, bufferTimeMinutes: e.target.value })}
                                     min="0"
-                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                                 />
                             </div>
                             <div>
@@ -367,7 +367,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     value={formData.maxCapacity}
                                     onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
                                     min="1"
-                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                                 />
                             </div>
                         </div>
@@ -378,10 +378,10 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     type="checkbox"
                                     checked={formData.depositRequired}
                                     onChange={(e) => setFormData({ ...formData, depositRequired: e.target.checked })}
-                                    className="w-5 h-5 text-indigo-600 rounded-lg focus:ring-indigo-500/20 border-gray-300 transition-all"
+                                    className="w-5 h-5 text-[#A855F7] rounded-lg focus:ring-[#A855F7]/20 border-gray-300 transition-all"
                                 />
                                 <div className="flex-1">
-                                    <span className="text-sm font-black text-gray-900 block group-hover:text-indigo-600 transition-colors">Require Upfront Deposit</span>
+                                    <span className="text-sm font-black text-gray-900 block group-hover:text-[#A855F7] transition-colors">Require Upfront Deposit</span>
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Secure bookings with pre-payment</span>
                                 </div>
                             </label>
@@ -397,7 +397,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                         onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })}
                                         min="0"
                                         step="0.01"
-                                        className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                        className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                                     />
                                 </div>
                             )}

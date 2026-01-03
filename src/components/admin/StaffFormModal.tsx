@@ -147,7 +147,7 @@ export default function StaffFormModal({
                     <button
                         onClick={() => setActiveTab('details')}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'details'
-                            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                            ? 'bg-white text-[#A855F7] shadow-sm ring-1 ring-black/5'
                             : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                             }`}
                     >
@@ -159,7 +159,7 @@ export default function StaffFormModal({
                             <button
                                 onClick={() => setActiveTab('schedule')}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'schedule'
-                                    ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                                    ? 'bg-white text-[#A855F7] shadow-sm ring-1 ring-black/5'
                                     : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
@@ -169,7 +169,7 @@ export default function StaffFormModal({
                             <button
                                 onClick={() => setActiveTab('services')}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'services'
-                                    ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                                    ? 'bg-white text-[#A855F7] shadow-sm ring-1 ring-black/5'
                                     : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
@@ -222,7 +222,7 @@ export default function StaffFormModal({
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             placeholder="e.g., Sarah Johnson"
-                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                                         />
                                     </div>
 
@@ -235,7 +235,7 @@ export default function StaffFormModal({
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             placeholder="sarah@example.com"
-                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                                         />
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2 px-1">Used for login and notifications</p>
                                     </div>
@@ -249,7 +249,7 @@ export default function StaffFormModal({
                                             value={formData.role}
                                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                             placeholder="e.g., Senior Stylist"
-                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
                                         />
                                     </div>
                                 </div>
@@ -261,7 +261,7 @@ export default function StaffFormModal({
                     {activeTab === 'schedule' && editingStaff && (
                         <div className="space-y-6">
                             <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
-                                <p className="text-xs font-bold text-indigo-700 flex items-center gap-2">
+                                <p className="text-xs font-bold text-[#A855F7] flex items-center gap-2">
                                     <Clock className="w-4 h-4" />
                                     Weekly Working Schedule
                                 </p>
@@ -275,9 +275,9 @@ export default function StaffFormModal({
                                                 type="checkbox"
                                                 checked={day.isWorking}
                                                 onChange={(e) => updateScheduleItem(idx, 'isWorking', e.target.checked)}
-                                                className="w-5 h-5 text-indigo-600 rounded-lg focus:ring-indigo-500/20 border-gray-300 transition-all"
+                                                className="w-5 h-5 text-[#A855F7] rounded-lg focus:ring-[#A855F7]/20 border-gray-300 transition-all"
                                             />
-                                            <span className="text-sm font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{day.dayName}</span>
+                                            <span className="text-sm font-black text-gray-900 group-hover:text-[#A855F7] transition-colors">{day.dayName}</span>
                                         </label>
 
                                         {day.isWorking ? (
@@ -286,14 +286,14 @@ export default function StaffFormModal({
                                                     type="time"
                                                     value={day.startTime}
                                                     onChange={(e) => updateScheduleItem(idx, 'startTime', e.target.value)}
-                                                    className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                                    className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#A855F7]/20 outline-none"
                                                 />
                                                 <span className="text-gray-400 font-bold text-[10px]">to</span>
                                                 <input
                                                     type="time"
                                                     value={day.endTime}
                                                     onChange={(e) => updateScheduleItem(idx, 'endTime', e.target.value)}
-                                                    className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                                    className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#A855F7]/20 outline-none"
                                                 />
                                             </div>
                                         ) : (
@@ -318,7 +318,7 @@ export default function StaffFormModal({
                     {activeTab === 'services' && editingStaff && (
                         <div className="space-y-6">
                             <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
-                                <p className="text-xs font-bold text-indigo-700 flex items-center gap-2">
+                                <p className="text-xs font-bold text-[#A855F7] flex items-center gap-2">
                                     <Scissors className="w-4 h-4" />
                                     Assigned Services
                                 </p>
@@ -329,7 +329,7 @@ export default function StaffFormModal({
                                     <label
                                         key={service.id}
                                         className={`flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all border ${selectedServices.includes(service.id)
-                                            ? 'border-indigo-500 bg-indigo-50/50 shadow-sm'
+                                            ? 'border-[#A855F7] bg-[#A855F7]/10 shadow-sm'
                                             : 'border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200'
                                             }`}
                                     >
@@ -343,7 +343,7 @@ export default function StaffFormModal({
                                                     setSelectedServices(prev => prev.filter(id => id !== service.id));
                                                 }
                                             }}
-                                            className="w-5 h-5 text-indigo-600 rounded-lg focus:ring-indigo-500/20 border-gray-300 transition-all"
+                                            className="w-5 h-5 text-[#A855F7] rounded-lg focus:ring-[#A855F7]/20 border-gray-300 transition-all"
                                         />
                                         <div className="flex-1">
                                             <span className="text-sm font-black text-gray-900 block">{service.name}</span>
@@ -377,7 +377,7 @@ export default function StaffFormModal({
                         </button>
                         <button
                             onClick={handleSubmitDetails}
-                            className="flex-1 h-12 bg-gray-900 text-white rounded-[18px] text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-200 disabled:opacity-50 disabled:shadow-none"
+                            className="flex-1 h-12 bg-gradient-to-r from-[#A855F7] to-[#d946ef] text-white rounded-[18px] text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-[#d946ef]/20 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none"
                             disabled={isLoading || !formData.name || !formData.email}
                         >
                             {isLoading ? 'Processing...' : editingStaff ? 'Update Roster' : 'Join Team'}
