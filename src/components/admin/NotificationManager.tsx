@@ -200,7 +200,7 @@ export default function NotificationManager() {
                                             if (!profile?.id) return alert('User not found');
 
                                             try {
-                                                await fetch('/api/push-notifications', {
+                                                const res = await fetch('/api/push-notifications', {
                                                     method: 'POST',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({
@@ -211,7 +211,8 @@ export default function NotificationManager() {
                                                         type: 'manual_test'
                                                     })
                                                 });
-                                                alert('Test sent! Check your notifications center.');
+                                                const data = await res.json();
+                                                alert('Server Response: ' + JSON.stringify(data, null, 2));
                                             } catch (e) {
                                                 alert('Test failed: ' + (e as Error).message);
                                             }
