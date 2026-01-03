@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff, CheckCircle2, AlertCircle, Smartphone, RefreshCcw } from 'lucide-react';
-import { savePushSubscription, getUserProfile, getStaff, getOrganizationId, linkStaffAccount } from '@/services/dataService';
+import { savePushSubscription, getUserProfile, getStaff, getCurrentUserOrganization, linkStaffAccount } from '@/services/dataService';
 import { Staff } from '@/types';
 
 const VAPID_PUBLIC_KEY = 'BH4VKL1kQkq-TB90SgTYYS-N2AfZpfh6Tau7LA7yv2WOb-7gxhiXA72Xut5nKASWtZ2AFH2ezTLw_Lv0AeLtdTc';
@@ -288,7 +288,7 @@ function StaffConnectionList() {
         const { user } = await getUserProfile() || {};
         if (user) setCurrentUserEmail(user.email || null);
 
-        const orgId = await getOrganizationId();
+        const orgId = await getCurrentUserOrganization();
         if (orgId) {
             const list = await getStaff(orgId);
             setStaff(list);
@@ -322,20 +322,44 @@ function StaffConnectionList() {
     const myStaffRecord = staff.find(s => s.email === currentUserEmail);
     const isLinked = myStaffRecord?.userId;
 
+    // Detect shared IDs
+    const idCount = staff.reduce((acc, s) => {
+        if (s.userId) acc[s.userId] = (acc[s.userId] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
     return (
         <div className="space-y-2">
             <div className="space-y-1">
-                {staff.map(s => (
-                    <div key={s.id} className="flex items-center justify-between text-[11px]">
-                        <span className="text-gray-600">{s.name}</span>
-                        <div className="flex items-center gap-2">
-                            {s.email === currentUserEmail && <span className="text-[8px] font-black text-blue-500 uppercase">You</span>}
-                            <span className={`px-2 py-0.5 rounded-full font-bold ${s.userId ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                {s.userId ? 'Linked' : 'Missing Link'}
-                            </span>
+                {staff.map(s => {
+                    const isShared = s.userId && idCount[s.userId] > 1;
+                    return (
+                        <div key={s.id} className="flex flex-col border-b border-gray-50 pb-1 last:border-0">
+                            <div className="flex items-center justify-between text-[11px]">
+                                <span className={`text-gray-600 ${s.email === currentUserEmail ? 'font-bold' : ''}`}>
+                                    {s.name}
+                                    {s.email === currentUserEmail && <span className="ml-1 text-[8px] font-black text-blue-500 uppercase">(You)</span>}
+                                </span>
+                                <span className={`px-2 py-0.5 rounded-full font-bold ${s.userId ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                    {s.userId ? 'Linked' : 'Missing Link'}
+                                </span>
+                            </div>
+                            {s.userId && (
+                                <div className="flex items-center justify-between mt-0.5">
+                                    <span className="text-[8px] text-gray-400 font-mono">
+                                        ID: {s.userId.substring(0, 8)}...
+                                    </span>
+                                    {isShared && (
+                                        <span className="text-[8px] font-bold text-amber-600 bg-amber-50 px-1 rounded flex items-center gap-0.5">
+                                            <AlertCircle className="w-2 h-2" />
+                                            Shared Connection
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {myStaffRecord && !isLinked && (

@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-globals */
+// SW Version: 1.0.3 (Force Update)
 
 // This is the service worker that listens for push notifications
 // It must reside in the public/ directory to be accessible
