@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff, CheckCircle2, AlertCircle, Smartphone, RefreshCcw } from 'lucide-react';
-import { savePushSubscription, getUserProfile } from '@/services/dataService';
+import { savePushSubscription, getUserProfile, getStaff, getOrganizationId, linkStaffAccount } from '@/services/dataService';
+import { Staff } from '@/types';
 
 const VAPID_PUBLIC_KEY = 'BH4VKL1kQkq-TB90SgTYYS-N2AfZpfh6Tau7LA7yv2WOb-7gxhiXA72Xut5nKASWtZ2AFH2ezTLw_Lv0AeLtdTc';
 
@@ -221,6 +222,12 @@ export default function NotificationManager() {
                                     >
                                         Send Test Alert (Server)
                                     </button>
+
+                                    {/* Diagnostic Section */}
+                                    <div className="mt-4 pt-4 border-t border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Staff Connection Status</p>
+                                        <StaffConnectionList />
+                                    </div>
                                 </div>
                             ) : (
                                 <button
@@ -266,6 +273,80 @@ export default function NotificationManager() {
                     )}
                 </div>
             </div>
+        </div>
+    );
+}
+
+function StaffConnectionList() {
+    const [staff, setStaff] = useState<Staff[]>([]);
+    const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [linking, setLinking] = useState(false);
+
+    const load = async () => {
+        setLoading(true);
+        const { user } = await getUserProfile() || {};
+        if (user) setCurrentUserEmail(user.email || null);
+
+        const orgId = await getOrganizationId();
+        if (orgId) {
+            const list = await getStaff(orgId);
+            setStaff(list);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        load();
+    }, []);
+
+    const handleLink = async () => {
+        setLinking(true);
+        try {
+            const res = await linkStaffAccount();
+            if (res.success) {
+                alert('Successfully linked your account!');
+                await load();
+            } else {
+                alert('Link failed: ' + (res.error || 'No matching staff invite found. Make sure your email matches exactly.'));
+            }
+        } catch (e) {
+            alert('Error linking: ' + (e as Error).message);
+        } finally {
+            setLinking(false);
+        }
+    };
+
+    if (loading) return <div className="text-[10px] text-gray-400">Checking connections...</div>;
+
+    const myStaffRecord = staff.find(s => s.email === currentUserEmail);
+    const isLinked = myStaffRecord?.userId;
+
+    return (
+        <div className="space-y-2">
+            <div className="space-y-1">
+                {staff.map(s => (
+                    <div key={s.id} className="flex items-center justify-between text-[11px]">
+                        <span className="text-gray-600">{s.name}</span>
+                        <div className="flex items-center gap-2">
+                            {s.email === currentUserEmail && <span className="text-[8px] font-black text-blue-500 uppercase">You</span>}
+                            <span className={`px-2 py-0.5 rounded-full font-bold ${s.userId ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                {s.userId ? 'Linked' : 'Missing Link'}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {myStaffRecord && !isLinked && (
+                <button
+                    onClick={handleLink}
+                    disabled={linking}
+                    className="w-full mt-2 bg-blue-600 text-white text-[10px] font-bold py-1.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                    {linking ? 'Linking...' : 'Link My Account to Staff Profile'}
+                </button>
+            )}
         </div>
     );
 }

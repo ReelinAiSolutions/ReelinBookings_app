@@ -11,16 +11,31 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkSubs() {
-    const { data, error } = await supabase
+async function checkDiagnostics() {
+    console.log('--- STAFF DATA ---');
+    const { data: staff, error: staffErr } = await supabase
+        .from('staff')
+        .select('id, name, email, user_id');
+
+    if (staffErr) console.error(staffErr);
+    else console.table(staff);
+
+    console.log('\n--- SUBSCRIPTION DATA ---');
+    const { data: subs, error: subsErr } = await supabase
         .from('push_subscriptions')
-        .select('count', { count: 'exact' });
+        .select('user_id, created_at');
 
-    if (error) console.error(error);
-    else console.log('Total Subscriptions:', data ? data.length : 0);
+    if (subsErr) console.error(subsErr);
+    else console.table(subs);
 
-    const { data: list } = await supabase.from('push_subscriptions').select('*').limit(5);
-    console.log('Recent:', list);
+    const uid = staff.find(s => s.name.includes('Jake'))?.user_id;
+    if (uid) {
+        const hasSub = subs.some(s => s.user_id === uid);
+        console.log(`\nJake's user_id: ${uid}`);
+        console.log(`Has Active Subscription: ${hasSub ? 'YES' : 'NO'}`);
+    } else {
+        console.log('\nJake has NO user_id linked!');
+    }
 }
 
-checkSubs();
+checkDiagnostics();

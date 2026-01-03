@@ -157,11 +157,59 @@ export default function StaffDashboard({
             staffId,
             notes: options.notes
         });
+
+        // Notify Staff
+        try {
+            const targetStaff = staff.find(s => s.id === staffId);
+            const recipientId = targetStaff?.userId || staffId;
+            const originalAppointment = appointments.find(a => a.id === id);
+
+            await fetch('/api/push-notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: recipientId,
+                    title: 'Appointment Moved! 🕒',
+                    body: `${originalAppointment?.clientName || 'Appt'} moved to ${date} at ${time}`,
+                    url: '/staff?tab=schedule',
+                    type: 'reschedule'
+                })
+            });
+        } catch (e) {
+            console.error("Reschedule push failed", e);
+        }
+
         if (onRefresh) await onRefresh();
     };
 
     const handleCancel = async (id: string) => {
+        // Notify Staff BEFORE updating status if we need data
+        const originalAppointment = appointments.find(a => a.id === id);
+
         await cancelAppointment(id);
+
+        // Notify Staff
+        if (originalAppointment) {
+            try {
+                const targetStaff = staff.find(s => s.id === originalAppointment.staffId);
+                const recipientId = targetStaff?.userId || originalAppointment.staffId;
+
+                await fetch('/api/push-notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: recipientId,
+                        title: 'Appointment Cancelled ❌',
+                        body: `${originalAppointment.clientName} cancelled for ${originalAppointment.date} at ${originalAppointment.timeSlot}`,
+                        url: '/staff?tab=schedule',
+                        type: 'cancellation'
+                    })
+                });
+            } catch (e) {
+                console.error("Cancel push failed", e);
+            }
+        }
+
         if (onRefresh) await onRefresh();
     };
 

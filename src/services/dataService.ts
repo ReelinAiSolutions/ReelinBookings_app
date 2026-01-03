@@ -517,3 +517,10 @@ export const getUserSubscriptions = async (userId: string) => {
     if (error) throw error;
     return data;
 };
+
+export const linkStaffAccount = async () => {
+    const { data, error } = await supabase
+        .rpc('link_staff_account');
+    if (error) throw error;
+    return data;
+};
