@@ -273,7 +273,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                 ) : (
                     <div className={
                         viewMode === 'grid'
-                            ? 'grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6'
+                            ? 'grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-4 md:gap-6'
                             : 'space-y-3'
                     }>
                         {filteredStaff.map((member) => (
