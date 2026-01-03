@@ -38,7 +38,9 @@ export async function POST(req: Request) {
         const bodyPayload = await req.json();
         const { userId, title, body, url, notificationTag, type } = bodyPayload;
 
-        console.log('Push API received:', { userId, title, type });
+        console.log('>>> [PUSH API] REQUEST START <<<');
+        console.log('Payload:', { userId, title, type });
+        console.log('VAPID Status:', isConfigured ? 'READY' : 'MISSING');
 
         // Trace test only (for basic API verification)
         if (type === 'TRACE_TEST') {

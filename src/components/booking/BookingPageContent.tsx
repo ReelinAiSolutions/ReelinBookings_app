@@ -336,8 +336,12 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 if (response.ok) {
                     console.log('Push triggered successfully');
                 } else {
+                    const status = response.status;
                     const err = await response.json();
-                    console.error('Push trigger error:', err);
+                    console.error('Push trigger error:', status, err);
+
+                    // Show a visible toast so we can see it on mobile
+                    toast(`Push failed (${status}): ${err.error || err.message || 'Unknown error'}`, 'error');
                 }
             } catch (pushError) {
                 console.error('Push notification failed:', pushError);
