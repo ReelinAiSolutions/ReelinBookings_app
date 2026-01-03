@@ -546,7 +546,8 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                                 if (clientSort === 'visits') return b.visits - a.visits;
                                 return b.lastVisitDate.getTime() - a.lastVisitDate.getTime();
                             })
-                            .map((client) => {
+                            .map((client, index) => {
+                                const isTopClient = index === 0 && clientSearch === '';
                                 const statusStyles = {
                                     'VIP': 'bg-amber-50 text-amber-700 border-amber-100',
                                     'Active': 'bg-emerald-50 text-emerald-700 border-emerald-100',
@@ -555,10 +556,25 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                                 };
 
                                 return (
-                                    <div key={client.email} className="group p-6 rounded-[24px] bg-white border border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-100/30 transition-all duration-300 flex flex-col justify-between h-full">
-                                        <div>
+                                    <div
+                                        key={client.email}
+                                        className={`group p-6 rounded-[24px] border transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden ${isTopClient
+                                            ? 'bg-emerald-50 border-emerald-200 shadow-lg shadow-emerald-100/50 scale-[1.02] z-10'
+                                            : 'bg-white border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-100/30'
+                                            }`}
+                                    >
+                                        {/* Rank Badge */}
+                                        <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-[20px] font-black text-xs uppercase tracking-widest ${isTopClient ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400'
+                                            }`}>
+                                            #{index + 1}
+                                        </div>
+
+                                        <div className="relative z-10">
                                             <div className="flex items-center justify-between mb-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 flex items-center justify-center font-black text-lg group-hover:from-indigo-500 group-hover:to-purple-500 group-hover:text-white transition-all shadow-sm">
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm transition-all group-hover:scale-105 ${isTopClient
+                                                    ? 'bg-emerald-600 text-white shadow-emerald-200'
+                                                    : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 group-hover:from-indigo-500 group-hover:to-purple-500 group-hover:text-white'
+                                                    }`}>
                                                     {client.name.charAt(0)}
                                                 </div>
                                                 <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${statusStyles[client.status]}`}>
@@ -567,16 +583,16 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                                             </div>
 
                                             <div className="mb-6">
-                                                <h4 className="font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">{client.name}</h4>
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider truncate">{client.email}</p>
+                                                <h4 className={`font-bold truncate transition-colors ${isTopClient ? 'text-emerald-900' : 'text-gray-900 group-hover:text-indigo-600'}`}>{client.name}</h4>
+                                                <p className={`text-[10px] font-bold uppercase tracking-wider truncate ${isTopClient ? 'text-emerald-600' : 'text-gray-400'}`}>{client.email}</p>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4 mb-6">
-                                                <div>
+                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/60' : 'bg-transparent'}`}>
                                                     <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Total LTV</div>
                                                     <div className="text-lg font-black text-gray-900">${client.totalLtv.toLocaleString()}</div>
                                                 </div>
-                                                <div>
+                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/60' : 'bg-transparent'}`}>
                                                     <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Visits</div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="text-lg font-black text-gray-900">{client.visits}</div>
@@ -585,7 +601,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                                                 </div>
                                             </div>
 
-                                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100/50 mb-6">
+                                            <div className={`p-3 rounded-xl border mb-6 ${isTopClient ? 'bg-white/80 border-emerald-100' : 'bg-gray-50 border-gray-100/50'}`}>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Clock className="w-3 h-3 text-gray-400" />
                                                     <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Last Visit</span>
@@ -595,21 +611,30 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-2 pt-4 border-t border-gray-50">
+                                        <div className={`flex items-center gap-2 pt-4 border-t relative z-10 ${isTopClient ? 'border-emerald-200/50' : 'border-gray-50'}`}>
                                             <button
                                                 onClick={() => setSelectedClientEmail(client.email)}
-                                                className="flex-1 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                                className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${isTopClient
+                                                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                                    : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white'
+                                                    }`}
                                             >
                                                 View History
                                             </button>
                                             <a
                                                 href={`mailto:${client.email}?subject=Just checking in!`}
-                                                className="p-2 bg-gray-50 text-gray-400 rounded-xl hover:text-indigo-600 hover:bg-white border border-transparent hover:border-indigo-100 transition-all shadow-sm"
+                                                className={`p-2 rounded-xl border border-transparent transition-all shadow-sm ${isTopClient
+                                                    ? 'bg-white text-emerald-600 hover:border-emerald-200'
+                                                    : 'bg-gray-50 text-gray-400 hover:text-indigo-600 hover:bg-white hover:border-indigo-100'
+                                                    }`}
                                                 title="Email Client"
                                             >
                                                 <Mail className="w-4 h-4" />
                                             </a>
-                                            <button className="p-2 bg-gray-50 text-gray-400 rounded-xl hover:text-indigo-600 hover:bg-white border border-transparent hover:border-indigo-100 transition-all shadow-sm">
+                                            <button className={`p-2 rounded-xl border border-transparent transition-all shadow-sm ${isTopClient
+                                                ? 'bg-white text-emerald-600 hover:border-emerald-200'
+                                                : 'bg-gray-50 text-gray-400 hover:text-indigo-600 hover:bg-white hover:border-indigo-100'
+                                                }`}>
                                                 <Briefcase className="w-4 h-4" />
                                             </button>
                                         </div>
