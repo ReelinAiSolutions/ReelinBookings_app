@@ -558,7 +558,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                     </div>
 
                     {/* Stats Grid Right */}
-                    <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="lg:col-span-2 grid grid-cols-2 gap-4">
                         {/* Confirmed Bookings */}
                         <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex flex-col justify-between">
                             <div className="flex justify-between items-start">

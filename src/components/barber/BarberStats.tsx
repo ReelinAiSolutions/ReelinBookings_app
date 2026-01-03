@@ -324,10 +324,10 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
 
                 {/* ROW 1: PERSONAL PERFORMANCE SUMMARY (Matched to Admin Style) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4">
 
                     {/* 1. Revenue (Hero - Standard Gray Theme) */}
-                    <div className="xl:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-[24px] p-6 text-white relative overflow-hidden shadow-xl flex flex-col justify-between min-h-[180px]">
+                    <div className="col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-[24px] p-6 text-white relative overflow-hidden shadow-xl flex flex-col justify-between min-h-[180px]">
                         {/* Abstract BG Shape */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
 
