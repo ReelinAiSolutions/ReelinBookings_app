@@ -313,10 +313,13 @@ export default function BookingPageContent({ slug }: { slug: string }) {
 
                 const recipientId = targetStaff?.userId || finalStaffId;
 
-                // DEBUG: Remove this after confirmation
-                if (type === 'new_booking') {
-                    console.log('Sending push to:', recipientId, 'Staff:', targetStaff?.name, 'HasUserId:', !!targetStaff?.userId);
-                }
+                // DEBUG: Trace exactly what ID is being sent
+                console.log('[DEBUG] Notifying Staff:', {
+                    name: targetStaff?.name || finalStaffName,
+                    staffId: finalStaffId,
+                    userId: targetStaff?.userId,
+                    finalRecipient: recipientId
+                });
 
                 await fetch('/api/push-notifications', {
                     method: 'POST',
