@@ -515,7 +515,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                             <p className="text-sm text-gray-500 font-medium mt-1">Manage your relationships ({Array.from(new Set(myAppointments.filter(a => a.status !== AppointmentStatus.BLOCKED && !a.clientEmail.toLowerCase().includes('internal') && !a.clientName.toLowerCase().includes('blocked time')).map(a => a.clientEmail))).length} total)</p>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <div className="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto">
                             <div className="relative w-full sm:w-80 group">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                                 <input
@@ -527,12 +527,12 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                                 />
                             </div>
 
-                            <div className="flex items-center gap-1 p-1 bg-gray-100/80 rounded-full">
+                            <div className="flex flex-wrap justify-center sm:flex-nowrap items-center gap-1 p-1 bg-gray-100/80 rounded-full w-full lg:w-auto">
                                 {(['ltv', 'visits', 'recent'] as const).map(s => (
                                     <button
                                         key={s}
                                         onClick={() => setClientSort(s)}
-                                        className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${clientSort === s ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900'}`}
+                                        className={`flex-1 sm:flex-none px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${clientSort === s ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900'}`}
                                     >
                                         {s}
                                     </button>

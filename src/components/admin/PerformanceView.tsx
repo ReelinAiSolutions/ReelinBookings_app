@@ -844,14 +844,14 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                     <p className="text-sm font-medium relative z-10">{staffInsightText}</p>
                 </div>
 
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                     <h3 className="text-lg font-black text-gray-900 uppercase tracking-widest">Team Performance</h3>
-                    <div className="flex items-center gap-2 bg-gray-100/80 p-1 rounded-full">
+                    <div className="flex items-center gap-2 bg-gray-100/80 p-1 rounded-full overflow-x-auto max-w-full no-scrollbar">
                         {(['bookings', 'utilization', 'revenue'] as const).map(s => (
                             <button
                                 key={s}
                                 onClick={() => setStaffSort(s)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all capitalize ${staffSort === s ? 'bg-primary-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all capitalize whitespace-nowrap ${staffSort === s ? 'bg-primary-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
                             >
                                 {s}
                             </button>
@@ -993,7 +993,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             <p className="text-sm text-gray-500 font-medium mt-1">Manage relationships and track loyalty ({Array.from(new Set(appointments.filter(a => a.status !== AppointmentStatus.BLOCKED && !a.clientEmail.toLowerCase().includes('internal') && !a.clientName.toLowerCase().includes('blocked time')).map(a => a.clientEmail))).length} total)</p>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                             <div className="relative w-full sm:w-80 group">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                                 <input
@@ -1005,8 +1005,8 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 />
                             </div>
 
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <div className="relative flex-1 sm:flex-initial">
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                                <div className="relative w-full sm:w-auto flex-1 sm:flex-initial">
                                     <Users2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                                     <select
                                         value={clientStaffFilter}
@@ -1020,12 +1020,12 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                 </div>
-                                <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-xl border border-gray-100 shadow-sm">
+                                <div className="flex flex-wrap justify-center sm:flex-nowrap items-center gap-1 p-1 bg-gray-50 rounded-xl border border-gray-100 shadow-sm w-full sm:w-auto">
                                     {(['ltv', 'visits', 'recent'] as const).map(s => (
                                         <button
                                             key={s}
                                             onClick={() => setClientSort(s)}
-                                            className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${clientSort === s ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                                            className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${clientSort === s ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
                                         >
                                             {s}
                                         </button>
