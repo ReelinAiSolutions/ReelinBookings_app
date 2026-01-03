@@ -127,226 +127,228 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     };
 
     return (
-        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">
-                        {isStaffView ? 'My Roster' : 'Client Intelligence'}
-                    </h1>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                        <UserIcon className="w-4 h-4" />
-                        {clients.length} Registered Profiles
-                    </p>
-                </div>
-
-                {/* Search */}
-                <div className="flex items-center gap-4">
-                    <div className="relative group w-full md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#d946ef] transition-colors" />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Identify client..."
-                            className="w-full pl-11 pr-4 py-3 bg-gray-100/80 border border-transparent rounded-[20px] text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all outline-none shadow-sm"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Client Table */}
-            <div className="flex-1 bg-white border border-gray-100 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col">
-                {filteredClients.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-                        <div className="w-16 h-16 mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                            <UserIcon className="w-8 h-8 text-gray-300" />
-                        </div>
-                        <h3 className="text-lg font-black text-gray-900 mb-1">No profiles found</h3>
-                        <p className="text-gray-500 text-xs font-bold uppercase tracking-widest max-w-xs mx-auto">
-                            {searchQuery ? 'Adjust identifiers and try search again' : 'Client activity will populate this database'}
+        <div className="flex flex-col h-full space-y-8">
+            <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h1 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">
+                            {isStaffView ? 'My Roster' : 'Client Intelligence'}
+                        </h1>
+                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                            <UserIcon className="w-4 h-4" />
+                            {clients.length} Registered Profiles
                         </p>
                     </div>
-                ) : (
-                    <>
-                        {/* Mobile Card View */}
-                        <div className="md:hidden divide-y divide-gray-50 overflow-y-auto">
-                            {filteredClients.map((client) => {
-                                const isVIP = client.totalSpend > 500;
-                                const isNew = client.visits === 1;
-                                const displayName = getDisplayName(client.name);
-                                const displayEmail = getDisplayEmail(client.email);
 
-                                return (
-                                    <div
-                                        key={client.id}
-                                        onClick={() => setSelectedClient(client)}
-                                        className="p-6 space-y-4 active:bg-gray-50 transition-colors cursor-pointer"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                {/* Premium Avatar */}
-                                                <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-indigo-100 shadow-lg ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'}`}>
-                                                    {displayName.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <div className="font-black text-gray-900 flex items-center gap-2 text-lg">
-                                                        {displayName}
-                                                        {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
-                                                    </div>
-                                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                        <span>{displayEmail}</span>
-                                                        {client.phone && (
-                                                            <>
-                                                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                                                                <span className="text-gray-500">{client.phone}</span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
-                                                <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
-                                                <div className="text-sm font-black text-gray-900">${client.totalSpend.toLocaleString()}</div>
-                                            </div>
-                                            <div className="bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
-                                                <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Session Count</div>
-                                                <div className="text-sm font-black text-gray-900">{client.visits} Visits</div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between pt-2">
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                Last: {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'MMM d, yyyy') : '-'}
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {isVIP && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-100">VIP</span>}
-                                                {isNew && <span className="px-2 py-0.5 bg-[#F3E8FF] text-[#A855F7] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#A855F7]/20">New</span>}
-                                                {!isVIP && !isNew && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-gray-200">Steady</span>}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                    {/* Search */}
+                    <div className="flex items-center gap-4">
+                        <div className="relative group w-full md:w-80">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#d946ef] transition-colors" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Identify client..."
+                                className="w-full pl-11 pr-4 py-3 bg-gray-100/80 border border-transparent rounded-[20px] text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all outline-none shadow-sm"
+                            />
                         </div>
+                    </div>
+                </div>
 
-                        {/* Desktop Table View */}
-                        <div className="hidden md:block overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-50 bg-gray-50/30">
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group whitespace-nowrap" onClick={() => handleSort('name')}>
-                                            <div className="flex items-center gap-2">Client Identity <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                                        </th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('lastVisit')}>
-                                            <div className="flex items-center justify-end gap-2">Last Active <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                                        </th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('visits')}>
-                                            <div className="flex items-center justify-end gap-2">Session Count <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                                        </th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('totalSpend')}>
-                                            <div className="flex items-center justify-end gap-2">Gross Revenue <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                                        </th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right whitespace-nowrap">
-                                            Status
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {filteredClients.map((client) => {
-                                        const isVIP = client.totalSpend > 500;
-                                        const isNew = client.visits === 1;
-                                        const displayName = getDisplayName(client.name);
-                                        const displayEmail = getDisplayEmail(client.email);
+                {/* Client Table */}
+                <div className="flex-1 bg-white border border-gray-100 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col">
+                    {filteredClients.length === 0 ? (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+                            <div className="w-16 h-16 mb-4 bg-gray-50 rounded-full flex items-center justify-center">
+                                <UserIcon className="w-8 h-8 text-gray-300" />
+                            </div>
+                            <h3 className="text-lg font-black text-gray-900 mb-1">No profiles found</h3>
+                            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest max-w-xs mx-auto">
+                                {searchQuery ? 'Adjust identifiers and try search again' : 'Client activity will populate this database'}
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Mobile Card View */}
+                            <div className="md:hidden divide-y divide-gray-50 overflow-y-auto">
+                                {filteredClients.map((client) => {
+                                    const isVIP = client.totalSpend > 500;
+                                    const isNew = client.visits === 1;
+                                    const displayName = getDisplayName(client.name);
+                                    const displayEmail = getDisplayEmail(client.email);
 
-                                        return (
-                                            <tr
-                                                key={client.id}
-                                                onClick={() => setSelectedClient(client)}
-                                                className="group hover:bg-[#A855F7]/5 transition-all cursor-pointer"
-                                            >
-                                                {/* Client Profile */}
-                                                <td className="px-8 py-5 whitespace-nowrap">
-                                                    <div className="flex items-center gap-4">
-                                                        {/* Premium Avatars with Purple Gradient */}
-                                                        <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform duration-300 ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'
-                                                            }`}>
-                                                            {displayName.charAt(0).toUpperCase()}
+                                    return (
+                                        <div
+                                            key={client.id}
+                                            onClick={() => setSelectedClient(client)}
+                                            className="p-6 space-y-4 active:bg-gray-50 transition-colors cursor-pointer"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    {/* Premium Avatar */}
+                                                    <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-indigo-100 shadow-lg ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'}`}>
+                                                        {displayName.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-black text-gray-900 flex items-center gap-2 text-lg">
+                                                            {displayName}
+                                                            {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
                                                         </div>
-                                                        <div>
-                                                            <div className="font-black text-gray-900 group-hover:text-[#d946ef] transition-colors flex items-center gap-2 text-base">
-                                                                {displayName}
-                                                                {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
-                                                            </div>
-                                                            <div className="text-[10px] font-black text-gray-400 flex items-center gap-1.5 mt-1 uppercase tracking-widest">
-                                                                <Mail className="w-3 h-3" />
-                                                                {displayEmail}
-                                                                {client.phone && (
-                                                                    <span className="flex items-center gap-1.5 ml-2 text-gray-500">
-                                                                        <Phone className="w-3 h-3" />
-                                                                        {client.phone}
-                                                                    </span>
-                                                                )}
-                                                            </div>
+                                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <span>{displayEmail}</span>
+                                                            {client.phone && (
+                                                                <>
+                                                                    <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                                    <span className="text-gray-500">{client.phone}</span>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                </td>
+                                                </div>
+                                            </div>
 
-                                                {/* Last Visit */}
-                                                <td className="px-8 py-5 text-right whitespace-nowrap">
-                                                    <div className="text-sm font-black text-gray-900">
-                                                        {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'MMM d, yyyy') : '-'}
-                                                    </div>
-                                                    <div className="text-[10px] font-black text-gray-400 mt-1 uppercase tracking-widest">
-                                                        {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'h:mm a') : ''}
-                                                    </div>
-                                                </td>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
+                                                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
+                                                    <div className="text-sm font-black text-gray-900">${client.totalSpend.toLocaleString()}</div>
+                                                </div>
+                                                <div className="bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
+                                                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Session Count</div>
+                                                    <div className="text-sm font-black text-gray-900">{client.visits} Visits</div>
+                                                </div>
+                                            </div>
 
-                                                {/* Visits */}
-                                                <td className="px-8 py-5 text-right whitespace-nowrap">
-                                                    <span className="inline-flex items-center px-3 py-1 rounded-xl bg-gray-50 text-gray-900 text-[10px] font-black uppercase tracking-widest border border-gray-100">
-                                                        {client.visits} Sessions
-                                                    </span>
-                                                </td>
+                                            <div className="flex items-center justify-between pt-2">
+                                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                    Last: {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'MMM d, yyyy') : '-'}
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    {isVIP && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-100">VIP</span>}
+                                                    {isNew && <span className="px-2 py-0.5 bg-[#F3E8FF] text-[#A855F7] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#A855F7]/20">New</span>}
+                                                    {!isVIP && !isNew && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-gray-200">Steady</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
 
-                                                {/* Total Spend */}
-                                                <td className="px-8 py-5 text-right whitespace-nowrap">
-                                                    <div className="text-sm font-black text-gray-900">
-                                                        ${client.totalSpend.toLocaleString()}
-                                                    </div>
-                                                </td>
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-gray-50 bg-gray-50/30">
+                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group whitespace-nowrap" onClick={() => handleSort('name')}>
+                                                <div className="flex items-center gap-2">Client Identity <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
+                                            </th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('lastVisit')}>
+                                                <div className="flex items-center justify-end gap-2">Last Active <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
+                                            </th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('visits')}>
+                                                <div className="flex items-center justify-end gap-2">Session Count <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
+                                            </th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('totalSpend')}>
+                                                <div className="flex items-center justify-end gap-2">Gross Revenue <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
+                                            </th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right whitespace-nowrap">
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {filteredClients.map((client) => {
+                                            const isVIP = client.totalSpend > 500;
+                                            const isNew = client.visits === 1;
+                                            const displayName = getDisplayName(client.name);
+                                            const displayEmail = getDisplayEmail(client.email);
 
-                                                {/* Badges */}
-                                                <td className="px-8 py-5 text-right whitespace-nowrap">
-                                                    <div className="flex justify-end gap-2">
-                                                        {isVIP && (
-                                                            <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-100">
-                                                                VIP
-                                                            </span>
-                                                        )}
-                                                        {isNew && (
-                                                            <span className="px-2 py-0.5 bg-[#F3E8FF] text-[#A855F7] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#A855F7]/20">
-                                                                New
-                                                            </span>
-                                                        )}
-                                                        {!isVIP && !isNew && (
-                                                            <span className="px-2 py-0.5 bg-gray-50 text-gray-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-gray-100">
-                                                                Steady
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </>
-                )}
+                                            return (
+                                                <tr
+                                                    key={client.id}
+                                                    onClick={() => setSelectedClient(client)}
+                                                    className="group hover:bg-[#A855F7]/5 transition-all cursor-pointer"
+                                                >
+                                                    {/* Client Profile */}
+                                                    <td className="px-8 py-5 whitespace-nowrap">
+                                                        <div className="flex items-center gap-4">
+                                                            {/* Premium Avatars with Purple Gradient */}
+                                                            <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform duration-300 ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'
+                                                                }`}>
+                                                                {displayName.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-black text-gray-900 group-hover:text-[#d946ef] transition-colors flex items-center gap-2 text-base">
+                                                                    {displayName}
+                                                                    {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
+                                                                </div>
+                                                                <div className="text-[10px] font-black text-gray-400 flex items-center gap-1.5 mt-1 uppercase tracking-widest">
+                                                                    <Mail className="w-3 h-3" />
+                                                                    {displayEmail}
+                                                                    {client.phone && (
+                                                                        <span className="flex items-center gap-1.5 ml-2 text-gray-500">
+                                                                            <Phone className="w-3 h-3" />
+                                                                            {client.phone}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Last Visit */}
+                                                    <td className="px-8 py-5 text-right whitespace-nowrap">
+                                                        <div className="text-sm font-black text-gray-900">
+                                                            {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'MMM d, yyyy') : '-'}
+                                                        </div>
+                                                        <div className="text-[10px] font-black text-gray-400 mt-1 uppercase tracking-widest">
+                                                            {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'h:mm a') : ''}
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Visits */}
+                                                    <td className="px-8 py-5 text-right whitespace-nowrap">
+                                                        <span className="inline-flex items-center px-3 py-1 rounded-xl bg-gray-50 text-gray-900 text-[10px] font-black uppercase tracking-widest border border-gray-100">
+                                                            {client.visits} Sessions
+                                                        </span>
+                                                    </td>
+
+                                                    {/* Total Spend */}
+                                                    <td className="px-8 py-5 text-right whitespace-nowrap">
+                                                        <div className="text-sm font-black text-gray-900">
+                                                            ${client.totalSpend.toLocaleString()}
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Badges */}
+                                                    <td className="px-8 py-5 text-right whitespace-nowrap">
+                                                        <div className="flex justify-end gap-2">
+                                                            {isVIP && (
+                                                                <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-100">
+                                                                    VIP
+                                                                </span>
+                                                            )}
+                                                            {isNew && (
+                                                                <span className="px-2 py-0.5 bg-[#F3E8FF] text-[#A855F7] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#A855F7]/20">
+                                                                    New
+                                                                </span>
+                                                            )}
+                                                            {!isVIP && !isNew && (
+                                                                <span className="px-2 py-0.5 bg-gray-50 text-gray-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-gray-100">
+                                                                    Steady
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Client Profile Modal (Slide Over) */}
@@ -469,6 +471,6 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                     </div>
                 )
             }
-        </div >
+        </div>
     );
 }
