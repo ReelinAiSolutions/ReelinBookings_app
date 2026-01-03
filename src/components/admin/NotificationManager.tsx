@@ -189,11 +189,37 @@ export default function NotificationManager() {
                     ) : (
                         <>
                             {isSubscribed ? (
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-3">
                                     <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-2 rounded-lg w-fit">
                                         <CheckCircle2 className="w-4 h-4" />
                                         <span>Notifications Active</span>
                                     </div>
+                                    <button
+                                        onClick={async () => {
+                                            const { profile } = await getUserProfile() || {};
+                                            if (!profile?.id) return alert('User not found');
+
+                                            try {
+                                                await fetch('/api/push-notifications', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({
+                                                        userId: profile.id,
+                                                        title: 'Test Notification 🔔',
+                                                        body: 'If you see this, notifications are working!',
+                                                        url: '/staff',
+                                                        type: 'manual_test'
+                                                    })
+                                                });
+                                                alert('Test sent! Check your notifications center.');
+                                            } catch (e) {
+                                                alert('Test failed: ' + (e as Error).message);
+                                            }
+                                        }}
+                                        className="text-xs font-bold text-blue-600 hover:text-blue-700 underline text-left"
+                                    >
+                                        Send Test Alert (Server)
+                                    </button>
                                 </div>
                             ) : (
                                 <button
