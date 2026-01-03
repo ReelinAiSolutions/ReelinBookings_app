@@ -87,15 +87,7 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
 
             {/* Footer Actions */}
             <div className="pt-3 sm:pt-4 mt-auto border-t border-gray-50 flex items-center gap-2 relative z-10">
-                {onSchedule && (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onSchedule(staff); }}
-                        className="flex-1 h-9 sm:h-11 flex items-center justify-center gap-2 bg-gray-900 text-white rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-[#d946ef] transition-all active:scale-95 shadow-lg shadow-gray-200 hover:shadow-[#d946ef]/50 px-4"
-                    >
-                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span>Schedule</span>
-                    </button>
-                )}
+
 
                 <div className="flex items-center gap-1">
                     {onEdit && (

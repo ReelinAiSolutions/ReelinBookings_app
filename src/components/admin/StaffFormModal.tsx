@@ -127,8 +127,8 @@ export default function StaffFormModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 border border-white/20">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-2xl h-[92vh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-8 duration-300 border border-white/20">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
                     <h2 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
@@ -367,7 +367,7 @@ export default function StaffFormModal({
 
                 {/* Footer - Only show for Details tab */}
                 {activeTab === 'details' && (
-                    <div className="flex items-center gap-3 p-8 border-t border-gray-100 bg-gray-50/50">
+                    <div className="flex items-center gap-3 p-6 sm:p-8 border-t border-gray-100 bg-gray-50/50 pb-8 sm:pb-8 safe-area-bottom">
                         <button
                             onClick={onClose}
                             className="flex-1 h-12 bg-white border border-gray-200 text-gray-900 rounded-[18px] text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95"
