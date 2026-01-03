@@ -49,11 +49,41 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
         }
 
+        let targetUserId = userId;
+
         // 1. Get subscriptions for this user
-        const { data: subscriptions, error: subError } = await supabase
+        let { data: subscriptions, error: subError } = await supabase
             .from('push_subscriptions')
             .select('*')
-            .eq('user_id', userId);
+            .eq('user_id', targetUserId);
+
+        // EXTRA HEALING: If no subscriptions found, check if this ID is actually a Staff Record ID
+        if (!subError && (!subscriptions || subscriptions.length === 0)) {
+            console.log(`[Push API] No subs for original ID: ${targetUserId}. Checking if Staff ID...`);
+            const { data: staffRecord, error: staffError } = await supabase
+                .from('staff')
+                .select('user_id, email, name')
+                .eq('id', targetUserId)
+                .single();
+
+            if (staffError) {
+                console.log(`[Push API] Staff lookup error for ${targetUserId}:`, staffError.message);
+            }
+
+            if (staffRecord?.user_id) {
+                console.log(`[Push API] SUCCESS: Resolved ID ${targetUserId} (${staffRecord.name}) to User: ${staffRecord.user_id}`);
+                targetUserId = staffRecord.user_id;
+
+                // Re-fetch subscriptions with the resolved ID
+                const { data: resolvedSubs } = await supabase
+                    .from('push_subscriptions')
+                    .select('*')
+                    .eq('user_id', targetUserId);
+                subscriptions = resolvedSubs;
+            } else {
+                console.log(`[Push API] FAILURE: No user_id found on staff record for ${targetUserId}. Name: ${staffRecord?.name}, Email: ${staffRecord?.email}`);
+            }
+        }
 
         if (subError) {
             console.error('Supabase error:', subError);
