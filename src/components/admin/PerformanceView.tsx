@@ -591,16 +591,21 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         </div>
 
                         {/* Schedule Filled % */}
-                        <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex items-center justify-between relative overflow-hidden">
-                            <div className="relative z-10">
-                                <h3 className="text-2xl font-black text-gray-900">{occupancyRate}%</h3>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest max-w-[80px] leading-tight">Schedule Filled</p>
+                        <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><Clock className="w-5 h-5" /></div>
                             </div>
-                            <div className="relative w-16 h-16">
-                                <svg className="w-full h-full transform -rotate-90">
-                                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-gray-100" />
-                                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={175} strokeDashoffset={175 - (175 * occupancyRate) / 100} className="text-indigo-600" strokeLinecap="round" />
-                                </svg>
+                            <div className="flex items-end justify-between relative z-10">
+                                <div>
+                                    <h3 className="text-2xl font-black text-gray-900">{occupancyRate}%</h3>
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest max-w-[80px] leading-tight">Schedule Filled</p>
+                                </div>
+                                <div className="relative w-12 h-12">
+                                    <svg className="w-full h-full transform -rotate-90">
+                                        <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-gray-100" />
+                                        <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={125} strokeDashoffset={125 - (125 * occupancyRate) / 100} className="text-indigo-600" strokeLinecap="round" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -819,7 +824,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 </div>
             </CollapsibleSection>
 
-        </div>
+        </div >
     );
     const renderStaffTab = () => {
         return (
