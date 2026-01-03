@@ -486,11 +486,6 @@ export default function WeeklyCalendar({
         const finalStaffId = currentStaffId || originalStaffId;
 
         if (apt && (apt.timeSlot !== newTimeSlot || finalStaffId !== originalStaffId) && onAppointmentUpdate) {
-            const updatedApt = { ...apt, timeSlot: newTimeSlot, staffId: finalStaffId };
-
-            // Open Modal with NEW Data immediately (Optimistic Confirmation)
-            onAppointmentClick(updatedApt);
-
             try {
                 // Support horizontal (staff) reassignment
                 const currentAptDate = new Date(`${apt.date}T00:00:00`);

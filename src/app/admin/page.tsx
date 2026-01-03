@@ -284,6 +284,13 @@ export default function AdminDashboard() {
     // Drag & Drop Handler
     const handleAppointmentDrop = async (apt: Appointment, newDate: Date, newTime: string, newStaffId?: string) => {
         const dateStr = format(newDate, 'yyyy-MM-dd');
+
+        // Optimistic Update: Move the card instantly in the UI
+        setAppointments(prev => prev.map(a => 
+            a.id === apt.id 
+                ? { ...a, date: dateStr, timeSlot: newTime, staffId: newStaffId || a.staffId } 
+                : a
+        ));
         await updateAppointment(apt.id, {
             date: dateStr,
             timeSlot: newTime,
