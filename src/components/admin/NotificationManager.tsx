@@ -215,7 +215,6 @@ export default function NotificationManager() {
                                                         type: 'manual_test'
                                                     })
                                                 });
-                                                alert('Test sent! Your notifications are now synchronized.');
                                             } catch (e) {
                                                 alert('Test failed: ' + (e as Error).message);
                                             }
