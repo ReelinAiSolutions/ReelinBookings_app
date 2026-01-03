@@ -18,16 +18,22 @@ export default function ClientManager({ appointments, services, isStaffView = fa
         const clientMap = new Map();
 
         appointments.forEach(apt => {
+            // Filter out cancelled, no-show, and internal/blocked time
             if (apt.status === 'CANCELLED' || apt.status === 'NO_SHOW') return;
 
-            const key = apt.clientEmail || apt.clientName || 'unknown';
-            if (key === 'unknown') return;
+            const name = apt.clientName || 'Unknown Client';
+            const email = apt.clientEmail || '';
+
+            // Filter out Blocked Time and Internal System Users
+            if (name === 'Blocked Time' || email.includes('@internal') || email.includes('blocked@')) return;
+
+            const key = email || name; // Prefer email as unique ID
 
             if (!clientMap.has(key)) {
                 clientMap.set(key, {
                     id: key,
-                    name: apt.clientName || 'Unknown Client',
-                    email: apt.clientEmail || '',
+                    name: name,
+                    email: email,
                     lastVisit: '0',
                     visits: 0,
                     totalSpend: 0
@@ -55,34 +61,26 @@ export default function ClientManager({ appointments, services, isStaffView = fa
 
         let result = Array.from(clientMap.values());
 
-        // Sorting
+        // Sort by Last Visit Descending by default
         if (sortConfig) {
             result.sort((a, b) => {
-                if (sortConfig.key === 'name') {
-                    return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-                }
-                if (sortConfig.key === 'visits') {
-                    return sortConfig.direction === 'asc' ? a.visits - b.visits : b.visits - a.visits;
-                }
-                if (sortConfig.key === 'totalSpend') {
-                    return sortConfig.direction === 'asc' ? a.totalSpend - b.totalSpend : b.totalSpend - a.totalSpend;
-                }
-                if (sortConfig.key === 'lastVisit') {
-                    return sortConfig.direction === 'asc'
-                        ? new Date(a.lastVisit).getTime() - new Date(b.lastVisit).getTime()
-                        : new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
-                }
+                // ... (sort logic remains same if needed, or simplified)
+                if (sortConfig.key === 'name') return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+                if (sortConfig.key === 'visits') return sortConfig.direction === 'asc' ? a.visits - b.visits : b.visits - a.visits;
+                if (sortConfig.key === 'totalSpend') return sortConfig.direction === 'asc' ? a.totalSpend - b.totalSpend : b.totalSpend - a.totalSpend;
+                if (sortConfig.key === 'lastVisit') return sortConfig.direction === 'asc'
+                    ? new Date(a.lastVisit).getTime() - new Date(b.lastVisit).getTime()
+                    : new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
                 return 0;
             });
         } else {
-            // Default sort: Last Visit Descending
             result.sort((a, b) => new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime());
         }
 
         return result;
     }, [appointments, services, sortConfig]);
 
-    // Filter
+    // ... (Filter logic remains same)
     const filteredClients = useMemo(() => {
         return clients.filter(c =>
             (c.name && c.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -95,6 +93,18 @@ export default function ClientManager({ appointments, services, isStaffView = fa
             key,
             direction: current?.key === key && current.direction === 'desc' ? 'asc' : 'desc'
         }));
+    };
+
+    // Helper to clean up display names
+    const getDisplayName = (name: string) => {
+        if (name.toLowerCase().includes('walk-in')) return 'Walk-in Client'; // Simplify Walk-ins
+        return name;
+    };
+
+    // Helper to clean up emails
+    const getDisplayEmail = (email: string) => {
+        if (!email || email.includes('walkin-')) return 'No credentials'; // Hide generated walk-in emails
+        return email;
     };
 
     return (
@@ -145,24 +155,28 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                             {filteredClients.map((client) => {
                                 const isVIP = client.totalSpend > 500;
                                 const isNew = client.visits === 1;
+                                const displayName = getDisplayName(client.name);
+                                const displayEmail = getDisplayEmail(client.email);
+
                                 return (
                                     <div key={client.id} className="p-6 space-y-4 active:bg-gray-50 transition-colors">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-sm ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gray-100 text-gray-500'}`}>
-                                                    {client.name.charAt(0).toUpperCase()}
+                                                {/* Premium Avatar */}
+                                                <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-indigo-100 shadow-lg ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white'}`}>
+                                                    {displayName.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <div className="font-black text-gray-900 flex items-center gap-2">
-                                                        {client.name}
+                                                    <div className="font-black text-gray-900 flex items-center gap-2 text-lg">
+                                                        {displayName}
                                                         {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
                                                     </div>
                                                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                        {client.email || 'No credentials'}
+                                                        {displayEmail}
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button className="p-2 text-gray-300">
+                                            <button className="p-2 text-gray-300 hover:text-indigo-600 transition-colors">
                                                 <MoreHorizontal className="w-5 h-5" />
                                             </button>
                                         </div>
@@ -185,6 +199,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                             <div className="flex gap-2">
                                                 {isVIP && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-100">VIP</span>}
                                                 {isNew && <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-indigo-100">New</span>}
+                                                {!isVIP && !isNew && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-gray-200">Steady</span>}
                                             </div>
                                         </div>
                                     </div>
@@ -217,26 +232,29 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
                                     {filteredClients.map((client) => {
-                                        const isVIP = client.totalSpend > 500; // Mock logic for VIP
+                                        const isVIP = client.totalSpend > 500;
                                         const isNew = client.visits === 1;
+                                        const displayName = getDisplayName(client.name);
+                                        const displayEmail = getDisplayEmail(client.email);
 
                                         return (
                                             <tr key={client.id} className="group hover:bg-indigo-50/20 transition-all cursor-pointer">
                                                 {/* Client Profile */}
                                                 <td className="px-8 py-5 whitespace-nowrap">
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-sm ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gray-100 text-gray-500'
+                                                        {/* Premium Avatars with Purple Gradient */}
+                                                        <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform duration-300 ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-indigo-100'
                                                             }`}>
-                                                            {client.name.charAt(0).toUpperCase()}
+                                                            {displayName.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div>
-                                                            <div className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                                                {client.name}
+                                                            <div className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors flex items-center gap-2 text-base">
+                                                                {displayName}
                                                                 {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
                                                             </div>
                                                             <div className="text-[10px] font-black text-gray-400 flex items-center gap-1.5 mt-1 uppercase tracking-widest">
                                                                 <Mail className="w-3 h-3" />
-                                                                {client.email || 'No credentials'}
+                                                                {displayEmail}
                                                             </div>
                                                         </div>
                                                     </div>
