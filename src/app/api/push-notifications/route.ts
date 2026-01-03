@@ -1,20 +1,36 @@
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
 function initWebPush() {
-    const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
-    const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
-    const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@reelin.ca';
+    let public_key = process.env.VAPID_PUBLIC_KEY;
+    let private_key = process.env.VAPID_PRIVATE_KEY;
+    const subject = process.env.VAPID_SUBJECT || 'mailto:admin@reelin.ca';
 
-    if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-        webpush.setVapidDetails(
-            VAPID_SUBJECT,
-            VAPID_PUBLIC_KEY,
-            VAPID_PRIVATE_KEY
-        );
+    // FALLBACK: If process.env is stale, read from file directly
+    if (!public_key || !private_key) {
+        try {
+            const envPath = path.resolve(process.cwd(), '.env.local');
+            if (fs.existsSync(envPath)) {
+                const content = fs.readFileSync(envPath, 'utf8');
+                const lines = content.split(/\r?\n/);
+                lines.forEach(line => {
+                    const [key, ...val] = line.split('=');
+                    if (key === 'VAPID_PUBLIC_KEY') public_key = val.join('=').trim();
+                    if (key === 'VAPID_PRIVATE_KEY') private_key = val.join('=').trim();
+                });
+            }
+        } catch (e) {
+            console.error('Fallback env read failed:', e);
+        }
+    }
+
+    if (public_key && private_key) {
+        webpush.setVapidDetails(subject, public_key, private_key);
         return true;
     }
     return false;
