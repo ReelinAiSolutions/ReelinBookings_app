@@ -607,8 +607,8 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                     <PieChart>
                                         <Pie
                                             data={[{ value: occupancyRate }, { value: 100 - occupancyRate }]}
-                                            innerRadius={16}
-                                            outerRadius={24}
+                                            innerRadius={15}
+                                            outerRadius={22}
                                             startAngle={90}
                                             endAngle={-270}
                                             dataKey="value"
