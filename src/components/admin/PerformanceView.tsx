@@ -787,7 +787,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-xs font-black ${i < 3 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'}`}>
                                     #{i + 1}
                                 </div>
-                                <span className="font-bold text-gray-900 text-sm leading-tight">{srv.name}</span>
+                                <span className="font-bold text-gray-900 text-sm leading-tight break-words">{srv.name}</span>
                             </div>
                             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                                 <div className="text-right">
