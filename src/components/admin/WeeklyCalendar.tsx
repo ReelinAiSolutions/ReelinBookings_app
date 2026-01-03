@@ -972,19 +972,8 @@ export default function WeeklyCalendar({
                     </div>
                 )}
 
-                <div className="relative w-full flex" style={{ height: `${hours.length * 120}px` }}>
-                    {/* CONTINUOUS VERTICAL SEPARATOR (HITS TAB BAR) */}
-                    <div className="absolute top-0 bottom-[-96px] left-0 w-12 lg:w-20 border-r border-gray-300 z-[44] pointer-events-none sticky" />
-
-                    {/* TEAM VIEW GRID LINES (CONTINUOUS TO TAB BAR) */}
-                    {viewMode === 'team' && (
-                        <div className="absolute top-0 bottom-[-96px] left-12 lg:left-20 right-0 flex pointer-events-none z-0">
-                            {staff.map((_, idx) => (
-                                <div key={idx} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 first:border-l-0`} />
-                            ))}
-                        </div>
-                    )}
-                    <div className="w-12 lg:w-20 shrink-0 bg-white z-[45] sticky left-0 h-full select-none">
+                <div className="relative w-full flex border-b border-gray-300" style={{ height: `${hours.length * 120}px` }}>
+                    <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-[45] sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
                             <React.Fragment key={h}>
                                 <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
@@ -1009,7 +998,7 @@ export default function WeeklyCalendar({
                         ))}
                     </div>
 
-                    <div className="flex-1 relative min-w-0" style={{ height: `${hours.length * 120}px` }}>
+                    <div className="flex-1 relative items-start min-w-0">
                         {/* Current Time Indicator (Shared for both views) */}
 
 
