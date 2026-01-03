@@ -342,9 +342,17 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                 </AccordionItem>
             </form>
 
-            <div className="mb-8">
+            {/* Notifications Accordion */}
+            <AccordionItem
+                title="Notifications"
+                subtitle="Manage your alert preferences"
+                icon={Bell}
+                colorClass="bg-amber-50 text-amber-600"
+                isOpen={openSection === 'notifications'}
+                onToggle={() => setOpenSection(openSection === 'notifications' ? null : 'notifications')}
+            >
                 <NotificationManager />
-            </div>
+            </AccordionItem>
 
             {/* Sign Out Section - At Bottom */}
             <div className="max-w-3xl pt-8 border-t border-gray-100">

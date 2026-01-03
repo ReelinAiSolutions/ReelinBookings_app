@@ -219,7 +219,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
 
                     <div className="flex items-center gap-3">
                         {/* View Toggle */}
-                        <div className="hidden md:flex bg-gray-50 p-1.5 rounded-[24px] border border-gray-100 shadow-sm flex-1 sm:flex-none">
+                        <div className="hidden lg:flex bg-gray-50 p-1.5 rounded-[24px] border border-gray-100 shadow-sm flex-1 sm:flex-none">
                             <button
                                 onClick={() => setViewMode('grid')}
                                 title="Grid View"
