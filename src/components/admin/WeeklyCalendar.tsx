@@ -1005,8 +1005,7 @@ export default function WeeklyCalendar({
                         {viewMode === 'personal' ? (
                             <div
                                 key={selectedDate.toISOString()}
-                                className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
-                                style={{ height: `${hours.length * 120}px` }}
+                                className={`w-full relative h-[calc(100%+96px)] ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
                             >
                                 {isDayEmpty && <EmptyState onAction={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)} />}
                                 {hours.map((h, i) => (
