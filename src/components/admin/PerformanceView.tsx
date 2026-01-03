@@ -1159,7 +1159,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
     return (
         <div className="w-full h-full flex flex-col bg-gray-50/50 overflow-hidden">
             {/* Header */}
-            <header className="pt-8 pb-4 px-10 bg-white/80 backdrop-blur-2xl sticky top-0 z-50 shrink-0 border-b border-gray-100">
+            <header className="pt-8 pb-4 px-4 md:px-10 bg-white/80 backdrop-blur-2xl sticky top-0 z-50 shrink-0 border-b border-gray-100">
                 <div className="max-w-[1800px] mx-auto w-full flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-black tracking-tight text-gray-900 leading-tight mb-2">
@@ -1217,7 +1217,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 px-10 pt-8 pb-32 overflow-y-auto w-full scroll-smooth">
+            <main className="flex-1 px-4 md:px-10 pt-8 pb-32 overflow-y-auto w-full scroll-smooth">
                 <div className="max-w-[1800px] mx-auto w-full">
                     {activeTab === 'business' && renderBusinessTab()}
                     {activeTab === 'staff' && renderStaffTab()}
