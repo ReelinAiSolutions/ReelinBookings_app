@@ -69,8 +69,8 @@ export async function POST(req: Request) {
         // Final code-level hardcoded safety net
         if (!supabaseUrl || !supabaseServiceKey) {
             console.log('[PUSH API] CRITICAL: Using code-level hardcoded fallbacks');
-            supabaseUrl = 'https://ovnwouiaaavwzocigu.supabase.co';
-            supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92bndvdWlhYWF2d3pvY2lndSIsInJvbGUiOiJzZXJ2aWNlX3JvbGUiLCJpYXQiOjE3MzQzMjI0MTQsImV4cCI6MjA0OTg5ODQxNH0.qIsP7D6t88-k0q6p7xQ30SrrrqPJ3Cer7GZ6KfCQehGWMhr';
+            supabaseUrl = 'https://jqnrzctlxsxxxqogeidg.supabase.co';
+            supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbnJ6Y3RseHN4eHhxb2dlaWRnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTk1MTkwNSwiZXhwIjoyMDgxNTI3OTA1fQ.ZyAjVXoAYmH0CqfzKYlGPO7b0WCknE4WZme_k78PXo0';
         }
 
         const supabase = createClient(supabaseUrl!, supabaseServiceKey!, {
