@@ -5,7 +5,7 @@ import { Bell, BellOff, CheckCircle2, AlertCircle, Smartphone, RefreshCcw } from
 import { savePushSubscription, getUserProfile, getStaff, getCurrentUserOrganization, linkStaffAccount } from '@/services/dataService';
 import { Staff } from '@/types';
 
-const VAPID_PUBLIC_KEY = 'BKNoqzLYTe_AB1yvw9vwZ4u4RJbWZ98c-2R3CShWpP4j2mRxCNEnR-RfyM_nQbXKI9tJdfPimoCYCNrWyTyV6cc';
+const VAPID_PUBLIC_KEY = 'BCq4foOEzbw2NR8k31xmuBkDnt_ZHmEbJQV-P6U8rX8CIcycj0-p00lYF12lJ2ZbMAG9MiQPtMCmcoJa_GtGeGU';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
