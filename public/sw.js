@@ -1,5 +1,4 @@
-/* eslint-disable no-restricted-globals */
-// SW Version: 1.0.3 (Force Update)
+// SW Version: 1.0.4 (Hardened Banner Fix)
 
 // This is the service worker that listens for push notifications
 // It must reside in the public/ directory to be accessible
@@ -15,27 +14,31 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-    if (!event.data) return;
+    let data = {
+        title: 'New Booking Update 📅',
+        body: 'Check your schedule for new client activity.',
+        url: '/staff?tab=schedule'
+    };
 
-    let data = {};
-    try {
-        data = event.data.json();
-    } catch (e) {
-        data = { title: 'New Booking', body: event.data.text() };
+    if (event.data) {
+        try {
+            const json = event.data.json();
+            data = { ...data, ...json };
+        } catch (e) {
+            data.body = event.data.text();
+        }
     }
 
-    const title = data.title || 'New Booking';
+    const title = data.title;
     const options = {
-        body: data.body || 'You have a new appointment scheduled.',
+        body: data.body,
         icon: '/icon-192.png',
-        badge: '/icon-v4.png', // Small monochrome icon for target bar
+        badge: '/icon-v4.png',
         data: {
-            url: data.url || '/admin?tab=schedule',
-            appointmentId: data.appointmentId
+            url: data.url
         },
-        // Premium behavior: vibration and high-urgency look
         vibrate: [200, 100, 200],
-        tag: data.appointmentId || 'new-booking' // Prevents duplicate notifications for same ID
+        tag: data.tag || 'reelin-booking'
     };
 
     event.waitUntil(

@@ -40,8 +40,8 @@ export async function POST(req: Request) {
 
         console.log('Push API received:', { userId, title, type });
 
-        // Protocol Test / Trace
-        if (type === 'manual_test' || type === 'TRACE_TEST') {
+        // Trace test only (for basic API verification)
+        if (type === 'TRACE_TEST') {
             return NextResponse.json({ status: 'ok', message: 'Protocol verified', received: bodyPayload });
         }
 
