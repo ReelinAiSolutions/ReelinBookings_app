@@ -130,19 +130,18 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Search */}
                     <div className="relative group w-full md:w-96">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#d946ef] transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search services..."
-                            className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-[24px] text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/30 transition-all outline-none"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20 focus:border-[#d946ef] transition-all"
                         />
                     </div>
 
                     <button
-                        onClick={handleAddNew}
-                        className="bg-gray-900 hover:bg-black text-white rounded-[24px] px-8 py-4 font-black text-xs uppercase tracking-widest shadow-2xl shadow-gray-200 transition-all active:scale-95 flex items-center gap-3 group"
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-gradient-to-r from-[#A855F7] to-[#d946ef] hover:opacity-90 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-[#d946ef]/20 active:scale-95 text-sm"
                     >
                         <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
                         New Service
@@ -153,18 +152,17 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
             {/* Filters Bar */}
             <div className="flex flex-col md:flex-row md:items-center gap-4 bg-gray-100/80 p-3 rounded-[24px] border border-transparent">
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 px-1">
-                    {categories.map((category) => (
-                        <button
-                            key={category}
-                            onClick={() => setSelectedCategory(category ?? 'All')}
-                            className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedCategory === category
-                                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
-                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200/50'
-                                }`}
-                        >
-                            {category}
-                        </button>
-                    ))}
+                    {categories.map((category) => <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category || 'All')}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${selectedCategory === category
+                            ? 'bg-[#F3E8FF] text-[#A855F7] border-[#A855F7]/20'
+                            : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                            }`}
+                    >
+                        {category}
+                    </button>
+                    )}
                 </div>
 
                 <div className="flex gap-1 bg-gray-200/50 p-1 rounded-xl">

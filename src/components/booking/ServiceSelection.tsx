@@ -35,7 +35,7 @@ export default function ServiceSelection({ services, onSelect }: ServiceSelectio
                         {/* Only show header if there are actually multiple categories or if the single category isn't just "Other"/Blank */}
                         {(Object.keys(services.reduce((acc, s) => { const c = s.category || 'Other'; if (!acc[c]) acc[c] = []; acc[c].push(s); return acc; }, {} as Record<string, any>)).length > 1 || category !== 'Other') && (
                             <h3 className="text-xl font-black text-gray-900 tracking-tight mb-6 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                <span className="w-2.5 h-2.5 rounded-full bg-primary-600"></span>
                                 {category === 'Other' ? 'General Services' : category}
                             </h3>
                         )}

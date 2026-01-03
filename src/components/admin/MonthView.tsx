@@ -42,11 +42,11 @@ export default function MonthView({ currentDate, appointments, onDaySelect, onMo
 
                 <button
                     onClick={onTitleClick}
-                    className="text-lg font-bold text-blue-600 flex items-center gap-1 hover:bg-blue-50 px-2 rounded-lg transition-colors group"
+                    className="text-lg font-bold text-purple-600 flex items-center gap-1 hover:bg-purple-50 px-2 rounded-lg transition-colors group"
                 >
-                    <span className="text-blue-900/50 mr-1">Month</span>
+                    <span className="text-purple-900/50 mr-1">Month</span>
                     {format(currentDate, 'MMMM yyyy')}
-                    <ChevronRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600 rotate-90 transition-transform" />
+                    <ChevronRight className="w-4 h-4 text-purple-400 group-hover:text-purple-600 rotate-90 transition-transform" />
                 </button>
 
                 <button
@@ -85,7 +85,7 @@ export default function MonthView({ currentDate, appointments, onDaySelect, onMo
                         >
                             <span className={`
                                 text-sm font-medium w-8 h-8 flex items-center justify-center rounded-full mb-1
-                                ${isToday ? 'bg-blue-600 text-white font-bold shadow-sm' : ''}
+                                ${isToday ? 'bg-purple-600 text-white font-bold shadow-sm' : ''}
                                 ${!isToday && isCurrentMonth ? 'text-gray-900' : ''}
                                 ${!isToday && !isCurrentMonth ? 'text-gray-300' : ''}
                             `}>
@@ -96,11 +96,11 @@ export default function MonthView({ currentDate, appointments, onDaySelect, onMo
                             {hasEvents && (
                                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
                                     {events.length === 1 ? (
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400/60 shadow-sm shadow-blue-500/20"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400/60 shadow-sm shadow-purple-500/20"></div>
                                     ) : (
-                                        <div className="flex items-center gap-[2px] px-1.5 py-0.5 rounded-full bg-blue-50/50 border border-blue-100/50 shadow-sm shadow-blue-500/10">
-                                            <div className="w-1 h-1 rounded-full bg-[#007AFF]"></div>
-                                            <span className="text-[9px] font-black text-[#007AFF] leading-none mb-[0.5px] tracking-tight">{events.length}</span>
+                                        <div className="flex items-center gap-[2px] px-1.5 py-0.5 rounded-full bg-purple-50/50 border border-purple-100/50 shadow-sm shadow-purple-500/10">
+                                            <div className="w-1 h-1 rounded-full bg-[#7C3AED]"></div>
+                                            <span className="text-[9px] font-black text-[#7C3AED] leading-none mb-[0.5px] tracking-tight">{events.length}</span>
                                         </div>
                                     )}
                                 </div>

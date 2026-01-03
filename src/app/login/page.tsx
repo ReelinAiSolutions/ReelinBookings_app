@@ -99,7 +99,7 @@ function LoginForm() {
                     </Link>
 
                     <div className="flex justify-center mb-10">
-                        <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-500/10 ring-1 ring-white/20">
+                        <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center shadow-2xl shadow-primary-600/10 ring-1 ring-white/20">
                             <Zap className="w-10 h-10 text-white" />
                         </div>
                     </div>
@@ -128,10 +128,10 @@ function LoginForm() {
                                 setLoginRole('STAFF');
                                 setView('LOGIN');
                             }}
-                            className="w-full h-16 text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg hover:shadow-xl shadow-blue-600/20 transition-all flex items-center justify-between px-6 group"
+                            className="w-full h-16 text-lg font-bold bg-primary-600 hover:bg-primary-700 text-white rounded-2xl shadow-lg hover:shadow-xl shadow-primary-600/20 transition-all flex items-center justify-between px-6 group"
                         >
                             <span>Team Member Login</span>
-                            <User className="w-5 h-5 text-blue-200 group-hover:text-white transition-colors ml-4" />
+                            <User className="w-5 h-5 text-primary-200 group-hover:text-white transition-colors ml-4" />
                         </Button>
 
 

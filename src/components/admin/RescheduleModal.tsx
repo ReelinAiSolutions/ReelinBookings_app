@@ -139,12 +139,12 @@ export default function RescheduleModal({
                         <div className="w-12 h-1.5 bg-gray-300/50 rounded-full"></div>
                     </div>
                     <div className="flex justify-between items-center px-6 h-14 pb-2">
-                        <button onClick={onClose} className="text-[#007AFF] text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
+                        <button onClick={onClose} className="text-primary-600 text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
                         <span className="font-black text-[17px] text-gray-900 tracking-tight">Manage Booking</span>
                         <button
                             onClick={handleSave}
                             disabled={isLoading}
-                            className="font-black text-[#007AFF] text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
+                            className="font-black text-primary-600 text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save'}
                         </button>

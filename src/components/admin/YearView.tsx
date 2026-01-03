@@ -48,11 +48,11 @@ export default function YearView({ currentDate, onMonthSelect, onYearChange, onT
 
                 <button
                     onClick={onTitleClick}
-                    className="text-lg font-bold text-blue-600 tracking-tight hover:bg-blue-50 px-2 rounded-lg transition-colors flex items-center gap-1 group"
+                    className="text-lg font-bold text-primary-600 tracking-tight hover:bg-primary-50 px-2 rounded-lg transition-colors flex items-center gap-1 group"
                 >
-                    <span className="text-blue-900/50 mr-1">Year</span>
+                    <span className="text-primary-900/50 mr-1">Year</span>
                     {format(currentDate, 'yyyy')}
-                    <ChevronRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600 rotate-90 transition-transform" />
+                    <ChevronRight className="w-4 h-4 text-primary-400 group-hover:text-primary-600 rotate-90 transition-transform" />
                 </button>
 
                 <button
@@ -75,7 +75,7 @@ export default function YearView({ currentDate, onMonthSelect, onYearChange, onT
                                 onClick={() => onMonthSelect(month.date)}
                                 className="cursor-pointer group hover:bg-gray-50 rounded-2xl p-4 transition-colors duration-200 flex flex-col items-start justify-start border border-transparent hover:border-gray-100"
                             >
-                                <h3 className={`font-bold text-lg mb-4 ${isCurrentMonth ? 'text-red-500' : 'text-gray-900 group-hover:text-red-500'} transition-colors`}>
+                                <h3 className={`font-bold text-lg mb-4 ${isCurrentMonth ? 'text-primary-600' : 'text-gray-900 group-hover:text-primary-600'} transition-colors`}>
                                     {month.name}
                                 </h3>
 
@@ -100,7 +100,7 @@ export default function YearView({ currentDate, onMonthSelect, onYearChange, onT
                                                 key={day.toISOString()}
                                                 className={`
                                                     mx-auto flex items-center justify-center rounded-full font-semibold text-sm w-8 h-8
-                                                    ${isToday ? 'bg-red-500 text-white font-bold shadow-sm' : 'text-gray-700 hover:bg-gray-100'}
+                                                    ${isToday ? 'bg-primary-600 text-white font-bold shadow-sm' : 'text-gray-700 hover:bg-gray-100'}
                                                 `}
                                             >
                                                 {format(day, 'd')}

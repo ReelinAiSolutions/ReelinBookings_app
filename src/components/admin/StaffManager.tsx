@@ -205,13 +205,13 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
                     {/* Search */}
                     <div className="relative group flex-1 lg:w-96">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-all" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#d946ef] transition-all" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search team..."
-                            className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-[24px] text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/30 transition-all outline-none shadow-sm"
+                            className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-[24px] text-sm font-bold focus:bg-white focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all outline-none shadow-sm"
                         />
                     </div>
 
@@ -221,14 +221,14 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                             <button
                                 onClick={() => setViewMode('grid')}
                                 title="Grid View"
-                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'grid' ? 'bg-[#F3E8FF] text-[#A855F7] shadow-md ring-1 ring-[#A855F7]/10' : 'text-gray-400 hover:text-gray-600'}`}
                             >
                                 <Grid className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
                                 title="List View"
-                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'list' ? 'bg-white text-indigo-600 shadow-md ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'list' ? 'bg-[#F3E8FF] text-[#A855F7] shadow-md ring-1 ring-[#A855F7]/10' : 'text-gray-400 hover:text-gray-600'}`}
                             >
                                 <List className="w-4 h-4" />
                             </button>
@@ -237,7 +237,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                         {!readOnly && (
                             <button
                                 onClick={handleAddNew}
-                                className="bg-gray-900 hover:bg-black text-white rounded-[24px] px-6 sm:px-8 py-4 font-black text-xs uppercase tracking-widest shadow-2xl shadow-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2 group flex-[2] sm:flex-none"
+                                className="bg-gradient-to-r from-[#A855F7] to-[#d946ef] hover:opacity-90 text-white rounded-[24px] px-6 sm:px-8 py-4 font-black text-xs uppercase tracking-widest shadow-2xl shadow-[#d946ef]/20 transition-all active:scale-95 flex items-center justify-center gap-2 group flex-[2] sm:flex-none"
                             >
                                 <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
                                 <span className="hidden xs:inline">Add Member</span>

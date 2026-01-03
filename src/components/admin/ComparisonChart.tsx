@@ -20,8 +20,8 @@ export default function ComparisonChart({
     dataKey,
     periodALabel = 'Period A',
     periodBLabel = 'Period B',
-    periodAColor = '#3B82F6', // Blue
-    periodBColor = '#A855F7', // Purple
+    periodAColor = '#2D165D', // Deep Sapphire (Brand Primary)
+    periodBColor = '#7C3AED', // Vibrant Lavender (Brand Accent)
     formatValue = (val) => val.toString()
 }: ComparisonChartProps) {
     // Merge data for side-by-side comparison
@@ -38,11 +38,11 @@ export default function ComparisonChart({
             {/* Legend */}
             <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                    <div className="w-3" style={{ height: '12px', borderRadius: '4px', backgroundColor: periodAColor }}></div>
                     <span className="text-xs font-semibold text-gray-600">{periodALabel}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-purple-600"></div>
+                    <div className="w-3" style={{ height: '12px', borderRadius: '4px', backgroundColor: periodBColor }}></div>
                     <span className="text-xs font-semibold text-gray-600">{periodBLabel}</span>
                 </div>
             </div>
@@ -68,9 +68,9 @@ export default function ComparisonChart({
                             tickFormatter={formatValue}
                         />
                         <Tooltip
-                            cursor={{ fill: '#F3F4F6' }}
-                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                            formatter={formatValue}
+                            cursor={{ stroke: '#2D165D', strokeWidth: 1 }}
+                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                            formatter={(val: number | undefined) => [val !== undefined ? `$${val.toLocaleString()}` : '$0', 'Revenue']}
                         />
                         <Bar dataKey="periodA" fill={periodAColor} radius={[8, 8, 0, 0]} maxBarSize={30} name={periodALabel} />
                         <Bar dataKey="periodB" fill={periodBColor} radius={[8, 8, 0, 0]} maxBarSize={30} name={periodBLabel} />

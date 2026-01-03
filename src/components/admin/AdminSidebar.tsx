@@ -22,14 +22,14 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
     ] as const;
 
     return (
-        <aside className="hidden lg:flex flex-col w-64 h-screen bg-white/40 backdrop-blur-3xl border-r border-gray-100/50 fixed left-0 top-0 z-50 transition-all duration-300">
+        <aside className="hidden lg:flex flex-col w-64 h-screen bg-white border-r border-gray-100 fixed left-0 top-0 z-50 transition-all duration-300">
             {/* Logo Area */}
             <div className="h-20 flex items-center px-6 border-b border-gray-100/20">
                 <div className="flex items-center gap-3 group cursor-pointer" onClick={() => setActiveTab('operations')}>
                     {currentOrg?.logo_url ? (
                         <img suppressHydrationWarning src={currentOrg.logo_url} alt="Logo" className="w-10 h-10 rounded-2xl object-contain bg-white shadow-sm p-1" />
                     ) : (
-                        <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center shadow-lg group-hover:rotate-6 transition-all">
+                        <div className="w-10 h-10 rounded-2xl bg-primary-600 text-white flex items-center justify-center shadow-lg group-hover:rotate-6 transition-all">
                             <Calendar className="w-6 h-6" strokeWidth={2.5} />
                         </div>
                     )}
@@ -54,11 +54,11 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id as any)}
                                 className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-[800] transition-all group ${isActive
-                                    ? 'bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)] text-[#111827] border border-gray-100'
-                                    : 'text-gray-400 hover:bg-white/60 hover:text-[#111827]'
+                                    ? 'bg-primary-600 shadow-[0_8px_20px_rgba(45,22,93,0.15)] text-white'
+                                    : 'text-gray-400 hover:bg-primary-50 hover:text-primary-900'
                                     }`}
                             >
-                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#4F46E5]' : 'text-gray-400 group-hover:text-gray-900'}`} strokeWidth={isActive ? 2.5 : 2} />
+                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-primary-600'}`} strokeWidth={isActive ? 2.5 : 2} />
                                 {item.label}
                             </button>
                         );
@@ -78,7 +78,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
                                     : 'text-gray-400 hover:bg-white/60 hover:text-[#111827]'
                                     }`}
                             >
-                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#4F46E5]' : 'text-gray-400 group-hover:text-gray-900'}`} strokeWidth={isActive ? 2.5 : 2} />
+                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#2D165D]' : 'text-gray-400 group-hover:text-gray-900'}`} strokeWidth={isActive ? 2.5 : 2} />
                                 {item.label}
                             </button>
                         );

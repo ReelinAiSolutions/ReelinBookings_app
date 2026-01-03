@@ -56,66 +56,62 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 1rem;
+  /* 16px - matches the 3xl/rounded feel of the design */
 
-  /* Base Colors - White/Slate */
-  --background: #ffffff;
-  /* Slate-50 used in body bg */
-  --foreground: #0f172a;
-  /* Slate-900 */
+  /* Base Colors - Reelin Purple DNA */
+  --background: #f8f6ff;
+  /* Soft lavender wash */
+  --foreground: #1f163d;
+  /* Deep navy-purple for high legibility */
 
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #1f163d;
 
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #1f163d;
 
-  /* Branding (Overridable) */
-  --brand-primary: #2563eb;
-  /* 92% white calculation: 2563eb mix white 92% -> #eef2ff approx, let's use a standard slate/blue tint */
-  --brand-primary-light: #eff6ff;
-  /* 15% black calculation: 2563eb mix black 15% -> #1e40af approx */
-  --brand-primary-dark: #1e3a8a;
+  /* Branding (Reelin Deep Purple) */
+  --brand-primary: #2d165d;
+  --brand-primary-light: #f3efff;
+  --brand-primary-dark: #1a0b3d;
 
   /* Primary Palette - Mapped to Brand */
-  --primary-50: var(--brand-primary-light);
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
+  --primary-50: #f5f3ff;
+  --primary-100: #ede9fe;
+  --primary-200: #ddd6fe;
+  --primary-300: #c4b5fd;
+  --primary-400: #a78bfa;
+  --primary-500: #8b5cf6;
   --primary-600: var(--brand-primary);
-  --primary-700: var(--brand-primary-dark);
-  --primary-800: #1e40af;
-  --primary-900: #1e3a8a;
+  --primary-700: #7c3aed;
+  --primary-800: #6d28d9;
+  --primary-900: #5b21b6;
 
   --primary: var(--primary-600);
   --primary-foreground: #ffffff;
 
-  --secondary: #ffffff;
-  --secondary-foreground: #0f172a;
+  --secondary: #f3efff;
+  --secondary-foreground: #2d165d;
 
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted: #f1edff;
+  --muted-foreground: #7c72a0;
 
-  --accent: #f0f9ff;
-  --accent-foreground: #0284c7;
+  --accent: #f5f3ff;
+  --accent-foreground: #7c3aed;
 
   --destructive: #ef4444;
-  /* red-500 */
-  /* Keeping default for errors */
 
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: var(--primary-600);
+  --border: #eee9ff;
+  --input: #eee9ff;
+  --ring: var(--brand-primary);
 
-  --chart-1: var(--primary-600);
-  --chart-2: #8b5cf6;
-  /* Purple for booking chart */
+  --chart-1: var(--brand-primary);
+  --chart-2: #7c3aed;
 
-  /* Sidebar Defaults */
+  /* Sidebar Optimization */
   --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
+  --sidebar-foreground: #1f163d;
 }
 
 @layer base {
@@ -144,5 +140,27 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
+  }
+
+  /* Universal Reelin Purple Utilities */
+  .galaxy-banner {
+    @apply relative overflow-hidden bg-[#0A051C] text-white border border-white/5 shadow-lg shadow-primary-900/20;
+    background: radial-gradient(circle at 50% -20%, #2d165d, transparent), radial-gradient(circle at 0% 100%, #7c3aed, transparent), #0a051c;
+  }
+
+  .pill-toggle {
+    @apply flex items-center gap-1 p-1 bg-gray-100/80 rounded-full w-fit;
+  }
+
+  .pill-toggle-item {
+    @apply px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300;
+  }
+
+  .pill-toggle-active {
+    @apply bg-primary-600 text-white shadow-md;
+  }
+
+  .pill-toggle-inactive {
+    @apply text-gray-500 hover:text-gray-900 hover:bg-gray-200/50;
   }
 }

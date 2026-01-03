@@ -157,8 +157,8 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                 <span className={mobileLabel ? "hidden md:inline" : ""}>{label}</span>
                 {mobileLabel && <span className="md:hidden">{mobileLabel}</span>}
                 <div className="flex flex-col opacity-0 group-hover:opacity-50 data-[active=true]:opacity-100" data-active={sortConfig.key === sortKey}>
-                    <ChevronUp className={`w-2 h-2 md:w-3 md:h-3 ${sortConfig.key === sortKey && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <ChevronDown className={`w-2 h-2 md:w-3 md:h-3 -mt-0.5 md:-mt-1 ${sortConfig.key === sortKey && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <ChevronUp className={`w-2 h-2 md:w-3 md:h-3 ${sortConfig.key === sortKey && sortConfig.direction === 'asc' ? 'text-[#2D165D]' : 'text-gray-400'}`} />
+                    <ChevronDown className={`w-2 h-2 md:w-3 md:h-3 -mt-0.5 md:-mt-1 ${sortConfig.key === sortKey && sortConfig.direction === 'desc' ? 'text-[#2D165D]' : 'text-gray-400'}`} />
                 </div>
             </div>
         </th>
@@ -187,16 +187,16 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
 
                 <div className="flex flex-col lg:flex-row gap-4 items-center justify-between w-full">
                     {/* View Mode Toggle */}
-                    <div className="bg-gray-100 p-1 rounded-xl flex w-full lg:w-auto">
+                    <div className="bg-gray-100 p-1 rounded-full flex w-full lg:w-auto">
                         <button
                             onClick={() => setViewMode('business')}
-                            className={`flex-1 lg:flex-none px-6 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${viewMode === 'business' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`flex-1 lg:flex-none px-6 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all ${viewMode === 'business' ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             Business
                         </button>
                         <button
                             onClick={() => setViewMode('team')}
-                            className={`flex-1 lg:flex-none px-6 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${viewMode === 'team' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`flex-1 lg:flex-none px-6 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all ${viewMode === 'team' ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             Team
                         </button>
@@ -208,7 +208,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                             <div className="flex flex-col lg:flex-row gap-3">
                                 {/* Period A */}
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg whitespace-nowrap uppercase tracking-widest border border-blue-100">
+                                    <span className="text-[10px] font-black text-primary-600 bg-primary-50 px-2.5 py-1.5 rounded-lg whitespace-nowrap uppercase tracking-widest border border-primary-100">
                                         Period A
                                     </span>
                                     <AnalyticsDatePicker
@@ -264,8 +264,8 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                     {/* 1. BUSINESS OVERVIEW (Always Visible) */}
                     <div>
                         <div className="flex items-center gap-2 mb-4 px-2">
-                            <div className="p-1.5 bg-blue-50 rounded-lg">
-                                <Activity className="w-4 h-4 text-blue-600" />
+                            <div className="p-1.5 bg-primary-50 rounded-lg">
+                                <Activity className="w-4 h-4 text-primary-600" />
                             </div>
                             <h3 className="font-black text-gray-900 text-lg tracking-tight">Business Overview</h3>
                         </div>
@@ -285,7 +285,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         periodAValue={metrics.totalBookings.value}
                                         periodBValue={comparisonMetrics.totalBookings.value}
                                         icon={Calendar}
-                                        color="blue"
+                                        color="indigo"
                                         delay={200}
                                     />
                                     <ComparisonStatCard
@@ -323,7 +323,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         growth={metrics.totalBookings.growth}
                                         trend={metrics.totalBookings.trend}
                                         icon={Calendar}
-                                        color="blue"
+                                        color="indigo"
                                         delay={200}
                                         onClick={() => setDrillDownMetric('appointments')}
                                     />
@@ -366,7 +366,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                     {/* Period A Peak Times */}
                                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group">
                                         <div className="flex items-center gap-4 mb-4 relative z-10">
-                                            <div className="text-xs font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 uppercase tracking-widest">
+                                            <div className="text-xs font-black text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100 uppercase tracking-widest">
                                                 Period A
                                             </div>
                                             <div className="relative group/icon flex-shrink-0">
@@ -573,7 +573,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         ${client.spent.toLocaleString()}
                                     </div>
                                     <div className="col-span-3 text-right hidden md:block">
-                                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold">
+                                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 text-xs font-bold">
                                             {client.visits} visits
                                         </span>
                                     </div>
@@ -642,7 +642,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                     </td>
                                                     <td className="px-1 md:px-6 py-4 whitespace-nowrap max-w-[80px] md:max-w-none">
                                                         <div className="flex items-center">
-                                                            <div className="h-5 w-5 md:h-8 md:w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-1.5 md:mr-3 text-[10px] md:text-sm shrink-0">
+                                                            <div className="h-5 w-5 md:h-8 md:w-8 rounded-full bg-gradient-to-br from-[#A855F7] to-[#d946ef] flex items-center justify-center text-white font-bold mr-1.5 md:mr-3 text-[10px] md:text-sm shrink-0 shadow-sm shadow-[#d946ef]/20">
                                                                 {staff.name.charAt(0)}
                                                             </div>
                                                             <div className="text-[10px] md:text-sm font-bold text-gray-900 truncate">{staff.name}</div>
@@ -656,7 +656,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                     </td>
                                                     <td className="px-1 md:px-6 py-4 whitespace-nowrap text-right text-[10px] md:text-sm">
                                                         <span className={`px-1.5 py-0.5 md:px-2 md:py-1 rounded-full text-[10px] md:text-xs font-bold ${staff.utilization > 80 ? 'bg-green-100 text-green-800' :
-                                                            staff.utilization > 50 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                                            staff.utilization > 50 ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-800'
                                                             }`}>
                                                             {staff.utilization.toFixed(0)}%
 
@@ -774,9 +774,9 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                                 cursor={{ fill: '#F3F4F6' }}
                                                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                                             />
-                                                            <Bar dataKey="revenue" fill="#10B981" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                            <Bar dataKey="revenue" fill="#2D165D" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                                 {teamRevenueData.map((entry, index) => (
-                                                                    <Cell key={`cell-${index}`} fill={['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'][index % 4]} />
+                                                                    <Cell key={`cell-${index}`} fill={['#2D165D', '#7C3AED', '#6D28D9', '#8B5CF6'][index % 4]} />
                                                                 ))}
                                                             </Bar>
                                                         </BarChart>
@@ -794,7 +794,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                     {/* Utilization Chart */}
                                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
                                         <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                            <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg">
+                                            <div className="p-2 bg-gradient-to-br from-primary-600 to-primary-500 rounded-lg">
                                                 <Activity className="w-5 h-5 text-white" />
                                             </div>
                                             Utilization Rate
@@ -819,9 +819,9 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                                 cursor={{ fill: '#F3F4F6' }}
                                                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                                             />
-                                                            <Bar dataKey="utilization" fill="#3B82F6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                            <Bar dataKey="utilization" fill="#7C3AED" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                                 {teamUtilizationData.map((entry, index) => (
-                                                                    <Cell key={`cell-${index}`} fill={['#3B82F6', '#06B6D4', '#2DD4BF', '#10B981'][index % 4]} />
+                                                                    <Cell key={`cell-${index}`} fill={['#7C3AED', '#6D28D9', '#8B5CF6', '#A78BFA'][index % 4]} />
                                                                 ))}
                                                             </Bar>
                                                         </BarChart>
@@ -862,9 +862,9 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                         cursor={{ fill: '#F3F4F6' }}
                                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                                     />
-                                                    <Bar dataKey="hours" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                    <Bar dataKey="hours" fill="#6D28D9" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                         {metrics.topStaff.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B'][index % 4]} />
+                                                            <Cell key={`cell-${index}`} fill={['#6D28D9', '#8B5CF6', '#A78BFA', '#2D165D'][index % 4]} />
                                                         ))}
                                                     </Bar>
                                                 </BarChart>
@@ -875,7 +875,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                     {/* Rebooking Rate Chart */}
                                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
                                         <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+                                            <div className="p-2 bg-gradient-to-br from-primary-700 to-primary-600 rounded-lg">
                                                 <Repeat className="w-5 h-5 text-white" />
                                             </div>
                                             Rebooking Rate
@@ -898,9 +898,9 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                         cursor={{ fill: '#F3F4F6' }}
                                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                                     />
-                                                    <Bar dataKey="rebooking" fill="#6366F1" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                    <Bar dataKey="rebooking" fill="#2D165D" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                         {metrics.topStaff.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={['#6366F1', '#10B981', '#F59E0B', '#3B82F6'][index % 4]} />
+                                                            <Cell key={`cell-${index}`} fill={['#2D165D', '#7C3AED', '#6D28D9', '#8B5CF6'][index % 4]} />
                                                         ))}
                                                     </Bar>
                                                 </BarChart>
@@ -947,7 +947,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                     {/* Client Count Chart */}
                                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden min-w-0">
                                         <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                            <div className="p-2 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg">
+                                            <div className="p-2 bg-gradient-to-br from-primary-500 to-primary-400 rounded-lg">
                                                 <Users className="w-5 h-5 text-white" />
                                             </div>
                                             Client Count
@@ -970,9 +970,9 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                         cursor={{ fill: '#F3F4F6' }}
                                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                                     />
-                                                    <Bar dataKey="clients" fill="#14B8A6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                    <Bar dataKey="clients" fill="#7C3AED" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                         {metrics.topStaff.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={['#14B8A6', '#3B82F6', '#8B5CF6', '#10B981'][index % 4]} />
+                                                            <Cell key={`cell-${index}`} fill={['#7C3AED', '#6D28D9', '#8B5CF6', '#A78BFA'][index % 4]} />
                                                         ))}
                                                     </Bar>
                                                 </BarChart>

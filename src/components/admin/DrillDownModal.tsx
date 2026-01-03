@@ -29,7 +29,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                             <Bar dataKey="revenue" fill="#10B981" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                 {data.topStaff.map((_: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'][index % 4]} />
+                                    <Cell key={`cell-${index}`} fill={['#10B981', '#2D165D', '#7C3AED', '#F59E0B'][index % 4]} />
                                 ))}
                             </Bar>
                         </BarChart>
@@ -47,7 +47,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} angle={-45} textAnchor="end" height={80} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                            <Bar dataKey="revenue" fill="#3B82F6" radius={[8, 8, 0, 0]} maxBarSize={50} />
+                            <Bar dataKey="revenue" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -81,9 +81,9 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} tickFormatter={(val) => `${val}%`} />
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                            <Bar dataKey="utilization" fill="#3B82F6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                            <Bar dataKey="utilization" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                 {data.topStaff.map((_: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][index % 4]} />
+                                    <Cell key={`cell-${index}`} fill={['#2D165D', '#10B981', '#F59E0B', '#8B5CF6'][index % 4]} />
                                 ))}
                             </Bar>
                         </BarChart>
@@ -116,7 +116,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <div className="w-20 text-sm font-bold text-gray-600">{item.hour}</div>
                             <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
                                 <div
-                                    className="bg-gradient-to-r from-blue-500 to-cyan-600 h-full rounded-full transition-all duration-500"
+                                    className="bg-gradient-to-r from-primary-500 to-purple-400 h-full rounded-full transition-all duration-500"
                                     style={{
                                         width: `${(item.count / (data.heatmap[0]?.count || 1)) * 100}%`,
                                         animationDelay: `${index * 50}ms`
@@ -165,7 +165,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                 <p className="text-sm text-gray-600 mt-2">Clients coming back</p>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-2xl border border-blue-200">
+            <div className="bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-2xl border border-primary-200">
                 <h4 className="font-bold text-gray-900 mb-2">Total Active</h4>
                 <p className="text-4xl font-black text-gray-900">{data.clients.totalActive}</p>
                 <p className="text-sm text-gray-600 mt-2">Unique clients</p>
@@ -187,7 +187,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                             <Bar dataKey="bookings" fill="#F59E0B" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                 {data.topStaff.map((_: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={['#F59E0B', '#3B82F6', '#10B981', '#8B5CF6'][index % 4]} />
+                                    <Cell key={`cell-${index}`} fill={['#F59E0B', '#2D165D', '#10B981', '#8B5CF6'][index % 4]} />
                                 ))}
                             </Bar>
                         </BarChart>
@@ -236,7 +236,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-5 md:p-6 flex items-center justify-between sticky top-0 z-10 shadow-lg">
+                <div className="bg-gradient-to-r from-primary-600 to-primary-800 p-5 md:p-6 flex items-center justify-between sticky top-0 z-10 shadow-lg">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onClose}
@@ -247,7 +247,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                         </button>
                         <div>
                             <h2 className="text-xl md:text-2xl font-black text-white">{title}</h2>
-                            <p className="text-blue-100 text-xs md:text-sm mt-0.5">Detailed breakdown and insights</p>
+                            <p className="text-primary-100 text-xs md:text-sm mt-0.5">Detailed breakdown and insights</p>
                         </div>
                     </div>
                     <button
@@ -262,7 +262,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                 <div className="p-5 md:p-6 overflow-y-auto h-[calc(100vh-80px)] md:max-h-[calc(90vh-100px)]">
                     <button
                         onClick={onClose}
-                        className="mb-6 flex items-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors group"
+                        className="mb-6 flex items-center gap-2 text-primary-600 font-bold hover:text-primary-700 transition-colors group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                         Back to Dashboard

@@ -143,13 +143,13 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                 {/* Search */}
                 <div className="flex items-center gap-4">
                     <div className="relative group w-full md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#d946ef] transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Identify client..."
-                            className="w-full pl-11 pr-4 py-3 bg-gray-100/80 border border-transparent rounded-[20px] text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none shadow-sm"
+                            className="w-full pl-11 pr-4 py-3 bg-gray-100/80 border border-transparent rounded-[20px] text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all outline-none shadow-sm"
                         />
                     </div>
                 </div>
@@ -186,7 +186,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">
                                                 {/* Premium Avatar */}
-                                                <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-indigo-100 shadow-lg ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white'}`}>
+                                                <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-indigo-100 shadow-lg ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'}`}>
                                                     {displayName.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
@@ -224,7 +224,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                             </div>
                                             <div className="flex gap-2">
                                                 {isVIP && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-100">VIP</span>}
-                                                {isNew && <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-indigo-100">New</span>}
+                                                {isNew && <span className="px-2 py-0.5 bg-[#F3E8FF] text-[#A855F7] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#A855F7]/20">New</span>}
                                                 {!isVIP && !isNew && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-gray-200">Steady</span>}
                                             </div>
                                         </div>
@@ -238,16 +238,16 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="border-b border-gray-50 bg-gray-50/30">
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors group whitespace-nowrap" onClick={() => handleSort('name')}>
+                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group whitespace-nowrap" onClick={() => handleSort('name')}>
                                             <div className="flex items-center gap-2">Client Identity <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
                                         </th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('lastVisit')}>
+                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('lastVisit')}>
                                             <div className="flex items-center justify-end gap-2">Last Active <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
                                         </th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('visits')}>
+                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('visits')}>
                                             <div className="flex items-center justify-end gap-2">Session Count <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
                                         </th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('totalSpend')}>
+                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('totalSpend')}>
                                             <div className="flex items-center justify-end gap-2">Gross Revenue <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
                                         </th>
                                         <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right whitespace-nowrap">
@@ -266,18 +266,18 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                             <tr
                                                 key={client.id}
                                                 onClick={() => setSelectedClient(client)}
-                                                className="group hover:bg-indigo-50/20 transition-all cursor-pointer"
+                                                className="group hover:bg-[#A855F7]/5 transition-all cursor-pointer"
                                             >
                                                 {/* Client Profile */}
                                                 <td className="px-8 py-5 whitespace-nowrap">
                                                     <div className="flex items-center gap-4">
                                                         {/* Premium Avatars with Purple Gradient */}
-                                                        <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform duration-300 ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-indigo-100'
+                                                        <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform duration-300 ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'
                                                             }`}>
                                                             {displayName.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div>
-                                                            <div className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors flex items-center gap-2 text-base">
+                                                            <div className="font-black text-gray-900 group-hover:text-[#d946ef] transition-colors flex items-center gap-2 text-base">
                                                                 {displayName}
                                                                 {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
                                                             </div>
@@ -328,7 +328,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                                             </span>
                                                         )}
                                                         {isNew && (
-                                                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-indigo-100">
+                                                            <span className="px-2 py-0.5 bg-[#F3E8FF] text-[#A855F7] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#A855F7]/20">
                                                                 New
                                                             </span>
                                                         )}
@@ -365,7 +365,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                             <div className="p-8 border-b border-gray-100 bg-gray-50/50">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center text-2xl font-black shadow-lg ${selectedClient.totalSpend > 500 ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white'}`}>
+                                        <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center text-2xl font-black shadow-lg ${selectedClient.totalSpend > 500 ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'}`}>
                                             {getDisplayName(selectedClient.name).charAt(0).toUpperCase()}
                                         </div>
                                         <div>
@@ -389,7 +389,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                 {/* Contact Details */}
                                 <div className="mt-8 space-y-3">
                                     <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
-                                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                        <div className="p-2 bg-[#F3E8FF] text-[#A855F7] rounded-lg">
                                             <Mail className="w-4 h-4" />
                                         </div>
                                         <div className="flex-1">
@@ -423,7 +423,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                         <div key={idx} className="relative z-10 pl-10 group">
                                             {/* Timeline Dot */}
                                             <div className="absolute left-0 top-1.5 w-10 h-10 flex items-center justify-center">
-                                                <div className="w-3 h-3 rounded-full bg-indigo-100 border-2 border-indigo-500 group-hover:scale-125 transition-transform" />
+                                                <div className="w-3 h-3 rounded-full bg-[#F3E8FF] border-2 border-[#d946ef] group-hover:scale-125 transition-transform" />
                                             </div>
 
                                             <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">

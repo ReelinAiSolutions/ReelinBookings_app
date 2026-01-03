@@ -32,7 +32,7 @@ export default function StaffSelection({ staffMembers, onSelect, onSelectAny, on
                     className="relative group bg-white border border-gray-100 rounded-[2rem] p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[280px] hover:shadow-2xl hover:shadow-primary-600/20 hover:scale-[1.03] hover:border-primary-500 overflow-hidden ring-1 ring-transparent hover:ring-primary-400/50"
                 >
                     {/* Hover Glow */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-indigo-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-primary-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out"></div>
 
                     <div className="relative z-10 w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-primary-100/50 transition-all duration-500 shadow-inner group-hover:shadow-primary-200/50">
                         <UserIcon className="w-10 h-10 text-gray-400 group-hover:text-primary-600 transition-colors duration-300" />
@@ -54,7 +54,7 @@ export default function StaffSelection({ staffMembers, onSelect, onSelectAny, on
                         <div className="relative z-10 mb-5">
                             {staff.avatar ? (
                                 <div className="relative">
-                                    <div className="absolute -inset-2 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-full opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-500"></div>
+                                    <div className="absolute -inset-2 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-500"></div>
                                     <img
                                         src={staff.avatar}
                                         alt={staff.name}

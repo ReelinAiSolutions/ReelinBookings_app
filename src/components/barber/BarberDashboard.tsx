@@ -55,9 +55,9 @@ const AmbientBackground = () => (
             100% { background-position: 0% 50%; opacity: 0.7; }
         }
         .ambient-mesh {
-            background: radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 50% 50%, rgba(0, 122, 255, 0.05) 0%, transparent 100%);
+            background: radial-gradient(circle at 10% 20%, rgba(45, 22, 93, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, rgba(45, 22, 93, 0.05) 0%, transparent 100%);
             background-size: 200% 200%;
             animation: mashDrift 15s infinite ease-in-out;
         }
@@ -351,37 +351,37 @@ export default function StaffDashboard({
                 <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-lg border-t border-gray-100 flex justify-around items-center z-50 px-6 pb-2 safe-area-pb">
                     <button
                         onClick={() => setActiveTab('schedule')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'schedule' ? 'text-[#4F46E5] scale-110' : 'text-gray-400'}`}
+                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'schedule' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
                     >
-                        <CalendarIcon className={`w-6 h-6 ${activeTab === 'schedule' ? 'fill-[#4F46E5]/10' : ''}`} />
+                        <CalendarIcon className={`w-6 h-6 ${activeTab === 'schedule' ? 'fill-[#A855F7]/10' : ''}`} />
                         <span className="text-[10px] font-black uppercase tracking-widest">Schedule</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('performance')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'performance' ? 'text-[#4F46E5] scale-110' : 'text-gray-400'}`}
+                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'performance' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
                     >
-                        <BarChart3 className={`w-6 h-6 ${activeTab === 'performance' ? 'fill-[#4F46E5]/10' : ''}`} />
+                        <BarChart3 className={`w-6 h-6 ${activeTab === 'performance' ? 'fill-[#A855F7]/10' : ''}`} />
                         <span className="text-[10px] font-black uppercase tracking-widest">Stats</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('team')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'team' ? 'text-[#4F46E5] scale-110' : 'text-gray-400'}`}
+                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'team' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
                     >
-                        <Users className={`w-6 h-6 ${activeTab === 'team' ? 'fill-[#4F46E5]/10' : ''}`} />
+                        <Users className={`w-6 h-6 ${activeTab === 'team' ? 'fill-[#A855F7]/10' : ''}`} />
                         <span className="text-[10px] font-black uppercase tracking-widest">Team</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('clients')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'clients' ? 'text-[#4F46E5] scale-110' : 'text-gray-400'}`}
+                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'clients' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
                     >
-                        <Contact className={`w-6 h-6 ${activeTab === 'clients' ? 'fill-[#4F46E5]/10' : ''}`} />
+                        <Contact className={`w-6 h-6 ${activeTab === 'clients' ? 'fill-[#A855F7]/10' : ''}`} />
                         <span className="text-[10px] font-black uppercase tracking-widest">Clients</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('settings')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-[#4F46E5] scale-110' : 'text-gray-400'}`}
+                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
                     >
-                        <UserIcon className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-[#4F46E5]/10' : ''}`} />
+                        <UserIcon className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-[#A855F7]/10' : ''}`} />
                         <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
                     </button>
                 </div>

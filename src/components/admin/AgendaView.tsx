@@ -88,7 +88,7 @@ export default function AgendaView({
                         <div
                             key={apt.id}
                             onClick={() => onAppointmentClick(apt)}
-                            className="group bg-white rounded-[1.5rem] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer active:scale-[0.98] flex gap-5 relative overflow-hidden"
+                            className="group bg-white rounded-[1.5rem] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all cursor-pointer active:scale-[0.98] flex gap-5 relative overflow-hidden"
                         >
                             {/* Left: Time Column */}
                             <div className="flex flex-col items-center justify-center min-w-[60px] border-r border-gray-50 pr-5">
@@ -107,7 +107,7 @@ export default function AgendaView({
                                     )}
                                 </div>
 
-                                <p className="text-sm font-bold text-[#007AFF] mb-2 truncate">
+                                <p className="text-sm font-bold text-[#7C3AED] mb-2 truncate">
                                     {service?.name || 'Unknown Service'}
                                 </p>
 
@@ -142,7 +142,7 @@ export default function AgendaView({
                             </div>
 
                             {/* Blue Accent Bar */}
-                            <div className="absolute left-0 top-4 bottom-4 w-1 bg-[#007AFF] rounded-r-full"></div>
+                            <div className="absolute left-0 top-4 bottom-4 w-1 bg-[#7C3AED] rounded-r-full"></div>
                         </div>
                     );
                 })}

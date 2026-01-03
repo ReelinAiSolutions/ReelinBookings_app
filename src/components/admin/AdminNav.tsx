@@ -25,10 +25,10 @@ export default function AdminNav({ activeTab, setActiveTab, currentOrg }: AdminN
                     <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id as any)}
-                        className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${isActive ? 'text-[#4F46E5] scale-110' : 'text-gray-400'}`}
+                        className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${isActive ? 'text-[#2D165D] scale-110' : 'text-gray-400'}`}
                     >
                         <item.icon
-                            className={`w-6 h-6 transition-all ${isActive ? 'fill-[#4F46E5]/10 drop-shadow-[0_0_12px_rgba(79,70,229,0.4)]' : ''}`}
+                            className={`w-6 h-6 transition-all ${isActive ? 'fill-[#2D165D]/10 drop-shadow-[0_0_12px_rgba(45,22,93,0.4)]' : ''}`}
                             strokeWidth={isActive ? 2.5 : 1.5}
                         />
                         <span className="text-[10px] font-black uppercase tracking-widest">{item.label}</span>

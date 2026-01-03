@@ -5,9 +5,9 @@ const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
         __html: `
         @keyframes gravityPulse {
-            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
-            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
-            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); }
+            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
         }
         .live-pulse {
             animation: gravityPulse 2s infinite ease-in-out;
@@ -118,11 +118,11 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
     };
 
     const staffMembers = [
-        { id: 1, name: 'Sarah', color: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-700' },
+        { id: 1, name: 'Sarah', color: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-700' },
         { id: 2, name: 'Mike', color: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-700' },
         { id: 3, name: 'Jessica', color: 'bg-rose-50', border: 'border-rose-500', text: 'text-rose-700' },
         { id: 4, name: 'David', color: 'bg-amber-50', border: 'border-amber-500', text: 'text-amber-700' },
-        { id: 5, name: 'Emily', color: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-700' },
+        { id: 5, name: 'Emily', color: 'bg-fuchsia-50', border: 'border-fuchsia-500', text: 'text-fuchsia-700' },
         { id: 6, name: 'Chris', color: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-700' },
         { id: 7, name: 'Amanda', color: 'bg-teal-50', border: 'border-teal-500', text: 'text-teal-700' },
         { id: 8, name: 'Tom', color: 'bg-orange-50', border: 'border-orange-500', text: 'text-orange-700' },
@@ -136,9 +136,9 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
         <div className="absolute inset-0 z-[100] flex flex-col bg-[#F2F2F7]">
             {/* Header - Solid Background */}
             <div className="flex justify-between items-center px-6 pt-10 pb-4 bg-[#F2F2F7]/95 backdrop-blur-xl border-b border-gray-200 shrink-0 sticky top-0 z-20">
-                <button onClick={() => setIsModalOpen(false)} className="text-[#007AFF] text-[17px] hover:opacity-70 transition-opacity">Cancel</button>
+                <button onClick={() => setIsModalOpen(false)} className="text-[#7C3AED] text-[17px] hover:opacity-70 transition-opacity">Cancel</button>
                 <span className="font-bold text-[17px] text-black">New Event</span>
-                <button onClick={handleSaveBooking} className="font-bold text-[#007AFF] text-[17px] hover:opacity-70 transition-opacity">Add</button>
+                <button onClick={handleSaveBooking} className="font-bold text-[#7C3AED] text-[17px] hover:opacity-70 transition-opacity">Add</button>
             </div>
 
             {/* Content (Scrollable) */}
@@ -197,8 +197,8 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">4 PM</span>
                         </div>
                         <div className="h-14 bg-gray-50 rounded-2xl border border-gray-100 relative flex items-center justify-center p-2">
-                            <div className="flex-1 max-w-[140px] h-9 bg-indigo-50 border-[1.5px] border-indigo-400 rounded-xl flex items-center justify-center shadow-sm">
-                                <span className="text-[11px] font-bold text-indigo-600">New Event</span>
+                            <div className="flex-1 max-w-[140px] h-9 bg-purple-50 border-[1.5px] border-purple-400 rounded-xl flex items-center justify-center shadow-sm">
+                                <span className="text-[11px] font-bold text-purple-600">New Event</span>
                             </div>
                         </div>
                     </div>
@@ -208,8 +208,8 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                 <div className="bg-white mt-4 mx-4 rounded-xl overflow-hidden shadow-sm border border-gray-100">
                     {[
                         { label: 'Service', value: 'Haircut', color: null },
-                        { label: 'Staff Member', value: 'Sarah', color: 'bg-indigo-500' },
-                        { label: 'Calendar', value: 'Personal', color: 'bg-[#007AFF]' },
+                        { label: 'Staff Member', value: 'Sarah', color: 'bg-purple-500' },
+                        { label: 'Calendar', value: 'Personal', color: 'bg-[#7C3AED]' },
                         { label: 'Alert', value: 'None', color: null },
                     ].map((item, i, arr) => (
                         <div key={item.label} className={`flex justify-between items-center py-3.5 px-4 ${i !== arr.length - 1 ? 'border-b border-gray-100' : ''} active:bg-gray-50 transition-colors`}>
@@ -237,7 +237,7 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
 
     const renderYearBlock = (year: number) => (
         <div key={year} className="mb-12">
-            <h2 className={`text-3xl font-bold px-4 mb-4 border-b border-gray-50/0 ${year === 2025 ? 'text-indigo-600' : 'text-gray-900'}`}>{year}</h2>
+            <h2 className={`text-3xl font-bold px-4 mb-4 border-b border-gray-50/0 ${year === 2025 ? 'text-purple-600' : 'text-gray-900'}`}>{year}</h2>
             <div className="grid grid-cols-3 gap-x-2 gap-y-6 px-2">
                 {months.map((m, i) => {
                     const offset = (i * 3) % 7;
@@ -248,14 +248,14 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                             className="flex flex-col gap-1 cursor-pointer active:bg-gray-50 rounded-lg p-1 transition-colors"
                             onClick={() => { setDirection('forward'); setCalendarLevel('month'); }}
                         >
-                            <h3 className={`text-[13px] font-bold pl-0.5 ${i === 11 && year === 2025 ? 'text-indigo-600' : 'text-gray-900'}`}>{m}</h3>
+                            <h3 className={`text-[13px] font-bold pl-0.5 ${i === 11 && year === 2025 ? 'text-purple-600' : 'text-gray-900'}`}>{m}</h3>
                             <div className="grid grid-cols-7 gap-y-[2px] gap-x-0 pointer-events-none">
                                 {Array.from({ length: offset }).map((_, k) => <div key={`e-${k}`} className="w-full h-[10px]"></div>)}
                                 {Array.from({ length: days }).map((_, d) => {
                                     const dayNum = d + 1;
                                     const isToday = year === 2025 && i === 11 && dayNum === 27;
                                     return (
-                                        <div key={d} className={`w-full h-[10px] flex items-center justify-center text-[7px] font-medium leading-none ${isToday ? 'bg-indigo-600 text-white rounded-full' : 'text-gray-800'}`}>
+                                        <div key={d} className={`w-full h-[10px] flex items-center justify-center text-[7px] font-medium leading-none ${isToday ? 'bg-purple-600 text-white rounded-full' : 'text-gray-800'}`}>
                                             {dayNum}
                                         </div>
                                     );
@@ -298,7 +298,7 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                             className="h-16 border-b border-gray-50 border-r border-gray-50 relative cursor-pointer active:bg-gray-50 transition-colors"
                             onClick={() => { setDirection('forward'); setCalendarLevel('day'); setSelectedDate(dayNum); }}
                         >
-                            <span className={`absolute top-1 left-1/2 -translate-x-1/2 text-sm font-medium ${monthName === 'December' && dayNum === 27 ? 'bg-[#007AFF] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5' : 'text-gray-900'}`}>
+                            <span className={`absolute top-1 left-1/2 -translate-x-1/2 text-sm font-medium ${monthName === 'December' && dayNum === 27 ? 'bg-[#7C3AED] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm -mt-0.5' : 'text-gray-900'}`}>
                                 {dayNum}
                             </span>
 
@@ -309,8 +309,8 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                                         <div className="w-1 h-1 rounded-full bg-gray-300"></div>
                                     ) : (
                                         <div className="flex items-center gap-[1px] px-1 py-0.5 rounded-full bg-gray-100/80">
-                                            <div className="w-1 h-1 rounded-full bg-[#007AFF]"></div>
-                                            <span className="text-[9px] font-black text-[#007AFF] leading-none mb-[0.5px] tracking-tight">{eventCount}</span>
+                                            <div className="w-1 h-1 rounded-full bg-[#7C3AED]"></div>
+                                            <span className="text-[9px] font-black text-[#7C3AED] leading-none mb-[0.5px] tracking-tight">{eventCount}</span>
                                         </div>
                                     )}
                                 </div>
@@ -385,19 +385,19 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                             ))}
                             {selectedDate === 27 && (
                                 <div className="absolute w-full z-30 pointer-events-none" style={{ top: `847px` }}>
-                                    <div className="w-full h-[1px] bg-[#007AFF] shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
-                                    <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF] live-pulse border-2 border-white shadow-sm"></div>
+                                    <div className="w-full h-[1px] bg-[#7C3AED] shadow-[0_0_8px_rgba(124,58,237,0.4)]"></div>
+                                    <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#7C3AED] live-pulse border-2 border-white shadow-sm"></div>
                                 </div>
                             )}
                             {mockEvents.filter(e => (e.type === 'personal' || e.type === 'new')).map(event => (
                                 <div
                                     key={event.id}
                                     onClick={(e) => { e.stopPropagation(); alert(`Open: ${event.title}`); }}
-                                    className="absolute left-2 right-2 rounded-[4px] bg-indigo-50 border-l-[3px] border-indigo-500 p-2 text-indigo-900 overflow-hidden cursor-pointer z-10 shadow-sm animate-in zoom-in-95 duration-200"
+                                    className="absolute left-2 right-2 rounded-[4px] bg-purple-50 border-l-[3px] border-purple-500 p-2 text-purple-900 overflow-hidden cursor-pointer z-10 shadow-sm animate-in zoom-in-95 duration-200"
                                     style={{ top: `${event.start * 60}px`, height: `${event.duration * 60}px` }}
                                 >
-                                    <div className="text-sm font-bold leading-tight text-indigo-700">{event.title}</div>
-                                    <div className="text-xs text-indigo-500 mt-0.5">
+                                    <div className="text-sm font-bold leading-tight text-purple-700">{event.title}</div>
+                                    <div className="text-xs text-purple-500 mt-0.5">
                                         {event.start > 12 ? event.start - 12 : event.start}:00 {event.start >= 12 ? 'PM' : 'AM'}
                                     </div>
                                 </div>
@@ -440,13 +440,13 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                 {/* Row 1: Back Link */}
                 <div className="h-6 flex items-start">
                     {calendarLevel === 'month' && (
-                        <div className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50" onClick={() => { setDirection('backward'); setCalendarLevel('year'); }}>
+                        <div className="flex items-center gap-1 text-purple-600 cursor-pointer active:opacity-50" onClick={() => { setDirection('backward'); setCalendarLevel('year'); }}>
                             <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
                             <span className="text-[17px] font-normal">2025</span>
                         </div>
                     )}
                     {calendarLevel === 'day' && (
-                        <div className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50" onClick={() => { setDirection('backward'); setCalendarLevel('month'); }}>
+                        <div className="flex items-center gap-1 text-purple-600 cursor-pointer active:opacity-50" onClick={() => { setDirection('backward'); setCalendarLevel('month'); }}>
                             <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
                             <span className="text-[17px] font-normal">Month</span>
                         </div>
@@ -460,7 +460,7 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                             {calendarLevel === 'day' ? `Saturday` : calendarLevel === 'month' ? 'December' : '2025'}
                         </h1>
                         <button
-                            className="text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors mb-1.5"
+                            className="text-sm font-semibold text-purple-600 bg-purple-100/50 px-3 py-1 rounded-full hover:bg-purple-100 transition-colors mb-1.5"
                             onClick={() => { setDirection('forward'); setCalendarLevel('day'); setSelectedDate(27); }}
                         >
                             Today
@@ -470,15 +470,15 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                     <div className="flex items-center gap-2.5 mb-2">
                         {calendarLevel === 'day' && (
                             <button
-                                className="text-indigo-600"
+                                className="text-purple-600"
                                 onClick={() => setViewMode(prev => prev === 'personal' ? 'team' : 'personal')}
                             >
                                 <Users className="w-6 h-6" strokeWidth={2} />
                             </button>
                         )}
-                        <CalendarIcon className="w-6 h-6 text-indigo-600" strokeWidth={2} />
+                        <CalendarIcon className="w-6 h-6 text-purple-600" strokeWidth={2} />
                         <button
-                            className="text-indigo-600"
+                            className="text-purple-600"
                             onClick={() => setIsModalOpen(true)}
                         >
                             <Plus className="w-6 h-6" strokeWidth={2} />
@@ -510,14 +510,14 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
                                     onClick={() => setSelectedDate(date)}
                                 >
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
-                                        ? 'bg-[#007AFF] text-white shadow-sm'
+                                        ? 'bg-[#7C3AED] text-white shadow-sm'
                                         : isToday
-                                            ? 'text-[#007AFF]'
+                                            ? 'text-[#7C3AED]'
                                             : 'text-gray-900 bg-transparent'
                                         }`}>
                                         {date}
                                     </div>
-                                    {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF] mt-1"></div>}
+                                    {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-[#7C3AED] mt-1"></div>}
                                 </div>
                             );
                         })}
@@ -534,7 +534,7 @@ export default function PreviewCalendar({ hideNav = false, onTabChange }: { hide
             {
                 !hideNav && (
                     <div className="h-[83px] bg-white border-t border-gray-200 flex items-start justify-around pt-3 shrink-0 pb-8 sticky bottom-0 z-50">
-                        <div className="flex flex-col items-center gap-1 text-indigo-600 cursor-pointer" onClick={() => onTabChange?.('calendar')}>
+                        <div className="flex flex-col items-center gap-1 text-purple-600 cursor-pointer" onClick={() => onTabChange?.('calendar')}>
                             <CalendarIcon className="w-6 h-6" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col items-center gap-1 text-gray-400 cursor-pointer transition-colors" onClick={() => onTabChange?.('stats')}>

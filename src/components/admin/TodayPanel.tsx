@@ -55,10 +55,10 @@ export default function TodayPanel({ appointments, staff, services, availability
     };
 
     return (
-        <div className="bg-white/90 backdrop-blur-xl rounded-[1.5rem] shadow-xl shadow-indigo-100/50 border border-white/50 h-full flex flex-col overflow-hidden relative" onClick={handleGridClick}>
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 z-50"></div>
+        <div className="bg-white/90 backdrop-blur-xl rounded-[1.5rem] shadow-xl shadow-primary-900/10 border border-white/50 h-full flex flex-col overflow-hidden relative" onClick={handleGridClick}>
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-600 via-primary-500 to-primary-400 z-50"></div>
             {/* Header (Shared) */}
-            <div className="px-6 py-4 border-b border-indigo-50 flex justify-between items-center bg-white/50 flex-shrink-0">
+            <div className="px-6 py-4 border-b border-primary-100 flex justify-between items-center bg-white/50 flex-shrink-0">
                 <div>
                     <h3 className="text-xl font-black text-gray-900 flex items-center gap-2 tracking-tight">
                         Today's Catch <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)] animate-pulse"></span>
@@ -159,13 +159,13 @@ export default function TodayPanel({ appointments, staff, services, availability
 
                                                 const isExpanded = false; // Hover expansion could be re-enabled if desired
 
-                                                // Dynamic Colors (Match Mobile & Weekly - GLOSSY VERSION)
+                                                // Dynamic Colors (Match Weekly - REFINED PURPLE)
                                                 const colors = [
-                                                    { bg: 'bg-blue-500/10 hover:bg-blue-500/20', border: 'border-blue-500', text: 'text-blue-900', sub: 'text-blue-700' },
-                                                    { bg: 'bg-purple-500/10 hover:bg-purple-500/20', border: 'border-purple-500', text: 'text-purple-900', sub: 'text-purple-700' },
-                                                    { bg: 'bg-emerald-500/10 hover:bg-emerald-500/20', border: 'border-emerald-500', text: 'text-emerald-900', sub: 'text-emerald-700' },
-                                                    { bg: 'bg-orange-500/10 hover:bg-orange-500/20', border: 'border-orange-500', text: 'text-orange-900', sub: 'text-orange-700' },
-                                                    { bg: 'bg-pink-500/10 hover:bg-pink-500/20', border: 'border-pink-500', text: 'text-pink-900', sub: 'text-pink-700' },
+                                                    { bg: 'bg-[#F5F3FF]', border: 'border-[#2D165D]', text: 'text-[#2D165D]', sub: 'text-[#2D165D]/70' },
+                                                    { bg: 'bg-[#FDF4FF]', border: 'border-[#7C3AED]', text: 'text-[#7C3AED]', sub: 'text-[#7C3AED]/70' },
+                                                    { bg: 'bg-[#F8F6FF]', border: 'border-[#6D28D9]', text: 'text-[#6D28D9]', sub: 'text-[#6D28D9]/70' },
+                                                    { bg: 'bg-[#F5F3FF]', border: 'border-[#5B21B6]', text: 'text-[#5B21B6]', sub: 'text-[#5B21B6]/70' },
+                                                    { bg: 'bg-[#FAF5FF]', border: 'border-[#8B5CF6]', text: 'text-[#8B5CF6]', sub: 'text-[#8B5CF6]/70' },
                                                 ];
                                                 const staffIndex = apt.staffId ? apt.staffId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length : 0;
                                                 const staffColor = colors[staffIndex];

@@ -54,9 +54,9 @@ const AmbientBackground = () => (
             100% { background-position: 0% 50%; opacity: 0.7; }
         }
         .ambient-mesh {
-            background: radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 50% 50%, rgba(0, 122, 255, 0.05) 0%, transparent 100%);
+            background: radial-gradient(circle at 10% 20%, rgba(45, 22, 93, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, rgba(45, 22, 93, 0.05) 0%, transparent 100%);
             background-size: 200% 200%;
             animation: mashDrift 15s infinite ease-in-out;
         }

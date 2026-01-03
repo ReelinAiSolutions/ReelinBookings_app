@@ -20,14 +20,14 @@ const colorMap = {
         fallback: 'bg-[#22c55e]'
     },
     blue: {
-        gradientStyle: { background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)' },
-        glowVal: '59, 130, 246', // #3b82f6
-        fallback: 'bg-[#3b82f6]'
+        gradientStyle: { background: 'linear-gradient(135deg, #2D165D 0%, #7C3AED 100%)' },
+        glowVal: '45, 22, 93', // #2D165D
+        fallback: 'bg-primary-600'
     },
     purple: {
-        gradientStyle: { background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)' },
-        glowVal: '168, 85, 247', // #a855f7
-        fallback: 'bg-[#a855f7]'
+        gradientStyle: { background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' },
+        glowVal: '124, 58, 237', // #7C3AED
+        fallback: 'bg-primary-500'
     },
     orange: {
         gradientStyle: { background: 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)' },
@@ -45,9 +45,9 @@ const colorMap = {
         fallback: 'bg-[#2dd4bf]'
     },
     indigo: {
-        gradientStyle: { background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)' },
-        glowVal: '99, 102, 241', // #6366f1
-        fallback: 'bg-[#6366f1]'
+        gradientStyle: { background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)' },
+        glowVal: '79, 70, 229', // #4F46E5
+        fallback: 'bg-primary-500'
     },
     pink: {
         gradientStyle: { background: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)' },

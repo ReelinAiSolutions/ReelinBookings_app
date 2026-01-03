@@ -190,9 +190,9 @@ export default function AnalyticsDatePicker({
                     key={day}
                     onClick={() => handleDateClick(date)}
                     className={`h-8 w-8 rounded-lg text-sm font-medium transition-all ${isStart || isEnd
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-primary-600 text-white'
                         : isInRange
-                            ? 'bg-blue-100 text-blue-900'
+                            ? 'bg-primary-50 text-primary-900'
                             : isToday
                                 ? 'bg-gray-200 text-gray-900'
                                 : 'hover:bg-gray-100 text-gray-700'
@@ -224,8 +224,8 @@ export default function AnalyticsDatePicker({
                     onClick={() => setIsOpen(!isOpen)}
                     className="flex flex-1 items-center gap-2 md:gap-3 px-3 md:px-4 py-2 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-all shadow-sm min-w-0 md:min-w-[280px]"
                 >
-                    <div className="hidden xs:flex p-1 md:p-1.5 bg-blue-50 rounded-lg shrink-0">
-                        <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600" />
+                    <div className="hidden xs:flex p-1 md:p-1.5 bg-primary-50 rounded-lg shrink-0">
+                        <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary-600" />
                     </div>
                     <div className="flex-1 text-left min-w-0">
                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">
@@ -267,7 +267,7 @@ export default function AnalyticsDatePicker({
                     {!showCustomPicker ? (
                         <div className="w-80">
                             {/* Header */}
-                            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+                            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-purple-50">
                                 <div className="flex items-center justify-between">
                                     <h3 className="font-bold text-gray-900">Select Time Period</h3>
                                     <button
@@ -290,7 +290,7 @@ export default function AnalyticsDatePicker({
                                             key={preset.id}
                                             onClick={() => handlePresetClick(preset)}
                                             className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activePreset === preset.id
-                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                                                ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
                                                 : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                                 }`}
                                         >
@@ -302,7 +302,7 @@ export default function AnalyticsDatePicker({
                                 {/* Custom Range Button */}
                                 <button
                                     onClick={handleCustomRangeClick}
-                                    className="w-full mt-3 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg"
+                                    className="w-full mt-3 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-primary-700 to-primary-600 text-white hover:from-primary-800 hover:to-primary-700 transition-all shadow-lg"
                                 >
                                     📅 Custom Date Range
                                 </button>
@@ -318,7 +318,7 @@ export default function AnalyticsDatePicker({
                     ) : (
                         <div className="w-96">
                             {/* Custom Picker Header */}
-                            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
+                            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-primary-50">
                                 <div className="flex items-center justify-between mb-3">
                                     <button
                                         onClick={() => setShowCustomPicker(false)}
@@ -398,7 +398,7 @@ export default function AnalyticsDatePicker({
                                     onClick={applyCustomRange}
                                     disabled={!customStart || !customEnd}
                                     className={`w-full px-4 py-3 rounded-xl font-semibold transition-all ${customStart && customEnd
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
+                                        ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg'
                                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                         }`}
                                 >

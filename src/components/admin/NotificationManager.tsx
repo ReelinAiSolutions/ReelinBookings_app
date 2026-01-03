@@ -150,9 +150,9 @@ export default function NotificationManager() {
     if (loading && !isSupported) return null;
 
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6 transition-all duration-300">
+        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 transition-all duration-300">
             <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${isSubscribed ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                <div className={`p-3 rounded-xl ${isSubscribed ? 'bg-emerald-50 text-emerald-600' : 'bg-purple-50 text-purple-600'}`}>
                     {isSubscribed ? <Bell className="w-6 h-6" /> : <BellOff className="w-6 h-6" />}
                 </div>
                 <div className="flex-1">
@@ -161,7 +161,7 @@ export default function NotificationManager() {
                         {isSubscribed && (
                             <button
                                 onClick={resetSubscription}
-                                className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                                className="p-2 text-gray-400 hover:text-purple-600 transition-colors"
                                 title="Reset Connection"
                             >
                                 <RefreshCcw className="w-4 h-4" />
@@ -219,7 +219,7 @@ export default function NotificationManager() {
                                                 alert('Test failed: ' + (e as Error).message);
                                             }
                                         }}
-                                        className="text-xs font-bold text-blue-600 hover:text-blue-700 underline text-left"
+                                        className="text-xs font-bold text-purple-600 hover:text-purple-700 underline text-left"
                                     >
                                         Send Test Alert (Server)
                                     </button>
@@ -228,7 +228,7 @@ export default function NotificationManager() {
                                 <button
                                     onClick={subscribe}
                                     disabled={loading}
-                                    className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                    className="flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-purple-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                                 >
                                     <Smartphone className="w-4 h-4" />
                                     {loading ? 'Processing...' : 'Enable on this Device'}

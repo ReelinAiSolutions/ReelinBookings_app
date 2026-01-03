@@ -256,14 +256,14 @@ export default function CreateAppointmentModal({
                         <div className="w-12 h-1.5 bg-gray-300/50 rounded-full"></div>
                     </div>
                     <div className="flex justify-between items-center px-6 h-14 pb-2">
-                        <button onClick={onClose} className="text-[#007AFF] text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
+                        <button onClick={onClose} className="text-[#7C3AED] text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
                         <span className="font-black text-[17px] text-gray-900 tracking-tight">
                             {mode === 'booking' ? 'New Event' : 'Block Time'}
                         </span>
                         <button
                             onClick={handleSubmit}
                             disabled={isLoading}
-                            className="font-black text-[#007AFF] text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
+                            className="font-black text-[#7C3AED] text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Add'}
                         </button>
@@ -417,7 +417,7 @@ export default function CreateAppointmentModal({
                                         className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
                                         onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
                                     />
-                                    <p className="text-sm font-black text-[#007AFF] pointer-events-none">
+                                    <p className="text-sm font-black text-[#7C3AED] pointer-events-none">
                                         {date ? (() => {
                                             const [y, m, d] = date.split('-').map(Number);
                                             return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -451,12 +451,12 @@ export default function CreateAppointmentModal({
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
                                     </select>
-                                    <p className={`text-sm font-black pointer-events-none ${time ? 'text-[#007AFF]' : 'text-gray-400'}`}>
+                                    <p className={`text-sm font-black pointer-events-none ${time ? 'text-primary-600' : 'text-gray-400'}`}>
                                         {time ? getDisplayTime(time) : (
                                             timeOptions.length === 0 ? 'No slots' : 'Select Time'
                                         )}
                                     </p>
-                                    <ChevronRight className="w-3.5 h-3.5 text-[#007AFF]/50 rotate-90 pointer-events-none" />
+                                    <ChevronRight className="w-3.5 h-3.5 text-primary-600/50 rotate-90 pointer-events-none" />
                                 </div>
                             </div>
                         </div>
@@ -466,16 +466,16 @@ export default function CreateAppointmentModal({
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
                             <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
                                 <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
-                                <span className="text-[#007AFF] font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
+                                <span className="text-primary-600 font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
                                 <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
                             </div>
                             <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
                                 {selectedService || mode === 'blocking' ? (
-                                    <div className={`w-3/4 h-10 border-2 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300 ${mode === 'blocking' ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
-                                        <div className={`w-2 h-2 rounded-full mr-3 shadow-sm ${mode === 'blocking' ? 'bg-red-500 shadow-red-500/50' : 'bg-[#007AFF] shadow-blue-500/50'}`}></div>
+                                    <div className={`w-3/4 h-10 border-2 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300 ${mode === 'blocking' ? 'bg-red-50 border-red-200' : 'bg-primary-50 border-primary-200'}`}>
+                                        <div className={`w-2 h-2 rounded-full mr-3 shadow-sm ${mode === 'blocking' ? 'bg-red-500 shadow-red-500/50' : 'bg-primary-600 shadow-primary-500/50'}`}></div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={`text-[10px] font-black truncate uppercase tracking-tight ${mode === 'blocking' ? 'text-red-900' : 'text-blue-900'}`}>{mode === 'blocking' ? 'Blocked Time' : selectedService?.name || 'Service'}</p>
-                                            <p className={`text-[9px] font-bold opacity-70 uppercase leading-none ${mode === 'blocking' ? 'text-red-600' : 'text-[#007AFF]'}`}>{mode === 'blocking' ? customDuration : selectedService?.durationMinutes}m duration</p>
+                                            <p className={`text-[10px] font-black truncate uppercase tracking-tight ${mode === 'blocking' ? 'text-red-900' : 'text-primary-900'}`}>{mode === 'blocking' ? 'Blocked Time' : selectedService?.name || 'Service'}</p>
+                                            <p className={`text-[9px] font-bold opacity-70 uppercase leading-none ${mode === 'blocking' ? 'text-red-600' : 'text-primary-600'}`}>{mode === 'blocking' ? customDuration : selectedService?.durationMinutes}m duration</p>
                                         </div>
                                     </div>
                                 ) : (
@@ -507,7 +507,7 @@ export default function CreateAppointmentModal({
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="flex-[2] py-4 bg-[#007AFF] hover:bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="flex-[2] py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {mode === 'blocking' ? 'Confirm Block' : 'Book Appointment'}
                         <ChevronRight className="w-4 h-4" strokeWidth={3} />

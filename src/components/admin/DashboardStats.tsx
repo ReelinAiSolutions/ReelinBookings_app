@@ -16,10 +16,10 @@ const colorMap = {
         glowColor: 'rgba(34, 197, 94, 0.4)', // green-500
         fallback: 'bg-green-600'
     },
-    blue: {
-        gradientStyle: { background: 'linear-gradient(135deg, #3b82f6 0%, #0891b2 100%)' }, // blue-500 -> cyan-600
-        glowColor: 'rgba(59, 130, 246, 0.4)', // blue-500
-        fallback: 'bg-blue-600'
+    purple: {
+        gradientStyle: { background: 'linear-gradient(135deg, #2D165D 0%, #7C3AED 100%)' }, // sapphire -> lavender
+        glowColor: 'rgba(124, 58, 237, 0.4)', // lavender
+        fallback: 'bg-primary-600'
     },
     orange: {
         gradientStyle: { background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)' }, // orange-500 -> red-600
@@ -29,7 +29,7 @@ const colorMap = {
 };
 
 export default function DashboardStats({ stats }: DashboardStatsProps) {
-    const renderStat = (title: string, value: string | number, Icon: any, color: 'green' | 'blue' | 'orange', subtitle?: string) => {
+    const renderStat = (title: string, value: string | number, Icon: any, color: 'green' | 'purple' | 'orange', subtitle?: string) => {
         const colors = colorMap[color];
 
         return (
@@ -51,7 +51,7 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
                     <div className="flex items-center justify-between mb-5">
                         <div className="flex flex-col">
                             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">{title}</h3>
-                            <div className="h-0.5 w-6 bg-gray-100 mt-1 rounded-full group-hover:w-12 transition-all duration-500 group-hover:bg-blue-200" />
+                            <div className="h-0.5 w-6 bg-gray-100 mt-1 rounded-full group-hover:w-12 transition-all duration-500 group-hover:bg-primary-200" />
                         </div>
                         <div className="relative group/icon">
                             {/* Robust Background for Mobile Visibility */}
@@ -90,7 +90,7 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {renderStat('Weekly Revenue', `$${stats.totalRevenue.toLocaleString()}`, DollarSign, 'green', 'Updated just now')}
-            {renderStat('Total Bookings', stats.totalBookings, CalendarCheck, 'blue', 'Active appointments')}
+            {renderStat('Total Bookings', stats.totalBookings, CalendarCheck, 'purple', 'Active appointments')}
             {renderStat('Team Members', stats.activeStaff, Users, 'orange', 'On-duty staff')}
         </div>
     );

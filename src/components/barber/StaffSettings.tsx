@@ -186,11 +186,11 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                     title="Public Profile"
                     subtitle="Update your photo and personal details"
                     icon={UserIcon}
-                    colorClass="bg-blue-50 text-blue-600"
+                    colorClass="bg-purple-50 text-purple-600"
                     isOpen={openSection === 'profile'}
                     onToggle={() => setOpenSection(openSection === 'profile' ? null : 'profile')}
                 >
-                    <div className="space-y-8">
+                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 space-y-8">
                         {/* Avatar Upload */}
                         <div className="flex items-center gap-8">
                             <div className="relative group/avatar">
@@ -229,10 +229,10 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                         type="text"
                                         value={formData.fullName}
                                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                        className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-gray-900 placeholder:text-gray-400 outline-none"
+                                        className="w-full px-5 py-4 bg-white border-2 border-transparent rounded-2xl focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all font-bold text-gray-900 placeholder:text-gray-400 outline-none"
                                         placeholder="e.g. John Doe"
                                     />
-                                    <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
+                                    <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors pointer-events-none" />
                                 </div>
                             </div>
 
@@ -254,7 +254,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                         <div className="flex justify-end pt-4">
                             <Button
                                 type="submit"
-                                className="bg-gray-900 hover:bg-black text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-gray-900/10 transition-all active:scale-95"
+                                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-purple-900/10 transition-all active:scale-95"
                                 isLoading={isLoading}
                             >
                                 Save Profile
@@ -273,7 +273,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                     isOpen={openSection === 'security'}
                     onToggle={() => setOpenSection(openSection === 'security' ? null : 'security')}
                 >
-                    <div className="space-y-6">
+                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 space-y-6">
                         {!showChangePassword ? (
                             <button
                                 type="button"
@@ -345,7 +345,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                 title="Notifications"
                 subtitle="Manage your alert preferences"
                 icon={Bell}
-                colorClass="bg-amber-50 text-amber-600"
+                colorClass="bg-purple-50 text-purple-600"
                 isOpen={openSection === 'notifications'}
                 onToggle={() => setOpenSection(openSection === 'notifications' ? null : 'notifications')}
             >

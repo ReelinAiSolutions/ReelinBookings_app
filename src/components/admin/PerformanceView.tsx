@@ -318,8 +318,8 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             retUnique,
             atRisk: atRiskCount,
             mix: [
-                { name: 'Returning', value: retUnique, color: '#4F46E5' },
-                { name: 'New', value: newUnique, color: '#818CF8' }
+                { name: 'Returning', value: retUnique, color: '#2D165D' },
+                { name: 'New', value: newUnique, color: '#7C3AED' }
             ]
         };
     }, [currentStats.valid, historicClientSet, allClients]);
@@ -501,7 +501,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 type="button"
             >
                 <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl bg-indigo-50 text-indigo-600`}>
+                    <div className={`p-2 rounded-xl bg-primary-50 text-primary-600`}>
                         <Icon className="w-5 h-5" />
                     </div>
                     <h3 className="font-bold text-lg text-gray-900">{title}</h3>
@@ -524,11 +524,14 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             {/* 1. TOP SUMMARY (HEADLINE STATS) - Always Visible */}
             <div className="space-y-6">
                 {/* Insight Banner */}
-                <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-200 flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
-                        <Zap className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+                {/* Insight Banner - Galaxy Theme */}
+                <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
+                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,#2D165D,transparent)]" />
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
+                    <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
+                        <Zap className="w-4 h-4 text-accent-400 fill-accent-400" />
                     </div>
-                    <p className="text-sm font-medium">{insightText}</p>
+                    <p className="text-sm font-medium relative z-10">{insightText}</p>
                 </div>
 
                 {/* Hero Stats Grid */}
@@ -548,7 +551,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         </div>
                         <div className="relative z-10 mt-4">
                             <div className="h-1 bg-gray-700/50 rounded-full overflow-hidden">
-                                <div className="h-full bg-indigo-500 w-full animate-pulse"></div>
+                                <div className="h-full bg-primary-600 w-full animate-pulse"></div>
                             </div>
                             <p className="text-xs text-gray-500 mt-2 font-medium">Generated this period</p>
                         </div>
@@ -559,7 +562,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         {/* Confirmed Bookings */}
                         <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex flex-col justify-between">
                             <div className="flex justify-between items-start">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl"><CalendarDays className="w-5 h-5" /></div>
+                                <div className="p-2 bg-primary-50 text-primary-600 rounded-xl"><CalendarDays className="w-5 h-5" /></div>
                             </div>
                             <div>
                                 <h3 className="text-2xl font-black text-gray-900">{currentStats.bookings}</h3>
@@ -593,7 +596,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         {/* Schedule Filled % */}
                         <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
                             <div className="flex justify-between items-start mb-2">
-                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><Clock className="w-5 h-5" /></div>
+                                <div className="p-2 bg-primary-50 text-primary-600 rounded-xl"><Clock className="w-5 h-5" /></div>
                             </div>
                             <div className="flex items-end justify-between relative z-10">
                                 <div>
@@ -603,7 +606,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <div className="relative w-12 h-12">
                                     <svg className="w-full h-full transform -rotate-90">
                                         <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-gray-100" />
-                                        <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={125} strokeDashoffset={125 - (125 * occupancyRate) / 100} className="text-indigo-600" strokeLinecap="round" />
+                                        <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={125} strokeDashoffset={125 - (125 * occupancyRate) / 100} className="text-primary-600" strokeLinecap="round" />
                                     </svg>
                                 </div>
                             </div>
@@ -629,17 +632,17 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <AreaChart data={bookingsGraphData}>
                                     <defs>
                                         <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.2} />
-                                            <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="#2D165D" stopOpacity={0.2} />
+                                            <stop offset="95%" stopColor="#2D165D" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF' }} />
                                     <Tooltip
-                                        cursor={{ stroke: '#4F46E5', strokeWidth: 1 }}
+                                        cursor={{ stroke: '#2D165D', strokeWidth: 1 }}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                     />
-                                    <Area type="monotone" dataKey="value" stroke="#4F46E5" strokeWidth={3} fill="url(#colorBookings)" />
+                                    <Area type="monotone" dataKey="value" stroke="#2D165D" strokeWidth={3} fill="url(#colorBookings)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -651,7 +654,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             <h4 className="text-sm font-bold text-gray-900 mb-3">Status Breakdown</h4>
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center text-xs">
-                                    <span className="flex items-center gap-2 text-gray-600"><span className="w-2 h-2 rounded-full bg-blue-500"></span> Upcoming</span>
+                                    <span className="flex items-center gap-2 text-gray-600"><span className="w-2 h-2 rounded-full bg-primary-500"></span> Upcoming</span>
                                     <span className="font-bold text-gray-900">{bookingHealthMetrics.upcoming}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
@@ -690,15 +693,15 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-sm font-bold text-gray-900">Peak Demand Hours</h4>
                             <div className="flex gap-2 text-[10px] font-bold text-gray-400">
-                                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span> Busy</span>
-                                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-200"></span> Quiet</span>
+                                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span> Busy</span>
+                                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary-200"></span> Quiet</span>
                             </div>
                         </div>
                         <div className="h-32 w-full flex items-end gap-1">
                             {demandHeatmap.map((h, i) => (
                                 <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
                                     <div
-                                        className={`w-full rounded-t transition-all ${h.intensity > 0.6 ? 'bg-indigo-600' : h.intensity > 0.2 ? 'bg-indigo-300' : 'bg-indigo-100'}`}
+                                        className={`w-full rounded-t transition-all ${h.intensity > 0.6 ? 'bg-primary-600' : h.intensity > 0.2 ? 'bg-primary-300' : 'bg-primary-100'}`}
                                         style={{ height: `${Math.max(10, h.intensity * 100)}%` }}
                                     ></div>
                                 </div>
@@ -731,10 +734,10 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             {leastBookedHours.length === 0 && <p className="text-xs text-gray-400 italic">No data available.</p>}
                         </div>
 
-                        <div className="mt-4 p-3 bg-indigo-50 rounded-xl border border-indigo-100/50 bg-indigo-50/50">
+                        <div className="mt-4 p-3 bg-primary-50 rounded-xl border border-primary-100/50 bg-primary-50/50">
                             <div className="flex justify-between items-center">
-                                <span className="text-xs font-bold text-indigo-900">Avg. Daily Schedule Filled</span>
-                                <span className="text-sm font-black text-indigo-600">{occupancyRate}%</span>
+                                <span className="text-xs font-bold text-primary-900">Avg. Daily Schedule Filled</span>
+                                <span className="text-sm font-black text-primary-600">{occupancyRate}%</span>
                             </div>
                         </div>
                     </div>
@@ -772,7 +775,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                     {topServicesList.map((srv, i) => (
                         <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors border-b border-gray-100 last:border-0">
                             <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${i < 3 ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${i < 3 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'}`}>
                                     #{i + 1}
                                 </div>
                                 <span className="font-bold text-gray-900 text-sm truncate max-w-[150px] sm:max-w-xs">{srv.name}</span>
@@ -803,7 +806,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             >
                 <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center">
-                        <div className="p-2 bg-indigo-100 text-indigo-600 rounded-full mb-2">
+                        <div className="p-2 bg-primary-100 text-primary-600 rounded-full mb-2">
                             <Repeat className="w-5 h-5" />
                         </div>
                         <h4 className="text-2xl font-black text-gray-900">
@@ -831,21 +834,24 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
 
                 {/* Team Insight Banner */}
-                <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-200 flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
-                        <Zap className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+                {/* Team Insight Banner - Galaxy Theme */}
+                <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
+                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,#2D165D,transparent)]" />
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
+                    <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
+                        <Zap className="w-4 h-4 text-accent-400 fill-accent-400" />
                     </div>
-                    <p className="text-sm font-medium">{staffInsightText}</p>
+                    <p className="text-sm font-medium relative z-10">{staffInsightText}</p>
                 </div>
 
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-black text-gray-900 uppercase tracking-widest">Team Performance</h3>
-                    <div className="flex items-center gap-2 bg-gray-100/80 p-1 rounded-2xl">
+                    <div className="flex items-center gap-2 bg-gray-100/80 p-1 rounded-full">
                         {(['bookings', 'utilization', 'revenue'] as const).map(s => (
                             <button
                                 key={s}
                                 onClick={() => setStaffSort(s)}
-                                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all capitalize ${staffSort === s ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-900'}`}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all capitalize ${staffSort === s ? 'bg-primary-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
                             >
                                 {s}
                             </button>
@@ -874,7 +880,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <div className="flex items-center gap-4 mb-6 relative z-10">
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg transition-transform group-hover:scale-105 ${isTopPerformer
                                         ? 'bg-emerald-600 text-white shadow-emerald-200'
-                                        : 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-indigo-100'
+                                        : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'
                                         }`}>
                                         {member.name.charAt(0)}
                                     </div>
@@ -893,9 +899,9 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                         <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Utilization</div>
                                         <div className="text-xl font-black text-gray-900">{member.utilization}%</div>
                                     </div>
-                                    <div className={`col-span-2 p-3 rounded-2xl flex justify-between items-center ${isTopPerformer ? 'bg-emerald-500 text-white shadow-sm' : 'bg-indigo-50/50 text-indigo-600'
+                                    <div className={`col-span-2 p-3 rounded-2xl flex justify-between items-center ${isTopPerformer ? 'bg-emerald-500 text-white shadow-sm' : 'bg-primary-50 text-primary-600'
                                         }`}>
-                                        <div className={`text-[10px] font-bold uppercase tracking-widest ${isTopPerformer ? 'text-emerald-100' : 'text-indigo-400'}`}>Revenue</div>
+                                        <div className={`text-[10px] font-bold uppercase tracking-widest ${isTopPerformer ? 'text-emerald-100' : 'text-primary-400'}`}>Revenue</div>
                                         <div className="text-xl font-black">${member.revenue.toLocaleString()}</div>
                                     </div>
                                 </div>
@@ -918,11 +924,14 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
 
                 {/* Insight Banner */}
-                <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl p-4 text-white shadow-lg shadow-blue-200 flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
-                        <Sparkles className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+                {/* Insight Banner - Galaxy Theme */}
+                <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
+                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,#2D165D,transparent)]" />
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
+                    <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
+                        <Sparkles className="w-4 h-4 text-accent-400 fill-accent-400" />
                     </div>
-                    <p className="text-sm font-medium">{clientInsightText}</p>
+                    <p className="text-sm font-medium relative z-10">{clientInsightText}</p>
                 </div>
 
                 {/* ROW 1: METRICS */}
@@ -935,13 +944,13 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <h3 className="text-4xl font-black text-gray-900">{clientMetrics.totalActive}</h3>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Active Clients</p>
                             </div>
-                            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><Users2 className="w-5 h-5" /></div>
+                            <div className="p-2 bg-primary-50 text-primary-600 rounded-xl"><Users2 className="w-5 h-5" /></div>
                         </div>
                         {/* Tiny Sparkline Decoration */}
                         <div className="absolute bottom-0 left-0 w-full h-12 opacity-10">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={[{ v: 10 }, { v: 20 }, { v: 15 }, { v: 25 }, { v: 30 }]}>
-                                    <Area type="monotone" dataKey="v" stroke="#4F46E5" fill="#4F46E5" strokeWidth={5} />
+                                    <Area type="monotone" dataKey="v" stroke="#2D165D" fill="#2D165D" strokeWidth={5} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -986,13 +995,13 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
 
                         <div className="flex flex-col sm:flex-row items-center gap-4">
                             <div className="relative w-full sm:w-80 group">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                                 <input
                                     type="text"
                                     placeholder="Search by name or email..."
                                     value={clientSearch}
                                     onChange={(e) => setClientSearch(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                                 />
                             </div>
 
@@ -1002,7 +1011,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                     <select
                                         value={clientStaffFilter}
                                         onChange={(e) => setClientStaffFilter(e.target.value)}
-                                        className="w-full pl-9 pr-8 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer min-w-[140px]"
+                                        className="w-full pl-9 pr-8 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer min-w-[140px]"
                                     >
                                         <option value="all">Every Staff</option>
                                         {staff.map(s => (
@@ -1037,19 +1046,12 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             })
                             .map((client, index) => {
                                 const isTopClient = index === 0 && (clientSearch === '' && clientStaffFilter === 'all');
-                                const gradients = [
-                                    'bg-gradient-to-br from-indigo-500 to-purple-500',
-                                    'bg-gradient-to-br from-blue-500 to-cyan-500',
-                                    'bg-gradient-to-br from-violet-500 to-fuchsia-500',
-                                    'bg-gradient-to-br from-rose-500 to-pink-500',
-                                    'bg-gradient-to-br from-amber-500 to-orange-500 text-white'
-                                ];
-                                const avatarGradient = gradients[index % gradients.length];
+                                const avatarGradient = 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] shadow-[#d946ef]/20';
 
                                 const statusStyles = {
                                     'VIP': 'bg-amber-50 text-amber-700 border-amber-100',
                                     'Active': 'bg-emerald-50 text-emerald-700 border-emerald-100',
-                                    'New': 'bg-blue-50 text-blue-700 border-blue-100',
+                                    'New': 'bg-primary-50 text-primary-700 border-primary-100',
                                     'At Risk': 'bg-red-50 text-red-700 border-red-100'
                                 };
 
@@ -1058,7 +1060,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                         key={client.email}
                                         className={`group p-6 rounded-[24px] border transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden ${isTopClient
                                             ? 'bg-emerald-50 border-emerald-200 shadow-lg shadow-emerald-100/50 scale-[1.02] z-10'
-                                            : 'bg-white border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-100/30'
+                                            : 'bg-white border-gray-100 hover:border-primary-200 hover:shadow-xl hover:shadow-primary-100/30'
                                             }`}
                                     >
                                         {/* Rank Badge */}
@@ -1081,7 +1083,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             </div>
 
                                             <div className="mb-6">
-                                                <h4 className={`font-bold truncate transition-colors ${isTopClient ? 'text-emerald-900' : 'text-gray-900 group-hover:text-indigo-600'}`}>{client.name}</h4>
+                                                <h4 className={`font-bold truncate transition-colors ${isTopClient ? 'text-emerald-900' : 'text-gray-900 group-hover:text-primary-600'}`}>{client.name}</h4>
                                                 <p className={`text-[10px] font-bold uppercase tracking-wider truncate ${isTopClient ? 'text-emerald-600' : 'text-gray-400'}`}>{client.email}</p>
                                             </div>
 
@@ -1114,7 +1116,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                                 onClick={() => setSelectedClientEmail(client.email)}
                                                 className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${isTopClient
                                                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                                    : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white'
+                                                    : 'bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white'
                                                     }`}
                                             >
                                                 View History
@@ -1123,7 +1125,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                                 href={`mailto:${client.email}?subject=Just checking in!`}
                                                 className={`p-2 rounded-xl border border-transparent transition-all shadow-sm ${isTopClient
                                                     ? 'bg-white text-emerald-600 hover:border-emerald-200'
-                                                    : 'bg-gray-50 text-gray-400 hover:text-indigo-600 hover:bg-white hover:border-indigo-100'
+                                                    : 'bg-gray-50 text-gray-400 hover:text-primary-600 hover:bg-white hover:border-primary-100'
                                                     }`}
                                                 title="Email Client"
                                             >
@@ -1131,7 +1133,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             </a>
                                             <button className={`p-2 rounded-xl border border-transparent transition-all shadow-sm ${isTopClient
                                                 ? 'bg-white text-emerald-600 hover:border-emerald-200'
-                                                : 'bg-gray-50 text-gray-400 hover:text-indigo-600 hover:bg-white hover:border-indigo-100'
+                                                : 'bg-gray-50 text-gray-400 hover:text-primary-600 hover:bg-white hover:border-primary-100'
                                                 }`}>
                                                 <Briefcase className="w-4 h-4" />
                                             </button>
@@ -1154,12 +1156,12 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         <h1 className="text-3xl font-black tracking-tight text-gray-900 leading-tight mb-2">
                             Analytics
                         </h1>
-                        <nav className="flex items-center gap-1 p-1 bg-gray-100/80 rounded-2xl w-fit">
+                        <nav className="flex items-center gap-1 p-1 bg-gray-100/80 rounded-full w-fit">
                             {['business', 'staff', 'clients'].map(t => (
                                 <button
                                     key={t}
                                     onClick={() => setActiveTab(t as TabType)}
-                                    className={`px-5 py-2.5 rounded-xl transition-all capitalize text-sm font-bold ${activeTab === t ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'}`}
+                                    className={`px-5 py-2.5 rounded-full transition-all capitalize text-sm font-bold ${activeTab === t ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'}`}
                                 >
                                     {t}
                                 </button>
@@ -1249,12 +1251,12 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                         <div key={apt.id} className="relative pl-8 group">
                                             {/* Vertical Line */}
                                             {idx !== appointments.filter(a => a.clientEmail === selectedClientEmail).length - 1 && (
-                                                <div className="absolute left-3.5 top-8 bottom-[-24px] w-0.5 bg-gray-100 group-hover:bg-indigo-100 transition-colors" />
+                                                <div className="absolute left-3.5 top-8 bottom-[-24px] w-0.5 bg-gray-100 group-hover:bg-primary-100 transition-colors" />
                                             )}
 
                                             {/* Dot */}
-                                            <div className="absolute left-0 top-1.5 w-7 h-7 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center z-10 group-hover:border-indigo-500 transition-colors">
-                                                <div className="w-2 h-2 bg-gray-200 rounded-full group-hover:bg-indigo-500 transition-colors" />
+                                            <div className="absolute left-0 top-1.5 w-7 h-7 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center z-10 group-hover:border-primary-500 transition-colors">
+                                                <div className="w-2 h-2 bg-gray-200 rounded-full group-hover:bg-primary-500 transition-colors" />
                                             </div>
 
                                             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
@@ -1266,7 +1268,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                                         <div className="text-lg font-bold text-gray-900">{service?.name || 'Unknown Service'}</div>
                                                     </div>
                                                     <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${apt.status === AppointmentStatus.COMPLETED ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                        apt.status === AppointmentStatus.CONFIRMED ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                                        apt.status === AppointmentStatus.CONFIRMED ? 'bg-primary-50 text-primary-600 border-primary-100' :
                                                             'bg-gray-50 text-gray-400 border-gray-100'
                                                         }`}>
                                                         {apt.status}
@@ -1289,7 +1291,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                                 </div>
 
                                                 {apt.notes && (
-                                                    <div className="mt-4 p-3 bg-indigo-50/30 rounded-xl text-xs text-gray-500 italic border-l-2 border-indigo-200">
+                                                    <div className="mt-4 p-3 bg-primary-50/30 rounded-xl text-xs text-gray-500 italic border-l-2 border-primary-200">
                                                         "{apt.notes}"
                                                     </div>
                                                 )}
@@ -1334,7 +1336,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             type="date"
                                             value={customDateRange.start}
                                             onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
                                         />
                                     </div>
                                 </div>
@@ -1345,7 +1347,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             type="date"
                                             value={customDateRange.end}
                                             onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
                                         />
                                     </div>
                                 </div>

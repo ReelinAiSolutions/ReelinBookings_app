@@ -8,8 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 // -- EMPTY STATE COMPONENT --
 const EmptyState = ({ onAction, mode = 'day' }: { onAction: () => void, mode?: 'day' | 'team' }) => (
     <div className={`absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white/50 backdrop-blur-[2px] z-[5] animate-in fade-in zoom-in duration-500 ${mode === 'team' ? 'min-h-[600px]' : ''}`}>
-        <div className="w-24 h-24 bg-blue-50 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-sm ring-1 ring-blue-100 rotate-3 group hover:rotate-6 transition-transform">
-            <CalendarCheck className="w-12 h-12 text-blue-500" />
+        <div className="w-24 h-24 bg-primary-50 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-sm ring-1 ring-primary-100 rotate-3 group hover:rotate-6 transition-transform">
+            <CalendarCheck className="w-12 h-12 text-primary-600" />
         </div>
         <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-3 px-4 leading-tight">
             Schedule is Clear
@@ -28,7 +28,7 @@ const EmptyState = ({ onAction, mode = 'day' }: { onAction: () => void, mode?: '
         </button>
 
         {/* Decorative elements */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-indigo-200/20 rounded-full blur-3xl -z-10"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-primary-200/20 rounded-full blur-3xl -z-10"></div>
         <div className="absolute bottom-40 right-10 w-48 h-48 bg-emerald-200/20 rounded-full blur-3xl -z-10"></div>
     </div>
 );
@@ -37,9 +37,9 @@ const PulseStyle = () => (
     <style dangerouslySetInnerHTML={{
         __html: `
         @keyframes gravityPulse {
-            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
-            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
-            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(45, 22, 93, 0.4); }
+            70% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 0 10px rgba(45, 22, 93, 0); }
+            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(45, 22, 93, 0); }
         }
         .live-pulse {
             animation: gravityPulse 2s infinite ease-in-out;
@@ -53,7 +53,7 @@ const PulseStyle = () => (
         }
         .pulse-highlight {
             animation: gravityPulse 2s 3 ease-in-out;
-            border: 2px solid #4F46E5 !important;
+            border: 2px solid #2D165D !important;
             z-index: 50 !important;
         }
     `}} />
@@ -256,12 +256,12 @@ export default function WeeklyCalendar({
 
     // Staff colors mapping (Design Labs style)
     const staffColors = [
-        { bg: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-700', dot: 'bg-indigo-500' },
-        { bg: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-        { bg: 'bg-rose-50', border: 'border-rose-500', text: 'text-rose-700', dot: 'bg-rose-500' },
-        { bg: 'bg-amber-50', border: 'border-amber-500', text: 'text-amber-700', dot: 'bg-amber-500' },
-        { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-700', dot: 'bg-purple-500' },
-        { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-700', dot: 'bg-blue-500' },
+        { bg: 'bg-[#F5F3FF]', border: 'border-[#2D165D]', text: 'text-[#2D165D]', dot: 'bg-[#2D165D]' },
+        { bg: 'bg-[#FDF4FF]', border: 'border-[#7C3AED]', text: 'text-[#7C3AED]', dot: 'bg-[#7C3AED]' },
+        { bg: 'bg-[#F8F6FF]', border: 'border-[#6D28D9]', text: 'text-[#6D28D9]', dot: 'bg-[#6D28D9]' }, // Deep Purple
+        { bg: 'bg-[#F5F3FF]', border: 'border-[#5B21B6]', text: 'text-[#5B21B6]', dot: 'bg-[#5B21B6]' }, // Violet
+        { bg: 'bg-[#FDF4FF]', border: 'border-[#A855F7]', text: 'text-[#A855F7]', dot: 'bg-[#A855F7]' },
+        { bg: 'bg-[#FAF5FF]', border: 'border-[#8B5CF6]', text: 'text-[#8B5CF6]', dot: 'bg-[#8B5CF6]' },
     ];
 
     // -- SCROLL START & INFINITE SCROLL INIT --
@@ -775,7 +775,7 @@ export default function WeeklyCalendar({
         <div key={year} id={`year-${year}`} className="mb-8 last:mb-0">
             {/* Apple style: Clean, left-aligned year title with thin divider */}
             <div className="px-5 mb-4">
-                <h2 className={`text-3xl font-bold tracking-tight ${year === getYear(selectedDate) ? 'text-indigo-600' : 'text-gray-900'}`}>
+                <h2 className={`text-3xl font-bold tracking-tight ${year === getYear(selectedDate) ? 'text-primary-600' : 'text-gray-900'}`}>
                     {year}
                 </h2>
                 <div className="h-px bg-gray-100 mt-2 w-full"></div>
@@ -801,7 +801,7 @@ export default function WeeklyCalendar({
                             }}
                         >
                             {/* Shortened month name: J, F, M... or Jan, Feb... Apple uses Full but we can use tiny bold */}
-                            <h3 className={`text-[13px] font-bold px-1 ${isSelectedMonth ? 'text-indigo-600' : 'text-gray-900 uppercase tracking-tight'}`}>
+                            <h3 className={`text-[13px] font-bold px-1 ${isSelectedMonth ? 'text-primary-600' : 'text-gray-900 uppercase tracking-tight'}`}>
                                 {m.substring(0, 3)}
                             </h3>
 
@@ -821,7 +821,7 @@ export default function WeeklyCalendar({
                                         <div
                                             key={d}
                                             className={`aspect-square flex items-center justify-center text-[11px] font-medium rounded-full transition-colors ${isToday
-                                                ? 'bg-[#007AFF]! text-white shadow-sm'
+                                                ? 'bg-primary-600! text-white shadow-sm'
                                                 : 'text-gray-700'
                                                 }`}
                                         >
@@ -882,7 +882,7 @@ export default function WeeklyCalendar({
                             <div
                                 key={i}
                                 className={`min-h-[120px] border-b border-r border-gray-100 p-2 transition-colors relative group
-                                    ${isTodayDay ? 'bg-blue-50/30' : 'hover:bg-gray-50'}
+                                    ${isTodayDay ? 'bg-primary-50/30' : 'hover:bg-gray-50'}
                                     ${isBefore(cellDate, new Date()) && !isTodayDay ? 'bg-gray-50/50' : ''}
                                 `}
                                 onClick={() => {
@@ -894,14 +894,14 @@ export default function WeeklyCalendar({
                             >
                                 <span className={`
                                     text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full mb-1
-                                    ${isTodayDay ? 'bg-[#007AFF]! text-white shadow-sm' : isBefore(cellDate, new Date()) && !isTodayDay ? 'text-gray-400' : 'text-gray-700'}
+                                    ${isTodayDay ? 'bg-primary-600! text-white shadow-sm' : isBefore(cellDate, new Date()) && !isTodayDay ? 'text-gray-400' : 'text-gray-700'}
                                 `}>
                                     {dayNum}
                                 </span>
 
                                 {eventCount > 0 && (
                                     <div className="flex justify-start pl-1 mt-1">
-                                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50/50 px-1.5 py-0.5 rounded-md border border-indigo-100/50">
+                                        <span className="text-[10px] font-bold text-primary-600 bg-primary-50/50 px-1.5 py-0.5 rounded-md border border-primary-100/50">
                                             {eventCount}
                                         </span>
                                     </div>
@@ -1015,8 +1015,8 @@ export default function WeeklyCalendar({
                                 {/* Current Time Indicator (Personal View) */}
                                 {currentTimeTopPx !== -1 && (
                                     <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                        <div className="w-full h-[1px] bg-[#007AFF]! shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
-                                        <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF]! live-pulse border-2 border-white shadow-sm"></div>
+                                        <div className="w-full h-[1px] bg-primary-600! shadow-[0_0_8px_rgba(124,58,237,0.4)]"></div>
+                                        <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-primary-600! live-pulse border-2 border-white shadow-sm"></div>
                                     </div>
                                 )}
 
@@ -1052,7 +1052,7 @@ export default function WeeklyCalendar({
                                             {/* GHOST / PHANTOM CARD */}
                                             {isDragging && (
                                                 <div
-                                                    className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-50 border-slate-200 text-slate-300 border-l-[3px]' : 'bg-indigo-50 border-indigo-200 text-indigo-300 border-l-[4px]'} py-1 px-2 opacity-30 z-10 pointer-events-none`}
+                                                    className={`absolute rounded-[12px] ${isBlocked ? 'bg-slate-50 border-slate-200 text-slate-300 border-l-[3px]' : 'bg-primary-50 border-primary-200 text-primary-300 border-l-[4px]'} py-1 px-2 opacity-30 z-10 pointer-events-none`}
                                                     style={{
                                                         top: `${topPx}px`,
                                                         height: `${Math.max(24, duration * 2)}px`,
@@ -1079,7 +1079,7 @@ export default function WeeklyCalendar({
                                                         onAppointmentClick(apt);
                                                     }
                                                 }}
-                                                className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-indigo-50 border-indigo-500 text-indigo-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
+                                                className={`absolute rounded-[12px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-primary-50 border-primary-600 text-primary-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-primary-600'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-primary-300 opacity-90'} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
                                                 style={{
                                                     top: `${displayTop}px`,
                                                     height: `${Math.max(24, duration * 2)}px`,
@@ -1091,18 +1091,18 @@ export default function WeeklyCalendar({
                                             >
                                                 {duration >= 25 ? (
                                                     <div className="flex flex-col h-full gap-0">
-                                                        <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : 'text-indigo-400'}`}>
+                                                        <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : 'text-primary-400'}`}>
                                                             {isBlocked ? 'Blocked Time' : (services.find(s => s.id === apt.serviceId)?.name || 'Service')}
                                                         </div>
-                                                        <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : (isDragging && dragState.hasConflict ? 'text-red-900' : 'text-indigo-700')} truncate`}>
+                                                        <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : (isDragging && dragState.hasConflict ? 'text-red-900' : 'text-primary-800')} truncate`}>
                                                             {isDragging && dragState.hasConflict && <span className="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-red-500 text-white font-black animate-pulse">CONFLICT</span>}
                                                             {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
                                                         </div>
                                                         <div className="flex items-center justify-between mt-auto pb-0.5">
-                                                            <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : 'text-indigo-600/90'} truncate`}>
+                                                            <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : 'text-primary-600/90'} truncate`}>
                                                                 {isBlocked ? (staff.find(s => s.id === apt.staffId)?.name || 'All Staff') : (staff.find(s => s.id === apt.staffId)?.name || 'Staff')}
                                                             </div>
-                                                            <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : 'text-indigo-500'}`}>
+                                                            <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : 'text-primary-500'}`}>
                                                                 {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
                                                             </div>
                                                         </div>
@@ -1110,11 +1110,11 @@ export default function WeeklyCalendar({
                                                 ) : (
                                                     <div className="flex items-center gap-2 overflow-hidden h-full">
                                                         {duration >= 15 && (
-                                                            <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : 'text-indigo-700'} truncate shrink-0`}>
+                                                            <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : 'text-primary-800'} truncate shrink-0`}>
                                                                 {isBlocked ? 'BLOCKED' : apt.clientName}
                                                             </div>
                                                         )}
-                                                        <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : 'text-indigo-400/90'} truncate`}>
+                                                        <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : 'text-primary-400/90'} truncate`}>
                                                             {formatTo12Hour(displayTime)} ({duration}m)
                                                         </div>
                                                     </div>
@@ -1148,8 +1148,8 @@ export default function WeeklyCalendar({
                                 {/* Current Time Indicator (Team View) */}
                                 {currentTimeTopPx !== -1 && (
                                     <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                        <div className="w-full h-[1px] bg-[#007AFF]! shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
-                                        <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF]! live-pulse border-2 border-white shadow-sm"></div>
+                                        <div className="w-full h-[1.5px] bg-[#2D165D] shadow-[0_0_8px_rgba(45,22,93,0.4)]"></div>
+                                        <div className="absolute -left-1 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-[#2D165D] live-pulse border-2 border-white shadow-sm"></div>
                                     </div>
                                 )}
                                 {staff.map((member, idx) => {
@@ -1208,7 +1208,7 @@ export default function WeeklyCalendar({
                                                                     onAppointmentClick(apt);
                                                                 }
                                                             }}
-                                                            className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} border-l-[4px]`} py-1 px-2 overflow-hidden z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
+                                                            className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} border-l-[4px]`} py-1 px-2 overflow-hidden z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-primary-600'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-primary-400 opacity-90'} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
                                                             style={{
                                                                 top: `${displayTop}px`,
                                                                 height: `${Math.max(24, duration * 2)}px`,
@@ -1333,7 +1333,7 @@ export default function WeeklyCalendar({
                                         setCalendarLevel('year');
                                     }
                                 }}
-                                className="flex items-center text-indigo-600 font-medium cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors -ml-2"
+                                className="flex items-center text-primary-600 font-medium cursor-pointer hover:bg-primary-50 px-2 py-1 rounded-md transition-colors -ml-2"
                             >
                                 <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
                                 <span className="text-[17px] font-normal">{calendarLevel === 'month' ? getYear(selectedDate) : 'Back'}</span>
@@ -1345,7 +1345,7 @@ export default function WeeklyCalendar({
                                     setZoomDirection('out'); // Back out
                                     setCalendarLevel('month');
                                 }}
-                                className="flex items-center text-indigo-600 font-medium cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors -ml-2 shrink-0"
+                                className="flex items-center text-primary-600 font-medium cursor-pointer hover:bg-primary-50 px-2 py-1 rounded-md transition-colors -ml-2 shrink-0"
                             >
                                 <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
                                 <span className="text-[17px] font-normal">Month</span>
@@ -1355,7 +1355,7 @@ export default function WeeklyCalendar({
                         {/* TODAY BUTTON (Hidden if today is selected/not day view maybe, or just keep it compact) */}
                         {(!isSameDay(selectedDate, new Date()) || calendarLevel !== 'day') && (
                             <button
-                                className="text-[11px] sm:text-xs font-bold text-indigo-600 bg-indigo-100/50 px-2 py-1 rounded-full hover:bg-indigo-100 transition-colors shrink-0"
+                                className="text-[11px] sm:text-xs font-bold text-primary-600 bg-primary-100/50 px-2 py-1 rounded-full hover:bg-primary-100 transition-colors shrink-0"
                                 onClick={() => {
                                     setZoomDirection('in');
                                     setCalendarLevel('day');
@@ -1374,12 +1374,12 @@ export default function WeeklyCalendar({
                             <div className="relative">
                                 <button
                                     onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-[#007AFF]!/10 ring-2 ring-[#007AFF] text-[#007AFF]' : 'bg-[#007AFF]!/5 hover:bg-[#007AFF]!/10 text-[#007AFF]'}`}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-primary-600/10 ring-2 ring-primary-600 text-primary-600' : 'bg-primary-600/5 hover:bg-primary-600/10 text-primary-600'}`}
                                 >
                                     <span className="text-sm sm:text-base font-black tracking-tight truncate max-w-[80px] sm:max-w-[150px]">
                                         {filterStaffId === 'ALL' ? 'All Staff' : staff.find(s => s.id === filterStaffId)?.name || 'Unknown'}
                                     </span>
-                                    <ChevronRight className={`w-3.5 h-3.5 text-[#007AFF] transition-transform duration-200 ${isFilterOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} />
+                                    <ChevronRight className={`w-3.5 h-3.5 text-primary-600 transition-transform duration-200 ${isFilterOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} />
                                 </button>
 
                                 {isFilterOpen && (
@@ -1388,7 +1388,7 @@ export default function WeeklyCalendar({
                                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-white/40 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                                             <div className="p-1">
                                                 <div
-                                                    className={`px-4 py-3 text-sm font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 cursor-pointer mb-1 transition-colors ${filterStaffId === 'ALL' ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-500'}`}
+                                                    className={`px-4 py-3 text-sm font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 cursor-pointer mb-1 transition-colors ${filterStaffId === 'ALL' ? 'text-primary-600 bg-primary-50/50' : 'text-gray-500'}`}
                                                     onClick={() => { setFilterStaffId('ALL'); setIsFilterOpen(false); }}
                                                 >
                                                     All Staff
@@ -1397,7 +1397,7 @@ export default function WeeklyCalendar({
                                                 {staff.map(s => (
                                                     <div
                                                         key={s.id}
-                                                        className={`px-4 py-3 text-sm font-bold rounded-xl hover:bg-gray-50 cursor-pointer transition-colors ${filterStaffId === s.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-700'}`}
+                                                        className={`px-4 py-3 text-sm font-bold rounded-xl hover:bg-gray-50 cursor-pointer transition-colors ${filterStaffId === s.id ? 'text-primary-600 bg-primary-50/50' : 'text-gray-700'}`}
                                                         onClick={() => { setFilterStaffId(s.id); setIsFilterOpen(false); }}
                                                     >
                                                         {s.name}
@@ -1416,7 +1416,7 @@ export default function WeeklyCalendar({
                         {/* QUICK VIEW */}
                         <div className="relative group">
                             <button
-                                className={`flex items-center gap-1.5 p-1.5 sm:px-2 py-1.5 transition-all duration-200 rounded-full ${isDatePickerOpen ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                                className={`flex items-center gap-1.5 p-1.5 sm:px-2 py-1.5 transition-all duration-200 rounded-full ${isDatePickerOpen ? 'bg-primary-100 text-primary-600' : 'text-gray-500 hover:bg-gray-100'}`}
                                 onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
                             >
                                 <CalendarIcon className="w-5 h-5" />
@@ -1470,9 +1470,9 @@ export default function WeeklyCalendar({
                                                                 }
                                                             }}
                                                             className={`h-8 w-8 rounded-full text-xs font-bold transition-all ${isSelected
-                                                                ? 'bg-indigo-600 text-white shadow-md scale-110'
+                                                                ? 'bg-primary-600 text-white shadow-md scale-110'
                                                                 : isToday
-                                                                    ? 'text-indigo-600 bg-indigo-50'
+                                                                    ? 'text-primary-600 bg-primary-50'
                                                                     : 'text-gray-700 hover:bg-gray-100'
                                                                 }`}
                                                         >
@@ -1490,7 +1490,7 @@ export default function WeeklyCalendar({
 
                         {/* ADD BUTTON */}
                         <button
-                            className="flex items-center justify-center w-10 h-10 bg-[#007AFF]! text-white rounded-full transition-all duration-200 hover:bg-blue-600 active:scale-90 shadow-lg shadow-blue-500/20"
+                            className="flex items-center justify-center w-10 h-10 bg-primary-600 text-white rounded-full transition-all duration-200 hover:bg-primary-700 active:scale-90 shadow-lg shadow-primary-600/20"
                             onClick={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)}
                         >
                             <Plus className="w-6 h-6" strokeWidth={3} />
@@ -1525,14 +1525,14 @@ export default function WeeklyCalendar({
                                             onClick={() => setSelectedDate(date)}
                                         >
                                             <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
-                                                ? 'bg-[#007AFF]! text-white shadow-sm'
+                                                ? 'bg-primary-600 text-white shadow-sm'
                                                 : isToday
-                                                    ? 'text-[#007AFF]'
+                                                    ? 'text-primary-600'
                                                     : 'text-gray-900 bg-transparent'
                                                 }`}>
                                                 {format(date, 'd')}
                                             </div>
-                                            {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF]! mt-0.5"></div>}
+                                            {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-primary-600 mt-0.5"></div>}
                                         </div>
                                     );
                                 })}
