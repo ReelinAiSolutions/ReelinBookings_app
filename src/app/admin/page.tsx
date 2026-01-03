@@ -251,6 +251,9 @@ export default function AdminDashboard() {
         newStaffId: string,
         options: { notes?: string; durationMinutes?: number; bufferMinutes?: number }
     ) => {
+        const originalApt = appointments.find(a => a.id === id);
+        const oldStaffId = originalApt?.staffId;
+        
         await updateAppointment(id, {
             date: newDate,
             timeSlot: newTime,
@@ -265,6 +268,16 @@ export default function AdminDashboard() {
             `Moved to ${newDate} at ${newTime}`,
             'reschedule'
         );
+        // Notify Original Staff if reassigned away
+        if (oldStaffId && oldStaffId !== newStaffId) {
+            notifyStaff(
+                oldStaffId,
+                'Appointment Reassigned 📤',
+                `${originalApt?.clientName}'s booking was moved to ${staff.find(s => s.id === newStaffId)?.name || 'someone else'}`,
+                'reassignment'
+            );
+        }
+        
     };
 
     const onCancel = async (id: string) => {
@@ -283,6 +296,9 @@ export default function AdminDashboard() {
 
     // Drag & Drop Handler
     const handleAppointmentDrop = async (apt: Appointment, newDate: Date, newTime: string, newStaffId?: string) => {
+        const oldStaffId = apt.staffId;
+        const finalStaffId = newStaffId || oldStaffId;
+        
         const dateStr = format(newDate, 'yyyy-MM-dd');
 
         // Optimistic Update: Move the card instantly in the UI
@@ -304,6 +320,16 @@ export default function AdminDashboard() {
             `Appointment for ${apt.clientName} moved to ${newTime}`,
             'reschedule'
         );
+        // Notify Original Staff if reassigned away
+        if (oldStaffId !== finalStaffId) {
+            notifyStaff(
+                oldStaffId,
+                'Appointment Removed 📤',
+                `${apt.clientName}'s booking was reassigned to ${staff.find(s => s.id === finalStaffId)?.name || 'another member'}`,
+                'reassignment'
+            );
+        }
+        
     };
 
     const [createSelection, setCreateSelection] = useState<{ date: Date | null, time: string | null, staffId: string | null }>({ date: null, time: null, staffId: null });
