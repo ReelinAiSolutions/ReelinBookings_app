@@ -28,14 +28,8 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
         return { background: gradients[index] };
     };
 
-    const avatarGradients = [
-        'bg-gradient-to-br from-indigo-500 to-purple-500',
-        'bg-gradient-to-br from-blue-500 to-cyan-500',
-        'bg-gradient-to-br from-violet-500 to-fuchsia-500',
-        'bg-gradient-to-br from-rose-500 to-pink-500',
-        'bg-gradient-to-br from-amber-500 to-orange-500'
-    ];
-    const avatarGradient = avatarGradients[staff.name.charCodeAt(0) % avatarGradients.length];
+    // Unified Purple Brand Gradient (matching Insight Banner)
+    const avatarGradient = 'bg-gradient-to-br from-indigo-600 to-violet-600 shadow-indigo-200';
 
     return (
         <div className="group relative bg-white rounded-[40px] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.1)] hover:-translate-y-2">
