@@ -1,7 +1,8 @@
+import { createClient } from '@/lib/supabase';
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+
 import NotificationManager from './NotificationManager';
 import { Button } from '@/components/ui/Button';
 import { User, Camera, Save, Lock, User as UserIcon, Building2, LogOut, Mail, ShieldCheck, Settings as SettingsIcon, Key, ChevronDown } from 'lucide-react';
@@ -72,10 +73,7 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
         confirmPassword: ''
     });
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     useEffect(() => {
         if (profile) {

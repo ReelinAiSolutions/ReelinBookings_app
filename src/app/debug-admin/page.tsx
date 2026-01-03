@@ -1,17 +1,15 @@
+import { createClient } from '@/lib/supabase';
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+
 
 export default function DebugAdminPage() {
     const [debug, setDebug] = useState<any>({});
 
     useEffect(() => {
         const checkAdminData = async () => {
-            const supabase = createBrowserClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-            );
+            const supabase = createClient();
 
             // Simulate what admin page does
             const { data: { user } } = await supabase.auth.getUser();

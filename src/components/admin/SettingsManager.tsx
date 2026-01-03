@@ -1,8 +1,9 @@
+import { createClient } from '@/lib/supabase';
 'use client';
 
 import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2, Tag, ChevronDown, ChevronUp, ShieldAlert, CalendarDays, FileText, LogOut } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/context/ToastContext';
 import { Organization } from '@/types';
@@ -93,10 +94,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
 
     const [calendarColor, setCalendarColor] = useState<'staff' | 'service'>(org.settings?.color_mode || 'staff');
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     useEffect(() => {
         setFormData({

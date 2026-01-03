@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase';
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -42,7 +43,7 @@ import {
 import Link from 'next/link';
 import { ExternalLink, Plus, Lock, X } from 'lucide-react';
 import { Organization, Appointment } from '@/types';
-import { createBrowserClient } from '@supabase/ssr';
+
 
 const AmbientBackground = () => (
     <style dangerouslySetInnerHTML={{
@@ -85,10 +86,7 @@ export default function AdminDashboard() {
     const [userProfile, setUserProfile] = useState<any>(null); // New state
     const router = useRouter();
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     // Modal State
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);

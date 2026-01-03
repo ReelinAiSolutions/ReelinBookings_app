@@ -1,9 +1,10 @@
+import { createClient } from '@/lib/supabase';
 'use client';
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+
 import { ArrowRight, Calendar, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -14,10 +15,7 @@ export default function LandingPage() {
   // Smart Entry Point: Redirect to Admin Dashboard if logged in
   useEffect(() => {
     const checkSession = async () => {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+      const supabase = createClient();
 
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {

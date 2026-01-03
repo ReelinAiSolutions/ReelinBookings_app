@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase';
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -14,7 +15,7 @@ import {
 } from '@/services/dataService';
 import { useRouter } from 'next/navigation';
 import { Organization, Appointment } from '@/types';
-import { createBrowserClient } from '@supabase/ssr';
+
 
 export default function StaffPage() {
     const [appointments, setAppointments] = useState<any[]>([]);
@@ -27,10 +28,7 @@ export default function StaffPage() {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     const loadStaffData = async () => {
         try {

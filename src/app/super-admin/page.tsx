@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase';
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import { getInvitations, createInvitation, deleteInvitation } from '@/services/d
 import { Plus, Trash2, Copy, Check, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
-import { createBrowserClient } from '@supabase/ssr';
+
 
 export default function SuperAdminPage() {
     const [invites, setInvites] = useState<any[]>([]);
@@ -17,10 +18,7 @@ export default function SuperAdminPage() {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [authChecking, setAuthChecking] = useState(true);
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     useEffect(() => {
         checkAccess();

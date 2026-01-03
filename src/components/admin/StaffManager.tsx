@@ -1,9 +1,10 @@
+import { createClient } from '@/lib/supabase';
 import React, { useState, useMemo } from 'react';
 import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments } from '@/services/dataService';
 import { Service, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Plus, Search, Grid, List, Users2 } from 'lucide-react';
-import { createBrowserClient } from '@supabase/ssr';
+
 import { useToast } from '@/context/ToastContext';
 import StaffCard from './StaffCard';
 import StaffFormModal from './StaffFormModal';
@@ -35,10 +36,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     const [modalSchedule, setModalSchedule] = useState<any[]>([]);
     const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     // Filter staff
     const filteredStaff = useMemo(() => {

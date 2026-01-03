@@ -1,8 +1,9 @@
+import { createClient } from '@/lib/supabase';
 import React, { useState, useEffect } from 'react';
 import { Service } from '@/types';
 import { X, Upload, Image as ImageIcon, DollarSign, Clock, Tag, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { createBrowserClient } from '@supabase/ssr';
+
 
 interface ServiceFormModalProps {
     isOpen: boolean;
@@ -18,10 +19,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
     const [imagePreview, setImagePreview] = useState<string>('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     const [formData, setFormData] = useState({
         name: '',

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Calendar, Lock, Mail, AlertCircle, User, Zap } from 'lucide-react';
@@ -22,10 +22,7 @@ function LoginForm() {
     // Show message if redirected
     const isRedirect = searchParams.get('login') === 'true';
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     // Hide loading screen after mount
     React.useEffect(() => {
