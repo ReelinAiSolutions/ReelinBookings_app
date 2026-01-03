@@ -961,10 +961,10 @@ export default function WeeklyCalendar({
                         {staff.map((member, idx) => {
                             const colorScheme = staffColors[idx % staffColors.length];
                             return (
-                                <div key={member.id} className="flex-1 min-w-[120px] text-center border-l border-gray-300 first:border-l-0 py-2 bg-white sticky top-0 z-40">
+                                <div key={member.id} className="flex-1 min-w-[120px] text-center border-l border-gray-300 first:border-l-0 py-1 bg-white sticky top-0 z-40">
                                     <div className="flex items-center justify-center gap-1.5">
-                                        <div className="w-2 h-2 rounded-full ${colorScheme.dot}"></div>
-                                        <div className="text-xs font-bold text-gray-900 truncate px-1">{member.name}</div>
+                                        <div className="w-1.5 h-1.5 rounded-full ${colorScheme.dot}"></div>
+                                        <div className="text-[10px] font-bold text-gray-900 truncate px-1">{member.name}</div>
                                     </div>
                                 </div>
                             );
@@ -1322,191 +1322,180 @@ export default function WeeklyCalendar({
 
             {/* --- Main Header --- */}
             <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md transition-all border-b border-gray-100">
-                <header className="pt-4 pb-2 px-4 flex flex-col shrink-0 touch-none">
+                <header className="py-2 sm:py-3 px-4 flex items-center justify-between shrink-0 touch-none gap-2 min-h-[56px]">
 
-                    {/* Left: Navigation */}
-                    {calendarLevel !== 'day' && calendarLevel !== 'year' && (
-                        <div
-                            onClick={() => {
-                                if (calendarLevel === 'month') {
+                    {/* LEFT: NAVIGATION */}
+                    <div className="flex-1 flex items-center gap-2 min-w-0">
+                        {calendarLevel !== 'day' && calendarLevel !== 'year' && (
+                            <div
+                                onClick={() => {
+                                    if (calendarLevel === 'month') {
+                                        setZoomDirection('out'); // Back out
+                                        setCalendarLevel('year');
+                                    }
+                                }}
+                                className="flex items-center text-indigo-600 font-medium cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors -ml-2"
+                            >
+                                <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
+                                <span className="text-[17px] font-normal">{calendarLevel === 'month' ? getYear(selectedDate) : 'Back'}</span>
+                            </div>
+                        )}
+                        {calendarLevel === 'day' && (
+                            <div
+                                onClick={() => {
                                     setZoomDirection('out'); // Back out
-                                    setCalendarLevel('year');
-                                }
-                            }}
-                            className="flex items-center text-indigo-600 font-medium cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors -ml-2"
-                        >
-                            <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
-                            <span className="text-[17px] font-normal">{calendarLevel === 'month' ? getYear(selectedDate) : 'Back'}</span>
-                        </div>
-                    )}
-                    {calendarLevel === 'day' && (
-                        <div
-                            onClick={() => {
-                                setZoomDirection('out'); // Back out
-                                setCalendarLevel('month');
-                            }}
-                            className="flex items-center text-indigo-600 font-medium cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors -ml-2"
-                        >
-                            <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
-                            <span className="text-[17px] font-normal">Month</span>
-                        </div>
-                    )}
-
-
-                    {/* Row 2: Title & Primary Actions */}
-                    <div className="flex items-center justify-between mt-1 gap-2">
-                        {/* LEFT: TITLE & TODAY */}
-                        <div className="flex-1 flex items-center gap-2 min-w-0">
-                            {(!isSameDay(selectedDate, new Date()) || calendarLevel !== 'day') && (
-                                <button
-                                    className="text-[11px] sm:text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-2 sm:px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors shrink-0"
-                                    onClick={() => {
-                                        setZoomDirection('in'); // Set zoom direction for navigating in
-                                        setCalendarLevel('day');
-                                        setSelectedDate(new Date());
-                                        setTimeout(() => scrollToTime(), 100);
-                                    }}
-                                >
-                                    Today
-                                </button>
-                            )}
-                        </div>
-
-                        {/* CENTER: STAFF IDENTITY (FLEX CENTERED) */}
-                        {showStaffFilter && (
-                            <div className="flex-shrink-0 z-[60]">
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-[#007AFF]!/10 ring-2 ring-[#007AFF] text-[#007AFF]' : 'bg-[#007AFF]!/5 hover:bg-[#007AFF]!/10 text-[#007AFF]'}`}
-                                    >
-                                        <span className="text-base sm:text-lg font-black tracking-tight truncate max-w-[120px] sm:max-w-[200px]">
-                                            {filterStaffId === 'ALL' ? 'All Staff' : staff.find(s => s.id === filterStaffId)?.name || 'Unknown'}
-                                        </span>
-                                        <ChevronRight className={`w-4 h-4 text-[#007AFF] transition-transform duration-200 ${isFilterOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} />
-                                    </button>
-
-                                    {isFilterOpen && (
-                                        <>
-                                            <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)}></div>
-                                            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-white/40 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                                <div className="p-1">
-                                                    <div
-                                                        className={`px-4 py-3 text-sm font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 cursor-pointer mb-1 transition-colors ${filterStaffId === 'ALL' ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-500'}`}
-                                                        onClick={() => { setFilterStaffId('ALL'); setIsFilterOpen(false); }}
-                                                    >
-                                                        All Staff
-                                                    </div>
-                                                    <div className="h-px bg-gray-100 mx-2 mb-1"></div>
-                                                    {staff.map(s => (
-                                                        <div
-                                                            key={s.id}
-                                                            className={`px-4 py-3 text-sm font-bold rounded-xl hover:bg-gray-50 cursor-pointer transition-colors ${filterStaffId === s.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-700'}`}
-                                                            onClick={() => { setFilterStaffId(s.id); setIsFilterOpen(false); }}
-                                                        >
-                                                            {s.name}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
+                                    setCalendarLevel('month');
+                                }}
+                                className="flex items-center text-indigo-600 font-medium cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors -ml-2 shrink-0"
+                            >
+                                <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
+                                <span className="text-[17px] font-normal">Month</span>
                             </div>
                         )}
 
-                        {/* RIGHT: ACTION BUTTONS (FLEX END) */}
-                        <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5">
+                        {/* TODAY BUTTON (Hidden if today is selected/not day view maybe, or just keep it compact) */}
+                        {(!isSameDay(selectedDate, new Date()) || calendarLevel !== 'day') && (
+                            <button
+                                className="text-[11px] sm:text-xs font-bold text-indigo-600 bg-indigo-100/50 px-2 py-1 rounded-full hover:bg-indigo-100 transition-colors shrink-0"
+                                onClick={() => {
+                                    setZoomDirection('in');
+                                    setCalendarLevel('day');
+                                    setSelectedDate(new Date());
+                                    setTimeout(() => scrollToTime(), 100);
+                                }}
+                            >
+                                Today
+                            </button>
+                        )}
+                    </div>
 
-                            {/* JUMP TO DATE PICKER */}
-                            <div className="relative group">
+                    {/* CENTER: STAFF IDENTITY */}
+                    {showStaffFilter && (
+                        <div className="flex-shrink-0 z-[60]">
+                            <div className="relative">
                                 <button
-                                    className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 transition-all duration-200 rounded-full ${isDatePickerOpen ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
-                                    onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-[#007AFF]!/10 ring-2 ring-[#007AFF] text-[#007AFF]' : 'bg-[#007AFF]!/5 hover:bg-[#007AFF]!/10 text-[#007AFF]'}`}
                                 >
-                                    <CalendarIcon className="w-4 h-4" />
-                                    <span className="text-[11px] font-black uppercase tracking-widest hidden xl:block">Quick View</span>
+                                    <span className="text-sm sm:text-base font-black tracking-tight truncate max-w-[80px] sm:max-w-[150px]">
+                                        {filterStaffId === 'ALL' ? 'All Staff' : staff.find(s => s.id === filterStaffId)?.name || 'Unknown'}
+                                    </span>
+                                    <ChevronRight className={`w-3.5 h-3.5 text-[#007AFF] transition-transform duration-200 ${isFilterOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} />
                                 </button>
 
-                                {isDatePickerOpen && (
+                                {isFilterOpen && (
                                     <>
-                                        <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)}></div>
-                                        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 animate-in zoom-in-95 duration-200 origin-top-right">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <button onClick={() => setSelectedDate(subMonths(selectedDate, 1))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                                                    <ChevronLeft className="w-5 h-5 text-gray-400" />
-                                                </button>
-                                                <div className="text-sm font-black text-gray-900 tracking-tight">
-                                                    {format(selectedDate, 'MMMM yyyy')}
+                                        <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)}></div>
+                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-white/40 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                            <div className="p-1">
+                                                <div
+                                                    className={`px-4 py-3 text-sm font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 cursor-pointer mb-1 transition-colors ${filterStaffId === 'ALL' ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-500'}`}
+                                                    onClick={() => { setFilterStaffId('ALL'); setIsFilterOpen(false); }}
+                                                >
+                                                    All Staff
                                                 </div>
-                                                <button onClick={() => setSelectedDate(addMonths(selectedDate, 1))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                                                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                                                </button>
-                                            </div>
-
-                                            <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                                                    <div key={i} className="text-[10px] font-bold text-gray-400 uppercase">{d}</div>
+                                                <div className="h-px bg-gray-100 mx-2 mb-1"></div>
+                                                {staff.map(s => (
+                                                    <div
+                                                        key={s.id}
+                                                        className={`px-4 py-3 text-sm font-bold rounded-xl hover:bg-gray-50 cursor-pointer transition-colors ${filterStaffId === s.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-gray-700'}`}
+                                                        onClick={() => { setFilterStaffId(s.id); setIsFilterOpen(false); }}
+                                                    >
+                                                        {s.name}
+                                                    </div>
                                                 ))}
                                             </div>
-
-                                            <div className="grid grid-cols-7 gap-1">
-                                                {(() => {
-                                                    const start = startOfMonth(selectedDate);
-                                                    const daysInMonth = getDaysInMonth(selectedDate);
-                                                    const startDay = getDay(start);
-
-                                                    const days = [];
-                                                    for (let i = 0; i < startDay; i++) days.push(<div key={`pad-${i}`} />);
-
-                                                    for (let d = 1; d <= daysInMonth; d++) {
-                                                        const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), d);
-                                                        const isSelected = isSameDay(date, selectedDate);
-                                                        const isToday = isSameDay(date, new Date());
-
-                                                        days.push(
-                                                            <button
-                                                                key={d}
-                                                                onClick={() => {
-                                                                    setSelectedDate(date);
-                                                                    setIsDatePickerOpen(false);
-                                                                    if (calendarLevel !== 'day') {
-                                                                        setZoomDirection('in'); // Set zoom direction for navigating in
-                                                                        setCalendarLevel('day');
-                                                                    }
-                                                                }}
-                                                                className={`h-8 w-8 rounded-full text-xs font-bold transition-all ${isSelected
-                                                                    ? 'bg-indigo-600 text-white shadow-md scale-110'
-                                                                    : isToday
-                                                                        ? 'text-indigo-600 bg-indigo-50'
-                                                                        : 'text-gray-700 hover:bg-gray-100'
-                                                                    }`}
-                                                            >
-                                                                {d}
-                                                            </button>
-                                                        );
-                                                    }
-                                                    return days;
-                                                })()}
-                                            </div>
-
-
                                         </div>
                                     </>
                                 )}
                             </div>
-
-
-
-
-                            <button
-                                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-[#007AFF]! text-white rounded-full transition-all duration-200 hover:bg-blue-600 active:scale-95 shadow-lg shadow-blue-500/20"
-                                onClick={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)}
-                            >
-                                <Plus className="w-4 h-4" strokeWidth={3} />
-                                <span className="text-[11px] font-black uppercase tracking-widest hidden xl:block">Add New</span>
-                            </button>
                         </div>
+                    )}
+
+                    {/* RIGHT: ACTION BUTTONS */}
+                    <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5">
+                        {/* QUICK VIEW */}
+                        <div className="relative group">
+                            <button
+                                className={`flex items-center gap-1.5 p-1.5 sm:px-2 py-1.5 transition-all duration-200 rounded-full ${isDatePickerOpen ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                                onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                            >
+                                <CalendarIcon className="w-5 h-5" />
+                            </button>
+
+                            {isDatePickerOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)}></div>
+                                    <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 animate-in zoom-in-95 duration-200 origin-top-right">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <button onClick={() => setSelectedDate(subMonths(selectedDate, 1))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                                <ChevronLeft className="w-5 h-5 text-gray-400" />
+                                            </button>
+                                            <div className="text-sm font-black text-gray-900 tracking-tight">
+                                                {format(selectedDate, 'MMMM yyyy')}
+                                            </div>
+                                            <button onClick={() => setSelectedDate(addMonths(selectedDate, 1))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                                <ChevronRight className="w-5 h-5 text-gray-400" />
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                                                <div key={i} className="text-[10px] font-bold text-gray-400 uppercase">{d}</div>
+                                            ))}
+                                        </div>
+
+                                        <div className="grid grid-cols-7 gap-1">
+                                            {(() => {
+                                                const start = startOfMonth(selectedDate);
+                                                const daysInMonth = getDaysInMonth(selectedDate);
+                                                const startDay = getDay(start);
+
+                                                const days = [];
+                                                for (let i = 0; i < startDay; i++) days.push(<div key={`pad-${i}`} />);
+
+                                                for (let d = 1; d <= daysInMonth; d++) {
+                                                    const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), d);
+                                                    const isSelected = isSameDay(date, selectedDate);
+                                                    const isToday = isSameDay(date, new Date());
+
+                                                    days.push(
+                                                        <button
+                                                            key={d}
+                                                            onClick={() => {
+                                                                setSelectedDate(date);
+                                                                setIsDatePickerOpen(false);
+                                                                if (calendarLevel !== 'day') {
+                                                                    setZoomDirection('in'); // Set zoom direction for navigating in
+                                                                    setCalendarLevel('day');
+                                                                }
+                                                            }}
+                                                            className={`h-8 w-8 rounded-full text-xs font-bold transition-all ${isSelected
+                                                                ? 'bg-indigo-600 text-white shadow-md scale-110'
+                                                                : isToday
+                                                                    ? 'text-indigo-600 bg-indigo-50'
+                                                                    : 'text-gray-700 hover:bg-gray-100'
+                                                                }`}
+                                                        >
+                                                            {d}
+                                                        </button>
+                                                    );
+                                                }
+                                                return days;
+                                            })()}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* ADD BUTTON */}
+                        <button
+                            className="flex items-center justify-center w-10 h-10 bg-[#007AFF]! text-white rounded-full transition-all duration-200 hover:bg-blue-600 active:scale-90 shadow-lg shadow-blue-500/20"
+                            onClick={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)}
+                        >
+                            <Plus className="w-6 h-6" strokeWidth={3} />
+                        </button>
                     </div>
                 </header >
 
@@ -1514,19 +1503,19 @@ export default function WeeklyCalendar({
                 {
                     calendarLevel === 'day' && (
                         <div
-                            className="flex flex-col select-none touch-none pb-4"
+                            className="flex flex-col select-none touch-none pb-1"
                             onTouchStart={onHeaderTouchStart}
                             onTouchMove={onHeaderTouchMove}
                             onTouchEnd={onHeaderTouchEnd}
                         >
-                            <div className="flex justify-between px-4 mb-2">
+                            <div className="flex justify-between px-4 mb-0.5">
                                 {weekDayLabels.map((day, i) => (
-                                    <div key={i} className="w-10 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <div key={i} className="w-10 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                         {day}
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-between px-4 text-[17px]">
+                            <div className="flex justify-between px-4 text-[16px]">
                                 {weekDates.map((date) => {
                                     const isSelected = isSameDay(date, selectedDate);
                                     const isToday = isSameDay(date, new Date());
@@ -1536,7 +1525,7 @@ export default function WeeklyCalendar({
                                             className="w-10 flex flex-col items-center justify-center cursor-pointer"
                                             onClick={() => setSelectedDate(date)}
                                         >
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
+                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
                                                 ? 'bg-[#007AFF]! text-white shadow-sm'
                                                 : isToday
                                                     ? 'text-[#007AFF]'
@@ -1544,7 +1533,7 @@ export default function WeeklyCalendar({
                                                 }`}>
                                                 {format(date, 'd')}
                                             </div>
-                                            {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF]! mt-1"></div>}
+                                            {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF]! mt-0.5"></div>}
                                         </div>
                                     );
                                 })}
@@ -1556,7 +1545,7 @@ export default function WeeklyCalendar({
                 {/* MONTH VIEW WEEKDAY HEADERS (Moved from scroll container) */}
                 {
                     calendarLevel === 'month' && (
-                        <div className="grid grid-cols-7 pb-2 pt-2 bg-white select-none">
+                        <div className="grid grid-cols-7 pb-1.5 pt-1 bg-white select-none border-b border-gray-100">
                             {weekDayLabels.map((d, i) => (
                                 <div key={i} className="text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{d}</div>
                             ))}
