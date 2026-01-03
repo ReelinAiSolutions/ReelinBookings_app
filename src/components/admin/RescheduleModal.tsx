@@ -169,6 +169,12 @@ export default function RescheduleModal({
                                         {appointment.clientName !== 'Blocked Time' && appointment.status !== 'BLOCKED' && (
                                             <p className="text-sm font-medium text-gray-500">{appointment.clientEmail}</p>
                                         )}
+                                        {appointment.clientName !== 'Blocked Time' && appointment.status !== 'BLOCKED' && appointment.clientPhone && (
+                                            <p className="text-sm font-bold text-gray-500 flex items-center gap-1 mt-0.5">
+                                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                {appointment.clientPhone}
+                                            </p>
+                                        )}
                                     </div>
                                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${appointment.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                         {appointment.status || 'CONFIRMED'}

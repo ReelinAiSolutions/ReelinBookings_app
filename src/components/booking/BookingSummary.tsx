@@ -46,8 +46,8 @@ export default function BookingSummary({
     const isAutoFilled = !!initialGuestData;
 
     const handleConfirm = () => {
-        if (!formData.name || !formData.email) {
-            alert('Please enter your name and email to continue.');
+        if (!formData.name || !formData.email || !formData.phone) {
+            alert('Please enter your name, email, and phone number to continue.');
             return;
         }
         onConfirm(formData);

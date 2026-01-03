@@ -2,24 +2,68 @@
 
 import React, { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+import NotificationManager from './NotificationManager';
 import { Button } from '@/components/ui/Button';
-import { User, Camera, Save, Lock, User as UserIcon, Building2, LogOut, Mail, Shield, Settings as SettingsIcon, Key } from 'lucide-react';
-import SettingsManager from './SettingsManager';
+import { User, Camera, Save, Lock, User as UserIcon, Building2, LogOut, Mail, ShieldCheck, Settings as SettingsIcon, Key, ChevronDown } from 'lucide-react';
 import { Organization } from '@/types';
 
 interface ProfileManagerProps {
     user: any;
     profile: any;
     onUpdate: () => void;
-    org: Organization | null;
-    onUpdateOrg: (org: Organization) => void;
 }
 
-export default function ProfileManager({ user, profile, onUpdate, org, onUpdateOrg }: ProfileManagerProps) {
+// Helper Interface for Accordion
+interface AccordionItemProps {
+    title: string;
+    subtitle: string;
+    icon: React.ElementType;
+    colorClass: string;
+    isOpen: boolean;
+    onToggle: () => void;
+    children: React.ReactNode;
+}
+
+const AccordionItem = ({ title, subtitle, icon: Icon, colorClass, isOpen, onToggle, children }: AccordionItemProps) => (
+    <div className={`bg-white rounded-[32px] shadow-sm border transition-all duration-300 overflow-hidden ${isOpen ? 'border-gray-200 ring-4 ring-gray-50' : 'border-gray-100'}`}>
+        <button
+            type="button"
+            onClick={onToggle}
+            className="w-full flex items-center justify-between p-8 text-left transition-colors hover:bg-gray-50/50"
+        >
+            <div className="flex items-center gap-4">
+                <div className={`p-3.5 rounded-2xl ${colorClass}`}>
+                    <Icon className="w-6 h-6" strokeWidth={2.5} />
+                </div>
+                <div>
+                    <h3 className="text-xl font-black text-gray-900 leading-tight">{title}</h3>
+                    <p className="text-sm text-gray-500 font-bold mt-0.5">{subtitle}</p>
+                </div>
+            </div>
+            <div className={`p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-gray-100 rotate-180' : 'bg-transparent'}`}>
+                <ChevronDown className="w-6 h-6 text-gray-400" />
+            </div>
+        </button>
+        <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="p-8 pt-0 border-t border-gray-100/50">
+                <div className="pt-8">
+                    {children}
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
+export default function ProfileManager({ user, profile, onUpdate }: ProfileManagerProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(profile?.avatar_url || null);
     const [showChangePassword, setShowChangePassword] = useState(false);
+    const [openSection, setOpenSection] = useState<string>('profile');
+
+    const toggleSection = (id: string) => {
+        setOpenSection(openSection === id ? '' : id);
+    };
 
     const [formData, setFormData] = useState({
         fullName: profile?.full_name || '',
@@ -113,78 +157,60 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6 pb-24 animate-in fade-in duration-500">
+        <div className="space-y-8 pb-24 animate-in fade-in duration-500">
+            {/* Standard Header */}
+            <header className="mb-8">
+                <h1 className="text-[32px] font-black text-gray-900 tracking-tight leading-none mb-2">Profile Settings</h1>
+                <p className="text-gray-500 font-medium">Manage your personal information and security details.</p>
+            </header>
 
-            {/* Premium Hero Section */}
-            <div className="relative group animate-in fade-in slide-in-from-top-4 duration-700">
-                {/* Fallback bg-slate-900 in case gradient fails or is light */}
-                <div className="absolute inset-0 bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow duration-500 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-600 opacity-90"></div>
-                </div>
-                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 rounded-[2.5rem]"></div>
+            <form onSubmit={handleSave} className="space-y-4">
 
-                <div className="relative p-10 md:p-16 flex flex-col items-center text-center">
-                    <div className="relative mb-8 group/avatar">
-                        <div className="absolute -inset-1 bg-white/20 rounded-full blur group-hover/avatar:bg-white/40 transition-colors"></div>
-                        <div className="relative w-32 h-32 md:w-40 md:h-40 bg-white/10 backdrop-blur-md rounded-full border-4 border-white/30 flex items-center justify-center overflow-hidden shadow-2xl">
-                            {previewUrl ? (
-                                <img
-                                    src={previewUrl}
-                                    alt="Admin Avatar"
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = 'none';
-                                        setPreviewUrl(null); // Fallback to icon
-                                    }}
-                                />
-                            ) : (
-                                <UserIcon className="w-16 h-16 md:w-20 md:h-20 text-white/50" />
-                            )}
-                            <label className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all cursor-pointer backdrop-blur-sm">
-                                <Camera className="w-8 h-8 text-white mb-1" />
-                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Update Photo</span>
-                                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                            </label>
+                {/* Public Profile Accordion */}
+                <AccordionItem
+                    title="Public Profile"
+                    subtitle="Update your photo and personal details"
+                    icon={UserIcon}
+                    colorClass="bg-blue-50 text-blue-600"
+                    isOpen={openSection === 'profile'}
+                    onToggle={() => toggleSection('profile')}
+                >
+                    <div className="space-y-8">
+                        {/* Avatar Uploader - Refined for Accordion */}
+                        <div className="flex flex-col md:flex-row items-center gap-8 p-6 bg-gray-50 rounded-[24px] border border-gray-100">
+                            <div className="relative group/avatar shrink-0">
+                                <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden relative z-10 bg-white">
+                                    {previewUrl ? (
+                                        <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-blue-50 flex items-center justify-center text-blue-300">
+                                            <UserIcon className="w-10 h-10" />
+                                        </div>
+                                    )}
+                                </div>
+                                <label className="absolute bottom-0 right-0 p-2 bg-gray-900 text-white rounded-full cursor-pointer hover:bg-black transition-colors shadow-lg z-20">
+                                    <Camera className="w-4 h-4" />
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                                </label>
+                            </div>
+                            <div className="text-center md:text-left">
+                                <h4 className="font-black text-gray-900 text-lg">Profile Photo</h4>
+                                <p className="text-sm text-gray-500 font-medium">This will be displayed on your account.</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2 drop-shadow-md">
-                        {formData.fullName || 'Welcome Admin'}
-                    </h1>
-                    <p className="text-white/80 font-medium text-lg mb-4">{formData.email}</p>
-                    <div className="flex items-center gap-2 px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-full border border-white/20">
-                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse box-shadow-glow"></div>
-                        <span className="text-white font-black text-[10px] tracking-widest uppercase drop-shadow-sm">Admin Portal Active</span>
-                    </div>
-                </div>
-            </div>
-
-            <form onSubmit={handleSave} className="space-y-6">
-                {/* Personal Information Card */}
-                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
-                    <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #f9fafb, #f3f4f6)' }}>
-                        <div>
-                            <h3 className="text-xl font-black text-gray-900 tracking-tight">Personal Details</h3>
-                            <p className="text-sm text-gray-500 font-medium">Update your administrative profile.</p>
-                        </div>
-                        <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-primary-600">
-                            <UserIcon className="w-6 h-6" />
-                        </div>
-                    </div>
-
-                    <div className="p-8 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
                                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <UserIcon className="h-5 w-5 text-gray-300 group-focus-within:text-primary-500 transition-colors" />
+                                        <UserIcon className="h-5 w-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
                                     </div>
                                     <input
                                         type="text"
                                         value={formData.fullName}
                                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                        className="block w-full pl-11 pr-4 py-4 bg-gray-50/50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                        className="block w-full pl-11 pr-4 py-4 bg-gray-50/50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
                                         placeholder="Admin Name"
                                     />
                                 </div>
@@ -206,11 +232,10 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                             </div>
                         </div>
 
-                        {/* Quick Save Button inside section for better UX */}
                         <div className="flex justify-end pt-4">
                             <Button
                                 type="submit"
-                                className="bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-8 py-6 font-black uppercase tracking-widest text-xs shadow-lg shadow-primary-600/20"
+                                className="bg-gray-900 hover:bg-black text-white rounded-[24px] px-8 py-6 font-black uppercase tracking-widest text-xs shadow-xl shadow-gray-200 hover:shadow-2xl transition-all active:scale-95"
                                 isLoading={isLoading}
                             >
                                 <Save className="w-4 h-4 mr-2" />
@@ -218,21 +243,18 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                             </Button>
                         </div>
                     </div>
-                </div>
+                </AccordionItem>
 
-                {/* Security Card */}
-                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
-                    <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #faf5ff, #fdf2f8)' }}>
-                        <div>
-                            <h3 className="text-xl font-black text-gray-900 tracking-tight">Security</h3>
-                            <p className="text-sm text-gray-500 font-medium">Protect your admin account.</p>
-                        </div>
-                        <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-purple-600">
-                            <Lock className="w-6 h-6" />
-                        </div>
-                    </div>
-
-                    <div className="p-8">
+                {/* Security Accordion */}
+                <AccordionItem
+                    title="Security & Privacy"
+                    subtitle="Manage your password and account access"
+                    icon={ShieldCheck}
+                    colorClass="bg-purple-50 text-purple-600"
+                    isOpen={openSection === 'security'}
+                    onToggle={() => toggleSection('security')}
+                >
+                    <div className="space-y-6">
                         {!showChangePassword ? (
                             <button
                                 type="button"
@@ -259,13 +281,13 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                                         <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">New Password</label>
                                         <div className="relative group">
                                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <Key className="h-5 w-5 text-gray-300 group-focus-within:text-primary-500 transition-colors" />
+                                                <Key className="h-5 w-5 text-gray-300 group-focus-within:text-purple-500 transition-colors" />
                                             </div>
                                             <input
                                                 type="password"
                                                 value={formData.password}
                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
                                                 placeholder="••••••••"
                                             />
                                         </div>
@@ -274,13 +296,13 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                                         <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Confirm Password</label>
                                         <div className="relative group">
                                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <Key className="h-5 w-5 text-gray-300 group-focus-within:text-primary-500 transition-colors" />
+                                                <Key className="h-5 w-5 text-gray-300 group-focus-within:text-purple-500 transition-colors" />
                                             </div>
                                             <input
                                                 type="password"
                                                 value={formData.confirmPassword}
                                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
                                                 placeholder="••••••••"
                                             />
                                         </div>
@@ -294,13 +316,13 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                                             setShowChangePassword(false);
                                             setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
                                         }}
-                                        className="flex-1 rounded-2xl border-2 py-4 h-auto font-black uppercase tracking-widest text-xs"
+                                        className="flex-1 rounded-[24px] border-2 py-4 h-auto font-black uppercase tracking-widest text-xs"
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         type="submit"
-                                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl py-4 h-auto font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-600/20"
+                                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-[24px] py-4 h-auto font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-600/20"
                                         isLoading={isLoading}
                                     >
                                         Update Password
@@ -309,50 +331,27 @@ export default function ProfileManager({ user, profile, onUpdate, org, onUpdateO
                             </div>
                         )}
                     </div>
-                </div>
+                </AccordionItem>
             </form>
 
-            {/* Business Settings Card */}
-            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
-                <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #f0fdfa, #ecfdf5)' }}>
-                    <div>
-                        <h3 className="text-xl font-black text-gray-900 tracking-tight">Business Configuration</h3>
-                        <p className="text-sm text-gray-500 font-medium">Manage your organization details.</p>
-                    </div>
-                    <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-teal-600">
-                        <Building2 className="w-6 h-6" />
-                    </div>
-                </div>
-
-                <div className="p-8">
-                    {org ? (
-                        <SettingsManager org={org} onUpdate={onUpdateOrg} />
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <Building2 className="w-8 h-8 text-gray-400" />
-                            </div>
-                            <p className="text-gray-900 font-bold mb-2">Business settings unavailable</p>
-                            <p className="text-sm text-gray-500">Organization profile could not be loaded</p>
-                        </div>
-                    )}
-                </div>
+            <div className="max-w-3xl">
+                <NotificationManager />
             </div>
 
-            {/* Sign Out Section */}
-            <div className="pt-12 border-t border-gray-200">
-                <div className="bg-rose-50 rounded-[2rem] border border-rose-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Sign Out Section - At Bottom */}
+            <div className="max-w-3xl pt-8 border-t border-gray-100">
+                <div className="bg-rose-50/50 rounded-2xl p-6 border border-rose-100 flex items-center justify-between">
                     <div>
-                        <h4 className="text-xl font-black text-rose-900 tracking-tight">Account Session</h4>
-                        <p className="text-sm text-rose-600 font-medium">End your current session on this device.</p>
+                        <h4 className="text-sm font-black text-rose-900">Sign Out</h4>
+                        <p className="text-xs text-rose-500/80 font-medium mt-0.5">End your current session safely</p>
                     </div>
                     <button
                         type="button"
                         onClick={handleSignOut}
-                        className="flex items-center gap-2 px-8 py-4 bg-rose-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 active:scale-95 transition-all"
+                        className="flex items-center gap-2 px-6 py-2.5 bg-white text-rose-600 hover:bg-rose-50 border border-rose-100 hover:border-rose-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-md active:scale-95"
                     >
-                        <LogOut className="w-5 h-5" />
-                        Sign Out Now
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
                     </button>
                 </div>
             </div>

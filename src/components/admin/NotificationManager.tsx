@@ -47,7 +47,6 @@ export default function NotificationManager() {
         const hasPush = hasPushConstructor || hasPushInSWProto;
         const supported = isSecure && hasSW && hasPush;
 
-        console.log('Push Support Diagnostics:', { isSecure, hasSW, hasPush, isStandalone, userAgent: navigator.userAgent });
         setIsSupported(supported);
 
         if (!supported) {
@@ -82,7 +81,6 @@ export default function NotificationManager() {
             const subscription = await registration.pushManager.getSubscription();
             if (subscription) {
                 await subscription.unsubscribe();
-                console.log('Unsubscribed successfully');
             }
             setIsSubscribed(false);
             await subscribe();
@@ -93,7 +91,6 @@ export default function NotificationManager() {
     }
 
     const subscribe = async () => {
-        console.log('Starting Subscription Flow...');
         setLoading(true);
         setError(null);
         try {
@@ -197,23 +194,6 @@ export default function NotificationManager() {
                                         <CheckCircle2 className="w-4 h-4" />
                                         <span>Notifications Active</span>
                                     </div>
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                const reg = await navigator.serviceWorker.ready;
-                                                await reg.showNotification(' Test Alert', {
-                                                    body: 'If you see this, your phone is configured correctly!',
-                                                    icon: '/icon-192.png',
-                                                    vibrate: [200, 100, 200]
-                                                } as any);
-                                            } catch (e) {
-                                                alert('Local Test Failed: ' + e);
-                                            }
-                                        }}
-                                        className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors w-fit"
-                                    >
-                                        Send Test Alert (Local)
-                                    </button>
                                 </div>
                             ) : (
                                 <button

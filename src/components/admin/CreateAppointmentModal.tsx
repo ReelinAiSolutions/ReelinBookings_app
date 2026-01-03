@@ -10,6 +10,7 @@ interface CreateAppointmentModalProps {
         staffId: string;
         clientName: string;
         clientEmail: string;
+        clientPhone?: string;
         date: string;
         timeSlot: string;
         notes?: string;
@@ -52,6 +53,7 @@ export default function CreateAppointmentModal({
     const [serviceId, setServiceId] = useState<string>(services[0]?.id || '');
     const [clientName, setClientName] = useState('');
     const [clientEmail, setClientEmail] = useState('');
+    const [clientPhone, setClientPhone] = useState('');
     const [notes, setNotes] = useState('');
     const [customDuration, setCustomDuration] = useState<number>(60);
     const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,7 @@ export default function CreateAppointmentModal({
             setError(null);
             setClientName('');
             setClientEmail('');
+            setClientPhone('');
             setNotes('');
         }
     }, [isOpen, defaultDate, defaultTime, preselectedStaffId, services, staff]);
@@ -206,13 +209,6 @@ export default function CreateAppointmentModal({
         }
 
         setIsLoading(true);
-        console.log("Creating Appointment/Block:", {
-            mode,
-            customDuration,
-            checkDuration,
-            clientName,
-            time
-        });
 
         try {
             const payload = {
@@ -220,13 +216,13 @@ export default function CreateAppointmentModal({
                 staffId,
                 clientName: mode === 'blocking' ? 'Blocked Time' : (clientName || 'Walk-in'),
                 clientEmail: mode === 'blocking' ? 'blocked@internal' : (clientEmail || ''),
+                clientPhone: mode === 'blocking' ? '' : (clientPhone || ''),
                 date,
                 timeSlot: time,
                 notes: notes,
                 durationMinutes: mode === 'blocking' ? customDuration : undefined,
                 bufferMinutes: checkBuffer
             };
-            console.log("Sending Payload:", payload);
 
             await onConfirm(payload);
             onClose();
@@ -309,6 +305,16 @@ export default function CreateAppointmentModal({
                                             placeholder="jane@example.com"
                                             value={clientEmail}
                                             onChange={e => setClientEmail(e.target.value)}
+                                            className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                        />
+                                    </div>
+                                    <div className="px-5 py-4 flex-1">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Phone Number</p>
+                                        <input
+                                            type="tel"
+                                            placeholder="+1 (555) 000-0000"
+                                            value={clientPhone}
+                                            onChange={e => setClientPhone(e.target.value)}
                                             className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
                                         />
                                     </div>

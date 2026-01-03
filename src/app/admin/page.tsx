@@ -271,6 +271,7 @@ export default function AdminDashboard() {
         staffId: string;
         clientName: string;
         clientEmail: string;
+        clientPhone?: string;
         date: string;
         timeSlot: string;
         notes?: string;
@@ -285,6 +286,7 @@ export default function AdminDashboard() {
             clientId: 'admin-created',
             clientName: data.clientName,
             clientEmail: data.clientEmail,
+            clientPhone: data.clientPhone,
             date: data.date,
             timeSlot: data.timeSlot,
             notes: data.notes,
@@ -465,8 +467,6 @@ export default function AdminDashboard() {
                                     user={currentUser}
                                     profile={userProfile}
                                     onUpdate={loadDashboardData}
-                                    org={currentOrg}
-                                    onUpdateOrg={(updated) => setCurrentOrg(updated)}
                                 />
                             </div>
                         )

@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase';
 import { Service, Staff, Appointment, TimeSlot } from '@/types';
 import { format } from 'date-fns';
 
-console.log('--- DATA SERVICE RELOADED (RESCUE v3) ---');
 
 const supabase = createClient();
 
@@ -292,18 +291,16 @@ export const getAppointments = async (orgId: string, startDate?: string, endDate
         const service = Array.isArray(item.services) ? item.services[0] : item.services;
         const mappedDuration = item.duration_minutes !== null ? item.duration_minutes : (service?.duration_minutes || 60);
 
-        // Debug Log for Blocked items
-        if (item.client_name === 'Blocked Time' || item.status === 'BLOCKED') {
-            console.log(`[DataService] Blocked Item ${item.id}: Raw Dur=${item.duration_minutes}, Mapped=${mappedDuration}`);
-        }
 
         return {
             id: item.id,
             serviceId: item.service_id,
+            serviceName: service?.name || 'Unknown Service',
             staffId: item.staff_id,
             clientId: '',
             clientName: item.client_name || 'Unknown',
             clientEmail: item.client_email || '',
+            clientPhone: item.client_phone || '',
             date: item.date,
             timeSlot: item.time_slot,
             status: item.status as any,
@@ -332,6 +329,7 @@ export const createAppointment = async (appointment: Partial<Appointment>, orgId
         p_staff_id: appointment.staffId,
         p_client_name: appointment.clientName,
         p_client_email: appointment.clientEmail,
+        p_client_phone: appointment.clientPhone || null,
         p_date: appointment.date,
         p_time_slot: appointment.timeSlot,
         p_notes: appointment.notes,

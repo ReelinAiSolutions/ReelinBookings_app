@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2, Tag, ChevronDown, ChevronUp, ShieldAlert, CalendarDays, FileText } from 'lucide-react';
+import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2, Tag, ChevronDown, ChevronUp, ShieldAlert, CalendarDays, FileText, LogOut } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/Button';
@@ -61,7 +61,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
     const { toast } = useToast();
 
     // Accordion State
-    const [openSection, setOpenSection] = useState<string>('brand');
+    const [openSection, setOpenSection] = useState<string>('');
 
     const toggleSection = (id: string) => {
         setOpenSection(openSection === id ? '' : id);
@@ -131,6 +131,11 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
             setLogoFile(file);
             setPreviewUrl(URL.createObjectURL(file));
         }
+    };
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/login';
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -207,9 +212,6 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 <p className="text-gray-500 font-medium">Manage your brand, business details, and preferences</p>
             </header>
 
-            <div className="max-w-3xl">
-                <NotificationManager />
-            </div>
 
             <form onSubmit={handleSave} className="space-y-4">
 
@@ -641,19 +643,8 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                     </div>
                 </AccordionItem>
 
-                {/* Save Button */}
-                <div className="flex justify-end pt-6 pb-20 sticky bottom-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 mt-8 p-6 -mx-8">
-                    <Button
-                        type="submit"
-                        className="flex items-center gap-3 bg-[#4F46E5] hover:bg-[#4338ca] text-white px-10 py-4 rounded-xl shadow-xl shadow-indigo-500/20 font-bold text-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98]"
-                        isLoading={isLoading}
-                    >
-                        <Save className="w-5 h-5" />
-                        Save Changes
-                    </Button>
-                </div>
-
             </form>
+
         </div>
     );
 }

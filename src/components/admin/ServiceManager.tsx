@@ -118,7 +118,7 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
             {/* Header & Controls */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h2 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">
+                    <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">
                         Service Menu
                     </h2>
                     <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
@@ -129,22 +129,22 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
 
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Search */}
-                    <div className="relative group w-full md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <div className="relative group w-full md:w-96">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search services..."
-                            className="w-full pl-11 pr-4 py-3 bg-gray-100/80 border border-transparent rounded-[20px] text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                            className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-[24px] text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/30 transition-all outline-none"
                         />
                     </div>
 
                     <button
                         onClick={handleAddNew}
-                        className="bg-gray-900 hover:bg-black text-white rounded-[20px] px-6 py-3 font-black text-xs uppercase tracking-widest shadow-xl shadow-gray-200 transition-all active:scale-95 flex items-center gap-2"
+                        className="bg-gray-900 hover:bg-black text-white rounded-[24px] px-8 py-4 font-black text-xs uppercase tracking-widest shadow-2xl shadow-gray-200 transition-all active:scale-95 flex items-center gap-3 group"
                     >
-                        <Plus className="w-4 h-4" strokeWidth={3} />
+                        <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
                         New Service
                     </button>
                 </div>
@@ -226,6 +226,7 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                 }}
                 onSave={handleSave}
                 editingService={editingService}
+                existingCategories={categories.filter((c): c is string => c !== 'All' && !!c)}
             />
         </div>
     );

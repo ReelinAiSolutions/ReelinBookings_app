@@ -76,7 +76,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [showChangePassword, setShowChangePassword] = useState(false);
     const [profileData, setProfileData] = useState<any>(null);
-    const [openSection, setOpenSection] = useState<string | null>('profile');
+    const [openSection, setOpenSection] = useState<string | null>(null);
     const { toast } = useToast();
 
     const [formData, setFormData] = useState({
@@ -174,24 +174,14 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:px-0">
-            {/* Admin-style Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2 md:gap-3">
-                        <div className="p-2 bg-gray-100 rounded-xl">
-                            <Settings className="w-6 h-6 md:w-8 md:h-8 text-gray-600" />
-                        </div>
-                        Settings
-                    </h1>
-                    <p className="text-gray-500 text-sm font-bold mt-1 ml-14">Manage your profile and account.</p>
-                </div>
+            {/* Header */}
+            <div className="mb-8">
+                <h1 className="text-[32px] font-black text-gray-900 tracking-tight leading-none mb-2">Profile Settings</h1>
+                <p className="text-gray-500 font-medium">Manage your profile and account.</p>
             </div>
 
-            <div className="max-w-4xl mx-auto mb-6">
-                <NotificationManager />
-            </div>
 
-            <form onSubmit={handleSave} className="max-w-4xl mx-auto space-y-6">
+            <form onSubmit={handleSave} className="space-y-4">
 
                 {/* Profile Information Accordion */}
                 <AccordionItem
@@ -261,6 +251,17 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Save Button for Profile */}
+                        <div className="flex justify-end pt-4">
+                            <Button
+                                type="submit"
+                                className="bg-gray-900 hover:bg-black text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-gray-900/10 transition-all active:scale-95"
+                                isLoading={isLoading}
+                            >
+                                Save Profile
+                            </Button>
+                        </div>
                     </div>
                 </AccordionItem>
 
@@ -326,43 +327,42 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                     >
                                         Cancel
                                     </Button>
+                                    <Button
+                                        type="submit"
+                                        size="sm"
+                                        className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold uppercase tracking-wider"
+                                        isLoading={isLoading}
+                                    >
+                                        Update Password
+                                    </Button>
                                 </div>
                             </div>
                         )}
-                        {/* Sign Out Section - Moved Inside Security */}
-                        <div className="pt-6 border-t border-gray-100 mx-1">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h4 className="text-sm font-black text-rose-900">Sign Out</h4>
-                                    <p className="text-xs text-rose-500/80 font-medium mt-0.5">End your current session</p>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={handleSignOut}
-                                    className="flex items-center gap-2 px-6 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 rounded-xl text-xs font-black uppercase tracking-widest transition-colors"
-                                >
-                                    <LogOut className="w-4 h-4" />
-                                    Sign Out
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </AccordionItem>
-
-
-                {/* Floating Save Button */}
-                <div className="sticky bottom-6 z-20 mx-auto max-w-md pt-4">
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#F8F9FD] via-[#F8F9FD]/80 to-transparent -top-20 z-0 pointer-events-none"></div>
-                    <Button
-                        type="submit"
-                        className="w-full h-14 bg-gray-900 hover:bg-black text-white rounded-2xl shadow-xl shadow-gray-900/20 relative z-10 font-bold text-sm uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-100"
-                        isLoading={isLoading}
-                    >
-                        <Save className="w-5 h-5 mr-3" />
-                        Save Changes
-                    </Button>
-                </div>
             </form>
+
+            <div className="mb-8">
+                <NotificationManager />
+            </div>
+
+            {/* Sign Out Section - At Bottom */}
+            <div className="max-w-3xl pt-8 border-t border-gray-100">
+                <div className="bg-rose-50/50 rounded-2xl p-6 border border-rose-100 flex items-center justify-between">
+                    <div>
+                        <h4 className="text-sm font-black text-rose-900">Sign Out</h4>
+                        <p className="text-xs text-rose-500/80 font-medium mt-0.5">End your current session safely</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-white text-rose-600 hover:bg-rose-50 border border-rose-100 hover:border-rose-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-md active:scale-95"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

@@ -310,8 +310,8 @@ export default function StaffDashboard({
                         onClick={() => setActiveTab('settings')}
                         className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-[#4F46E5] scale-110' : 'text-gray-400'}`}
                     >
-                        <Settings className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-[#4F46E5]/10' : ''}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Settings</span>
+                        <UserIcon className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-[#4F46E5]/10' : ''}`} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
                     </button>
                 </div>
             </main>

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Calendar, BarChart3, User, ExternalLink, Settings, Users } from 'lucide-react';
+import { Calendar, BarChart3, User, ExternalLink, Settings, Users, Contact } from 'lucide-react';
 import Link from 'next/link';
 import { Organization } from '@/types';
 
@@ -14,8 +13,8 @@ export default function StaffSidebar({ activeTab, setActiveTab, currentOrg }: St
         { id: 'schedule', label: 'Calendar', icon: Calendar },
         { id: 'performance', label: 'My Stats', icon: BarChart3 },
         { id: 'team', label: 'Team', icon: Users },
-        { id: 'clients', label: 'My Clients', icon: User },
-        { id: 'settings', label: 'Settings', icon: Settings },
+        { id: 'clients', label: 'My Clients', icon: Contact },
+        { id: 'settings', label: 'Profile Settings', icon: User },
     ] as const;
 
     return (

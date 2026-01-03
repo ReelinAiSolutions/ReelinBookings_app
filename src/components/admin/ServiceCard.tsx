@@ -20,84 +20,94 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
     };
 
     return (
-        <div className="group relative bg-white rounded-[32px] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 hover:shadow-[0_32px_64px_rgba(0,0,0,0.08)] hover:-translate-y-2">
-            {/* Image or Gradient Header */}
-            <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
-                {hasImage ? (
-                    <img
-                        src={service.imageUrl}
-                        alt={service.name}
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <div
-                        className="w-full h-full flex items-center justify-center"
-                        style={{
-                            background: `linear-gradient(135deg, ${hexToRgba(categoryColor, 0.9)}, ${hexToRgba(categoryColor, 0.4)})`
-                        }}
-                    >
-                        <ImageIcon className="w-16 h-16 text-white/30" />
-                    </div>
-                )}
+        <div className="group relative bg-white rounded-[40px] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.1)] hover:-translate-y-2">
+            {/* Dark Premium Header */}
+            <div className="h-24 relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
+                {/* Background Effects */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-indigo-500/20 transition-colors" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none group-hover:bg-purple-500/20 transition-colors" />
 
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-                {/* Category Badge */}
-                {service.category && (
-                    <div
-                        className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm"
-                        style={{ backgroundColor: hexToRgba(categoryColor, 0.9) }}
-                    >
-                        {service.category}
-                    </div>
-                )}
-
-                {/* Visibility Indicator */}
-                <div className="absolute top-3 right-3">
+                {/* Visibility Indicator (Top Right) */}
+                <div className="absolute top-4 right-4 z-10">
                     {service.isVisible === false ? (
-                        <div className="p-1.5 bg-gray-900/80 backdrop-blur-sm rounded-full">
-                            <EyeOff className="w-4 h-4 text-white" />
+                        <div className="p-2 bg-gray-900/50 backdrop-blur-md rounded-full border border-white/10">
+                            <EyeOff className="w-4 h-4 text-gray-400" />
                         </div>
                     ) : (
-                        <div className="p-1.5 bg-green-500/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Eye className="w-4 h-4 text-white" />
+                        <div className="p-2 bg-emerald-500/20 backdrop-blur-md rounded-full border border-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Eye className="w-4 h-4 text-emerald-400" />
                         </div>
                     )}
                 </div>
+            </div>
 
-                {/* Service Name on Image */}
-                <div className="absolute bottom-4 left-6 right-6">
-                    <h3 className="text-xl font-black text-white leading-tight line-clamp-2 drop-shadow-md">
-                        {service.name}
-                    </h3>
+            {/* Floating Image/Icon Layer */}
+            <div className="absolute top-10 left-8 z-10">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-[2rem] blur-md transform group-hover:scale-110 transition-transform duration-500" />
+                    <div className="w-20 h-20 rounded-[2rem] border-4 border-white shadow-2xl overflow-hidden relative z-10 bg-white group-hover:scale-105 transition-transform duration-500">
+                        {hasImage ? (
+                            <img src={service.imageUrl} alt={service.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <div
+                                className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200"
+                                style={{
+                                    /* Optional: Use category color for subtle tint */
+                                    background: categoryColor ? `linear-gradient(135deg, ${hexToRgba(categoryColor, 0.1)}, ${hexToRgba(categoryColor, 0.05)})` : undefined
+                                }}
+                            >
+                                <ImageIcon className="w-8 h-8 text-gray-400" />
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Card Content */}
-            <div className="p-8 space-y-4">
-                {/* Price and Duration */}
-                <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5 text-gray-900">
-                        <span className="text-2xl font-black tracking-tight">${service.price}</span>
+            {/* Content Body */}
+            <div className="pt-12 px-8 pb-8">
+                {/* Title & Category */}
+                <div className="mb-6">
+                    {service.category && (
+                        <span
+                            className="inline-block px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] mb-2"
+                            style={{
+                                color: categoryColor,
+                                backgroundColor: hexToRgba(categoryColor, 0.1)
+                            }}
+                        >
+                            {service.category}
+                        </span>
+                    )}
+                    <h3 className="text-2xl font-black text-gray-900 leading-tight tracking-tight group-hover:text-indigo-600 transition-colors line-clamp-2">
+                        {service.name}
+                    </h3>
+                </div>
+
+                {/* Price & Specs Row */}
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-1">
+                        <span className="text-3xl font-black text-gray-900 tracking-tighter">${service.price}</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full text-gray-500 font-bold text-[10px] uppercase tracking-widest border border-gray-100">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{service.durationMinutes} MIN</span>
+                    <div className="h-8 w-px bg-gray-100"></div>
+                    <div className="flex items-center gap-2 text-gray-500">
+                        <Clock className="w-4 h-4 text-gray-300" />
+                        <span className="text-xs font-bold uppercase tracking-wider">{service.durationMinutes}m</span>
                     </div>
                 </div>
 
                 {/* Description */}
-                {service.description ? (
-                    <p className="text-xs font-bold text-gray-400 line-clamp-2 leading-relaxed">
-                        {service.description}
-                    </p>
-                ) : (
-                    <p className="text-xs font-bold text-gray-200 italic">No description provided</p>
-                )}
+                <div className="mb-8 min-h-[3rem]">
+                    {service.description ? (
+                        <p className="text-xs font-bold text-gray-400 line-clamp-3 leading-relaxed">
+                            {service.description}
+                        </p>
+                    ) : (
+                        <p className="text-xs font-bold text-gray-200 italic">No description provided</p>
+                    )}
+                </div>
 
-                {/* Additional Info */}
-                <div className="flex flex-wrap gap-2 pt-2">
+                {/* Action Footer */}
+                <div className="flex items-center gap-2 pt-6 border-t border-gray-50">
                     {service.bufferTimeMinutes && service.bufferTimeMinutes > 0 && (
                         <span className="px-2 py-0.5 bg-indigo-50/50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-100/50">
                             +{service.bufferTimeMinutes}m buffer

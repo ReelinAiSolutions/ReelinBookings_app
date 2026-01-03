@@ -51,10 +51,8 @@ export default function AppointmentList({ appointments }: AppointmentListProps) 
                                     <div className="font-medium text-gray-900">{apt.clientName}</div>
                                     <div className="text-xs text-gray-500">{apt.clientEmail}</div>
                                 </td>
-                                {/* TODO: Lookup service name from ID or pass full object */}
                                 <td className="px-6 py-4 text-sm text-gray-600">
-                                    {apt.serviceId === 's2' ? 'Standard Haircut' :
-                                        apt.serviceId === 's3' ? 'Deep Tissue Massage' : 'Service'}
+                                    {apt.serviceName || 'Service'}
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-600">{apt.date} at {apt.timeSlot}</td>
                                 <td className="px-6 py-4">

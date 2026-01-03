@@ -1,23 +1,14 @@
--- MIGRATION: ADD CLIENT PHONE NUMBER
--- Run this in Supabase SQL Editor to apply changes.
-
 -- 1. Add Phone Column to Appointments Table
 ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS client_phone TEXT;
 
--- 2. CLEANUP: Drop both potential versions of the function to avoid "not unique" errors.
--- Drop old signature (without phone)
-DROP FUNCTION IF EXISTS public.create_appointment_v2(UUID, UUID, UUID, TEXT, TEXT, DATE, TEXT, TEXT, INTEGER, INTEGER);
--- Drop new signature (with phone) - just in case it exists to ensure clean slate
-DROP FUNCTION IF EXISTS public.create_appointment_v2(UUID, UUID, UUID, TEXT, TEXT, TEXT, DATE, TEXT, TEXT, INTEGER, INTEGER);
-
--- 3. Update RPC Function (Standard Quote Version for Compatibility)
+-- 2. Update RPC Function to accept and save Phone Number
 CREATE OR REPLACE FUNCTION public.create_appointment_v2(
   p_org_id UUID,
   p_service_id UUID,
   p_staff_id UUID,
   p_client_name TEXT,
   p_client_email TEXT,
-  p_client_phone TEXT,
+  p_client_phone TEXT, -- Added Parameter
   p_date DATE,
   p_time_slot TEXT,
   p_notes TEXT DEFAULT NULL,
@@ -27,19 +18,19 @@ CREATE OR REPLACE FUNCTION public.create_appointment_v2(
 RETURNS UUID
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS '
+AS $$
 DECLARE
   v_appointment_id UUID;
 BEGIN
-  -- 1. Check for basic conflicts
+  -- 1. Check for basic conflicts (Optional since UI checks, but good for safety)
   IF EXISTS (
     SELECT 1 FROM public.appointments
     WHERE staff_id = p_staff_id
     AND date = p_date
     AND time_slot = p_time_slot
-    AND status IN (''CONFIRMED'', ''PENDING'')
+    AND status IN ('CONFIRMED', 'PENDING')
   ) THEN
-    RAISE EXCEPTION ''This slot is already booked.'';
+    RAISE EXCEPTION 'This slot is already booked.';
   END IF;
 
   -- 2. Insert the appointment
@@ -49,7 +40,7 @@ BEGIN
     service_id,
     client_name,
     client_email,
-    client_phone,
+    client_phone, -- Insert Phone
     date,
     time_slot,
     notes,
@@ -62,19 +53,19 @@ BEGIN
     p_service_id,
     p_client_name,
     p_client_email,
-    p_client_phone,
+    p_client_phone, -- Value
     p_date,
     p_time_slot,
     p_notes,
     p_duration_minutes,
     p_buffer_minutes,
-    ''CONFIRMED''
+    'CONFIRMED'
   )
   RETURNING id INTO v_appointment_id;
 
   RETURN v_appointment_id;
 END;
-';
+$$;
 
 -- Grant access to authenticated users and service role
 GRANT EXECUTE ON FUNCTION public.create_appointment_v2 TO authenticated, service_role, anon;

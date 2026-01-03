@@ -9,18 +9,11 @@ interface ServiceFormModalProps {
     onClose: () => void;
     onSave: (data: Partial<Service>) => Promise<void>;
     editingService: Service | null;
+    existingCategories: string[];
 }
 
-const CATEGORY_PRESETS = [
-    { name: 'Haircuts', color: '#3B82F6' },
-    { name: 'Coloring', color: '#8B5CF6' },
-    { name: 'Treatments', color: '#10B981' },
-    { name: 'Styling', color: '#F59E0B' },
-    { name: 'Consultations', color: '#EC4899' },
-    { name: 'Packages', color: '#6366F1' },
-];
 
-export default function ServiceFormModal({ isOpen, onClose, onSave, editingService }: ServiceFormModalProps) {
+export default function ServiceFormModal({ isOpen, onClose, onSave, editingService, existingCategories = [] }: ServiceFormModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [imagePreview, setImagePreview] = useState<string>('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -273,35 +266,54 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                     <div>
                         <label className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
                             <Tag className="w-3.5 h-3.5" />
-                            Collection Group
+                            Collection Group (Optional)
                         </label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-                            {CATEGORY_PRESETS.map((preset) => {
-                                const isSelected = formData.category === preset.name;
-                                return (
+
+                        {/* Custom Input */}
+                        <input
+                            type="text"
+                            value={formData.category}
+                            onChange={(e) => {
+                                const newCategory = e.target.value;
+                                // Auto-assign color if it's a new category
+                                let color = formData.categoryColor;
+                                if (newCategory && !existingCategories.includes(newCategory)) {
+                                    const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899', '#6366F1', '#F43F5E', '#14B8A6'];
+                                    const hash = newCategory.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
+                                    color = colors[Math.abs(hash) % colors.length];
+                                }
+                                setFormData({ ...formData, category: newCategory, categoryColor: color });
+                            }}
+                            placeholder="e.g. Consultations, Classes, VIP..."
+                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none mb-4"
+                        />
+
+                        {/* Quick Select Chips */}
+                        {existingCategories.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {existingCategories.map((cat) => (
                                     <button
-                                        key={preset.name}
-                                        onClick={() => setFormData({ ...formData, category: preset.name, categoryColor: preset.color })}
-                                        className={`group relative px-4 py-4 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border ${isSelected
-                                            ? 'bg-white shadow-lg shadow-indigo-100/50 scale-[1.02]'
-                                            : 'bg-gray-50/50 border-gray-100 text-gray-400 hover:bg-white hover:border-gray-200 hover:text-gray-600'
-                                            }`}
-                                        style={{
-                                            borderColor: isSelected ? `${preset.color}40` : undefined,
-                                            color: isSelected ? preset.color : undefined,
+                                        key={cat}
+                                        onClick={() => {
+                                            // Find existing color mapping if possible, or keep inconsistent but working logic
+                                            // Ideally backend should store category-color maps, but for now we re-hash or reuse current.
+                                            // Simple Re-hash to ensure consistent feel for existing ones too if valid
+                                            const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899', '#6366F1', '#F43F5E', '#14B8A6'];
+                                            const hash = cat.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
+                                            const color = colors[Math.abs(hash) % colors.length];
+
+                                            setFormData({ ...formData, category: cat, categoryColor: color });
                                         }}
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${formData.category === cat
+                                            ? 'bg-indigo-50 text-indigo-600 border-indigo-200'
+                                            : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300 hover:text-gray-600'
+                                            }`}
                                     >
-                                        <div className="flex items-center justify-center gap-2">
-                                            <div
-                                                className={`w-2 h-2 rounded-full transition-all duration-300 ${isSelected ? 'scale-125' : 'scale-100 opacity-30'}`}
-                                                style={{ backgroundColor: preset.color }}
-                                            />
-                                            {preset.name}
-                                        </div>
+                                        {cat}
                                     </button>
-                                );
-                            })}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                         <input
                             type="text"
                             value={formData.category}

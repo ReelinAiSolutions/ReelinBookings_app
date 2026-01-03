@@ -1,4 +1,3 @@
-import React from 'react';
 import { Calendar, Users, BarChart3, Settings, User, ExternalLink, Key, Briefcase, Contact } from 'lucide-react';
 import { Organization } from '@/types';
 
@@ -15,11 +14,11 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
     ] as const;
 
     const managementItems = [
-        { id: 'profile', label: 'Profile', icon: User },
         { id: 'team', label: 'Team Members', icon: Users },
         { id: 'clients', label: 'Clients', icon: Contact },
         { id: 'services', label: 'Services', icon: Briefcase },
         { id: 'settings', label: 'Business Ops', icon: Settings },
+        { id: 'profile', label: 'Profile Settings', icon: User },
     ] as const;
 
     return (

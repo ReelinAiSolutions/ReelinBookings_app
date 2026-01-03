@@ -73,12 +73,14 @@ export interface Appointment {
     clientId: string;
     clientName: string;
     clientEmail: string;
+    clientPhone?: string; // Added field
     date: string; // ISO String for date part
     timeSlot: string; // "10:00"
     status: AppointmentStatus;
     notes?: string;
     durationMinutes?: number;
     bufferMinutes?: number;
+    serviceName?: string;
 }
 
 export interface TimeSlot {
