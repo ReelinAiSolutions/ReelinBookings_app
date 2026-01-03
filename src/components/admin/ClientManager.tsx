@@ -352,7 +352,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
             {/* Client Profile Modal (Slide Over) */}
             {
                 selectedClient && (
-                    <div className="fixed inset-0 z-50 flex justify-end">
+                    <div className="fixed inset-0 z-[100] flex justify-end">
                         {/* Backdrop */}
                         <div
                             className="absolute inset-0 bg-gray-900/20 backdrop-blur-sm animate-in fade-in duration-300"
