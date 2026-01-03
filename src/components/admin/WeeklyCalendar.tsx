@@ -461,7 +461,7 @@ export default function WeeklyCalendar({
 
     const handlePointerUp = async (e: React.PointerEvent) => {
         if (!dragState) return;
-        const { id, currentTop, originalStaffId } = dragState;
+        const { id, currentTop, originalStaffId, currentStaffId } = dragState;
 
         // Release
         const card = e.currentTarget as HTMLDivElement;
@@ -476,7 +476,6 @@ export default function WeeklyCalendar({
         }, 100);
 
         // Calculate new time
-        // Offset considerations: currentTop is relative to grid start
         const totalMinutes = (currentTop / 2) + (minHour * 60);
         const h = Math.floor(totalMinutes / 60);
         const m = totalMinutes % 60;
@@ -484,8 +483,10 @@ export default function WeeklyCalendar({
 
         // Find the appointment
         const apt = appointments.find(a => a.id === id);
-        if (apt && (apt.timeSlot !== newTimeSlot || (dragState.currentStaffId && dragState.currentStaffId !== originalStaffId)) && onAppointmentUpdate) {
-            const updatedApt = { ...apt, timeSlot: newTimeSlot, staffId: dragState.currentStaffId || originalStaffId };
+        const finalStaffId = currentStaffId || originalStaffId;
+
+        if (apt && (apt.timeSlot !== newTimeSlot || finalStaffId !== originalStaffId) && onAppointmentUpdate) {
+            const updatedApt = { ...apt, timeSlot: newTimeSlot, staffId: finalStaffId };
 
             // Open Modal with NEW Data immediately (Optimistic Confirmation)
             onAppointmentClick(updatedApt);
@@ -493,7 +494,7 @@ export default function WeeklyCalendar({
             try {
                 // Support horizontal (staff) reassignment
                 const currentAptDate = new Date(`${apt.date}T00:00:00`);
-                await onAppointmentUpdate(apt, currentAptDate, newTimeSlot, dragState.currentStaffId || originalStaffId);
+                await onAppointmentUpdate(apt, currentAptDate, newTimeSlot, finalStaffId);
             } catch (err) {
                 console.error("Failed to update appointment", err);
             }
