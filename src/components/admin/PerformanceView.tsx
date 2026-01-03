@@ -743,9 +743,9 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             {leastBookedHours.length === 0 && <p className="text-xs text-gray-400 italic">No data available.</p>}
                         </div>
 
-                        <div className="mt-4 p-3 bg-primary-50 rounded-xl border border-primary-100/50 bg-primary-50/50">
+                        <div className="mt-6 p-4 bg-primary-50 rounded-xl border border-primary-100/50">
                             <div className="flex justify-between items-center">
-                                <span className="text-xs font-bold text-primary-900">Avg. Daily Schedule Filled</span>
+                                <span className="text-sm font-bold text-primary-900">Avg. Daily Schedule Filled</span>
                                 <span className="text-sm font-black text-primary-600">{occupancyRate}%</span>
                             </div>
                         </div>
@@ -783,18 +783,18 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 <div className="space-y-2">
                     {topServicesList.map((srv, i) => (
                         <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors border-b border-gray-100 last:border-0">
-                            <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${i < 3 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'}`}>
+                            <div className="flex items-center gap-3 flex-1 min-w-0 mr-2">
+                                <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-xs font-black ${i < 3 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'}`}>
                                     #{i + 1}
                                 </div>
-                                <span className="font-bold text-gray-900 text-sm truncate max-w-[150px] sm:max-w-xs">{srv.name}</span>
+                                <span className="font-bold text-gray-900 text-sm leading-tight">{srv.name}</span>
                             </div>
-                            <div className="flex items-center gap-4 sm:gap-8">
+                            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                                 <div className="text-right">
                                     <div className="text-xs font-bold text-gray-900">{srv.count}</div>
                                     <div className="text-[9px] text-gray-400 font-bold uppercase">Bookings</div>
                                 </div>
-                                <div className="text-right w-16">
+                                <div className="text-right w-14 sm:w-16">
                                     <div className="text-sm font-black text-gray-900">${srv.revenue.toLocaleString()}</div>
                                     <div className="text-[9px] text-gray-400 font-bold uppercase">Revenue</div>
                                 </div>
