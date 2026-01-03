@@ -83,25 +83,25 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                 <div className="space-y-4 mb-6 sm:mb-10">
                     {/* Email */}
                     {staff.email && (
-                        <div className="flex items-center gap-2 sm:gap-3 text-xs font-bold text-gray-400 bg-gray-50/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl group-hover:bg-white group-hover:ring-1 group-hover:ring-gray-100 transition-all border border-transparent group-hover:border-gray-100 overflow-hidden">
-                            <Mail className="w-4 h-4 text-gray-300" />
-                            <span className="truncate">{staff.email}</span>
+                        <div className="flex items-start gap-1.5 sm:gap-3 text-[9px] sm:text-xs font-bold text-gray-400 bg-gray-50/50 p-2 sm:p-4 rounded-xl sm:rounded-2xl group-hover:bg-white group-hover:ring-1 group-hover:ring-gray-100 transition-all border border-transparent group-hover:border-gray-100">
+                            <Mail className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300 shrink-0 mt-0.5" />
+                            <span className="break-all leading-tight">{staff.email}</span>
                         </div>
                     )}
 
                     {/* Specialties Pills */}
                     <div>
-                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 px-1">Top Specialties</h4>
-                        <div className="flex flex-wrap gap-2">
+                        <h4 className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 sm:mb-4 px-1">Top Specialties</h4>
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
                             {specialtyServices.length > 0 ? (
                                 <>
                                     {specialtyServices.slice(0, 3).map(service => (
-                                        <span key={service.id} className="px-3 py-2 bg-indigo-50/50 text-indigo-600 text-[10px] font-black uppercase tracking-wider rounded-xl border border-indigo-100/50 shadow-sm">
+                                        <span key={service.id} className="px-2 py-1 sm:px-3 sm:py-2 bg-indigo-50/50 text-indigo-600 text-[8px] sm:text-[10px] font-black uppercase tracking-wider rounded-lg sm:rounded-xl border border-indigo-100/50 shadow-sm max-w-full whitespace-normal text-center leading-tight">
                                             {service.name}
                                         </span>
                                     ))}
                                     {specialtyServices.length > 3 && (
-                                        <span className="px-3 py-2 bg-gray-50 text-gray-400 text-[10px] font-black rounded-xl border border-gray-100">
+                                        <span className="px-2 py-1 sm:px-3 sm:py-2 bg-gray-50 text-gray-400 text-[8px] sm:text-[10px] font-black rounded-lg sm:rounded-xl border border-gray-100">
                                             +{specialtyServices.length - 3}
                                         </span>
                                     )}
