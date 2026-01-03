@@ -253,7 +253,7 @@ export default function StaffDashboard({
             <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'schedule' ? 'flex flex-col h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'block min-h-screen'}`} style={activeTab === 'schedule' ? { overscrollBehavior: 'none' } : {}}>
 
                 {/* Content Container */}
-                <div className={` min-h-0 bg-white ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col p-0 lg:p-2 lg:pb-2 min-h-0' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
+                <div className={` min-h-0 bg-white ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col p-0 min-h-0' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
 
 
                     {activeTab === 'schedule' && (
