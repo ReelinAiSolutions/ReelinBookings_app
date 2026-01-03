@@ -972,8 +972,8 @@ export default function WeeklyCalendar({
                     </div>
                 )}
 
-                <div className="relative w-full flex border-b border-gray-300" style={{ height: `${hours.length * 120}px` }}>
-                    <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-[45] sticky left-0 h-full select-none">
+                <div className="relative w-full flex" style={{ height: `${hours.length * 120}px` }}>
+                    <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-[45] sticky left-0 h-[calc(100%+96px)] select-none">
                         {hours.map((h, i) => (
                             <React.Fragment key={h}>
                                 <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
@@ -1158,7 +1158,7 @@ export default function WeeklyCalendar({
                                     const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
 
                                     return (
-                                        <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 relative first:border-l-0 group h-full transition-all duration-300`}>
+                                        <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 relative first:border-l-0 group h-[calc(100%+96px)] transition-all duration-300`}>
                                             {hours.map((h, i) => (
                                                 <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h, member.id)}></div>
                                             ))}
