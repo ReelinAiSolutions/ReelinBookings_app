@@ -186,25 +186,31 @@ export default function WeeklyCalendar({
             const targetApt = appointments.find(a => a.id === aptId);
             if (targetApt) {
                 // 1. Switch Date
-                const aptDate = new Date(targetApt.date + 'T12:00:00'); // Use mid-day to avoid TZ shifts
+                const aptDate = new Date(targetApt.date + 'T12:00:00');
                 setSelectedDate(aptDate);
 
-                // 2. Highlight
-                setHighlightedAptId(aptId);
-                setTimeout(() => setHighlightedAptId(null), 10000); // Clear highlight after 10s
+                // 2. Ensure Visibility (Switch to Team View / ALL if it's someone else's)
+                if (filterStaffId !== 'ALL' && targetApt.staffId !== filterStaffId) {
+                    setFilterStaffId('ALL');
+                    setViewMode('team');
+                }
 
-                // 3. Scroll after date switch and layout
+                // 3. Highlight
+                setHighlightedAptId(aptId);
+                setTimeout(() => setHighlightedAptId(null), 10000);
+
+                // 4. Scroll after date switch and layout
                 const [h] = targetApt.timeSlot.split(':').map(Number);
                 setTimeout(() => {
                     scrollToTime(h);
                 }, 500);
 
-                // 4. Remove param from URL to prevent re-triggering on refresh
+                // 5. Remove param from URL
                 const newUrl = window.location.pathname + (window.location.search.replace(/(\?|&)appointmentId=[^&]+/, '').replace(/^&/, '?'));
                 window.history.replaceState({}, '', newUrl || '/');
             }
         }
-    }, [appointments.length > 0]); // Run once we have appointments
+    }, [appointments.length > 0]);
 
     // Sync filterStaffId and viewMode with currentStaffId prop
     useEffect(() => {

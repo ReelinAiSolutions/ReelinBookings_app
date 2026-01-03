@@ -109,7 +109,7 @@ export default function StaffDashboard({
 
     const handleCreateConfirm = async (data: any) => {
         if (!currentOrg) return;
-        await createAppointment({
+        const created = await createAppointment({
             ...data,
             clientId: 'staff-created'
         }, currentOrg.id);
@@ -127,7 +127,7 @@ export default function StaffDashboard({
                         userId: recipientId,
                         title: 'New Booking (Manual) 📅',
                         body: `${data.clientName} booked slot for ${data.timeSlot}`,
-                        url: '/staff?tab=schedule',
+                        url: `/staff?tab=schedule&appointmentId=${created.id}`,
                         type: 'new_booking'
                     })
                 });

@@ -250,7 +250,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 }
             }
 
-            await createAppointment({
+            const created = await createAppointment({
                 serviceId: selectedService.id,
                 staffId: finalStaffId,
                 clientId: 'c_temp_user',
@@ -328,7 +328,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                         userId: recipientId,
                         title: 'New Booking! 📅',
                         body: `${formData.name} booked ${selectedService.name} for ${selectedTime}`,
-                        url: '/staff?tab=schedule',
+                        url: `/staff?tab=schedule&appointmentId=${created.id}`,
                         type: 'new_booking'
                     })
                 });

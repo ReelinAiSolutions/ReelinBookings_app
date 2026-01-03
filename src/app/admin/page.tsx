@@ -99,10 +99,12 @@ export default function AdminDashboard() {
 
     // Staff Filter State
     const [selectedStaffId, setSelectedStaffId] = useState<string>('ALL');
-    const notifyStaff = async (staffId: string, title: string, body: string, type: string = 'update') => {
+    const notifyStaff = async (staffId: string, title: string, body: string, appointmentId?: string, type: string = 'update') => {
         try {
             const target = staff.find(s => s.id === staffId);
             const recipientId = target?.userId || staffId;
+
+            const deepLink = appointmentId ? `&appointmentId=${appointmentId}` : '';
 
             await fetch('/api/push-notifications', {
                 method: 'POST',
@@ -111,7 +113,7 @@ export default function AdminDashboard() {
                     userId: recipientId,
                     title,
                     body,
-                    url: '/staff?tab=schedule',
+                    url: `/staff?tab=schedule${deepLink}`,
                     type
                 })
             });
@@ -253,7 +255,7 @@ export default function AdminDashboard() {
     ) => {
         const originalApt = appointments.find(a => a.id === id);
         const oldStaffId = originalApt?.staffId;
-        
+
         await updateAppointment(id, {
             date: newDate,
             timeSlot: newTime,
@@ -266,6 +268,7 @@ export default function AdminDashboard() {
             newStaffId,
             'Appointment Rescheduled 📅',
             `Moved to ${newDate} at ${newTime}`,
+            id,
             'reschedule'
         );
         // Notify Original Staff if reassigned away
@@ -274,10 +277,11 @@ export default function AdminDashboard() {
                 oldStaffId,
                 'Appointment Reassigned 📤',
                 `${originalApt?.clientName}'s booking was moved to ${staff.find(s => s.id === newStaffId)?.name || 'someone else'}`,
+                id,
                 'reassignment'
             );
         }
-        
+
     };
 
     const onCancel = async (id: string) => {
@@ -289,6 +293,7 @@ export default function AdminDashboard() {
                 apt.staffId,
                 'Appointment Cancelled ❌',
                 `${apt.clientName} cancelled for ${apt.date} at ${apt.timeSlot}`,
+                id,
                 'cancellation'
             );
         }
@@ -298,13 +303,13 @@ export default function AdminDashboard() {
     const handleAppointmentDrop = async (apt: Appointment, newDate: Date, newTime: string, newStaffId?: string) => {
         const oldStaffId = apt.staffId;
         const finalStaffId = newStaffId || oldStaffId;
-        
+
         const dateStr = format(newDate, 'yyyy-MM-dd');
 
         // Optimistic Update: Move the card instantly in the UI
-        setAppointments(prev => prev.map(a => 
-            a.id === apt.id 
-                ? { ...a, date: dateStr, timeSlot: newTime, staffId: newStaffId || a.staffId } 
+        setAppointments(prev => prev.map(a =>
+            a.id === apt.id
+                ? { ...a, date: dateStr, timeSlot: newTime, staffId: newStaffId || a.staffId }
                 : a
         ));
         await updateAppointment(apt.id, {
@@ -318,6 +323,7 @@ export default function AdminDashboard() {
             newStaffId || apt.staffId,
             'Schedule Updated 🔄',
             `Appointment for ${apt.clientName} moved to ${newTime}`,
+            apt.id,
             'reschedule'
         );
         // Notify Original Staff if reassigned away
@@ -326,10 +332,11 @@ export default function AdminDashboard() {
                 oldStaffId,
                 'Appointment Removed 📤',
                 `${apt.clientName}'s booking was reassigned to ${staff.find(s => s.id === finalStaffId)?.name || 'another member'}`,
+                apt.id,
                 'reassignment'
             );
         }
-        
+
     };
 
     const [createSelection, setCreateSelection] = useState<{ date: Date | null, time: string | null, staffId: string | null }>({ date: null, time: null, staffId: null });
@@ -359,7 +366,7 @@ export default function AdminDashboard() {
     }) => {
         if (!currentOrg) return;
 
-        await createAppointment({
+        const created = await createAppointment({
             serviceId: data.serviceId,
             staffId: data.staffId,
             clientId: 'admin-created',
@@ -379,6 +386,7 @@ export default function AdminDashboard() {
             data.staffId,
             'New Booking (Admin) 📅',
             `${data.clientName} booked for ${data.timeSlot}`,
+            created.id,
             'new_booking'
         );
     };
