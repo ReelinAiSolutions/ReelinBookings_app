@@ -597,12 +597,12 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         <div className="flex justify-between items-start mb-2">
                             <div className="p-2 bg-primary-50 text-primary-600 rounded-xl"><Clock className="w-5 h-5" /></div>
                         </div>
-                        <div className="flex items-end justify-between relative z-10">
+                        <div className="flex items-center justify-between relative z-10">
                             <div>
                                 <h3 className="text-2xl font-black text-gray-900">{occupancyRate}%</h3>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest max-w-[80px] leading-tight">Schedule Filled</p>
                             </div>
-                            <div className="relative w-12 h-12">
+                            <div className="relative w-12 h-12 -mt-2">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
