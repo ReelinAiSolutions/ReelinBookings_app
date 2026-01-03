@@ -150,13 +150,18 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-200">
             <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 border border-white/20">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                        {editingService ? 'Edit Service' : 'New Service'}
-                    </h2>
+                <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
+                    <div>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+                            {editingService ? 'Service Intelligence' : 'Craft New Service'}
+                        </h2>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                            {editingService ? 'Refine your offering' : 'Define your next specialty'}
+                        </p>
+                    </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                        className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -166,28 +171,32 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Image Upload */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Service Photo
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                            Service Asset
                         </label>
                         <div className="relative">
                             {imagePreview ? (
-                                <div className="relative h-48 rounded-xl overflow-hidden border-2 border-gray-200">
-                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                                    <button
-                                        onClick={() => {
-                                            setImagePreview('');
-                                            setFormData({ ...formData, imageUrl: '' });
-                                        }}
-                                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
+                                <div className="relative h-48 rounded-[24px] overflow-hidden border border-gray-100 group">
+                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button
+                                            onClick={() => {
+                                                setImagePreview('');
+                                                setFormData({ ...formData, imageUrl: '' });
+                                            }}
+                                            className="p-3 bg-red-500 text-white rounded-2xl hover:bg-red-600 transition-all active:scale-95 shadow-xl"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
-                                <label className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all">
-                                    <Upload className="w-12 h-12 text-gray-400 mb-2" />
-                                    <span className="text-sm font-medium text-gray-600">Click to upload image</span>
-                                    <span className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</span>
+                                <label className="flex flex-col items-center justify-center h-48 bg-gray-50/50 border-2 border-dashed border-gray-200 rounded-[24px] cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/10 transition-all group">
+                                    <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 group-hover:scale-110 transition-transform duration-300">
+                                        <ImageIcon className="w-8 h-8 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                                    </div>
+                                    <span className="text-sm font-black text-gray-900 mt-4">Upload Display Photo</span>
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">PNG, JPG • Max 5MB</span>
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -200,25 +209,25 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                     </div>
 
                     {/* Basic Info */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Service Name *
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                Service Designation
                             </label>
                             <input
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="e.g., Men's Haircut"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="e.g., Signature Sculpt Cut"
+                                className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    <DollarSign className="w-4 h-4 inline mr-1" />
-                                    Price *
+                                <label className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                    <DollarSign className="w-3.5 h-3.5" />
+                                    Price (USD)
                                 </label>
                                 <input
                                     type="number"
@@ -227,13 +236,13 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     placeholder="0.00"
                                     min="0"
                                     step="0.01"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    <Clock className="w-4 h-4 inline mr-1" />
-                                    Duration (min) *
+                                <label className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Duration (MIN)
                                 </label>
                                 <input
                                     type="number"
@@ -241,52 +250,50 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     onChange={(e) => setFormData({ ...formData, durationMinutes: e.target.value })}
                                     placeholder="30"
                                     min="1"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Description
+                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                Detailed Description
                             </label>
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="Describe your service..."
+                                placeholder="Explain what makes this service unique..."
                                 rows={3}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none resize-none"
                             />
                         </div>
                     </div>
 
                     {/* Category */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            <Tag className="w-4 h-4 inline mr-1" />
-                            Category
+                        <label className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                            <Tag className="w-3.5 h-3.5" />
+                            Collection Group
                         </label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
                             {CATEGORY_PRESETS.map((preset) => {
                                 const isSelected = formData.category === preset.name;
                                 return (
                                     <button
                                         key={preset.name}
                                         onClick={() => setFormData({ ...formData, category: preset.name, categoryColor: preset.color })}
-                                        className={`group relative px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 border-2 ${isSelected
-                                            ? 'shadow-lg -translate-y-0.5'
-                                            : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200 hover:text-gray-600 hover:-translate-y-0.5'
+                                        className={`group relative px-4 py-4 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border ${isSelected
+                                            ? 'bg-white shadow-lg shadow-indigo-100/50 scale-[1.02]'
+                                            : 'bg-gray-50/50 border-gray-100 text-gray-400 hover:bg-white hover:border-gray-200 hover:text-gray-600'
                                             }`}
                                         style={{
-                                            backgroundColor: isSelected ? 'white' : undefined,
-                                            borderColor: isSelected ? preset.color : undefined,
+                                            borderColor: isSelected ? `${preset.color}40` : undefined,
                                             color: isSelected ? preset.color : undefined,
-                                            boxShadow: isSelected ? `0 10px 15px -3px ${preset.color}20` : undefined
                                         }}
                                     >
                                         <div className="flex items-center justify-center gap-2">
                                             <div
-                                                className={`w-2 h-2 rounded-full transition-transform duration-300 ${isSelected ? 'scale-125' : 'scale-100'}`}
+                                                className={`w-2 h-2 rounded-full transition-all duration-300 ${isSelected ? 'scale-125' : 'scale-100 opacity-30'}`}
                                                 style={{ backgroundColor: preset.color }}
                                             />
                                             {preset.name}
@@ -299,102 +306,111 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                             type="text"
                             value={formData.category}
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            placeholder="Or enter custom category"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter custom category label..."
+                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                         />
                     </div>
 
                     {/* Advanced Settings */}
-                    <div className="space-y-4 pt-4 border-t border-gray-200">
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Advanced Settings</h3>
+                    <div className="space-y-6 pt-8 border-t border-gray-100">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
+                                <Tag className="w-4 h-4 text-gray-400" />
+                            </div>
+                            <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Protocol & Controls</h3>
+                        </div>
 
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-4 bg-gray-50/50 border border-gray-100 rounded-2xl">
                             <div>
-                                <label className="text-sm font-semibold text-gray-700">Online Visibility</label>
-                                <p className="text-xs text-gray-500">Show this service in booking widget</p>
+                                <label className="text-sm font-black text-gray-900">Online Visibility</label>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Show in booking widget</p>
                             </div>
                             <button
                                 onClick={() => setFormData({ ...formData, isVisible: !formData.isVisible })}
-                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isVisible ? 'bg-blue-600' : 'bg-gray-200'
+                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${formData.isVisible ? 'bg-indigo-600' : 'bg-gray-200'
                                     }`}
                             >
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${formData.isVisible ? 'translate-x-6' : 'translate-x-1'
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-all duration-200 ${formData.isVisible ? 'translate-x-6' : 'translate-x-1'
                                     }`} />
                             </button>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Buffer Time (min)
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                    Buffer Time (MIN)
                                 </label>
                                 <input
                                     type="number"
                                     value={formData.bufferTimeMinutes}
                                     onChange={(e) => setFormData({ ...formData, bufferTimeMinutes: e.target.value })}
                                     min="0"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Max Capacity
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                    Slot Capacity
                                 </label>
                                 <input
                                     type="number"
                                     value={formData.maxCapacity}
                                     onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
                                     min="1"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="checkbox"
-                                checked={formData.depositRequired}
-                                onChange={(e) => setFormData({ ...formData, depositRequired: e.target.checked })}
-                                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                            />
-                            <label className="text-sm font-semibold text-gray-700">Require Deposit</label>
-                        </div>
-
-                        {formData.depositRequired && (
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Deposit Amount ($)
-                                </label>
+                        <div className="space-y-4">
+                            <label className="flex items-center gap-3 p-4 bg-gray-50/50 border border-gray-100 rounded-2xl cursor-pointer group">
                                 <input
-                                    type="number"
-                                    value={formData.depositAmount}
-                                    onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })}
-                                    min="0"
-                                    step="0.01"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    type="checkbox"
+                                    checked={formData.depositRequired}
+                                    onChange={(e) => setFormData({ ...formData, depositRequired: e.target.checked })}
+                                    className="w-5 h-5 text-indigo-600 rounded-lg focus:ring-indigo-500/20 border-gray-300 transition-all"
                                 />
-                            </div>
-                        )}
+                                <div className="flex-1">
+                                    <span className="text-sm font-black text-gray-900 block group-hover:text-indigo-600 transition-colors">Require Upfront Deposit</span>
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Secure bookings with pre-payment</span>
+                                </div>
+                            </label>
+
+                            {formData.depositRequired && (
+                                <div className="animate-in slide-in-from-top-2 duration-200">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                        Required Deposit ($)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={formData.depositAmount}
+                                        onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })}
+                                        min="0"
+                                        step="0.01"
+                                        className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="flex gap-3 p-6 border-t border-gray-200 bg-white sticky bottom-0 z-20">
-                    <Button
-                        variant="outline"
+                <div className="flex gap-4 p-8 border-t border-gray-100 bg-gray-50/50 sticky bottom-0 z-20">
+                    <button
                         onClick={onClose}
-                        className="flex-1"
+                        className="flex-1 h-14 bg-white border border-gray-200 text-gray-900 rounded-[20px] text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95"
                         disabled={isLoading}
                     >
                         Cancel
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                         onClick={handleSubmit}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        className="flex-1 h-14 bg-gray-900 hover:bg-black text-white rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-gray-200 transition-all active:scale-95 disabled:bg-gray-200 disabled:shadow-none"
                         disabled={isLoading || !formData.name || !formData.price || !formData.durationMinutes}
                     >
-                        {isLoading ? 'Saving...' : 'Save Service'}
-                    </Button>
+                        {isLoading ? 'Processing...' : (editingService ? 'Update Service' : 'Initialize Service')}
+                    </button>
                 </div>
             </div>
         </div>

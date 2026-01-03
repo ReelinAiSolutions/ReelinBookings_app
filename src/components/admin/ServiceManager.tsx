@@ -114,103 +114,90 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
     };
 
     return (
-        <div className="bg-white/80 backdrop-blur-md rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-white/40 flex flex-col h-full relative overflow-hidden">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 z-50"></div>
-
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500">
             {/* Header & Controls */}
-            <div className="p-6 border-b border-indigo-50/50 bg-white/40 space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                            Service Menu <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                        </h2>
-                        <p className="text-sm text-gray-500 font-medium">Manage your offerings and pricing</p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h2 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">
+                        Service Menu
+                    </h2>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                        <Grid className="w-4 h-4" />
+                        {services.length} Total Services
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                    {/* Search */}
+                    <div className="relative group w-full md:w-80">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search services..."
+                            className="w-full pl-11 pr-4 py-3 bg-gray-100/80 border border-transparent rounded-[20px] text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                        />
                     </div>
-                    <Button onClick={handleAddNew} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30 rounded-full transition-all hover:scale-105 active:scale-95">
-                        <Plus className="w-5 h-5 mr-2" />
+
+                    <button
+                        onClick={handleAddNew}
+                        className="bg-gray-900 hover:bg-black text-white rounded-[20px] px-6 py-3 font-black text-xs uppercase tracking-widest shadow-xl shadow-gray-200 transition-all active:scale-95 flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" strokeWidth={3} />
                         New Service
-                    </Button>
+                    </button>
                 </div>
+            </div>
 
-                {/* Search Bar */}
-                <div className="relative group">
-                    <div className="absolute inset-0 bg-blue-200/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors z-10" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search services..."
-                        className="w-full pl-12 pr-4 py-3.5 bg-white/80 border border-indigo-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all shadow-sm group-hover:shadow-md relative z-0"
-                    />
-                </div>
-
-                {/* Category Filter */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {/* Filters Bar */}
+            <div className="flex flex-col md:flex-row md:items-center gap-4 bg-gray-100/80 p-3 rounded-[24px] border border-transparent">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 px-1">
                     {categories.map((category) => (
                         <button
                             key={category}
                             onClick={() => setSelectedCategory(category ?? 'All')}
-                            className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all border ${selectedCategory === category
-                                ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
-                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                            className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedCategory === category
+                                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200/50'
                                 }`}
                         >
                             {category}
-                            {category !== 'All' && (
-                                <span className={`ml-2 text-[10px] py-0.5 px-1.5 rounded-full ${selectedCategory === category ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                                    {services.filter(s => s.category === category).length}
-                                </span>
-                            )}
                         </button>
                     ))}
                 </div>
 
-                {/* View Toggle */}
-                <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                        {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'}
-                    </p>
-                    <div className="hidden md:flex gap-1 bg-gray-100 p-1 rounded-lg">
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
-                                }`}
-                        >
-                            <Grid className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
-                                }`}
-                        >
-                            <List className="w-4 h-4" />
-                        </button>
-                    </div>
+                <div className="flex gap-1 bg-gray-200/50 p-1 rounded-xl">
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                        <Grid className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                        <List className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
 
             {/* Services Grid/List */}
-            <div className="p-6">
+            <div className="flex-1">
                 {filteredServices.length === 0 ? (
-                    <div className="text-center py-16">
-                        <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Plus className="w-12 h-12 text-gray-400" />
+                    <div className="h-96 flex flex-col items-center justify-center text-center bg-white rounded-[32px] border border-gray-100 border-dashed">
+                        <div className="w-16 h-16 mb-4 bg-gray-50 rounded-full flex items-center justify-center">
+                            <Plus className="w-8 h-8 text-gray-300" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {searchQuery || selectedCategory !== 'All' ? 'No services found' : 'No services yet'}
+                        <h3 className="text-lg font-[900] text-gray-900 mb-1">
+                            {searchQuery || selectedCategory !== 'All' ? 'No results found' : 'No services yet'}
                         </h3>
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-gray-500 mb-6 text-sm max-w-xs mx-auto">
                             {searchQuery || selectedCategory !== 'All'
                                 ? 'Try adjusting your search or filters'
-                                : 'Get started by adding your first service'}
+                                : 'Get started by adding your first service to the roster'}
                         </p>
-                        {!searchQuery && selectedCategory === 'All' && (
-                            <Button onClick={handleAddNew} className="bg-blue-600 hover:bg-blue-700 text-white">
-                                <Plus className="w-5 h-5 mr-2" />
-                                Add Your First Service
-                            </Button>
-                        )}
                     </div>
                 ) : (
                     <div className={

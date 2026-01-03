@@ -143,37 +143,37 @@ export default function StaffFormModal({
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-gray-200 bg-gray-50">
+                <div className="flex items-center gap-1 p-2 bg-gray-50 border-b border-gray-100">
                     <button
                         onClick={() => setActiveTab('details')}
-                        className={`flex-1 px-6 py-3 text-sm font-semibold transition-colors ${activeTab === 'details'
-                            ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                            : 'text-gray-600 hover:text-gray-900'
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'details'
+                            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                             }`}
                     >
-                        <User className="w-4 h-4 inline mr-2" />
+                        <User className="w-4 h-4" />
                         Details
                     </button>
                     {editingStaff && (
                         <>
                             <button
                                 onClick={() => setActiveTab('schedule')}
-                                className={`flex-1 px-6 py-3 text-sm font-semibold transition-colors ${activeTab === 'schedule'
-                                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'schedule'
+                                    ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
-                                <Clock className="w-4 h-4 inline mr-2" />
+                                <Clock className="w-4 h-4" />
                                 Schedule
                             </button>
                             <button
                                 onClick={() => setActiveTab('services')}
-                                className={`flex-1 px-6 py-3 text-sm font-semibold transition-colors ${activeTab === 'services'
-                                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'services'
+                                    ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
-                                <Scissors className="w-4 h-4 inline mr-2" />
+                                <Scissors className="w-4 h-4" />
                                 Services
                             </button>
                         </>
@@ -189,15 +189,15 @@ export default function StaffFormModal({
                             <div className="flex flex-col items-center">
                                 <div className="relative">
                                     {avatarPreview ? (
-                                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200">
+                                        <div className="w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-white shadow-xl">
                                             <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
                                         </div>
                                     ) : (
-                                        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-4 border-gray-200">
-                                            <User className="w-16 h-16 text-white" />
+                                        <div className="w-32 h-32 rounded-[2rem] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
+                                            <User className="w-16 h-16 text-gray-400" />
                                         </div>
                                     )}
-                                    <label className="absolute bottom-0 right-0 p-3 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-700 transition-colors shadow-lg">
+                                    <label className="absolute bottom-0 right-0 p-3 bg-gray-900 text-white rounded-2xl cursor-pointer hover:bg-black transition-all shadow-xl active:scale-95">
                                         <Upload className="w-5 h-5" />
                                         <input
                                             type="file"
@@ -212,47 +212,46 @@ export default function StaffFormModal({
 
                             {/* Form Fields */}
                             <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        <User className="w-4 h-4 inline mr-1" />
-                                        Full Name *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        placeholder="e.g., Sarah Johnson"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">
+                                            Full Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            placeholder="e.g., Sarah Johnson"
+                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                        />
+                                    </div>
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        <Mail className="w-4 h-4 inline mr-1" />
-                                        Email *
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        placeholder="sarah@example.com"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Used for login and notifications</p>
-                                </div>
+                                    <div>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">
+                                            Email *
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            placeholder="sarah@example.com"
+                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                        />
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2 px-1">Used for login and notifications</p>
+                                    </div>
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        <Briefcase className="w-4 h-4 inline mr-1" />
-                                        Role / Title
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.role}
-                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                        placeholder="e.g., Senior Stylist"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
+                                    <div>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">
+                                            Role / Title
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.role}
+                                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                            placeholder="e.g., Senior Stylist"
+                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -260,66 +259,68 @@ export default function StaffFormModal({
 
                     {/* Schedule Tab */}
                     {activeTab === 'schedule' && editingStaff && (
-                        <div className="space-y-4">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                                <p className="text-sm text-blue-800">
-                                    <Clock className="w-4 h-4 inline mr-1" />
-                                    Set {editingStaff.name}'s weekly working hours
+                        <div className="space-y-6">
+                            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
+                                <p className="text-xs font-bold text-indigo-700 flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    Weekly Working Schedule
                                 </p>
                             </div>
 
-                            {schedule.map((day, idx) => (
-                                <div key={day.dayOfWeek} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
-                                    <label className="flex items-center gap-3 w-32 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={day.isWorking}
-                                            onChange={(e) => updateScheduleItem(idx, 'isWorking', e.target.checked)}
-                                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                                        />
-                                        <span className="font-medium text-gray-900">{day.dayName}</span>
-                                    </label>
-
-                                    {day.isWorking ? (
-                                        <div className="flex items-center gap-3 flex-1">
+                            <div className="space-y-3">
+                                {schedule.map((day, idx) => (
+                                    <div key={day.dayOfWeek} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50/50 border border-gray-100 rounded-2xl transition-all hover:bg-white hover:shadow-sm">
+                                        <label className="flex items-center gap-3 w-full sm:w-32 cursor-pointer group">
                                             <input
-                                                type="time"
-                                                value={day.startTime}
-                                                onChange={(e) => updateScheduleItem(idx, 'startTime', e.target.value)}
-                                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                type="checkbox"
+                                                checked={day.isWorking}
+                                                onChange={(e) => updateScheduleItem(idx, 'isWorking', e.target.checked)}
+                                                className="w-5 h-5 text-indigo-600 rounded-lg focus:ring-indigo-500/20 border-gray-300 transition-all"
                                             />
-                                            <span className="text-gray-400">to</span>
-                                            <input
-                                                type="time"
-                                                value={day.endTime}
-                                                onChange={(e) => updateScheduleItem(idx, 'endTime', e.target.value)}
-                                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <span className="text-gray-400 italic">Day off</span>
-                                    )}
-                                </div>
-                            ))}
+                                            <span className="text-sm font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{day.dayName}</span>
+                                        </label>
 
-                            <Button
+                                        {day.isWorking ? (
+                                            <div className="flex items-center gap-2 flex-1">
+                                                <input
+                                                    type="time"
+                                                    value={day.startTime}
+                                                    onChange={(e) => updateScheduleItem(idx, 'startTime', e.target.value)}
+                                                    className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                                />
+                                                <span className="text-gray-400 font-bold text-[10px]">to</span>
+                                                <input
+                                                    type="time"
+                                                    value={day.endTime}
+                                                    onChange={(e) => updateScheduleItem(idx, 'endTime', e.target.value)}
+                                                    className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full">Day Off</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
                                 onClick={handleSubmitSchedule}
-                                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                className="w-full mt-6 bg-gray-900 hover:bg-black text-white h-12 rounded-[18px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2"
                                 disabled={isLoading}
                             >
-                                <Save className="w-4 h-4 mr-2" />
-                                {isLoading ? 'Saving...' : 'Save Schedule'}
-                            </Button>
+                                <Save className="w-4 h-4" />
+                                {isLoading ? 'Saving...' : 'Update Schedule'}
+                            </button>
                         </div>
                     )}
 
                     {/* Services Tab */}
                     {activeTab === 'services' && editingStaff && (
-                        <div className="space-y-4">
-                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-                                <p className="text-sm text-purple-800">
-                                    <Scissors className="w-4 h-4 inline mr-1" />
-                                    Select services that {editingStaff.name} can provide
+                        <div className="space-y-6">
+                            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
+                                <p className="text-xs font-bold text-indigo-700 flex items-center gap-2">
+                                    <Scissors className="w-4 h-4" />
+                                    Assigned Services
                                 </p>
                             </div>
 
@@ -327,9 +328,9 @@ export default function StaffFormModal({
                                 {services.map(service => (
                                     <label
                                         key={service.id}
-                                        className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedServices.includes(service.id)
-                                            ? 'border-blue-500 bg-blue-50'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        className={`flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all border ${selectedServices.includes(service.id)
+                                            ? 'border-indigo-500 bg-indigo-50/50 shadow-sm'
+                                            : 'border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200'
                                             }`}
                                     >
                                         <input
@@ -342,46 +343,45 @@ export default function StaffFormModal({
                                                     setSelectedServices(prev => prev.filter(id => id !== service.id));
                                                 }
                                             }}
-                                            className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                            className="w-5 h-5 text-indigo-600 rounded-lg focus:ring-indigo-500/20 border-gray-300 transition-all"
                                         />
                                         <div className="flex-1">
-                                            <span className="font-medium text-gray-900 block">{service.name}</span>
-                                            <span className="text-xs text-gray-500">{service.durationMinutes} min • ${service.price}</span>
+                                            <span className="text-sm font-black text-gray-900 block">{service.name}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{service.durationMinutes} min • ${service.price}</span>
                                         </div>
                                     </label>
                                 ))}
                             </div>
 
-                            <Button
+                            <button
                                 onClick={handleSubmitServices}
-                                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                                className="w-full mt-6 bg-gray-900 hover:bg-black text-white h-12 rounded-[18px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2"
                                 disabled={isLoading}
                             >
-                                <Save className="w-4 h-4 mr-2" />
-                                {isLoading ? 'Saving...' : 'Save Services'}
-                            </Button>
+                                <Save className="w-4 h-4" />
+                                {isLoading ? 'Saving...' : 'Update Services'}
+                            </button>
                         </div>
                     )}
                 </div>
 
                 {/* Footer - Only show for Details tab */}
                 {activeTab === 'details' && (
-                    <div className="flex gap-3 p-6 border-t border-gray-200 bg-gray-50">
-                        <Button
-                            variant="outline"
+                    <div className="flex items-center gap-3 p-8 border-t border-gray-100 bg-gray-50/50">
+                        <button
                             onClick={onClose}
-                            className="flex-1"
+                            className="flex-1 h-12 bg-white border border-gray-200 text-gray-900 rounded-[18px] text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95"
                             disabled={isLoading}
                         >
                             Cancel
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                             onClick={handleSubmitDetails}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                            className="flex-1 h-12 bg-gray-900 text-white rounded-[18px] text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-200 disabled:opacity-50 disabled:shadow-none"
                             disabled={isLoading || !formData.name || !formData.email}
                         >
-                            {isLoading ? 'Saving...' : editingStaff ? 'Save Changes' : 'Add Team Member'}
-                        </Button>
+                            {isLoading ? 'Processing...' : editingStaff ? 'Update Roster' : 'Join Team'}
+                        </button>
                     </div>
                 )}
             </div>

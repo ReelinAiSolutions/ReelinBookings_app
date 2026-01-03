@@ -20,7 +20,7 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
     };
 
     return (
-        <div className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+        <div className="group relative bg-white rounded-[32px] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 hover:shadow-[0_32px_64px_rgba(0,0,0,0.08)] hover:-translate-y-2">
             {/* Image or Gradient Header */}
             <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
                 {hasImage ? (
@@ -67,69 +67,64 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
                 </div>
 
                 {/* Service Name on Image */}
-                <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="text-lg font-bold text-white leading-tight line-clamp-2">
+                <div className="absolute bottom-4 left-6 right-6">
+                    <h3 className="text-xl font-black text-white leading-tight line-clamp-2 drop-shadow-md">
                         {service.name}
                     </h3>
                 </div>
             </div>
 
             {/* Card Content */}
-            <div className="p-4 space-y-3">
+            <div className="p-8 space-y-4">
                 {/* Price and Duration */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5 text-gray-900">
-                        <DollarSign className="w-4 h-4 text-green-600" />
-                        <span className="text-xl font-bold">{service.price}</span>
+                        <span className="text-2xl font-black tracking-tight">${service.price}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-sm font-medium">{service.durationMinutes} min</span>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full text-gray-500 font-bold text-[10px] uppercase tracking-widest border border-gray-100">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{service.durationMinutes} MIN</span>
                     </div>
                 </div>
 
                 {/* Description */}
-                {service.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                {service.description ? (
+                    <p className="text-xs font-bold text-gray-400 line-clamp-2 leading-relaxed">
                         {service.description}
                     </p>
+                ) : (
+                    <p className="text-xs font-bold text-gray-200 italic">No description provided</p>
                 )}
 
                 {/* Additional Info */}
-                <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-2 pt-2">
                     {service.bufferTimeMinutes && service.bufferTimeMinutes > 0 && (
-                        <span className="px-2 py-1 bg-gray-100 rounded-full">
-                            +{service.bufferTimeMinutes}min buffer
+                        <span className="px-2 py-0.5 bg-indigo-50/50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-100/50">
+                            +{service.bufferTimeMinutes}m buffer
                         </span>
                     )}
                     {service.depositRequired && (
-                        <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full">
+                        <span className="px-2 py-0.5 bg-amber-50/50 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-100/50">
                             ${service.depositAmount} deposit
                         </span>
                     )}
-                    {service.maxCapacity && service.maxCapacity > 1 && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
-                            Max {service.maxCapacity} people
-                        </span>
-                    )}
                 </div>
+            </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2 border-t border-gray-100">
-                    <button
-                        onClick={() => onEdit(service)}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-medium text-sm hover:bg-blue-100 transition-colors"
-                    >
-                        <Edit2 className="w-4 h-4" />
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => onDelete(service)}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg font-medium text-sm hover:bg-red-100 transition-colors"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                    </button>
-                </div>
+            <div className="grid grid-cols-2 gap-3 p-8 pt-0">
+                <button
+                    onClick={() => onEdit(service)}
+                    className="flex-1 flex items-center justify-center gap-2 h-12 bg-white border border-gray-200 text-gray-900 rounded-[18px] text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+                >
+                    <Edit2 className="w-4 h-4" />
+                    Edit
+                </button>
+                <button
+                    onClick={() => onDelete(service)}
+                    className="w-full flex items-center justify-center gap-2 h-12 bg-red-50 text-red-500 rounded-[18px] hover:bg-red-500 hover:text-white transition-all active:scale-95 border border-transparent hover:shadow-lg hover:shadow-red-200"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
             </div>
         </div>
     );

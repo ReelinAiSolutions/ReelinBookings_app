@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import AgendaView from './AgendaView';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MoreHorizontal, User, Users, AlignJustify, Grid, Plus, Filter, CalendarCheck, CalendarX, Info, X, Search } from 'lucide-react';
 import { Appointment, Service, Staff, Organization, AppointmentStatus } from '@/types';
-import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth, subMonths, subYears, eachMonthOfInterval, endOfYear } from 'date-fns';
+import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth, subMonths, subYears, eachMonthOfInterval, endOfYear, isBefore, isAfter } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // -- EMPTY STATE COMPONENT --
 const EmptyState = ({ onAction, mode = 'day' }: { onAction: () => void, mode?: 'day' | 'team' }) => (
@@ -157,6 +158,24 @@ export default function WeeklyCalendar({
     const [renderedYears, setRenderedYears] = useState<number[]>([]);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const [highlightedAptId, setHighlightedAptId] = useState<string | null>(null);
+    const [zoomDirection, setZoomDirection] = useState<'in' | 'out'>('in');
+
+    const viewVariants = {
+        enter: (direction: 'in' | 'out') => ({
+            scale: direction === 'in' ? 0.95 : 1.05,
+            opacity: 0,
+        }),
+        center: {
+            scale: 1,
+            opacity: 1,
+            transition: { duration: 0.3, ease: "easeInOut" } as any
+        },
+        exit: (direction: 'in' | 'out') => ({
+            scale: direction === 'in' ? 1.05 : 0.95,
+            opacity: 0,
+            transition: { duration: 0.2, ease: "easeInOut" } as any
+        })
+    };
 
     // -- URL DEEP LINKING LOGIC --
     useEffect(() => {
@@ -287,7 +306,10 @@ export default function WeeklyCalendar({
             } else if (calendarLevel === 'month' && renderedMonths.length > 0) {
                 const targetId = `month-${format(selectedDate, 'yyyy-MM')}`;
                 const el = document.getElementById(targetId);
-                if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+                if (el && scrollContainerRef.current) {
+                    const offsetTop = el.offsetTop - 20; // 20px buffer
+                    scrollContainerRef.current.scrollTo({ top: offsetTop, behavior: 'auto' });
+                }
             } else if (calendarLevel === 'year' && renderedYears.length > 0) {
                 const el = document.getElementById(`year-${getYear(selectedDate)}`);
                 if (el) {
@@ -685,13 +707,73 @@ export default function WeeklyCalendar({
         }
     };
 
+    // -- MEMOIZED LAYOUT CALCULATIONS --
+    const dailyLayoutData = React.useMemo(() => {
+        if (calendarLevel !== 'day' || viewMode !== 'personal') return [];
+
+        const dayAppointments = getAppointmentsForDate(selectedDate);
+        const getMinutes = (t: string) => { const parts = t.split(':'); return parseInt(parts[0]) * 60 + parseInt(parts[1]); };
+
+        // Sort appointments by time (and ID for stability)
+        const sortedApts = [...dayAppointments].sort((a, b) => {
+            const tA = getMinutes(a.timeSlot);
+            const tB = getMinutes(b.timeSlot);
+            return tA - tB || a.id.localeCompare(b.id);
+        });
+
+        return sortedApts.map((apt) => {
+            const start = getMinutes(apt.timeSlot);
+            const service = services.find(s => s.id === apt.serviceId);
+            const duration = apt.durationMinutes || service?.durationMinutes || 60;
+            const end = start + duration;
+
+            // Find all concurrent events (any overlap)
+            const overlappingEvents = sortedApts.filter(a => {
+                const aStart = getMinutes(a.timeSlot);
+                const aService = services.find(s => s.id === a.serviceId);
+                const aDuration = a.durationMinutes || aService?.durationMinutes || 60;
+                const aEnd = aStart + aDuration;
+                return (start < aEnd - 0.1 && end > aStart + 0.1);
+            });
+
+            // Column logic
+            const columns: string[][] = [];
+            overlappingEvents.forEach(evt => {
+                let placed = false;
+                for (let col of columns) {
+                    const lastInColId = col[col.length - 1];
+                    const lastInCol = sortedApts.find(a => a.id === lastInColId)!;
+                    const lastStart = getMinutes(lastInCol.timeSlot);
+                    const lastService = services.find(s => s.id === lastInCol.serviceId);
+                    const lastDuration = lastInCol.durationMinutes || lastService?.durationMinutes || 60;
+                    const lastEnd = lastStart + lastDuration;
+
+                    const evtStart = getMinutes(evt.timeSlot);
+                    if (evtStart >= lastEnd - 0.1) {
+                        col.push(evt.id);
+                        placed = true;
+                        break;
+                    }
+                }
+                if (!placed) columns.push([evt.id]);
+            });
+
+            const totalCols = columns.length;
+            const colIndex = columns.findIndex(col => col.includes(apt.id));
+            const widthPct = 98 / totalCols;
+            const leftPct = (colIndex * widthPct);
+
+            return { apt, widthPct, leftPct };
+        });
+    }, [calendarLevel, selectedDate, appointments, viewMode, filterStaffId, services]); // Dependencies
+
     // -- RENDERERS --
 
     const renderYearBlock = (year: number) => (
         <div key={year} id={`year-${year}`} className="mb-8 last:mb-0">
             {/* Apple style: Clean, left-aligned year title with thin divider */}
             <div className="px-5 mb-4">
-                <h2 className={`text-3xl font-bold tracking-tight ${year === getYear(selectedDate) ? 'text-red-500' : 'text-gray-900'}`}>
+                <h2 className={`text-3xl font-bold tracking-tight ${year === getYear(selectedDate) ? 'text-indigo-600' : 'text-gray-900'}`}>
                     {year}
                 </h2>
                 <div className="h-px bg-gray-100 mt-2 w-full"></div>
@@ -710,13 +792,14 @@ export default function WeeklyCalendar({
                             key={m}
                             className="flex flex-col gap-1.5 cursor-pointer active:opacity-60 transition-opacity"
                             onClick={() => {
+                                setZoomDirection('in');
                                 setDirection('forward');
                                 setCalendarLevel('month');
                                 setSelectedDate(monthDate);
                             }}
                         >
                             {/* Shortened month name: J, F, M... or Jan, Feb... Apple uses Full but we can use tiny bold */}
-                            <h3 className={`text-[13px] font-bold px-1 ${isSelectedMonth ? 'text-red-500' : 'text-gray-900 uppercase tracking-tight'}`}>
+                            <h3 className={`text-[13px] font-bold px-1 ${isSelectedMonth ? 'text-indigo-600' : 'text-gray-900 uppercase tracking-tight'}`}>
                                 {m.substring(0, 3)}
                             </h3>
 
@@ -735,11 +818,9 @@ export default function WeeklyCalendar({
                                     return (
                                         <div
                                             key={d}
-                                            className={`aspect-square flex items-center justify-center text-[7.5px] font-medium rounded-full transition-colors ${isToday
-                                                ? 'bg-red-500 text-white font-bold'
-                                                : isSelected
-                                                    ? 'bg-gray-100 text-gray-900 font-bold'
-                                                    : 'text-gray-600'
+                                            className={`aspect-square flex items-center justify-center text-[11px] font-medium rounded-full transition-colors ${isToday
+                                                ? 'bg-[#007AFF]! text-white shadow-sm'
+                                                : 'text-gray-700'
                                                 }`}
                                         >
                                             {dayNum}
@@ -758,7 +839,7 @@ export default function WeeklyCalendar({
         return (
             <div
                 ref={scrollContainerRef}
-                className={`flex-1 overflow-y-auto bg-white pb-[100px] ${getAnimClass()} scrollbar-hide`}
+                className={`flex-1 overflow-y-auto bg-white pb-24 ${getAnimClass()} scrollbar-hide`}
                 onScroll={(e) => handleInfiniteScroll(e, 'year')}
             >
                 {renderedYears.map((year, i) => (
@@ -779,13 +860,15 @@ export default function WeeklyCalendar({
 
         return (
             <div key={`${monthName}-${year}`} id={`month-${format(date, 'yyyy-MM')}`} className="mb-12">
-                <h3 className="sticky top-[32px] bg-white/95 backdrop-blur-md py-4 px-6 text-2xl font-bold text-gray-900 z-10 border-b border-gray-100 flex items-baseline gap-2">
+                <h3 className="sticky top-0 bg-white/95 backdrop-blur-md py-4 px-6 text-2xl font-bold text-gray-900 z-10 border-b border-gray-100 flex items-baseline gap-2">
                     {monthName} <span className="text-gray-400 font-normal text-xl">{year}</span>
                 </h3>
-                <div className="grid grid-cols-7 auto-rows-fr border-l border-gray-100 pt-8 pb-4">
+                <div className="grid grid-cols-7 auto-rows-fr border-l border-gray-100 pt-4">
+                    {/* Empty cells for start of month */}
                     {Array.from({ length: startDayOffset }).map((_, i) => (
-                        <div key={`empty-${i}`} className="h-32 border-b border-gray-100 border-r border-gray-100 bg-gray-50/20"></div>
+                        <div key={`empty-${i}`} className="min-h-[120px] bg-gray-50/30 border-b border-r border-gray-100" />
                     ))}
+
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                         const dayNum = i + 1;
                         const cellDate = new Date(year, date.getMonth(), dayNum);
@@ -796,73 +879,50 @@ export default function WeeklyCalendar({
                         return (
                             <div
                                 key={i}
-                                className="h-32 border-b border-gray-100 border-r border-gray-100 relative cursor-pointer hover:bg-gray-50 transition-colors group"
+                                className={`min-h-[120px] border-b border-r border-gray-100 p-2 transition-colors relative group
+                                    ${isTodayDay ? 'bg-blue-50/30' : 'hover:bg-gray-50'}
+                                    ${isBefore(cellDate, new Date()) && !isTodayDay ? 'bg-gray-50/50' : ''}
+                                `}
                                 onClick={() => {
+                                    setZoomDirection('in');
                                     setDirection('forward');
                                     setCalendarLevel('day');
                                     setSelectedDate(cellDate);
                                 }}
                             >
-                                <span className={`absolute top-3 left-3 text-lg font-semibold flex items-center justify-center transition-all ${isSelectedDay || isTodayDay
-                                    ? 'bg-red-500 text-white w-10 h-10 rounded-full shadow-sm'
-                                    : 'text-gray-700 group-hover:text-gray-900'
-                                    }`}>
+                                <span className={`
+                                    text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full mb-1
+                                    ${isTodayDay ? 'bg-[#007AFF]! text-white shadow-sm' : isBefore(cellDate, new Date()) && !isTodayDay ? 'text-gray-400' : 'text-gray-700'}
+                                `}>
                                     {dayNum}
                                 </span>
 
                                 {eventCount > 0 && (
-                                    <div className="absolute bottom-3 left-3 right-3">
-                                        {/* Desktop: Rich Indicator */}
-                                        <div className="hidden sm:block">
-                                            {eventCount === 1 ? (
-                                                <div className="flex items-center gap-2 pl-1">
-                                                    <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
-                                                    <span className="text-xs text-gray-500 font-medium truncate">1 Booking</span>
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col gap-1">
-                                                    <div className="flex items-center gap-2 pl-1">
-                                                        <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                                                        <span className="text-xs text-indigo-600 font-semibold truncate">{eventCount} Bookings</span>
-                                                    </div>
-                                                    {/* Visual Density Bar */}
-                                                    <div className="mx-1 h-1 bg-indigo-100 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-indigo-500 opacity-50" style={{ width: `${Math.min(100, eventCount * 20)}%` }}></div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Mobile: Minimal Indicator (Just the Number) */}
-                                        <div className="sm:hidden flex justify-start pl-1">
-                                            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50/50 px-1.5 py-0.5 rounded-md border border-indigo-100/50">
-                                                {eventCount}
-                                            </span>
-                                        </div>
+                                    <div className="flex justify-start pl-1 mt-1">
+                                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50/50 px-1.5 py-0.5 rounded-md border border-indigo-100/50">
+                                            {eventCount}
+                                        </span>
                                     </div>
                                 )}
                             </div>
                         );
-                    })}
-                </div>
-            </div>
+                    })
+                    }
+                </div >
+            </div >
         );
+
     };
 
     const renderMonthView = () => (
         <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-y-auto bg-white ${getAnimClass()} scrollbar-hide`}
+            className={`flex-1 overflow-y-auto bg-white ${getAnimClass()} scrollbar-hide pb-24`}
             onScroll={(e) => handleInfiniteScroll(e, 'month')}
         >
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-7 border-b border-gray-100 pb-2 pt-2 sticky top-0 bg-white z-20 shadow-sm">
-                {weekDayLabels.map((d, i) => (
-                    <div key={i} className="text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{d}</div>
-                ))}
-            </div>
 
-            <div className="pb-[100px]">
+
+            <div className="pb-24">
                 {renderedMonths.map(date => renderMonthBlock(date))}
             </div>
         </div>
@@ -887,7 +947,7 @@ export default function WeeklyCalendar({
         return (
             <div
                 ref={scrollContainerRef}
-                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide pb-[100px] lg:pb-0`}
+                className={`flex-1 overflow-auto bg-white relative ${getAnimClass()} scrollbar-hide pb-24 lg:pb-0`}
                 style={{ scrollBehavior: 'smooth' }}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
@@ -901,7 +961,7 @@ export default function WeeklyCalendar({
                             return (
                                 <div key={member.id} className="flex-1 min-w-[120px] text-center border-l border-gray-300 first:border-l-0 py-2 bg-white sticky top-0 z-40">
                                     <div className="flex items-center justify-center gap-1.5">
-                                        <div className={`w-2 h-2 rounded-full ${colorScheme.dot}`}></div>
+                                        <div className="w-2 h-2 rounded-full ${colorScheme.dot}"></div>
                                         <div className="text-xs font-bold text-gray-900 truncate px-1">{member.name}</div>
                                     </div>
                                 </div>
@@ -938,12 +998,7 @@ export default function WeeklyCalendar({
 
                     <div className="flex-1 relative items-start min-w-0">
                         {/* Current Time Indicator (Shared for both views) */}
-                        {currentTimeTopPx !== -1 && (
-                            <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                <div className="w-full h-[1px] bg-[#007AFF] shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
-                                <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF] live-pulse border-2 border-white shadow-sm"></div>
-                            </div>
-                        )}
+
 
                         {viewMode === 'personal' ? (
                             <div
@@ -956,180 +1011,146 @@ export default function WeeklyCalendar({
                                     <div key={h} className="absolute w-full border-t border-gray-300 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h)}></div>
                                 ))}
 
-                                {(() => {
-                                    // Layout Helper: Calculate overlapping groups for side-by-side display
-                                    const getMinutes = (t: string) => { const parts = t.split(':'); return parseInt(parts[0]) * 60 + parseInt(parts[1]); };
+                                {/* Current Time Indicator (Personal View) */}
+                                {currentTimeTopPx !== -1 && (
+                                    <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
+                                        <div className="w-full h-[1px] bg-[#007AFF]! shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
+                                        <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF]! live-pulse border-2 border-white shadow-sm"></div>
+                                    </div>
+                                )}
 
-                                    // Sort appointments by time (and ID for stability)
-                                    const sortedApts = [...dayAppointments].sort((a, b) => {
-                                        const tA = getMinutes(a.timeSlot);
-                                        const tB = getMinutes(b.timeSlot);
-                                        return tA - tB || a.id.localeCompare(b.id);
-                                    });
+                                {dailyLayoutData.map(({ apt, widthPct, leftPct }) => {
+                                    // Calculate Dynamic Props (Top, Time, Colors) in Render
+                                    const service = services.find(s => s.id === apt.serviceId);
+                                    const duration = apt.durationMinutes || service?.durationMinutes || 60;
 
-                                    return sortedApts.map((apt) => {
-                                        const start = getMinutes(apt.timeSlot);
-                                        const service = services.find(s => s.id === apt.serviceId);
-                                        const duration = apt.durationMinutes || service?.durationMinutes || 60;
-                                        const end = start + duration;
+                                    const [h, m] = apt.timeSlot.split(':').map(Number);
+                                    const totalMins = (h * 60) + m;
+                                    const topPx = (totalMins - (minHour * 60)) * 2;
+                                    const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
+                                    const isPast = aptDate < now;
 
-                                        // Find all concurrent events (any overlap)
-                                        // We find the "clique" of overlapping events to ensure consistent widths
-                                        const overlappingEvents = sortedApts.filter(a => {
-                                            const aStart = getMinutes(a.timeSlot);
-                                            const aService = services.find(s => s.id === a.serviceId);
-                                            const aDuration = a.durationMinutes || aService?.durationMinutes || 60;
-                                            const aEnd = aStart + aDuration;
-                                            // Ensure back-to-back (end == start) don't overlap by using a tiny buffer
-                                            return (start < aEnd - 0.1 && end > aStart + 0.1);
-                                        });
+                                    const isDragging = dragState?.id === apt.id;
+                                    const displayTop = isDragging ? dragState.currentTop : topPx;
+                                    const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot;
+                                    const isBlocked = apt.status === AppointmentStatus.BLOCKED ||
+                                        apt.clientName?.toLowerCase().startsWith('blocked') ||
+                                        apt.clientId === 'blocked@internal.system' ||
+                                        (apt as any).isBlocked;
 
-                                        // To handle complex overlaps (e.g. A overlaps B, B overlaps C, but A doesn't overlap C),
-                                        // we use a simple column-based approach:
-                                        const columns: string[][] = [];
-                                        overlappingEvents.forEach(evt => {
-                                            let placed = false;
-                                            for (let col of columns) {
-                                                const lastInColId = col[col.length - 1];
-                                                const lastInCol = sortedApts.find(a => a.id === lastInColId)!;
-                                                const lastStart = getMinutes(lastInCol.timeSlot);
-                                                const lastService = services.find(s => s.id === lastInCol.serviceId);
-                                                const lastDuration = lastInCol.durationMinutes || lastService?.durationMinutes || 60;
-                                                const lastEnd = lastStart + lastDuration;
+                                    const isHighlighted = highlightedAptId === apt.id;
 
-                                                const evtStart = getMinutes(evt.timeSlot);
-                                                // Allow back-to-back to share column
-                                                if (evtStart >= lastEnd - 0.1) {
-                                                    col.push(evt.id);
-                                                    placed = true;
-                                                    break;
-                                                }
-                                            }
-                                            if (!placed) columns.push([evt.id]);
-                                        });
+                                    // Apply staff colors if needed (though Personal view usually implies uniform color, 
+                                    // but original code used logic based on blocked status)
+                                    // Original "Personal View" Card Logic:
+                                    // Blocked: bg-slate-100...
+                                    // Normal: bg-indigo-50...
 
-                                        const totalCols = columns.length;
-                                        const colIndex = columns.findIndex(col => col.includes(apt.id));
-
-                                        // Calculate Width & Position
-                                        const widthPct = 98 / totalCols;
-                                        const leftPct = (colIndex * widthPct);
-
-                                        const [h, m] = apt.timeSlot.split(':').map(Number);
-                                        const totalMins = (h * 60) + m;
-                                        const topPx = (totalMins - (minHour * 60)) * 2;
-                                        const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
-                                        const isPast = aptDate < now;
-
-                                        const isDragging = dragState?.id === apt.id;
-                                        const displayTop = isDragging ? dragState.currentTop : topPx;
-                                        const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot;
-                                        const isBlocked = apt.status === AppointmentStatus.BLOCKED ||
-                                            apt.clientName?.toLowerCase().startsWith('blocked') ||
-                                            apt.clientId === 'blocked@internal.system' ||
-                                            (apt as any).isBlocked;
-
-                                        const isHighlighted = highlightedAptId === apt.id;
-
-                                        return (
-                                            <React.Fragment key={apt.id}>
-                                                {/* GHOST / PHANTOM CARD */}
-                                                {isDragging && (
-                                                    <div
-                                                        className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-50 border-slate-200 text-slate-300 border-l-[3px]' : 'bg-indigo-50 border-indigo-200 text-indigo-300 border-l-[4px]'} py-1 px-2 opacity-30 z-10 pointer-events-none`}
-                                                        style={{
-                                                            top: `${topPx}px`,
-                                                            height: `${Math.max(24, duration * 2)}px`,
-                                                            left: `calc(${leftPct}% + 1px)`,
-                                                            width: `calc(${widthPct}% - 2px)`
-                                                        }}
-                                                    >
-                                                        <div className="text-[10px] font-bold opacity-50 uppercase tracking-tighter truncate">Original</div>
-                                                    </div>
-                                                )}
-
+                                    return (
+                                        <React.Fragment key={apt.id}>
+                                            {/* GHOST / PHANTOM CARD */}
+                                            {isDragging && (
                                                 <div
-                                                    onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
-                                                    onPointerMove={handlePointerMove}
-                                                    onPointerUp={handlePointerUp}
-                                                    onClick={(e) => {
-                                                        // Prevent click if just dragged
-                                                        if (isDraggingRef.current) {
-                                                            e.stopPropagation();
-                                                            return;
-                                                        }
-                                                        if (!isDragging) {
-                                                            e.stopPropagation();
-                                                            onAppointmentClick(apt);
-                                                        }
-                                                    }}
-                                                    className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-indigo-50 border-indigo-500 text-indigo-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
+                                                    className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-50 border-slate-200 text-slate-300 border-l-[3px]' : 'bg-indigo-50 border-indigo-200 text-indigo-300 border-l-[4px]'} py-1 px-2 opacity-30 z-10 pointer-events-none`}
                                                     style={{
-                                                        top: `${displayTop}px`,
+                                                        top: `${topPx}px`,
                                                         height: `${Math.max(24, duration * 2)}px`,
                                                         left: `calc(${leftPct}% + 1px)`,
-                                                        width: `calc(${widthPct}% - 2px)`,
-                                                        transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
-                                                        transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                        width: `calc(${widthPct}% - 2px)`
                                                     }}
                                                 >
-                                                    {duration >= 25 ? (
-                                                        <div className="flex flex-col h-full gap-0">
-                                                            <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : 'text-indigo-400'}`}>
-                                                                {isBlocked ? 'Blocked Time' : (services.find(s => s.id === apt.serviceId)?.name || 'Service')}
-                                                            </div>
-                                                            <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : (isDragging && dragState.hasConflict ? 'text-red-900' : 'text-indigo-700')} truncate`}>
-                                                                {isDragging && dragState.hasConflict && <span className="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-red-500 text-white font-black animate-pulse">CONFLICT</span>}
-                                                                {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
-                                                            </div>
-                                                            <div className="flex items-center justify-between mt-auto pb-0.5">
-                                                                <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : 'text-indigo-600/90'} truncate`}>
-                                                                    {isBlocked ? (staff.find(s => s.id === apt.staffId)?.name || 'All Staff') : (staff.find(s => s.id === apt.staffId)?.name || 'Staff')}
-                                                                </div>
-                                                                <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : 'text-indigo-500'}`}>
-                                                                    {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center gap-2 overflow-hidden h-full">
-                                                            {duration >= 15 && (
-                                                                <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : 'text-indigo-700'} truncate shrink-0`}>
-                                                                    {isBlocked ? 'BLOCKED' : apt.clientName}
-                                                                </div>
-                                                            )}
-                                                            <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : 'text-indigo-400/90'} truncate`}>
-                                                                {formatTo12Hour(displayTime)} ({duration}m)
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                    <div className="text-[10px] font-bold opacity-50 uppercase tracking-tighter truncate">Original</div>
                                                 </div>
-                                                {/* BUFFFER VISUALIZATION */}
-                                                {(apt.bufferMinutes || 0) > 0 && (
-                                                    <div
-                                                        className="absolute z-20 opacity-30 pointer-events-none transition-all"
-                                                        style={{
-                                                            top: `${displayTop + (duration * 2)}px`,
-                                                            height: `${(apt.bufferMinutes || 0) * 2}px`,
-                                                            left: `calc(${leftPct}% + 4px)`,
-                                                            width: `calc(${widthPct}% - 8px)`,
-                                                            transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
-                                                            background: isDragging && dragState.hasConflict
-                                                                ? 'repeating-linear-gradient(45deg, #ef4444, #ef4444 4px, transparent 4px, transparent 8px)'
-                                                                : 'repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 4px, transparent 4px, transparent 8px)',
-                                                            borderRadius: '0 0 4px 4px',
-                                                            transition: isDragging ? 'none' : 'all 0.2s ease-out'
-                                                        }}
-                                                    />
-                                                )}
-                                            </React.Fragment>
-                                        );
+                                            )}
 
-                                    });
-                                })()}
+                                            <div
+                                                onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
+                                                onPointerMove={handlePointerMove}
+                                                onPointerUp={handlePointerUp}
+                                                onClick={(e) => {
+                                                    // Prevent click if just dragged
+                                                    if (isDraggingRef.current) {
+                                                        e.stopPropagation();
+                                                        return;
+                                                    }
+                                                    if (!isDragging) {
+                                                        e.stopPropagation();
+                                                        onAppointmentClick(apt);
+                                                    }
+                                                }}
+                                                className={`absolute rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : 'bg-indigo-50 border-indigo-500 text-indigo-900 border-l-[4px]'} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : 'hover:ring-indigo-500'} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : 'ring-4 ring-indigo-400 opacity-90'} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
+                                                style={{
+                                                    top: `${displayTop}px`,
+                                                    height: `${Math.max(24, duration * 2)}px`,
+                                                    left: `calc(${leftPct}% + 1px)`,
+                                                    width: `calc(${widthPct}% - 2px)`,
+                                                    transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
+                                                    transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                }}
+                                            >
+                                                {duration >= 25 ? (
+                                                    <div className="flex flex-col h-full gap-0">
+                                                        <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : 'text-indigo-400'}`}>
+                                                            {isBlocked ? 'Blocked Time' : (services.find(s => s.id === apt.serviceId)?.name || 'Service')}
+                                                        </div>
+                                                        <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : (isDragging && dragState.hasConflict ? 'text-red-900' : 'text-indigo-700')} truncate`}>
+                                                            {isDragging && dragState.hasConflict && <span className="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-red-500 text-white font-black animate-pulse">CONFLICT</span>}
+                                                            {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
+                                                        </div>
+                                                        <div className="flex items-center justify-between mt-auto pb-0.5">
+                                                            <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : 'text-indigo-600/90'} truncate`}>
+                                                                {isBlocked ? (staff.find(s => s.id === apt.staffId)?.name || 'All Staff') : (staff.find(s => s.id === apt.staffId)?.name || 'Staff')}
+                                                            </div>
+                                                            <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : 'text-indigo-500'}`}>
+                                                                {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 overflow-hidden h-full">
+                                                        {duration >= 15 && (
+                                                            <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : 'text-indigo-700'} truncate shrink-0`}>
+                                                                {isBlocked ? 'BLOCKED' : apt.clientName}
+                                                            </div>
+                                                        )}
+                                                        <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : 'text-indigo-400/90'} truncate`}>
+                                                            {formatTo12Hour(displayTime)} ({duration}m)
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {/* BUFFFER VISUALIZATION */}
+                                            {(apt.bufferMinutes || 0) > 0 && (
+                                                <div
+                                                    className="absolute z-20 opacity-30 pointer-events-none transition-all"
+                                                    style={{
+                                                        top: `${displayTop + (duration * 2)}px`,
+                                                        height: `${(apt.bufferMinutes || 0) * 2}px`,
+                                                        left: `calc(${leftPct}% + 4px)`,
+                                                        width: `calc(${widthPct}% - 8px)`,
+                                                        transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
+                                                        background: isDragging && dragState.hasConflict
+                                                            ? 'repeating-linear-gradient(45deg, #ef4444, #ef4444 4px, transparent 4px, transparent 8px)'
+                                                            : 'repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 4px, transparent 4px, transparent 8px)',
+                                                        borderRadius: '0 0 4px 4px',
+                                                        transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                    }}
+                                                />
+                                            )}
+                                        </React.Fragment>
+                                    );
+
+                                })}
                             </div>
                         ) : (
-                            <div className="flex w-full h-full">
+                            <div className="flex w-full h-full relative">
+                                {/* Current Time Indicator (Team View) */}
+                                {currentTimeTopPx !== -1 && (
+                                    <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
+                                        <div className="w-full h-[1px] bg-[#007AFF]! shadow-[0_0_8px_rgba(0,122,255,0.4)]"></div>
+                                        <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-[#007AFF]! live-pulse border-2 border-white shadow-sm"></div>
+                                    </div>
+                                )}
                                 {staff.map((member, idx) => {
                                     const colorScheme = staffColors[idx % staffColors.length];
                                     const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
@@ -1286,7 +1307,7 @@ export default function WeeklyCalendar({
     };
 
     return (
-        <div className="w-full h-full bg-white text-gray-900 flex flex-col font-sans overflow-hidden select-none relative">
+        <div className="flex flex-col h-full bg-white relative overflow-hidden">
             <PulseStyle />
 
             {/* Helper for Centered Filter Label */}
@@ -1297,25 +1318,38 @@ export default function WeeklyCalendar({
                 return null; // This is a placeholder for logic, I'll use filterLabel below
             })()}
 
-            {/* STICKY HEADER WRAPPER */}
+            {/* --- Main Header --- */}
             <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md transition-all border-b border-gray-100">
-                {/* MAIN HEADER */}
-                <header className="pt-6 pb-2 px-5 flex flex-col shrink-0 touch-none">
-                    {/* Row 1: Back Link */}
-                    <div className="h-6 flex items-start">
-                        {calendarLevel === 'month' && (
-                            <div className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50" onClick={() => { setDirection('backward'); setCalendarLevel('year'); }}>
-                                <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
-                                <span className="text-[17px] font-normal">{getYear(selectedDate)}</span>
-                            </div>
-                        )}
-                        {calendarLevel === 'day' && (
-                            <div className="flex items-center gap-1 text-indigo-600 cursor-pointer active:opacity-50" onClick={() => { setDirection('backward'); setCalendarLevel('month'); }}>
-                                <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
-                                <span className="text-[17px] font-normal">Month</span>
-                            </div>
-                        )}
-                    </div>
+                <header className="pt-4 pb-2 px-4 flex flex-col shrink-0 touch-none">
+
+                    {/* Left: Navigation */}
+                    {calendarLevel !== 'day' && calendarLevel !== 'year' && (
+                        <div
+                            onClick={() => {
+                                if (calendarLevel === 'month') {
+                                    setZoomDirection('out'); // Back out
+                                    setCalendarLevel('year');
+                                }
+                            }}
+                            className="flex items-center text-indigo-600 font-medium cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors -ml-2"
+                        >
+                            <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
+                            <span className="text-[17px] font-normal">{calendarLevel === 'month' ? getYear(selectedDate) : 'Back'}</span>
+                        </div>
+                    )}
+                    {calendarLevel === 'day' && (
+                        <div
+                            onClick={() => {
+                                setZoomDirection('out'); // Back out
+                                setCalendarLevel('month');
+                            }}
+                            className="flex items-center text-indigo-600 font-medium cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors -ml-2"
+                        >
+                            <ChevronLeft className="w-5 h-5 -ml-1.5" strokeWidth={2.5} />
+                            <span className="text-[17px] font-normal">Month</span>
+                        </div>
+                    )}
+
 
                     {/* Row 2: Title & Primary Actions */}
                     <div className="flex items-center justify-between mt-1 gap-2">
@@ -1325,7 +1359,7 @@ export default function WeeklyCalendar({
                                 <button
                                     className="text-[11px] sm:text-sm font-semibold text-indigo-600 bg-indigo-100/50 px-2 sm:px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors shrink-0"
                                     onClick={() => {
-                                        setDirection('forward');
+                                        setZoomDirection('in'); // Set zoom direction for navigating in
                                         setCalendarLevel('day');
                                         setSelectedDate(new Date());
                                         setTimeout(() => scrollToTime(), 100);
@@ -1342,7 +1376,7 @@ export default function WeeklyCalendar({
                                 <div className="relative">
                                     <button
                                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-[#007AFF]/10 ring-2 ring-[#007AFF] text-[#007AFF]' : 'bg-[#007AFF]/5 hover:bg-[#007AFF]/10 text-[#007AFF]'}`}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 active:scale-95 ${isFilterOpen ? 'bg-[#007AFF]!/10 ring-2 ring-[#007AFF] text-[#007AFF]' : 'bg-[#007AFF]!/5 hover:bg-[#007AFF]!/10 text-[#007AFF]'}`}
                                     >
                                         <span className="text-base sm:text-lg font-black tracking-tight truncate max-w-[120px] sm:max-w-[200px]">
                                             {filterStaffId === 'ALL' ? 'All Staff' : staff.find(s => s.id === filterStaffId)?.name || 'Unknown'}
@@ -1381,6 +1415,7 @@ export default function WeeklyCalendar({
 
                         {/* RIGHT: ACTION BUTTONS (FLEX END) */}
                         <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5">
+
                             {/* JUMP TO DATE PICKER */}
                             <div className="relative group">
                                 <button
@@ -1433,7 +1468,10 @@ export default function WeeklyCalendar({
                                                                 onClick={() => {
                                                                     setSelectedDate(date);
                                                                     setIsDatePickerOpen(false);
-                                                                    if (calendarLevel !== 'day') setCalendarLevel('day');
+                                                                    if (calendarLevel !== 'day') {
+                                                                        setZoomDirection('in'); // Set zoom direction for navigating in
+                                                                        setCalendarLevel('day');
+                                                                    }
                                                                 }}
                                                                 className={`h-8 w-8 rounded-full text-xs font-bold transition-all ${isSelected
                                                                     ? 'bg-indigo-600 text-white shadow-md scale-110'
@@ -1450,20 +1488,7 @@ export default function WeeklyCalendar({
                                                 })()}
                                             </div>
 
-                                            <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between gap-2">
-                                                <button
-                                                    onClick={() => { setSelectedDate(new Date()); setIsDatePickerOpen(false); setCalendarLevel('day'); }}
-                                                    className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors flex-1"
-                                                >
-                                                    Today
-                                                </button>
-                                                <button
-                                                    onClick={() => { setCalendarLevel('month'); setIsDatePickerOpen(false); }}
-                                                    className="text-[11px] font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex-1"
-                                                >
-                                                    Month View
-                                                </button>
-                                            </div>
+
                                         </div>
                                     </>
                                 )}
@@ -1473,7 +1498,7 @@ export default function WeeklyCalendar({
 
 
                             <button
-                                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-[#007AFF] text-white rounded-full transition-all duration-200 hover:bg-blue-600 active:scale-95 shadow-lg shadow-blue-500/20"
+                                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-[#007AFF]! text-white rounded-full transition-all duration-200 hover:bg-blue-600 active:scale-95 shadow-lg shadow-blue-500/20"
                                 onClick={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)}
                             >
                                 <Plus className="w-4 h-4" strokeWidth={3} />
@@ -1481,55 +1506,108 @@ export default function WeeklyCalendar({
                             </button>
                         </div>
                     </div>
-                </header>
+                </header >
 
                 {/* DAY SPECIFIC DATE HEADER */}
-                {calendarLevel === 'day' && (
-                    <div
-                        className="flex flex-col select-none touch-none pb-4"
-                        onTouchStart={onHeaderTouchStart}
-                        onTouchMove={onHeaderTouchMove}
-                        onTouchEnd={onHeaderTouchEnd}
-                    >
-                        <div className="flex justify-between px-5 mb-2">
-                            {weekDayLabels.map((day, i) => (
-                                <div key={i} className="w-10 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                                    {day}
-                                </div>
+                {
+                    calendarLevel === 'day' && (
+                        <div
+                            className="flex flex-col select-none touch-none pb-4"
+                            onTouchStart={onHeaderTouchStart}
+                            onTouchMove={onHeaderTouchMove}
+                            onTouchEnd={onHeaderTouchEnd}
+                        >
+                            <div className="flex justify-between px-4 mb-2">
+                                {weekDayLabels.map((day, i) => (
+                                    <div key={i} className="w-10 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                        {day}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex justify-between px-4 text-[17px]">
+                                {weekDates.map((date) => {
+                                    const isSelected = isSameDay(date, selectedDate);
+                                    const isToday = isSameDay(date, new Date());
+                                    return (
+                                        <div
+                                            key={date.toISOString()}
+                                            className="w-10 flex flex-col items-center justify-center cursor-pointer"
+                                            onClick={() => setSelectedDate(date)}
+                                        >
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
+                                                ? 'bg-[#007AFF]! text-white shadow-sm'
+                                                : isToday
+                                                    ? 'text-[#007AFF]'
+                                                    : 'text-gray-900 bg-transparent'
+                                                }`}>
+                                                {format(date, 'd')}
+                                            </div>
+                                            {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF]! mt-1"></div>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div >
+                    )
+                }
+
+                {/* MONTH VIEW WEEKDAY HEADERS (Moved from scroll container) */}
+                {
+                    calendarLevel === 'month' && (
+                        <div className="grid grid-cols-7 pb-2 pt-2 bg-white select-none">
+                            {weekDayLabels.map((d, i) => (
+                                <div key={i} className="text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{d}</div>
                             ))}
                         </div>
-                        <div className="flex justify-between px-5 text-[17px]">
-                            {weekDates.map((date) => {
-                                const isSelected = isSameDay(date, selectedDate);
-                                const isToday = isSameDay(date, new Date());
-                                return (
-                                    <div
-                                        key={date.toISOString()}
-                                        className="w-10 flex flex-col items-center justify-center cursor-pointer"
-                                        onClick={() => setSelectedDate(date)}
-                                    >
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
-                                            ? 'bg-[#007AFF] text-white shadow-sm'
-                                            : isToday
-                                                ? 'text-[#007AFF]'
-                                                : 'text-gray-900 bg-transparent'
-                                            }`}>
-                                            {format(date, 'd')}
-                                        </div>
-                                        {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-[#007AFF] mt-1"></div>}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+                    )
+                }
+
+
+
             </div>
+            {/*MAIN CONTENT AREA*/}
+            <AnimatePresence mode="popLayout" custom={zoomDirection}>
+                {calendarLevel === 'year' && (
+                    <motion.div
+                        key="year"
+                        custom={zoomDirection}
+                        variants={viewVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        className="flex-1 flex flex-col h-full overflow-hidden bg-white"
+                    >
+                        {renderYearView()}
+                    </motion.div>
+                )}
+                {calendarLevel === 'month' && (
+                    <motion.div
+                        key="month"
+                        custom={zoomDirection}
+                        variants={viewVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        className="flex-1 flex flex-col h-full overflow-hidden bg-white"
+                    >
+                        {renderMonthView()}
+                    </motion.div>
+                )}
+                {calendarLevel === 'day' && (
+                    <motion.div
+                        key="day"
+                        custom={zoomDirection}
+                        variants={viewVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        className="flex-1 flex flex-col h-full overflow-hidden bg-white"
+                    >
+                        {renderDayView()}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* MAIN CONTENT AREA */}
-            {calendarLevel === 'year' && renderYearView()}
-            {calendarLevel === 'month' && renderMonthView()}
-            {calendarLevel === 'day' && renderDayView()}
-
-        </div>
+        </div >
     );
 }
