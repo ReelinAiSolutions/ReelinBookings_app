@@ -972,7 +972,7 @@ export default function WeeklyCalendar({
                     </div>
                 )}
 
-                <div className="relative w-full flex" style={{ height: `${hours.length * 120}px` }}>
+                <div className="relative w-full flex border-b border-gray-300" style={{ height: `${hours.length * 120}px` }}>
                     <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 bg-white z-[45] sticky left-0 h-full select-none">
                         {hours.map((h, i) => (
                             <React.Fragment key={h}>
@@ -1006,7 +1006,7 @@ export default function WeeklyCalendar({
                             <div
                                 key={selectedDate.toISOString()}
                                 className={`w-full relative ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
-                                style={{ height: `${hours.length * 120 + 24}px` }}
+                                style={{ height: `${hours.length * 120}px` }}
                             >
                                 {isDayEmpty && <EmptyState onAction={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)} />}
                                 {hours.map((h, i) => (
