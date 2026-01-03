@@ -115,11 +115,11 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-6 border-t border-gray-50">
+                <div className="flex items-center gap-2 pt-6 border-t border-gray-50">
                     {onSchedule && (
                         <button
                             onClick={(e) => { e.stopPropagation(); onSchedule(staff); }}
-                            className="flex items-center justify-center gap-2 h-14 bg-gray-900 text-white rounded-[20px] text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-200"
+                            className="flex-1 flex items-center justify-center gap-2 h-14 bg-gray-900 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-200"
                         >
                             <Calendar className="w-4 h-4" />
                             Schedule
@@ -127,23 +127,24 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                     )}
 
                     {onEdit && (
-                        <div className="flex gap-2">
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onEdit(staff); }}
-                                className="flex-1 flex items-center justify-center gap-2 h-14 bg-white border border-gray-200 text-gray-900 rounded-[20px] text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-gray-400 transition-all active:scale-95 shadow-sm"
-                            >
-                                <Edit2 className="w-4 h-4" />
-                                Edit
-                            </button>
-                            {onDelete && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); onDelete(staff); }}
-                                    className="w-14 h-14 flex items-center justify-center bg-red-50 text-red-500 rounded-[20px] hover:bg-red-500 hover:text-white transition-all active:scale-95 border border-transparent hover:shadow-xl hover:shadow-red-200 shadow-sm"
-                                >
-                                    <Trash2 className="w-5 h-5" />
-                                </button>
-                            )}
-                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onEdit(staff); }}
+                            className={`${onSchedule ? 'w-14' : 'flex-1'} h-14 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-900 rounded-[24px] text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-gray-400 transition-all active:scale-95 shadow-sm`}
+                            title="Edit Member"
+                        >
+                            <Edit2 className="w-4 h-4" />
+                            {!onSchedule && 'Edit Member'}
+                        </button>
+                    )}
+
+                    {onDelete && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onDelete(staff); }}
+                            className="w-14 h-14 flex items-center justify-center bg-red-50 text-red-500 rounded-[24px] hover:bg-red-500 hover:text-white transition-all active:scale-95 border border-transparent hover:shadow-xl hover:shadow-red-200 shadow-sm"
+                            title="Remove Member"
+                        >
+                            <Trash2 className="w-5 h-5" />
+                        </button>
                     )}
                 </div>
             </div>
