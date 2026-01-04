@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '@/context/ToastContext';
 import { getOrganizationBySlug, getServices, getStaff, createAppointment, getTimeSlots } from '@/services/dataService';
+import { createClient } from '@/lib/supabase';
 import { Service, Staff, TimeSlot } from '@/types';
 import { startOfToday, format } from 'date-fns';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -202,7 +203,41 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 setIsLoadingSlots(false);
             }
         };
+
         loadSlots();
+
+        // REALTIME SUBSCRIPTION
+        // If we are looking at a specific date, listen for changes to appointments
+        const channel = createClient()
+            .channel('public:appointments')
+            .on('postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'appointments',
+                    filter: `org_id=eq.${org?.id}` // Filter by Org if possible, or just listen broadly
+                },
+                (payload: any) => {
+                    console.log('Realtime change detected:', payload);
+                    // Optimized: Only reload if the change affects the selected date
+                    // payload.new or payload.old contains the record data
+                    const record = (payload.new || payload.old) as any;
+                    if (record && selectedDate) {
+                        const recordDate = record.date;
+                        const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+                        if (recordDate === selectedDateStr) {
+                            console.log('Refreshing slots due to realtime update...');
+                            loadSlots();
+                        }
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            createClient().removeChannel(channel);
+        };
+
     }, [selectedDate, selectedStaff, selectedService, org, availableStaff]);
 
     const availableTimeSlots = useMemo(() => {
@@ -260,6 +295,8 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 notes: formData.notes,
                 date: dateString,
                 timeSlot: selectedTime,
+                durationMinutes: selectedService.durationMinutes,
+                bufferMinutes: selectedService.bufferTimeMinutes || 0,
                 status: 'CONFIRMED'
             } as any, org.id);
 
@@ -348,9 +385,19 @@ export default function BookingPageContent({ slug }: { slug: string }) {
             }
 
             setBookingComplete(true);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Booking failed", error);
-            toast("Failed to book appointment. Please try again.", "error");
+            // Handle specific overlap error from the new RPC
+            if (error.message && error.message.includes('Time slot is no longer available')) {
+                toast("Someone just booked this slot! Please choose another time.", "error");
+                // Refresh slots
+                setSelectedTime(null);
+                // Trigger reload via re-fetching (handled by realtime or manual trigger if needed)
+                // Assuming realtime will catch the INSERT, but we can force it:
+                // We'll let the realtime subscription handle the refresh
+            } else {
+                toast("Failed to book appointment. Please try again.", "error");
+            }
         } finally {
             setIsBooking(false);
         }

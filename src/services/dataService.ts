@@ -470,19 +470,21 @@ export const getTimeSlots = async (staffId: string, date: Date, duration: number
     while (current < end) {
         const timeStr = format(current, 'HH:mm');
 
+        const slotStart = new Date(`${dateStr}T${timeStr}`);
+        const slotEnd = new Date(slotStart.getTime() + duration * 60000);
+        const overflowsBusinessHours = slotEnd > end;
+
         const isBusy = (appointments || []).some(apt => {
             const aptStart = new Date(`${dateStr}T${apt.time_slot}`);
-            const aptEnd = new Date(aptStart.getTime() + (apt.duration_minutes + (apt.buffer_minutes || 0)) * 60000);
-
-            const slotStart = new Date(`${dateStr}T${timeStr}`);
-            const slotEnd = new Date(slotStart.getTime() + duration * 60000);
+            const aptDuration = apt.duration_minutes || 60; // Fallback to 60m if null
+            const aptEnd = new Date(aptStart.getTime() + (aptDuration + (apt.buffer_minutes || 0)) * 60000);
 
             return (slotStart < aptEnd && slotEnd > aptStart);
         });
 
         slots.push({
             time: timeStr,
-            available: !isBusy
+            available: !isBusy && !overflowsBusinessHours
         });
 
         current = new Date(current.getTime() + interval * 60000);
@@ -523,4 +525,18 @@ export const linkStaffAccount = async () => {
         .rpc('link_staff_account');
     if (error) throw error;
     return data;
+};
+
+export const syncSubscription = async (userId: string, subscription: any) => {
+    // This ensures that if a browser already HAS a subscription object,
+    // it is definitely linked to the CURRENT active user.
+    const { error } = await supabase
+        .from('push_subscriptions')
+        .update({ user_id: userId })
+        .eq('subscription', JSON.stringify(subscription));
+
+    // Also do an upsert just in case the subscription isn't in DB yet
+    await savePushSubscription(userId, subscription);
+
+    if (error) console.warn('[syncSubscription] Error:', error.message);
 };

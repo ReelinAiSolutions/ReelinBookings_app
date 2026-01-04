@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase';
 import { Bell, BellOff, CheckCircle2, AlertCircle, Smartphone, RefreshCcw } from 'lucide-react';
 import { savePushSubscription, getUserProfile, getStaff, getCurrentUserOrganization, linkStaffAccount } from '@/services/dataService';
 import { Staff } from '@/types';
 
 const VAPID_PUBLIC_KEY = 'BCq4foOEzbw2NR8k31xmuBkDnt_ZHmEbJQV-P6U8rX8CIcycj0-p00lYF12lJ2ZbMAG9MiQPtMCmcoJa_GtGeGU';
+import { syncSubscription } from '@/services/dataService';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -28,6 +30,8 @@ export default function NotificationManager() {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<{ message: string; diagnostic?: string; raw?: any } | null>(null);
+
+    const supabase = createClient();
 
     useEffect(() => {
         checkSupport();
@@ -67,6 +71,19 @@ export default function NotificationManager() {
 
                 const subscription = await registration.pushManager.getSubscription();
                 setIsSubscribed(!!subscription);
+
+                // SILENT SYNC: If user is logged in and sub exists, ensure they are linked
+                if (subscription) {
+                    const { profile } = await getUserProfile() || {};
+                    if (profile?.id) {
+                        try {
+                            await syncSubscription(profile.id, subscription);
+                            console.log('[NotificationManager] Identity synced successfully.');
+                        } catch (syncErr) {
+                            console.warn('[NotificationManager] Sync failed:', syncErr);
+                        }
+                    }
+                }
             } catch (err: any) {
                 console.warn('Initial SW Check:', err.message);
             }
@@ -147,6 +164,29 @@ export default function NotificationManager() {
         }
     };
 
+    const [profile, setProfile] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const { profile } = await getUserProfile() || {};
+            setProfile(profile);
+        };
+        fetchProfile();
+    }, []);
+
+    const toggleReceiveAll = async () => {
+        if (!profile) return;
+        const newValue = !profile.receive_all_notifications;
+        const { error } = await supabase
+            .from('profiles')
+            .update({ receive_all_notifications: newValue })
+            .eq('id', profile.id);
+
+        if (!error) {
+            setProfile({ ...profile, receive_all_notifications: newValue });
+        }
+    };
+
     if (loading && !isSupported) return null;
 
     return (
@@ -171,6 +211,33 @@ export default function NotificationManager() {
                     <p className="text-sm text-gray-500 mb-4 leading-relaxed">
                         Receive instant alerts on your phone screen when clients book or cancel appointments.
                     </p>
+
+                    {/* Pro Feature: Admin Broadcast Toggle */}
+                    {profile?.role === 'owner' && (
+                        <div className="mb-6 p-4 bg-white rounded-xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-top-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-purple-50 rounded-lg">
+                                        <Smartphone className="w-4 h-4 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-black text-gray-900 leading-tight">Organization Overview</p>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Receive alerts for all staff bookings</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={toggleReceiveAll}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${profile.receive_all_notifications !== false ? 'bg-purple-600' : 'bg-gray-200'
+                                        }`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${profile.receive_all_notifications !== false ? 'translate-x-6' : 'translate-x-1'
+                                            }`}
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {!isSupported ? (
                         <div className="space-y-4">

@@ -89,53 +89,59 @@ export async function POST(req: Request) {
             return NextResponse.json({ status: 'ok', message: 'Protocol verified', received: bodyPayload });
         }
 
-        if (!userId) {
-            return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
+        let targetUserIds = [userId];
+
+        // 1. Resolve Recipient List
+        // If the ID is a Staff Record, we resolve it to a User ID and ALSO find all Admins for that Org
+        console.log(`[Push API] Resolving recipients for: ${userId}...`);
+
+        const { data: staffRecord } = await supabase
+            .from('staff')
+            .select('user_id, org_id, name')
+            .eq('id', userId)
+            .single();
+
+        if (staffRecord) {
+            console.log(`[Push API] Staff member detected: ${staffRecord.name}`);
+            const recipients = new Set<string>();
+
+            // Add the Staff member themselves
+            if (staffRecord.user_id) recipients.add(staffRecord.user_id);
+            else recipients.add(userId); // Fallback to raw ID
+
+            // Add all Admins for this Organization (The "Pro" management feature)
+            const { data: admins } = await supabase
+                .from('profiles')
+                .select('id, receive_all_notifications')
+                .eq('org_id', staffRecord.org_id)
+                .eq('role', 'owner');
+
+            if (admins) {
+                admins.forEach(adm => {
+                    // Only add if they haven't explicitly turned it off (default to true)
+                    if (adm.receive_all_notifications !== false) {
+                        recipients.add(adm.id);
+                    }
+                });
+                console.log(`[Push API] Multi-broadcast set: ${recipients.size} active recipients.`);
+            }
+
+            targetUserIds = Array.from(recipients);
         }
 
-        let targetUserId = userId;
-
-        // 1. Get subscriptions for this user
-        let { data: subscriptions, error: subError } = await supabase
+        // 2. Get subscriptions for ALL target users
+        const { data: subscriptions, error: subError } = await supabase
             .from('push_subscriptions')
             .select('*')
-            .eq('user_id', targetUserId);
-
-        // EXTRA HEALING: If no subscriptions found, check if this ID is actually a Staff Record ID
-        if (!subError && (!subscriptions || subscriptions.length === 0)) {
-            console.log(`[Push API] No subs for original ID: ${targetUserId}. Checking if Staff ID...`);
-            const { data: staffRecord, error: staffError } = await supabase
-                .from('staff')
-                .select('user_id, email, name')
-                .eq('id', targetUserId)
-                .single();
-
-            if (staffError) {
-                console.log(`[Push API] Staff lookup error for ${targetUserId}:`, staffError.message);
-            }
-
-            if (staffRecord?.user_id) {
-                console.log(`[Push API] SUCCESS: Resolved ID ${targetUserId} (${staffRecord.name}) to User: ${staffRecord.user_id}`);
-                targetUserId = staffRecord.user_id;
-
-                // Re-fetch subscriptions with the resolved ID
-                const { data: resolvedSubs } = await supabase
-                    .from('push_subscriptions')
-                    .select('*')
-                    .eq('user_id', targetUserId);
-                subscriptions = resolvedSubs;
-            } else {
-                console.log(`[Push API] FAILURE: No user_id found on staff record for ${targetUserId}. Name: ${staffRecord?.name}, Email: ${staffRecord?.email}`);
-            }
-        }
+            .in('user_id', targetUserIds);
 
         if (subError) {
-            console.error('Supabase error:', subError);
+            console.error('Supabase sub error:', subError);
             return NextResponse.json({ error: subError.message }, { status: 500 });
         }
 
         if (!subscriptions || subscriptions.length === 0) {
-            console.log('No subscriptions found for user:', userId);
+            console.log('No subscriptions found for targeting set:', targetUserIds);
             return NextResponse.json({ message: 'No subscriptions found' }, { status: 200 });
         }
 
