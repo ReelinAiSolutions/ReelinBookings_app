@@ -3,11 +3,10 @@ import { processAnalytics, DateRange } from '@/utils/analyticsUtils';
 import { Activity, Calendar, Users, AlertCircle, TrendingUp, Clock, Scissors, DollarSign, Repeat, ChevronDown, ChevronUp, Trophy, ArrowUpRight, ArrowDownRight, Filter, UserMinus, UserCheck, Crown } from 'lucide-react';
 import { Appointment, Service, Staff } from '@/types';
 import { startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import StatCard from './StatCard';
 import ComparisonStatCard from './ComparisonStatCard';
 import ComparisonChart from './ComparisonChart';
-import AnalyticsSectionHeader from './AnalyticsSectionHeader';
 import AnalyticsDatePicker, { DateRangePreset } from './AnalyticsDatePicker';
 import DrillDownModal from './DrillDownModal';
 
@@ -19,6 +18,40 @@ interface AnalyticsViewProps {
 
 type ViewMode = 'business' | 'team';
 type DrillDownMetric = 'revenue' | 'utilization' | 'clients' | 'appointments' | null;
+
+const SortableHeader = ({
+    label,
+    sortKey,
+    align = 'right',
+    className = '',
+    mobileLabel,
+    currentSortKey,
+    currentSortDirection,
+    onSort
+}: {
+    label: string,
+    sortKey: string,
+    align?: 'left' | 'right',
+    className?: string,
+    mobileLabel?: string,
+    currentSortKey: string,
+    currentSortDirection: 'asc' | 'desc',
+    onSort: (key: string) => void
+}) => (
+    <th
+        className={`px-1 md:px-6 py-3 text-${align} text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hover:text-gray-700 transition-colors select-none group ${className}`}
+        onClick={() => onSort(sortKey)}
+    >
+        <div className={`flex items-center gap-0.5 md:gap-1 ${align === 'right' ? 'justify-end' : 'justify-start'}`}>
+            <span className={mobileLabel ? "hidden md:inline" : ""}>{label}</span>
+            {mobileLabel && <span className="md:hidden">{mobileLabel}</span>}
+            <div className="flex flex-col opacity-0 group-hover:opacity-50 data-[active=true]:opacity-100" data-active={currentSortKey === sortKey}>
+                <ChevronUp className={`w-2 h-2 md:w-3 md:h-3 ${currentSortKey === sortKey && currentSortDirection === 'asc' ? 'text-primary-600' : 'text-gray-400'}`} />
+                <ChevronDown className={`w-2 h-2 md:w-3 md:h-3 -mt-0.5 md:-mt-1 ${currentSortKey === sortKey && currentSortDirection === 'desc' ? 'text-primary-600' : 'text-gray-400'}`} />
+            </div>
+        </div>
+    </th>
+);
 
 export default function AnalyticsView({ appointments, services, staff }: AnalyticsViewProps) {
     const [viewMode, setViewMode] = useState<ViewMode>('business');
@@ -58,13 +91,8 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
 
 
     const metrics = useMemo(() => {
-        console.log('📊 Processing Analytics - Period A:', {
-            appointmentsCount: appointments.length,
-            currentRange: ranges.current,
-            previousRange: ranges.previous
-        });
         return processAnalytics(appointments, services, staff, ranges.current, ranges.previous);
-    }, [appointments, services, staff, ranges]);
+    }, [appointments, services, staff, ranges.current, ranges.previous]);
 
     // Metrics for Period B (when in compare mode)
     const comparisonMetrics = useMemo(() => {
@@ -148,21 +176,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
         return sortableItems;
     }, [metrics.topStaff, sortConfig]);
 
-    const SortableHeader = ({ label, sortKey, align = 'right', className = '', mobileLabel }: { label: string, sortKey: string, align?: 'left' | 'right', className?: string, mobileLabel?: string }) => (
-        <th
-            className={`px-1 md:px-6 py-3 text-${align} text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hover:text-gray-700 transition-colors select-none group ${className}`}
-            onClick={() => handleSort(sortKey)}
-        >
-            <div className={`flex items-center gap-0.5 md:gap-1 ${align === 'right' ? 'justify-end' : 'justify-start'}`}>
-                <span className={mobileLabel ? "hidden md:inline" : ""}>{label}</span>
-                {mobileLabel && <span className="md:hidden">{mobileLabel}</span>}
-                <div className="flex flex-col opacity-0 group-hover:opacity-50 data-[active=true]:opacity-100" data-active={sortConfig.key === sortKey}>
-                    <ChevronUp className={`w-2 h-2 md:w-3 md:h-3 ${sortConfig.key === sortKey && sortConfig.direction === 'asc' ? 'text-[#2D165D]' : 'text-gray-400'}`} />
-                    <ChevronDown className={`w-2 h-2 md:w-3 md:h-3 -mt-0.5 md:-mt-1 ${sortConfig.key === sortKey && sortConfig.direction === 'desc' ? 'text-[#2D165D]' : 'text-gray-400'}`} />
-                </div>
-            </div>
-        </th>
-    );
+
 
     // Prepare Data for Charts
     const teamRevenueData = metrics.topStaff.map(s => ({ name: s.name.split(' ')[0], revenue: s.revenue }));
@@ -617,14 +631,14 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                 <span className="md:hidden">#</span>
                                                 <span className="hidden md:inline">Rank</span>
                                             </th>
-                                            <SortableHeader label="Staff" sortKey="name" align="left" className="w-24 md:w-auto" />
-                                            <SortableHeader label="Rev" sortKey="revenue" align="right" mobileLabel="Rev" />
-                                            <SortableHeader label="Hours" sortKey="hours" align="right" mobileLabel="Hrs" />
-                                            <SortableHeader label="Util" sortKey="utilization" align="right" mobileLabel="Util" />
-                                            <SortableHeader label="Rebook" sortKey="rebookingRate" align="right" mobileLabel="Rtnt" />
-                                            <SortableHeader label="No-Show" sortKey="noShowRate" align="right" mobileLabel="NS" />
-                                            <SortableHeader label="Clients" sortKey="clients" align="right" mobileLabel="Clts" />
-                                            <SortableHeader label="Avg Tkt" sortKey="avgTicket" align="right" mobileLabel="Avg" />
+                                            <SortableHeader label="Staff" sortKey="name" align="left" className="w-24 md:w-auto" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction} onSort={handleSort} />
+                                            <SortableHeader label="Rev" sortKey="revenue" align="right" mobileLabel="Rev" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction} onSort={handleSort} />
+                                            <SortableHeader label="Hours" sortKey="hours" align="right" mobileLabel="Hrs" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction} onSort={handleSort} />
+                                            <SortableHeader label="Util" sortKey="utilization" align="right" mobileLabel="Util" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction} onSort={handleSort} />
+                                            <SortableHeader label="Rebook" sortKey="rebookingRate" align="right" mobileLabel="Rtnt" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction} onSort={handleSort} />
+                                            <SortableHeader label="No-Show" sortKey="noShowRate" align="right" mobileLabel="NS" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction} onSort={handleSort} />
+                                            <SortableHeader label="Clients" sortKey="clients" align="right" mobileLabel="Clts" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction} onSort={handleSort} />
+                                            <SortableHeader label="Avg Tkt" sortKey="avgTicket" align="right" mobileLabel="Avg" currentSortKey={sortConfig.key} currentSortDirection={sortConfig.direction} onSort={handleSort} />
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -774,9 +788,9 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                                 cursor={{ fill: '#F3F4F6' }}
                                                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                                             />
-                                                            <Bar dataKey="revenue" fill="#2D165D" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                            <Bar dataKey="revenue" fill="var(--primary-600)" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                                 {teamRevenueData.map((entry, index) => (
-                                                                    <Cell key={`cell-${index}`} fill={['#2D165D', '#7C3AED', '#6D28D9', '#8B5CF6'][index % 4]} />
+                                                                    <Cell key={`cell-${index}`} fill={['var(--primary-600)', '#7C3AED', '#6D28D9', '#8B5CF6'][index % 4]} />
                                                                 ))}
                                                             </Bar>
                                                         </BarChart>
@@ -864,7 +878,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                     />
                                                     <Bar dataKey="hours" fill="#6D28D9" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                         {metrics.topStaff.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={['#6D28D9', '#8B5CF6', '#A78BFA', '#2D165D'][index % 4]} />
+                                                            <Cell key={`cell-${index}`} fill={['#6D28D9', '#8B5CF6', '#A78BFA', 'var(--primary-600)'][index % 4]} />
                                                         ))}
                                                     </Bar>
                                                 </BarChart>
@@ -898,9 +912,9 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                         cursor={{ fill: '#F3F4F6' }}
                                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                                     />
-                                                    <Bar dataKey="rebooking" fill="#2D165D" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                                                    <Bar dataKey="rebooking" fill="var(--primary-600)" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                         {metrics.topStaff.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={['#2D165D', '#7C3AED', '#6D28D9', '#8B5CF6'][index % 4]} />
+                                                            <Cell key={`cell-${index}`} fill={['var(--primary-600)', '#7C3AED', '#6D28D9', '#8B5CF6'][index % 4]} />
                                                         ))}
                                                     </Bar>
                                                 </BarChart>

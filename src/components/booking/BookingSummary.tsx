@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Calendar as CalendarIcon, Clock, User as UserIcon, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatTime12Hour } from '@/lib/utils';
+import Image from 'next/image';
 
 interface BookingSummaryProps {
     selectedService: Service | null;
@@ -143,7 +144,7 @@ export default function BookingSummary({
                         <div className="space-y-4 mb-6">
                             <div className="flex gap-4 items-start">
                                 {selectedService?.imageUrl ? (
-                                    <img src={selectedService.imageUrl} alt={selectedService.name} className="w-16 h-16 rounded-2xl object-cover bg-gray-100 shadow-sm" />
+                                    <Image src={selectedService.imageUrl} alt={selectedService.name} width={64} height={64} className="rounded-2xl object-cover bg-gray-100 shadow-sm" unoptimized />
                                 ) : (
                                     <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-300 font-bold text-2xl">
                                         {selectedService?.name.charAt(0)}

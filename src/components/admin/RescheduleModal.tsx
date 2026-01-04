@@ -131,20 +131,22 @@ export default function RescheduleModal({
             ></div>
 
             {/* Modal Sheet */}
-            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
+            <div className="relative z-10 bg-[#F2F2F7] dark:bg-zinc-900 w-full md:max-w-2xl h-[95dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-t-[2.5rem] rounded-b-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20 dark:border-white/10">
 
                 {/* Header (Sticky) */}
-                <div className="bg-[#F2F2F7]/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
+                <div className="bg-[#F2F2F7]/95 dark:bg-zinc-900/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
                     <div className="w-full flex justify-center mb-2">
                         <div className="w-12 h-1.5 bg-gray-300/50 rounded-full"></div>
                     </div>
                     <div className="flex justify-between items-center px-6 h-14 pb-2">
-                        <button onClick={onClose} className="text-primary-600 text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
-                        <span className="font-black text-[17px] text-gray-900 tracking-tight">Manage Booking</span>
+                        <button onClick={onClose} className="text-[#7C3AED] dark:text-violet-400 text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
+                        <span className="font-black text-[17px] text-gray-900 dark:text-white tracking-tight">
+                            Manage Booking
+                        </span>
                         <button
                             onClick={handleSave}
                             disabled={isLoading}
-                            className="font-black text-primary-600 text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
+                            className="font-black text-[#7C3AED] dark:text-violet-400 text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save'}
                         </button>
@@ -153,198 +155,155 @@ export default function RescheduleModal({
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto no-scrollbar pb-32 px-4 pt-2">
-                    <div className="md:grid md:grid-cols-2 md:gap-8 space-y-6 md:space-y-0 text-left">
-                        {/* LEFT COLUMN: Data & Selection */}
-                        <div className="space-y-6">
-                            {/* Client Info Group */}
-                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-gray-900 leading-tight">
-                                            {(appointment.clientName === 'Blocked Time' || appointment.status === 'BLOCKED')
-                                                ? `Blocked Time${appointment.durationMinutes ? ` (${appointment.durationMinutes}m)` : ''}`
-                                                : appointment.clientName}
-                                        </h3>
-                                        {/** Only show email if not blocked time */}
-                                        {appointment.clientName !== 'Blocked Time' && appointment.status !== 'BLOCKED' && (
-                                            <p className="text-sm font-medium text-gray-500">{appointment.clientEmail}</p>
-                                        )}
-                                        {appointment.clientName !== 'Blocked Time' && appointment.status !== 'BLOCKED' && appointment.clientPhone && (
-                                            <p className="text-sm font-bold text-gray-500 flex items-center gap-1 mt-0.5">
-                                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                                                {appointment.clientPhone}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${appointment.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                                        {appointment.status || 'CONFIRMED'}
-                                    </span>
-                                </div>
-                                {/* Hide Service for Blocked Time */}
-                                {appointment.clientName !== 'Blocked Time' && appointment.status !== 'BLOCKED' && (
-                                    <div className="flex items-center gap-2 text-sm font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-xl w-fit">
-                                        <Calendar className="w-3.5 h-3.5" />
-                                        {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
-                                    </div>
-                                )}
-                            </div>
 
-                            {/* Editor Group - Moved here for priority */}
-                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden">
-
-                                {/* Staff */}
-                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                                    {/* Overlay Select */}
-                                    <select
-                                        value={staffId}
-                                        onChange={(e) => setStaffId(e.target.value)}
-                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
-                                    >
-                                        {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                    </select>
-
-                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
-                                    <div className="flex items-center gap-2 pointer-events-none">
-                                        <span className="text-sm font-bold text-gray-500">
-                                            {staff.find(s => s.id === staffId)?.name || 'Select Staff'}
-                                        </span>
-                                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                                    </div>
-                                </div>
-
-                                {/* Date */}
-                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                                    {/* Overlay Input */}
-                                    <input
-                                        type="date"
-                                        value={date}
-                                        onChange={(e) => setDate(e.target.value)}
-                                        onClick={(e) => {
-                                            try {
-                                                // Force browser picker to open
-                                                if (typeof (e.currentTarget as any).showPicker === 'function') {
-                                                    (e.currentTarget as any).showPicker();
-                                                }
-                                            } catch (err) {
-                                                // Fallback
-                                            }
-                                        }}
-                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer text-transparent"
-                                    />
-
-                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</p>
-                                    <div className="flex items-center gap-2 pointer-events-none">
-                                        <span className="text-sm font-bold text-primary-600">
-                                            {date ? (() => {
-                                                const [y, m, d] = date.split('-').map(Number);
-                                                return format(new Date(y, m - 1, d), 'MMM d, yyyy');
-                                            })() : 'Select Date'}
-                                        </span>
-                                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                                    </div>
-                                </div>
-
-                                {/* Time */}
-                                <div className="p-5 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
-                                    {/* Overlay Select */}
-                                    <select
-                                        value={time}
-                                        onChange={(e) => setTime(e.target.value)}
-                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
-                                    >
-                                        {(() => {
-                                            if (!date) return <option disabled>Select date first</option>;
-                                            // Simplified time generation for Edit Mode (Show all slots)
-                                            // In real app, reuse the generator but here we just need options. 
-                                            // We will just recreate the simple list for now or copy logic if needed.
-                                            // For brevity, using the same logic as Create is best, but let's stick to the structure.
-
-                                            // Re-using logic from CreateModal would be ideal, but for now let's use a simple generator or confirm we have business hours.
-                                            // Assuming standard strict generation:
-                                            const [y, m, d] = date.split('-').map(Number);
-                                            const localDate = new Date(y, m - 1, d);
-                                            const dayName = format(localDate, 'EEEE').toLowerCase();
-                                            const hours = businessHours?.[dayName];
-
-                                            if (!hours || !hours.isOpen) return <option disabled>Closed</option>;
-
-                                            const start = parseInt(hours.open.split(':')[0]) * 60 + parseInt(hours.open.split(':')[1]);
-                                            const end = parseInt(hours.close.split(':')[0]) * 60 + parseInt(hours.close.split(':')[1]);
-                                            const interval = slotInterval || 30;
-
-                                            const options = [];
-                                            for (let i = start; i < end; i += interval) {
-                                                const h = Math.floor(i / 60);
-                                                const m = i % 60;
-                                                const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                                                options.push(<option key={t} value={t}>{getDisplayTime(t)}</option>);
-                                            }
-                                            return options;
-                                        })()}
-                                    </select>
-
-                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Time</p>
-                                    <div className="flex items-center gap-2 relative pointer-events-none">
-                                        <span className="text-sm font-bold text-primary-600 truncate min-w-[60px] text-right">
-                                            {time ? getDisplayTime(time) : 'Select Time'}
-                                        </span>
-                                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                                    </div>
-                                </div>
-                            </div>
+                    {/* Client Header Card */}
+                    <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 p-6 mb-4 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight mb-1">{appointment.clientName || 'Walk-in Client'}</h2>
+                            <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{appointment.clientEmail}</p>
+                            {appointment.clientPhone && <p className="text-sm font-bold text-gray-400">{appointment.clientPhone}</p>}
                         </div>
-
-                        {/* RIGHT COLUMN: Notes & Settings */}
-                        <div className="space-y-6">
-                            {/* Customer Notes (Editable) */}
-                            <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden p-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider">Customer Request / Notes</h3>
-                                    <div className="h-px bg-gray-100 flex-1"></div>
-                                </div>
-                                <textarea
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="Add notes or special requests..."
-                                    className="w-full h-24 text-[15px] font-medium text-gray-700 leading-relaxed italic bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100 focus:ring-1 focus:ring-primary-100 transition-all"
-                                />
-                            </div>
-
-                            {/* Instructions */}
-                            <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
-                                <p className="text-xs text-gray-500 leading-relaxed">
-                                    Moving this appointment will free up the original slot. <br />
-                                    Use "Block Time" if you want to keep both closed.
-                                </p>
-                            </div>
-
-                            {/* Destructive Actions - Last Option */}
-                            {appointment.status !== 'CANCELLED' && (
-                                <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
-                                    <button
-                                        onClick={handleCancelApt}
-                                        className="w-full p-4 text-[17px] font-normal text-red-600 active:bg-gray-50 transition-colors text-center"
-                                    >
-                                        {(appointment.clientName === 'Blocked Time' || appointment.status === 'BLOCKED') ? 'Unblock Time' : 'Cancel Booking'}
-                                    </button>
-                                </div>
-                            )}
-
-                            {appointment.status === 'CANCELLED' && (
-                                <div className="space-y-3">
-                                    <Button onClick={handleRestoreApt} disabled={isLoading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg">
-                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Uncancel Booking'}
-                                    </Button>
-                                    <button
-                                        onClick={handleArchiveApt}
-                                        className="w-full py-4 text-gray-400 font-bold text-sm uppercase tracking-widest hover:text-gray-600"
-                                    >
-                                        Archive (Hide)
-                                    </button>
-                                </div>
-                            )}
+                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${appointment.status === 'CONFIRMED' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}>
+                            {appointment.status}
                         </div>
                     </div>
+
+                    {/* Service Info */}
+                    <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 p-4 mb-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#F3E8FF] dark:bg-violet-500/20 flex items-center justify-center text-[#7C3AED] dark:text-violet-400">
+                            <Calendar className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Service</p>
+                            <p className="text-sm font-bold text-[#7C3AED] dark:text-violet-400">
+                                {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Edit Form */}
+                    <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 overflow-hidden divide-y divide-gray-50 dark:divide-white/5 mb-4">
+                        <div className="p-5 flex justify-between items-center group relative cursor-pointer active:bg-gray-50 dark:active:bg-white/10 transition-colors">
+                            <select
+                                value={staffId}
+                                onChange={e => setStaffId(e.target.value)}
+                                className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer bg-white dark:bg-zinc-900 text-gray-900 dark:text-white"
+                            >
+                                {staff.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">{s.name}</option>)}
+                            </select>
+                            <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">STAFF MEMBER</span>
+                            <div className="flex items-center gap-2 pointer-events-none">
+                                <span className="text-sm font-bold text-gray-500 dark:text-gray-400">{staff.find(s => s.id === staffId)?.name || 'Select'}</span>
+                                <ChevronRight className="w-4 h-4 text-gray-300" />
+                            </div>
+                        </div>
+
+                        <div className="p-5 flex justify-between items-center group relative cursor-pointer active:bg-gray-50 dark:active:bg-white/10 transition-colors">
+                            <input
+                                type="date"
+                                value={date}
+                                onChange={e => setDate(e.target.value)}
+                                className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                            />
+                            <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">DATE</span>
+                            <div className="flex items-center gap-2 pointer-events-none">
+                                <span className="text-sm font-bold text-[#7C3AED] dark:text-violet-400">
+                                    {date ? (() => {
+                                        const [y, m, d] = date.split('-').map(Number);
+                                        return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                    })() : 'Select'}
+                                </span>
+                                <ChevronRight className="w-4 h-4 text-gray-300" />
+                            </div>
+                        </div>
+
+                        <div className="p-5 flex justify-between items-center group relative cursor-pointer active:bg-gray-50 dark:active:bg-white/10 transition-colors">
+                            <select
+                                value={time}
+                                onChange={e => setTime(e.target.value)}
+                                className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer bg-white dark:bg-zinc-900 text-gray-900 dark:text-white"
+                            >
+                                {(() => {
+                                    if (!date) return <option disabled className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">Select date first</option>;
+                                    try {
+                                        const [y, m, d] = date.split('-').map(Number);
+                                        const localDate = new Date(y, m - 1, d);
+                                        const dayName = format(localDate, 'EEEE').toLowerCase();
+                                        const hours = businessHours?.[dayName];
+
+                                        if (!hours || !hours.isOpen) return <option disabled className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">Closed</option>;
+
+                                        const start = parseInt(hours.open.split(':')[0]) * 60 + parseInt(hours.open.split(':')[1]);
+                                        const end = parseInt(hours.close.split(':')[0]) * 60 + parseInt(hours.close.split(':')[1]);
+                                        const interval = slotInterval || 30;
+
+                                        const options = [];
+                                        for (let i = start; i < end; i += interval) {
+                                            const h = Math.floor(i / 60);
+                                            const m = i % 60;
+                                            const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                                            options.push(<option key={t} value={t} className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">{getDisplayTime(t)}</option>);
+                                        }
+                                        return options;
+                                    } catch (e) {
+                                        return <option disabled className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">Error loading times</option>;
+                                    }
+                                })()}
+                            </select>
+                            <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">TIME</span>
+                            <div className="flex items-center gap-2 pointer-events-none">
+                                <span className="text-sm font-bold text-[#7C3AED] dark:text-violet-400">{time ? getDisplayTime(time) : 'Select'}</span>
+                                <ChevronRight className="w-4 h-4 text-gray-300" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Notes */}
+                    <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 p-5 mb-4">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Customer Request / Notes</p>
+                        <textarea
+                            placeholder="Add notes or special requests..."
+                            value={notes}
+                            onChange={e => setNotes(e.target.value)}
+                            className="w-full h-24 text-sm font-bold text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 bg-gray-50/50 dark:bg-black/20 rounded-2xl p-4 outline-none resize-none border border-gray-100 dark:border-white/5"
+                        ></textarea>
+                    </div>
+
+                    {/* Helper Text */}
+                    <div className="bg-white dark:bg-white/5 rounded-3xl p-5 mb-4 text-center border border-white dark:border-white/5 shadow-sm">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            Moving this appointment will free up the original slot.
+                            <br />
+                            Use "Block Time" if you want to keep both closed.
+                        </p>
+                    </div>
+
+                    {/* Critical Actions */}
+                    {appointment.status !== 'CANCELLED' && (
+                        <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 overflow-hidden">
+                            <button
+                                onClick={handleCancelApt}
+                                className="w-full p-4 text-[17px] font-normal text-red-600 dark:text-red-400 active:bg-gray-50 dark:active:bg-white/10 transition-colors text-center"
+                            >
+                                {(appointment.clientName === 'Blocked Time' || appointment.status === 'BLOCKED') ? 'Unblock Time' : 'Cancel Booking'}
+                            </button>
+                        </div>
+                    )}
+
+                    {appointment.status === 'CANCELLED' && (
+                        <div className="space-y-3">
+                            <Button onClick={handleRestoreApt} disabled={isLoading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-500/30">
+                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Uncancel Booking'}
+                            </Button>
+                            <button
+                                onClick={handleArchiveApt}
+                                className="w-full py-4 text-gray-400 font-bold text-sm uppercase tracking-widest hover:text-gray-600 dark:hover:text-gray-300"
+                            >
+                                Archive (Hide)
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

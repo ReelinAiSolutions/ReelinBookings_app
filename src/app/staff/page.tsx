@@ -14,7 +14,8 @@ import {
     getAllAvailability
 } from '@/services/dataService';
 import { useRouter } from 'next/navigation';
-import { Organization, Appointment } from '@/types';
+import { Organization } from '@/types';
+import Image from 'next/image';
 
 
 export default function StaffPage() {
@@ -122,7 +123,7 @@ export default function StaffPage() {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <img src="/icon-180.png" alt="Reelin Bookings" className="w-20 h-20 animate-pulse" />
+                    <Image src="/icon-180.png" alt="Reelin Bookings" width={80} height={80} className="animate-pulse" />
                     <h2 className="text-xl font-bold text-gray-900">Loading Team Portal...</h2>
                 </div>
             </div>

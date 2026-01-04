@@ -41,18 +41,18 @@ export default function DashboardCharts({ data }: DashboardChartsProps) {
                     <AreaChart data={data}>
                         <defs>
                             <linearGradient id="colorRevenueMain" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#2D165D" stopOpacity={0.15} />
-                                <stop offset="95%" stopColor="#2D165D" stopOpacity={0} />
+                                <stop offset="5%" stopColor="#a855f7" stopOpacity={0.15} />
+                                <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 700 }} dy={10} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 700 }} tickFormatter={(val) => `$${val}`} />
                         <Tooltip
-                            cursor={{ stroke: '#2D165D', strokeWidth: 1 }}
+                            cursor={{ stroke: '#a855f7', strokeWidth: 1 }}
                             contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                         />
-                        <Area type="monotone" dataKey="revenue" stroke="#2D165D" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenueMain)" />
+                        <Area type="monotone" dataKey="revenue" stroke="#a855f7" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenueMain)" />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>

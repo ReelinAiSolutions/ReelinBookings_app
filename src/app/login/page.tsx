@@ -4,8 +4,9 @@ import React, { useState, Suspense } from 'react';
 import { createClient } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { Calendar, Lock, Mail, AlertCircle, User, Zap } from 'lucide-react';
+import { Lock, Mail, AlertCircle, User, Zap } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 
 function LoginForm() {
@@ -36,7 +37,7 @@ function LoginForm() {
                 <div className="flex flex-col items-center gap-6">
                     <div className="relative">
                         <div className="absolute inset-0 bg-primary-100 rounded-full blur-xl animate-pulse"></div>
-                        <img src="/icon-180.png" alt="Reelin Bookings" className="relative w-24 h-24 object-contain" />
+                        <Image src="/icon-180.png" alt="Reelin Bookings" width={96} height={96} className="relative object-contain" />
                     </div>
                     <div className="flex flex-col items-center gap-2">
                         <h2 className="text-sm font-bold text-gray-900 tracking-widest uppercase">Reelin Bookings</h2>

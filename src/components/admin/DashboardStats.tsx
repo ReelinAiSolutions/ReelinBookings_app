@@ -17,7 +17,7 @@ const colorMap = {
         fallback: 'bg-green-600'
     },
     purple: {
-        gradientStyle: { background: 'linear-gradient(135deg, #2D165D 0%, #7C3AED 100%)' }, // sapphire -> lavender
+        gradientStyle: { background: 'linear-gradient(135deg, var(--primary-600) 0%, #7C3AED 100%)' }, // sapphire -> lavender
         glowColor: 'rgba(124, 58, 237, 0.4)', // lavender
         fallback: 'bg-primary-600'
     },

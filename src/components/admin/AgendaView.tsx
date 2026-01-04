@@ -2,6 +2,7 @@ import React from 'react';
 import { Appointment, Staff, Service } from '@/types';
 import { format, isSameDay, parseISO, startOfDay, addDays } from 'date-fns';
 import { Clock, MapPin, User, MoreHorizontal, Calendar as CalendarIcon } from 'lucide-react';
+import Image from 'next/image';
 
 interface AgendaViewProps {
     appointments: Appointment[];
@@ -64,7 +65,7 @@ export default function AgendaView({
                     </div>
                     <p className="text-lg font-bold text-gray-900">No appointments</p>
                     <p className="text-sm text-gray-500 max-w-[200px] mt-1">
-                        You're completely free on this day. Time to relax or build something new.
+                        You&apos;re completely free on this day. Time to relax or build something new.
                     </p>
                     {onSelectSlot && (
                         <button
@@ -116,7 +117,7 @@ export default function AgendaView({
                                     {staffMember && (
                                         <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-lg">
                                             {staffMember.avatar ? (
-                                                <img src={staffMember.avatar} className="w-4 h-4 rounded-full object-cover" alt="" />
+                                                <Image src={staffMember.avatar} width={16} height={16} className="rounded-full object-cover" alt="" unoptimized />
                                             ) : (
                                                 <div className="w-4 h-4 rounded-full bg-gray-300"></div>
                                             )}

@@ -1,28 +1,27 @@
+'use client';
 import React, { useState, useEffect } from 'react';
-import { Staff, Service } from '@/types';
-import { X, Upload, User, Mail, Briefcase, Scissors, Clock, Save } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    X, Upload, User, Mail, Shield, Briefcase, Phone,
+    Save, Camera, Trash2, Clock, Calendar, Star, Check
+} from 'lucide-react';
+import Image from 'next/image';
+import { Staff, Organization } from '@/types';
+import { createClient } from '@/lib/supabase';
+import { useToast } from '@/context/ToastContext';
+
+const supabase = createClient();
 
 interface StaffFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (data: Partial<Staff>, avatarFile: File | null) => Promise<void>;
-    editingStaff: Staff | null;
-    services: Service[];
+    onSave: (data: Partial<Staff>, avatarFile?: File | null) => Promise<void>;
+    editingStaff?: Staff | null;
+    services?: any[];
     onSaveSchedule?: (schedule: any[]) => Promise<void>;
     onSaveServices?: (serviceIds: string[]) => Promise<void>;
     initialSchedule?: any[];
 }
-
-const DEFAULT_SCHEDULE = [
-    { dayOfWeek: 1, dayName: 'Monday', startTime: '09:00', endTime: '17:00', isWorking: true },
-    { dayOfWeek: 2, dayName: 'Tuesday', startTime: '09:00', endTime: '17:00', isWorking: true },
-    { dayOfWeek: 3, dayName: 'Wednesday', startTime: '09:00', endTime: '17:00', isWorking: true },
-    { dayOfWeek: 4, dayName: 'Thursday', startTime: '09:00', endTime: '17:00', isWorking: true },
-    { dayOfWeek: 5, dayName: 'Friday', startTime: '09:00', endTime: '17:00', isWorking: true },
-    { dayOfWeek: 6, dayName: 'Saturday', startTime: '10:00', endTime: '15:00', isWorking: true },
-    { dayOfWeek: 0, dayName: 'Sunday', startTime: '10:00', endTime: '15:00', isWorking: false },
-];
 
 export default function StaffFormModal({
     isOpen,
@@ -32,359 +31,245 @@ export default function StaffFormModal({
     services,
     onSaveSchedule,
     onSaveServices,
-    initialSchedule = []
+    initialSchedule
 }: StaffFormModalProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState<'details' | 'schedule' | 'services'>('details');
-    const [avatarPreview, setAvatarPreview] = useState<string>('');
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
-
+    const { toast } = useToast();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        role: '',
-        avatar: '',
+        role: 'staff',
+        specialties: [] as string[],
     });
-
-    const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
-    const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
     useEffect(() => {
         if (editingStaff) {
             setFormData({
                 name: editingStaff.name,
                 email: editingStaff.email || '',
-                role: editingStaff.role || '',
-                avatar: editingStaff.avatar || '',
+                role: editingStaff.role,
+                specialties: editingStaff.specialties || [],
             });
-            setAvatarPreview(editingStaff.avatar || '');
-            setSelectedServices(editingStaff.specialties || []);
-
-            if (initialSchedule.length > 0) {
-                setSchedule(initialSchedule);
-            }
+            setPreviewUrl(editingStaff.avatar || null);
         } else {
-            setFormData({ name: '', email: '', role: '', avatar: '' });
-            setAvatarPreview('');
-            setAvatarFile(null);
-            setSelectedServices([]);
-            setSchedule(DEFAULT_SCHEDULE);
+            setFormData({
+                name: '',
+                email: '',
+                role: 'staff',
+                specialties: [],
+            });
+            setPreviewUrl(null);
         }
-    }, [editingStaff, initialSchedule, isOpen]);
+    }, [editingStaff, isOpen]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
             setAvatarFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                setAvatarPreview(reader.result as string);
+                setPreviewUrl(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const handleSubmitDetails = async () => {
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         setIsLoading(true);
+
         try {
-            await onSave(formData, avatarFile);
-            onClose();
-        } catch (error) {
-            console.error('Save error:', error);
+            let avatar_url = previewUrl;
+
+            if (avatarFile) {
+                const fileExt = avatarFile.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const { error: uploadError, data } = await supabase.storage
+                    .from('avatars')
+                    .upload(fileName, avatarFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(fileName);
+
+                avatar_url = publicUrl;
+            }
+
+            onSave({
+                ...formData,
+                avatar: avatar_url || undefined
+            }, avatarFile);
+        } catch (error: any) {
+            if (typeof toast === 'function') {
+                toast('Error updating staff: ' + error.message, 'error');
+            } else {
+                console.error(error);
+            }
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleSubmitSchedule = async () => {
-        if (onSaveSchedule) {
-            setIsLoading(true);
-            try {
-                await onSaveSchedule(schedule);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-    };
-
-    const handleSubmitServices = async () => {
-        if (onSaveServices) {
-            setIsLoading(true);
-            try {
-                await onSaveServices(selectedServices);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-    };
-
-    const updateScheduleItem = (index: number, field: string, value: any) => {
-        const newSchedule = [...schedule];
-        newSchedule[index] = { ...newSchedule[index], [field]: value };
-        setSchedule(newSchedule);
-    };
-
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-white rounded-t-[2rem] rounded-b-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-2xl h-[85vh] sm:h-auto sm:max-h-[90vh] mb-20 sm:mb-0 overflow-hidden flex flex-col animate-in slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-8 duration-300 border border-white/20">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                        {editingStaff ? 'Edit Team Member' : 'New Team Member'}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <AnimatePresence>
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={onClose}
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                />
 
-                {/* Tabs */}
-                <div className="flex items-center gap-1 p-2 bg-gray-50 border-b border-gray-100">
-                    <button
-                        onClick={() => setActiveTab('details')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'details'
-                            ? 'bg-white text-[#A855F7] shadow-sm ring-1 ring-black/5'
-                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                            }`}
-                    >
-                        <User className="w-4 h-4" />
-                        Details
-                    </button>
-                    {editingStaff && (
-                        <>
-                            <button
-                                onClick={() => setActiveTab('schedule')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'schedule'
-                                    ? 'bg-white text-[#A855F7] shadow-sm ring-1 ring-black/5'
-                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                                    }`}
-                            >
-                                <Clock className="w-4 h-4" />
-                                Schedule
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('services')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'services'
-                                    ? 'bg-white text-[#A855F7] shadow-sm ring-1 ring-black/5'
-                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                                    }`}
-                            >
-                                <Scissors className="w-4 h-4" />
-                                Services
-                            </button>
-                        </>
-                    )}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
-                    {/* Details Tab */}
-                    {activeTab === 'details' && (
-                        <div className="space-y-6">
-                            {/* Avatar Upload */}
-                            <div className="flex flex-col items-center">
-                                <div className="relative">
-                                    {avatarPreview ? (
-                                        <div className="w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-white shadow-xl">
-                                            <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
-                                        </div>
-                                    ) : (
-                                        <div className="w-32 h-32 rounded-[2rem] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
-                                            <User className="w-16 h-16 text-gray-400" />
-                                        </div>
-                                    )}
-                                    <label className="absolute bottom-0 right-0 p-3 bg-gray-900 text-white rounded-2xl cursor-pointer hover:bg-black transition-all shadow-xl active:scale-95">
-                                        <Upload className="w-5 h-5" />
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="hidden"
-                                        />
-                                    </label>
-                                </div>
-                                <p className="text-sm text-gray-500 mt-3">Click to upload photo</p>
-                            </div>
-
-                            {/* Form Fields */}
-                            <div className="space-y-4">
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">
-                                            Full Name *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            placeholder="e.g., Sarah Johnson"
-                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">
-                                            Email *
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            placeholder="sarah@example.com"
-                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
-                                        />
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2 px-1">Used for login and notifications</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">
-                                            Role / Title
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.role}
-                                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                            placeholder="e.g., Senior Stylist"
-                                            className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Schedule Tab */}
-                    {activeTab === 'schedule' && editingStaff && (
-                        <div className="space-y-6">
-                            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
-                                <p className="text-xs font-bold text-[#A855F7] flex items-center gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    Weekly Working Schedule
-                                </p>
-                            </div>
-
-                            <div className="space-y-3">
-                                {schedule.map((day, idx) => (
-                                    <div key={day.dayOfWeek} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50/50 border border-gray-100 rounded-2xl transition-all hover:bg-white hover:shadow-sm">
-                                        <label className="flex items-center gap-3 w-full sm:w-32 cursor-pointer group">
-                                            <input
-                                                type="checkbox"
-                                                checked={day.isWorking}
-                                                onChange={(e) => updateScheduleItem(idx, 'isWorking', e.target.checked)}
-                                                className="w-5 h-5 text-[#A855F7] rounded-lg focus:ring-[#A855F7]/20 border-gray-300 transition-all"
-                                            />
-                                            <span className="text-sm font-black text-gray-900 group-hover:text-[#A855F7] transition-colors">{day.dayName}</span>
-                                        </label>
-
-                                        {day.isWorking ? (
-                                            <div className="flex items-center gap-2 flex-1">
-                                                <input
-                                                    type="time"
-                                                    value={day.startTime}
-                                                    onChange={(e) => updateScheduleItem(idx, 'startTime', e.target.value)}
-                                                    className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#A855F7]/20 outline-none"
-                                                />
-                                                <span className="text-gray-400 font-bold text-[10px]">to</span>
-                                                <input
-                                                    type="time"
-                                                    value={day.endTime}
-                                                    onChange={(e) => updateScheduleItem(idx, 'endTime', e.target.value)}
-                                                    className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#A855F7]/20 outline-none"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full">Day Off</span>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button
-                                onClick={handleSubmitSchedule}
-                                className="w-full mt-6 bg-gray-900 hover:bg-black text-white h-12 rounded-[18px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                disabled={isLoading}
-                            >
-                                <Save className="w-4 h-4" />
-                                {isLoading ? 'Saving...' : 'Update Schedule'}
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Services Tab */}
-                    {activeTab === 'services' && editingStaff && (
-                        <div className="space-y-6">
-                            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
-                                <p className="text-xs font-bold text-[#A855F7] flex items-center gap-2">
-                                    <Scissors className="w-4 h-4" />
-                                    Assigned Services
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {services.map(service => (
-                                    <label
-                                        key={service.id}
-                                        className={`flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all border ${selectedServices.includes(service.id)
-                                            ? 'border-[#A855F7] bg-[#A855F7]/10 shadow-sm'
-                                            : 'border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200'
-                                            }`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedServices.includes(service.id)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedServices(prev => [...prev, service.id]);
-                                                } else {
-                                                    setSelectedServices(prev => prev.filter(id => id !== service.id));
-                                                }
-                                            }}
-                                            className="w-5 h-5 text-[#A855F7] rounded-lg focus:ring-[#A855F7]/20 border-gray-300 transition-all"
-                                        />
-                                        <div className="flex-1">
-                                            <span className="text-sm font-black text-gray-900 block">{service.name}</span>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{service.durationMinutes} min • ${service.price}</span>
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
-
-                            <button
-                                onClick={handleSubmitServices}
-                                className="w-full mt-6 bg-gray-900 hover:bg-black text-white h-12 rounded-[18px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                disabled={isLoading}
-                            >
-                                <Save className="w-4 h-4" />
-                                {isLoading ? 'Saving...' : 'Update Services'}
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer - Only show for Details tab */}
-                {activeTab === 'details' && (
-                    <div className="flex items-center gap-3 p-6 sm:p-8 border-t border-gray-100 bg-gray-50/50 pb-8 sm:pb-8 safe-area-bottom">
-                        <button
-                            onClick={onClose}
-                            className="flex-1 h-12 bg-white border border-gray-200 text-gray-900 rounded-[18px] text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95"
-                            disabled={isLoading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleSubmitDetails}
-                            className="flex-1 h-12 bg-gradient-to-r from-[#A855F7] to-[#d946ef] text-white rounded-[18px] text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-[#d946ef]/20 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none"
-                            disabled={isLoading || !formData.name || !formData.email}
-                        >
-                            {isLoading ? 'Processing...' : editingStaff ? 'Update Roster' : 'Join Team'}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    className="relative w-full max-w-2xl bg-white dark:bg-card rounded-[2.5rem] shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh]"
+                >
+                    <div className="p-8 pb-4 flex items-center justify-between border-b border-gray-100 dark:border-white/10">
+                        <h2 className="text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-white">
+                            {editingStaff ? 'Edit Team Member' : 'Add New Member'}
+                        </h2>
+                        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <X className="w-6 h-6" />
                         </button>
                     </div>
-                )}
+
+                    <form onSubmit={handleSubmit} className="p-8 space-y-8">
+                        {/* Profile Section */}
+                        <div className="flex flex-col items-center gap-6">
+                            <div className="relative group">
+                                <div className="w-32 h-32 rounded-[2rem] overflow-hidden bg-gray-50 dark:bg-white/5 border-4 border-white dark:border-white/10 shadow-xl relative">
+                                    {previewUrl ? (
+                                        <Image
+                                            src={previewUrl}
+                                            alt="Preview"
+                                            fill
+                                            className="object-cover"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <User className="w-12 h-12 text-gray-300" />
+                                        </div>
+                                    )}
+                                </div>
+                                <label className="absolute -bottom-2 -right-2 p-3 bg-black text-white rounded-2xl shadow-xl cursor-pointer hover:scale-110 active:scale-95 transition-all">
+                                    <Camera className="w-5 h-5" />
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Basic Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Full Name</label>
+                                <div className="relative">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        required
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-black rounded-2xl outline-none font-bold transition-all dark:text-white"
+                                        placeholder="Enter member's name"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email Address</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        required
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-black rounded-2xl outline-none font-bold transition-all dark:text-white"
+                                        placeholder="email@example.com"
+                                    />
+                                </div>
+                            </div>
+
+
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">System Role</label>
+                                <div className="relative">
+                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <select
+                                        value={formData.role}
+                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                        className="w-full pl-12 pr-6 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-black rounded-2xl outline-none font-bold appearance-none transition-all dark:text-white"
+                                    >
+                                        <option value="staff" className="dark:bg-black">Staff Member</option>
+                                        <option value="admin" className="dark:bg-black">Administrator</option>
+                                        <option value="owner" className="dark:bg-black">Organization Owner</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Specialties Section */}
+                        <div className="space-y-4">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Specialties & Expertise</label>
+                            <div className="flex flex-wrap gap-2">
+                                {['Fade Master', 'Beard Trim', 'Hair Color', 'Styling', 'Shaving', 'Long Hair'].map((spec) => (
+                                    <button
+                                        key={spec}
+                                        type="button"
+                                        onClick={() => {
+                                            const newSpecs = formData.specialties.includes(spec)
+                                                ? formData.specialties.filter(s => s !== spec)
+                                                : [...formData.specialties, spec];
+                                            setFormData({ ...formData, specialties: newSpecs });
+                                        }}
+                                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${formData.specialties.includes(spec)
+                                            ? 'bg-black dark:bg-white text-white dark:text-black shadow-lg shadow-black/20 scale-105'
+                                            : 'bg-white dark:bg-white/5 border-2 border-gray-100 dark:border-white/10 text-gray-400 dark:text-gray-500 hover:border-black dark:hover:border-white/20 hover:text-black dark:hover:text-white'
+                                            }`}
+                                    >
+                                        {spec}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="pt-4 flex gap-4">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="flex-1 py-4 bg-white dark:bg-white/5 border-2 border-gray-100 dark:border-white/10 text-gray-400 dark:text-white/40 font-black uppercase tracking-widest text-xs rounded-2xl hover:border-gray-200 dark:hover:border-white/20 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="flex-[2] py-4 bg-black text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 flex items-center justify-center gap-2"
+                            >
+                                {isLoading ? (
+                                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <Save className="w-4 h-4" />
+                                        <span>Save Member Profile</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </motion.div>
             </div>
-        </div>
+        </AnimatePresence>
     );
 }

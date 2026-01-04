@@ -1,0 +1,749 @@
+﻿
+> universal-booking-app@0.1.0 lint
+> eslint
+
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\add_cancel_notify.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\add_optimistic_drop.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\apply_admin_notifications.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\apply_deep_links.js
+  37:118  error  Parsing error: Invalid character
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\apply_deep_links_v2.js
+  8:27  error  Parsing error: Invalid character
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\apply_swap_notifications.js
+  1:12  error    A `require()` style import is forbidden              @typescript-eslint/no-require-imports
+  2:14  error    A `require()` style import is forbidden              @typescript-eslint/no-require-imports
+  8:7   warning  'getNameSnippet' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\check-subs.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\check_env.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\check_health.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\debug_staff.js
+  1:26  error    A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+  3:7   warning  'supabaseUrl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  4:7   warning  'supabaseKey' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  7:12  error    A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\dump_db.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\dump_env.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\dump_staff.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\extract_keys.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\fix_admin_speed.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\fix_directives.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\gen_keys.js
+  1:17  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\get_resend.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\global_supabase_refactor.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\indestructible_restore.js
+   1:12  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  18:10  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\manual_dump.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  3:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\public\sw.js
+   6:35  warning  'event' is defined but never used  @typescript-eslint/no-unused-vars
+  27:18  warning  'e' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\repair_env.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\scripts\gen_keys.js
+  1:17  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\scripts\seed_schedule.ts
+   66:16  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  122:21  error    'hour' is never reassigned. Use 'const' instead    prefer-const
+  123:21  error    'minute' is never reassigned. Use 'const' instead  prefer-const
+  151:26  warning  'e' is defined but never used                      @typescript-eslint/no-unused-vars
+  151:29  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\admin\page.tsx
+   56:7   warning  'MOCK_STATS' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   69:46  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+   70:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+   71:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+   73:52  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+   74:52  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+  162:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\admin\page.tsx:162:9
+  160 |
+  161 |     useEffect(() => {
+> 162 |         loadDashboardData();
+      |         ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  163 |
+  164 |         // Initial Tab Sync
+  165 |         if (typeof window !== 'undefined') {  react-hooks/set-state-in-effect
+  169:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+  379:11  warning  'onStatusUpdate' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  380:60  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\api\push-notifications\route.ts
+  150:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  181:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\api\send-email\route.ts
+  89:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\debug-admin\page.tsx
+  8:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\debug\page.tsx
+  8:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\design-preview\page.tsx
+  111:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\login\page.tsx
+  86:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\portal\page.tsx
+   7:20  warning  'Clock' is defined but never used                                                                                                          @typescript-eslint/no-unused-vars
+   7:27  warning  'MapPin' is defined but never used                                                                                                         @typescript-eslint/no-unused-vars
+  23:8   warning  React Hook React.useEffect has missing dependencies: 'handleSearch' and 'hasSearched'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  52:18  warning  'error' is defined but never used                                                                                                          @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\signup\page.tsx
+  129:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\staff\page.tsx
+   22:54  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+   23:46  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+   24:40  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+   25:54  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+   27:52  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+   28:12  warning  'userProfile' is assigned a value but never used                                                                                   @typescript-eslint/no-unused-vars
+   28:52  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+   91:8   warning  React Hook useEffect has a missing dependency: 'loadStaffData'. Either include it or remove the dependency array                   react-hooks/exhaustive-deps
+  115:8   warning  React Hook useEffect has missing dependencies: 'loadStaffData' and 'supabase'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  118:60  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\app\super-admin\page.tsx
+   6:10  warning  'Plus' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+  12:44  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  25:8   warning  React Hook useEffect has a missing dependency: 'checkAccess'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  57:18  warning  'error' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\DarkModeToggle.tsx
+  13:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\DarkModeToggle.tsx:13:13
+  11 |         const savedTheme = localStorage.getItem('theme');
+  12 |         if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+> 13 |             setIsDark(true);
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  14 |             document.documentElement.classList.add('dark');
+  15 |         }
+  16 |     }, []);  react-hooks/set-state-in-effect
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\PWARegistration.tsx
+  10:22  warning  'registration' is defined but never used       @typescript-eslint/no-unused-vars
+  18:19  warning  'isSecure' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\AdminNav.tsx
+  11:61  warning  'currentOrg' is defined but never used    @typescript-eslint/no-unused-vars
+  28:64  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\AdminSidebar.tsx
+   1:54  warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+   1:68  warning  'Key' is defined but never used           @typescript-eslint/no-unused-vars
+  60:72  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  80:72  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\AgendaView.tsx
+  3:18  warning  'isSameDay' is defined but never used   @typescript-eslint/no-unused-vars
+  3:29  warning  'parseISO' is defined but never used    @typescript-eslint/no-unused-vars
+  3:39  warning  'startOfDay' is defined but never used  @typescript-eslint/no-unused-vars
+  3:51  warning  'addDays' is defined but never used     @typescript-eslint/no-unused-vars
+  4:17  warning  'MapPin' is defined but never used      @typescript-eslint/no-unused-vars
+  4:25  warning  'User' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\AnalyticsView.tsx
+    3:37   warning  'AlertCircle' is defined but never used                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+    3:161  warning  'Filter' is defined but never used                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+    3:180  warning  'UserCheck' is defined but never used                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+    5:10   warning  'startOfMonth' is defined but never used                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    5:24   warning  'endOfMonth' is defined but never used                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    5:36   warning  'subMonths' is defined but never used                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+    5:47   warning  'startOfYear' is defined but never used                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+    5:60   warning  'endOfYear' is defined but never used                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+    5:71   warning  'subYears' is defined but never used                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   78:50   warning  'preset' is defined but never used                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   88:60   warning  'preset' is defined but never used                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   95:8    warning  React Hook useMemo has a missing dependency: 'ranges'. Either include it or remove the dependency array. Mutable values like 'ranges.current' aren't valid dependencies because mutating them doesn't re-render the component  react-hooks/exhaustive-deps
+  134:11   warning  'toggle' is assigned a value but never used                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  135:32   error    Unexpected any. Specify a different type                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  140:11   warning  'GrowthBadge' is assigned a value but never used                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  164:13   error    'sortableItems' is never reassigned. Use 'const' instead                                                                                                                                                                       prefer-const
+  166:13   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                            @typescript-eslint/ban-ts-comment
+  170:13   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                            @typescript-eslint/ban-ts-comment
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\AppointmentList.tsx
+  75:58  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\BlockModal.tsx
+  4:19  warning  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\ClientManager.tsx
+    4:18   warning  'Filter' is defined but never used                               @typescript-eslint/no-unused-vars
+    4:26   warning  'MoreVertical' is defined but never used                         @typescript-eslint/no-unused-vars
+    4:53   warning  'Calendar' is defined but never used                             @typescript-eslint/no-unused-vars
+    4:70   warning  'DollarSign' is defined but never used                           @typescript-eslint/no-unused-vars
+    4:103  warning  'ChevronRight' is defined but never used                         @typescript-eslint/no-unused-vars
+   16:58   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   76:22   warning  'e' is defined but never used                                    @typescript-eslint/no-unused-vars
+   83:13   error    'result' is never reassigned. Use 'const' instead                prefer-const
+  424:66   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  424:74   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  424:149  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  450:53   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  450:65   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\ComparisonChart.tsx
+  2:84  warning  'Cell' is defined but never used          @typescript-eslint/no-unused-vars
+  6:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\ComparisonStatCard.tsx
+  69:5  warning  'periodALabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  70:5  warning  'periodBLabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\CreateAppointmentModal.tsx
+   3:36  warning  'Calendar' is defined but never used                                                                                          @typescript-eslint/no-unused-vars
+  24:19  error    Unexpected any. Specify a different type                                                                                      @typescript-eslint/no-explicit-any
+  25:21  error    Unexpected any. Specify a different type                                                                                      @typescript-eslint/no-explicit-any
+  86:8   warning  React Hook useEffect has missing dependencies: 'serviceId' and 'staffId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\DashboardCharts.tsx
+  20:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\DashboardCharts.tsx:20:9
+  18 |
+  19 |     useEffect(() => {
+> 20 |         setIsMounted(true);
+     |         ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |     }, []);
+  22 |
+  23 |     if (!isMounted) {  react-hooks/set-state-in-effect
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\DashboardStats.tsx
+   2:44  warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+   2:56  warning  'TrendingDown' is defined but never used  @typescript-eslint/no-unused-vars
+  32:70  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\DrillDownModal.tsx
+    3:25  warning  'LineChart' is defined but never used                            @typescript-eslint/no-unused-vars
+    3:36  warning  'Line' is defined but never used                                 @typescript-eslint/no-unused-vars
+   10:11  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   12:22  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   15:80  warning  'compareMode' is defined but never used                          @typescript-eslint/no-unused-vars
+   15:93  warning  'comparisonData' is defined but never used                       @typescript-eslint/no-unused-vars
+   25:63  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   31:56  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   79:63  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   85:56  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   99:63  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  114:58  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  140:63  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  183:63  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  189:56  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  224:71  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\MonthView.tsx
+   2:63  warning  'getDay' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  22:9   error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This dependency may be mutated later, which could cause the value to change unexpectedly.
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\MonthView.tsx:22:9
+  20 |     const calendarDays = useMemo(() => {
+  21 |         return eachDayOfInterval({ start: startDate, end: endDate });
+> 22 |     }, [startDate, endDate]);
+     |         ^^^^^^^^^ This dependency may be modified later
+  23 |
+  24 |     const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  25 |            react-hooks/preserve-manual-memoization
+  22:20  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This dependency may be mutated later, which could cause the value to change unexpectedly.
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\MonthView.tsx:22:20
+  20 |     const calendarDays = useMemo(() => {
+  21 |         return eachDayOfInterval({ start: startDate, end: endDate });
+> 22 |     }, [startDate, endDate]);
+     |                    ^^^^^^^ This dependency may be modified later
+  23 |
+  24 |     const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  25 |  react-hooks/preserve-manual-memoization
+  71:41  warning  'index' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\NotificationManager.tsx
+    6:48   warning  'getStaff' is defined but never used                             @typescript-eslint/no-unused-vars
+    6:58   warning  'getCurrentUserOrganization' is defined but never used           @typescript-eslint/no-unused-vars
+    7:10   warning  'Staff' is defined but never used                                @typescript-eslint/no-unused-vars
+   29:12   warning  'permission' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+   32:86   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   40:11   warning  'isLocalhost' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+   49:51   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   87:27   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  105:23   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  152:23   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  167:44   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  246:121  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  246:140  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  254:78   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\PerformanceView.tsx
+     9:5    warning  'MoreHorizontal' is defined but never used                                                                                                 @typescript-eslint/no-unused-vars
+    17:5    warning  'Activity' is defined but never used                                                                                                       @typescript-eslint/no-unused-vars
+    18:5    warning  'Trophy' is defined but never used                                                                                                         @typescript-eslint/no-unused-vars
+    19:5    warning  'CheckCircle2' is defined but never used                                                                                                   @typescript-eslint/no-unused-vars
+    22:5    warning  'ChevronRight' is defined but never used                                                                                                   @typescript-eslint/no-unused-vars
+    23:17   warning  'CalendarIcon' is defined but never used                                                                                                   @typescript-eslint/no-unused-vars
+    24:5    warning  'Target' is defined but never used                                                                                                         @typescript-eslint/no-unused-vars
+    28:5    warning  'UserPlus' is defined but never used                                                                                                       @typescript-eslint/no-unused-vars
+    34:34   warning  'YAxis' is defined but never used                                                                                                          @typescript-eslint/no-unused-vars
+    34:86   warning  'BarChart' is defined but never used                                                                                                       @typescript-eslint/no-unused-vars
+    34:96   warning  'Bar' is defined but never used                                                                                                            @typescript-eslint/no-unused-vars
+    34:122  warning  'RadarChart' is defined but never used                                                                                                     @typescript-eslint/no-unused-vars
+    34:134  warning  'PolarGrid' is defined but never used                                                                                                      @typescript-eslint/no-unused-vars
+    34:145  warning  'PolarAngleAxis' is defined but never used                                                                                                 @typescript-eslint/no-unused-vars
+    34:161  warning  'PolarRadiusAxis' is defined but never used                                                                                                @typescript-eslint/no-unused-vars
+    34:178  warning  'Radar' is defined but never used                                                                                                          @typescript-eslint/no-unused-vars
+    34:185  warning  'LineChart' is defined but never used                                                                                                      @typescript-eslint/no-unused-vars
+    34:196  warning  'Line' is defined but never used                                                                                                           @typescript-eslint/no-unused-vars
+    35:18   warning  'startOfWeek' is defined but never used                                                                                                    @typescript-eslint/no-unused-vars
+    99:81   warning  React Hook useMemo has missing dependencies: 'currentRange' and 'filterAppointments'. Either include them or remove the dependency array   react-hooks/exhaustive-deps
+   100:83   warning  React Hook useMemo has missing dependencies: 'filterAppointments' and 'previousRange'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   175:71   warning  React Hook useMemo has a missing dependency: 'getStats'. Either include it or remove the dependency array                                  react-hooks/exhaustive-deps
+   176:73   warning  React Hook useMemo has a missing dependency: 'getStats'. Either include it or remove the dependency array                                  react-hooks/exhaustive-deps
+   184:11   warning  'bookingsChange' is assigned a value but never used                                                                                        @typescript-eslint/no-unused-vars
+   207:11   warning  'categoryStats' is assigned a value but never used                                                                                         @typescript-eslint/no-unused-vars
+   328:11   warning  'revenueGraphData' is assigned a value but never used                                                                                      @typescript-eslint/no-unused-vars
+   348:8    warning  React Hook useMemo has an unnecessary dependency: 'timeRange'. Either exclude it or remove the dependency array                            react-hooks/exhaustive-deps
+   495:15   error    Unexpected any. Specify a different type                                                                                                   @typescript-eslint/no-explicit-any
+   993:86   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                            react/no-unescaped-entities
+  1304:57   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                            react/no-unescaped-entities
+  1304:69   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                            react/no-unescaped-entities
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\ProfileManager.tsx
+    8:10  warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+    8:54  warning  'Building2' is defined but never used     @typescript-eslint/no-unused-vars
+    9:10  warning  'Organization' is defined but never used  @typescript-eslint/no-unused-vars
+   13:11  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   14:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\RescheduleModal.tsx
+    1:27  warning  'useMemo' is defined but never used                              @typescript-eslint/no-unused-vars
+    4:10  warning  'X' is defined but never used                                    @typescript-eslint/no-unused-vars
+    4:23  warning  'Clock' is defined but never used                                @typescript-eslint/no-unused-vars
+  225:80  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  226:73  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  228:54  warning  'err' is defined but never used                                  @typescript-eslint/no-unused-vars
+  317:41  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  317:52  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\ServiceCard.tsx
+  2:17  warning  'DollarSign' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\ServiceFormModal.tsx
+    4:13  warning  'Upload' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    4:65  warning  'Eye' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+    4:70  warning  'EyeOff' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    5:10  warning  'Button' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  171:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\ServiceManager.tsx
+    3:10  warning  'Button' is defined but never used                 @typescript-eslint/no-unused-vars
+  111:11  warning  'handleAddNew' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\SettingsManager.tsx
+    4:21   warning  'Save' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    4:149  warning  'FileText' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    4:159  warning  'LogOut' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   10:8    warning  'NotificationManager' is defined but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   59:12   warning  'isLoading' is assigned a value but never used                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  134:11   warning  'handleSignOut' is assigned a value but never used                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  150:31   warning  'uploadData' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  194:25   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  203:51   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  279:41   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  457:115  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  472:119  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  483:119  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\StaffCard.tsx
+   2:16  warning  'Scissors' is defined but never used        @typescript-eslint/no-unused-vars
+   2:41  warning  'Calendar' is defined but never used        @typescript-eslint/no-unused-vars
+   2:51  warning  'TrendingUp' is defined but never used      @typescript-eslint/no-unused-vars
+   2:63  warning  'MoreHorizontal' is defined but never used  @typescript-eslint/no-unused-vars
+   2:79  warning  'Clock' is defined but never used           @typescript-eslint/no-unused-vars
+  14:62  warning  'onSchedule' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\StaffFormModal.tsx
+    3:27  warning  'Mail' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    3:33  warning  'Briefcase' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+    4:10  warning  'Button' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   12:33  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   14:23  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  121:70  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  193:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\StaffManager.tsx
+   36:56  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   37:12  warning  'isLoadingSchedule' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  121:49  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  167:49  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\TodayPanel.tsx
+    3:10  warning  'Clock' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+    3:17  warning  'Mail' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    3:23  warning  'Info' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    3:37  warning  'UserIcon' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    9:12  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   11:20  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   17:12  warning  'hoveredId' is assigned a value but never used                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   34:11  warning  'nextBooking' is assigned a value but never used                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   44:11  warning  'handleCardClick' is assigned a value but never used                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   64:30  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   96:47  warning  'i' is defined but never used                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  121:62  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  160:55  warning  'isExpanded' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\VerticalDayTimeline.tsx
+   3:10   warning  'Clock' is defined but never used               @typescript-eslint/no-unused-vars
+  27:20   error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  37:152  warning  'colorMode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  38:12   warning  'focusedId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\WeeklyCalendar.tsx
+     2:8    warning  'AgendaView' is defined but never used                                                                                                                  @typescript-eslint/no-unused-vars
+     3:63   warning  'Clock' is defined but never used                                                                                                                       @typescript-eslint/no-unused-vars
+     3:70   warning  'MoreHorizontal' is defined but never used                                                                                                              @typescript-eslint/no-unused-vars
+     3:86   warning  'User' is defined but never used                                                                                                                        @typescript-eslint/no-unused-vars
+     3:92   warning  'Users' is defined but never used                                                                                                                       @typescript-eslint/no-unused-vars
+     3:99   warning  'AlignJustify' is defined but never used                                                                                                                @typescript-eslint/no-unused-vars
+     3:113  warning  'Grid' is defined but never used                                                                                                                        @typescript-eslint/no-unused-vars
+     3:125  warning  'Filter' is defined but never used                                                                                                                      @typescript-eslint/no-unused-vars
+     3:148  warning  'CalendarX' is defined but never used                                                                                                                   @typescript-eslint/no-unused-vars
+     3:159  warning  'Info' is defined but never used                                                                                                                        @typescript-eslint/no-unused-vars
+     3:165  warning  'X' is defined but never used                                                                                                                           @typescript-eslint/no-unused-vars
+     3:168  warning  'Search' is defined but never used                                                                                                                      @typescript-eslint/no-unused-vars
+     5:89   warning  'startOfYear' is defined but never used                                                                                                                 @typescript-eslint/no-unused-vars
+     5:113  warning  'addYears' is defined but never used                                                                                                                    @typescript-eslint/no-unused-vars
+     5:132  warning  'setYear' is defined but never used                                                                                                                     @typescript-eslint/no-unused-vars
+     5:141  warning  'setMonth' is defined but never used                                                                                                                    @typescript-eslint/no-unused-vars
+     5:162  warning  'subYears' is defined but never used                                                                                                                    @typescript-eslint/no-unused-vars
+     5:193  warning  'endOfYear' is defined but never used                                                                                                                   @typescript-eslint/no-unused-vars
+     5:214  warning  'isAfter' is defined but never used                                                                                                                     @typescript-eslint/no-unused-vars
+    66:20   error    Unexpected any. Specify a different type                                                                                                                @typescript-eslint/no-explicit-any
+    93:5    warning  'availability' is defined but never used                                                                                                                @typescript-eslint/no-unused-vars
+    98:5    warning  'colorMode' is defined but never used                                                                                                                   @typescript-eslint/no-unused-vars
+   116:31   warning  'm' is assigned a value but never used                                                                                                                  @typescript-eslint/no-unused-vars
+   138:11   warning  'getOffsetTop' is assigned a value but never used                                                                                                       @typescript-eslint/no-unused-vars
+   147:12   warning  'currentDate' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+   147:25   warning  'setCurrentDate' is assigned a value but never used                                                                                                     @typescript-eslint/no-unused-vars
+   150:12   warning  'isListMode' is assigned a value but never used                                                                                                         @typescript-eslint/no-unused-vars
+   150:24   warning  'setIsListMode' is assigned a value but never used                                                                                                      @typescript-eslint/no-unused-vars
+   171:65   error    Unexpected any. Specify a different type                                                                                                                @typescript-eslint/no-explicit-any
+   176:65   error    Unexpected any. Specify a different type                                                                                                                @typescript-eslint/no-explicit-any
+   213:8    warning  React Hook useEffect has missing dependencies: 'appointments', 'filterStaffId', and 'scrollToTime'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   213:9    warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                react-hooks/exhaustive-deps
+   248:11   warning  'now' is assigned a value but never used                                                                                                                @typescript-eslint/no-unused-vars
+   333:8    warning  React Hook useEffect has missing dependencies: 'getAppointmentsForDate', 'maxHour', and 'minHour'. Either include them or remove the dependency array   react-hooks/exhaustive-deps
+   345:8    warning  React Hook useEffect has a missing dependency: 'selectedDate'. Either include it or remove the dependency array                                         react-hooks/exhaustive-deps
+   476:18   warning  'e' is defined but never used                                                                                                                           @typescript-eslint/no-unused-vars
+   612:36   warning  'e' is defined but never used                                                                                                                           @typescript-eslint/no-unused-vars
+   670:67   error    Unexpected any. Specify a different type                                                                                                                @typescript-eslint/no-explicit-any
+   745:26   error    'col' is never reassigned. Use 'const' instead                                                                                                          prefer-const
+   770:8    warning  React Hook React.useMemo has a missing dependency: 'getAppointmentsForDate'. Either include it or remove the dependency array                           react-hooks/exhaustive-deps
+   818:43   warning  'isSelected' is assigned a value but never used                                                                                                         @typescript-eslint/no-unused-vars
+   878:31   warning  'isSelectedDay' is assigned a value but never used                                                                                                      @typescript-eslint/no-unused-vars
+   962:35   warning  'colorScheme' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+  1040:49   error    Unexpected any. Specify a different type                                                                                                                @typescript-eslint/no-explicit-any
+  1272:129  warning  'err' is defined but never used                                                                                                                         @typescript-eslint/no-unused-vars
+  1317:23   warning  'filterLabel' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\WeeklyCalendarNew.tsx
+   2:29   warning  'Search' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+   2:91   warning  'ChevronDown' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+   2:118  warning  'X' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+   2:121  warning  'Clock' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   2:128  warning  'MapPin' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+   2:136  warning  'Bell' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+   2:142  warning  'Sparkles' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   2:152  warning  'TrendingUp' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   2:164  warning  'DollarSign' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   2:176  warning  'UserPlus' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+  18:1    error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  99:44   warning  'staffIndex' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\admin\YearView.tsx
+   2:97   warning  'setMonth' is defined but never used       @typescript-eslint/no-unused-vars
+   2:107  warning  'startOfMonth' is defined but never used   @typescript-eslint/no-unused-vars
+  14:11   warning  'year' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\barber\BarberDashboard.tsx
+    5:10  warning  'format' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+    7:5   warning  'Clock' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    8:5   warning  'CheckCircle2' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+    9:5   warning  'Briefcase' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   13:5   warning  'ChevronDown' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   15:5   warning  'TrendingUp' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   16:5   warning  'Layout' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   17:5   warning  'Globe' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   18:5   warning  'Scissors' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   19:5   warning  'DollarSign' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   20:5   warning  'Plus' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   21:5   warning  'Settings' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   24:10  warning  'Button' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   42:20  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+   74:5   warning  'businessHours' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   76:5   warning  'onStatusUpdate' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   87:17  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\barber\BarberDashboard.tsx:87:17
+  85 |             const tabParam = params.get('tab');
+  86 |             if (tabParam && ['schedule', 'performance', 'settings', 'team', 'clients'].includes(tabParam)) {
+> 87 |                 setActiveTab(tabParam as any);
+     |                 ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  88 |             }
+  89 |         }
+  90 |     }, []);  react-hooks/set-state-in-effect
+   87:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+  110:46  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\barber\BarberStats.tsx
+    6:5   warning  'DollarSign' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   13:17  warning  'CalendarIcon' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+   21:5   warning  'ChevronDown' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   24:29  warning  'YAxis' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+   25:5   warning  'PieChart' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   25:15  warning  'Pie' is defined but never used                                                                                         @typescript-eslint/no-unused-vars
+   25:20  warning  'Cell' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+   25:26  warning  'BarChart' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   25:36  warning  'Bar' is defined but never used                                                                                         @typescript-eslint/no-unused-vars
+   28:13  warning  'startOfWeek' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   31:42  warning  'getHours' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   92:11  warning  'filterAppointments' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  108:84  warning  React Hook useMemo has a missing dependency: 'filterAllAppointments'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  109:86  warning  React Hook useMemo has a missing dependency: 'filterAllAppointments'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  181:71  warning  React Hook useMemo has a missing dependency: 'getStats'. Either include it or remove the dependency array               react-hooks/exhaustive-deps
+  182:73  warning  React Hook useMemo has a missing dependency: 'getStats'. Either include it or remove the dependency array               react-hooks/exhaustive-deps
+  201:11  warning  'revenueGraphData' is assigned a value but never used                                                                   @typescript-eslint/no-unused-vars
+  246:11  warning  'topServices' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  506:86  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                         react/no-unescaped-entities
+  776:61  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                         react/no-unescaped-entities
+  776:73  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                         react/no-unescaped-entities
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\barber\PersonalWeeklyView.tsx
+   3:51  warning  'parseISO' is defined but never used         @typescript-eslint/no-unused-vars
+   4:10  warning  'Calendar' is defined but never used         @typescript-eslint/no-unused-vars
+   4:20  warning  'Clock' is defined but never used            @typescript-eslint/no-unused-vars
+   4:27  warning  'MapPin' is defined but never used           @typescript-eslint/no-unused-vars
+   4:35  warning  'Video' is defined but never used            @typescript-eslint/no-unused-vars
+  31:23  warning  'isPast' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\barber\StaffSettings.tsx
+   16:5   warning  'Search' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   18:5   warning  'Phone' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   19:5   warning  'Save' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   20:5   warning  'Settings' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   22:5   warning  'MapPin' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   23:5   warning  'Globe' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   29:18  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   79:52  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  102:8   warning  React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array                                                                                                                                                                              react-hooks/exhaustive-deps
+  165:25  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  200:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\barber\StaffSidebar.tsx
+   1:37  warning  'ExternalLink' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   1:51  warning  'Settings' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   2:8   warning  'Link' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  26:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  49:68  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\booking\BookingPageContent.tsx
+   13:31  warning  'Globe' is defined but never used         @typescript-eslint/no-unused-vars
+   37:36  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:22  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  159:38  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  221:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  225:68  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  260:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  302:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  389:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\booking\BookingSummary.tsx
+  15:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\booking\DateSelection.tsx
+  4:47  warning  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\booking\ServiceSelection.tsx
+  36:180  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\booking\WizardStepIndicator.tsx
+  2:10  warning  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\design-preview\PreviewCalendar.tsx
+    2:29   warning  'Search' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+    2:91   warning  'ChevronDown' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+    2:118  warning  'X' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+    2:121  warning  'Clock' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+    2:128  warning  'MapPin' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+    2:136  warning  'Bell' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+    2:142  warning  'Sparkles' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+    2:152  warning  'TrendingUp' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+    2:164  warning  'DollarSign' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+    2:176  warning  'UserPlus' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   25:1    error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  110:44   warning  'staffIndex' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\components\design-preview\PreviewDashboard.tsx
+    2:10  warning  'motion' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    2:18  warning  'AnimatePresence' is defined but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+    4:57  warning  'Bell' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    4:63  warning  'Search' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    5:18  warning  'MapPin' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    5:32  warning  'Sparkles' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    7:26  warning  'Globe' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   10:10  warning  'AreaChart' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   10:21  warning  'Area' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   10:27  warning  'XAxis' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   10:34  warning  'YAxis' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   10:41  warning  'CartesianGrid' is defined but never used                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   10:56  warning  'Tooltip' is defined but never used                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   10:65  warning  'ResponsiveContainer' is defined but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   44:7   warning  'MOCK_CHART_DATA' is assigned a value but never used                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  108:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  122:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  177:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  344:91  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  358:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  484:91  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  520:61  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\middleware.ts
+  20:58  warning  'options' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\services\dataService.ts
+  117:28  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  149:20  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  193:28  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  200:52  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  229:20  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  291:36  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  307:36  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  347:20  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  404:19  warning  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  420:52  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  497:74  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  505:76  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  530:70  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\src\utils\analyticsUtils.ts
+   2:28  warning  'startOfDay' is defined but never used                    @typescript-eslint/no-unused-vars
+   2:40  warning  'endOfDay' is defined but never used                      @typescript-eslint/no-unused-vars
+   2:76  warning  'subDays' is defined but never used                       @typescript-eslint/no-unused-vars
+  60:9   error    'serviceCounts' is never reassigned. Use 'const' instead  prefer-const
+  61:9   error    'staffCounts' is never reassigned. Use 'const' instead    prefer-const
+  62:9   error    'clientStats' is never reassigned. Use 'const' instead    prefer-const
+  63:9   error    'hourCounts' is never reassigned. Use 'const' instead     prefer-const
+  64:9   error    'dayCounts' is never reassigned. Use 'const' instead      prefer-const
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\supabase\functions\push-notifications\index.ts
+  38:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\super_repair.js
+  1:12  error    A `require()` style import is forbidden    @typescript-eslint/no-require-imports
+  2:7   warning  'path' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  2:14  error    A `require()` style import is forbidden    @typescript-eslint/no-require-imports
+  3:17  error    A `require()` style import is forbidden    @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\the_great_restore.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:17  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\ultimate_sync.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:17  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Owner\.gemini\antigravity\scratch\universal-booking-app\validate_env.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+Γ£û 483 problems (193 errors, 290 warnings)
+  10 errors and 0 warnings potentially fixable with the `--fix` option.
+

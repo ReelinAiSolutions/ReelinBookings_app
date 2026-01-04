@@ -190,14 +190,14 @@ export default function NotificationManager() {
     if (loading && !isSupported) return null;
 
     return (
-        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 transition-all duration-300">
+        <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-100 dark:border-white/5 transition-all duration-300">
             <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${isSubscribed ? 'bg-emerald-50 text-emerald-600' : 'bg-purple-50 text-purple-600'}`}>
+                <div className={`p-3 rounded-xl ${isSubscribed ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'}`}>
                     {isSubscribed ? <Bell className="w-6 h-6" /> : <BellOff className="w-6 h-6" />}
                 </div>
                 <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                        <h3 className="text-lg font-bold text-gray-900">Mobile Notifications</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Mobile Notifications</h3>
                         {isSubscribed && (
                             <button
                                 onClick={resetSubscription}
@@ -208,20 +208,20 @@ export default function NotificationManager() {
                             </button>
                         )}
                     </div>
-                    <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 leading-relaxed">
                         Receive instant alerts on your phone screen when clients book or cancel appointments.
                     </p>
 
                     {/* Pro Feature: Admin Broadcast Toggle */}
                     {profile?.role === 'owner' && (
-                        <div className="mb-6 p-4 bg-white rounded-xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-top-4">
+                        <div className="mb-6 p-4 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm animate-in fade-in slide-in-from-top-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-50 rounded-lg">
-                                        <Smartphone className="w-4 h-4 text-purple-600" />
+                                    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                        <Smartphone className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-black text-gray-900 leading-tight">Organization Overview</p>
+                                        <p className="text-sm font-black text-gray-900 dark:text-white leading-tight">Organization Overview</p>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Receive alerts for all staff bookings</p>
                                     </div>
                                 </div>
@@ -241,13 +241,13 @@ export default function NotificationManager() {
 
                     {!isSupported ? (
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 p-3 bg-amber-50 text-amber-700 rounded-lg text-sm border border-amber-100 font-medium">
+                            <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 rounded-lg text-sm border border-amber-100 dark:border-amber-900/20 font-medium">
                                 <AlertCircle className="w-4 h-4 shrink-0" />
                                 <p>To enable, please tap the <strong>Share</strong> button in Safari and select <strong>"Add to Home Screen"</strong>.</p>
                             </div>
 
                             {error && (
-                                <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl text-[10px] font-mono text-gray-400">
+                                <div className="p-3 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-[10px] font-mono text-gray-400">
                                     <p className="uppercase font-bold mb-1 opacity-50">Debug Diagnostics:</p>
                                     <p>{error.diagnostic}</p>
                                     <p className="mt-1">Hostname: {window.location.hostname}</p>
@@ -259,7 +259,7 @@ export default function NotificationManager() {
                         <>
                             {isSubscribed ? (
                                 <div className="flex flex-col gap-3">
-                                    <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-2 rounded-lg w-fit">
+                                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg w-fit">
                                         <CheckCircle2 className="w-4 h-4" />
                                         <span>Notifications Active</span>
                                     </div>

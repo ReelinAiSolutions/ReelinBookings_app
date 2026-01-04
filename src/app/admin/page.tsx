@@ -1,26 +1,20 @@
 'use client';
 import { createClient } from '@/lib/supabase';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
-import DashboardStats from '@/components/admin/DashboardStats';
-import AdminSidebar from '@/components/admin/AdminSidebar';
-import DashboardCharts from '@/components/admin/DashboardCharts';
-import AppointmentList from '@/components/admin/AppointmentList';
 import ServiceManager from '@/components/admin/ServiceManager';
 import StaffManager from '@/components/admin/StaffManager';
 import ClientManager from '@/components/admin/ClientManager';
-import AnalyticsView from '@/components/admin/AnalyticsView';
 import PerformanceView from '@/components/admin/PerformanceView';
 import WeeklyCalendar from '@/components/admin/WeeklyCalendar';
-import TodayPanel from '@/components/admin/TodayPanel';
 import RescheduleModal from '@/components/admin/RescheduleModal';
 import BlockModal from '@/components/admin/BlockModal';
 import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
-import StaffDashboard from '@/components/barber/BarberDashboard';
-import ProfileManager from '@/components/admin/ProfileManager'; // Restored import
-import SettingsManager from '@/components/admin/SettingsManager'; // Added Settings Manager
-import AdminNav from '@/components/admin/AdminNav'; // New import
+import ProfileManager from '@/components/admin/ProfileManager';
+import SettingsManager from '@/components/admin/SettingsManager';
+import AdminNav from '@/components/admin/AdminNav';
+import AdminSidebar from '@/components/admin/AdminSidebar';
 import BrandingInjector from '@/components/BrandingInjector';
 import { useRouter } from 'next/navigation';
 import {
@@ -30,9 +24,6 @@ import {
     getServices,
     getStaff,
     createAppointment,
-    createService,
-    deleteService,
-    updateService,
     updateAppointment,
     cancelAppointment,
     uncancelAppointment,
@@ -40,8 +31,7 @@ import {
     getOrganizationById,
     getAllAvailability
 } from '@/services/dataService';
-import Link from 'next/link';
-import { ExternalLink, Plus, Lock, X } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { Organization, Appointment } from '@/types';
 
 
@@ -75,22 +65,19 @@ const MOCK_STATS = [
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients'>('operations');
-    const [appointments, setAppointments] = useState<any[]>([]);
-    const [stats, setStats] = useState({ totalRevenue: 0, totalBookings: 0, activeStaff: 0 });
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [services, setServices] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
-    const [availability, setAvailability] = useState<any[]>([]); // New state
-    const [chartData, setChartData] = useState<any[]>(MOCK_STATS);
+    const [availability, setAvailability] = useState<any[]>([]);
     const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
-    const [currentUser, setCurrentUser] = useState<any>(null); // New state
-    const [userProfile, setUserProfile] = useState<any>(null); // New state
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [userProfile, setUserProfile] = useState<any>(null);
     const router = useRouter();
 
     const supabase = createClient();
 
     // Modal State
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-    const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
     // Blocking State
     const [isBlockingMode, setIsBlockingMode] = useState(false);
@@ -98,7 +85,7 @@ export default function AdminDashboard() {
     const [blockSelection, setBlockSelection] = useState<{ date: Date | null, time: string | null }>({ date: null, time: null });
 
     // Staff Filter State
-    const [selectedStaffId, setSelectedStaffId] = useState<string>('ALL');
+    const selectedStaffId = 'ALL'; // Simplified since setSelectedStaffId was unused
     const notifyStaff = async (staffId: string, title: string, body: string, appointmentId?: string, type: string = 'update') => {
         try {
             const target = staff.find(s => s.id === staffId);
@@ -123,22 +110,11 @@ export default function AdminDashboard() {
     };
 
 
-    const loadDashboardData = async () => {
+    const loadDashboardData = useCallback(async () => {
         try {
             const orgId = await getCurrentUserOrganization();
-            if (!orgId) {
-                // If checking auth fails or no org, we might redirect or just wait
-                // window.location.href = '/login?error=no_org'; 
-                // Redirecting in useEffect can be tricky, safe to just return or set state
-                return;
-            }
+            if (!orgId) return;
 
-            // 1. Fetch Core Data (Parallel)
-            // We use Promise.allSettled where available, or just separate critical from non-critical.
-            // Critical: Appointments, Services, Staff (Operations)
-            // Non-Critical: Org Metadata (if it fails, we just show default branding)
-
-            // Core Fetch
             const now = new Date();
             const startStr = format(new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
             const endStr = format(new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
@@ -155,7 +131,6 @@ export default function AdminDashboard() {
             setStaff(fetchedStaff || []);
             setAvailability(fetchedAvailability || []);
 
-            // 2. Fetch Metadata (Parallel but isolated catch)
             try {
                 const [fetchedOrg, fetchedProfile] = await Promise.all([
                     getOrganizationById(orgId),
@@ -168,7 +143,6 @@ export default function AdminDashboard() {
                     setCurrentUser(fetchedProfile.user);
                     setUserProfile(fetchedProfile.profile);
 
-                    // --- SMART REDIRECT FOR STAFF ---
                     const role = fetchedProfile.profile.role?.toLowerCase();
                     if (role && role !== 'owner' && role !== 'admin') {
                         const params = new URLSearchParams(window.location.search);
@@ -178,20 +152,11 @@ export default function AdminDashboard() {
                 }
             } catch (metaError) {
                 console.error("Metadata Load Error (Non-Critical):", metaError);
-                // We continue, so the dashboard still works even if org details fail
             }
-
-            // Calculate simple stats
-            setStats({
-                totalRevenue: (fetchedApts || []).length * 50,
-                totalBookings: (fetchedApts || []).length,
-                activeStaff: (fetchedStaff || []).length
-            });
         } catch (error) {
             console.error("Dashboard Data Load Error:", error);
-            // safe error object handling
         }
-    };
+    }, [router]);
 
     useEffect(() => {
         loadDashboardData();
@@ -204,7 +169,7 @@ export default function AdminDashboard() {
                 setActiveTab(tabParam as any);
             }
         }
-    }, []);
+    }, [loadDashboardData]);
 
     // Sync Tab to URL
     useEffect(() => {
@@ -239,11 +204,10 @@ export default function AdminDashboard() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [currentOrg?.id]);
+    }, [currentOrg?.id, loadDashboardData, supabase]);
 
     const handleAppointmentClick = (apt: Appointment) => {
         setSelectedAppointment(apt);
-        setIsRescheduleModalOpen(true);
     };
 
     const onReschedule = async (
@@ -418,14 +382,8 @@ export default function AdminDashboard() {
     };
 
     // --- DEBUG / PREVIEW MODE ---
-    const [isDebugStaffView, setIsDebugStaffView] = useState(false);
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('view') === 'staff') {
-                setIsDebugStaffView(true);
-            }
-        }
+        // Removed unused debug state
     }, []);
 
     // --- ROLE BASED VIEW ---
@@ -459,7 +417,7 @@ export default function AdminDashboard() {
 
     return (
         <div
-            className="min-h-screen bg-white relative overflow-hidden flex"
+            className="min-h-screen bg-white dark:bg-black relative overflow-hidden flex transition-colors duration-300"
             style={brandingStyle}
         >
             <AmbientBackground />
@@ -473,9 +431,8 @@ export default function AdminDashboard() {
             />
 
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
-            {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
-            <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'block min-h-screen'}`} style={activeTab === 'operations' ? { overscrollBehavior: 'none' } : {}}>
-                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden p-0' : 'p-4 pb-24 lg:p-10 space-y-6'}`}>
+            <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'block min-h-screen'} dark:bg-black`} style={activeTab === 'operations' ? { overscrollBehavior: 'none' } : {}}>
+                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden p-0' : 'px-0 py-4 pb-24 lg:p-10 space-y-6'}`}>
                     {/* Mobile Header (Only for non-operations tabs) */}
 
 
@@ -499,6 +456,7 @@ export default function AdminDashboard() {
                                             const staffMember = staff.find(s => s.email === userProfile?.user?.email);
                                             return staffMember?.id || 'ALL';
                                         })()}
+                                        colorMode={currentOrg?.settings?.color_mode}
                                     />
                                 </div>
                             </div>
@@ -573,7 +531,6 @@ export default function AdminDashboard() {
                                     org={currentOrg}
                                     onUpdate={(updated) => {
                                         setCurrentOrg(updated);
-                                        loadDashboardData();
                                     }}
                                 />
                             </div>

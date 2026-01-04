@@ -318,7 +318,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             retUnique,
             atRisk: atRiskCount,
             mix: [
-                { name: 'Returning', value: retUnique, color: '#2D165D' },
+                { name: 'Returning', value: retUnique, color: '#a855f7' },
                 { name: 'New', value: newUnique, color: '#7C3AED' }
             ]
         };
@@ -494,17 +494,17 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
         children: React.ReactNode,
         icon: any
     }) => (
-        <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden transition-all duration-300">
+        <div className="bg-white dark:bg-card rounded-[24px] shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden transition-all duration-300">
             <button
                 onClick={onToggle}
-                className="w-full flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors"
+                className="w-full flex items-center justify-between p-6 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors"
                 type="button"
             >
                 <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl bg-primary-50 text-primary-600`}>
+                    <div className={`p-2 rounded-xl bg-primary-50 dark:bg-primary-900/10 text-primary-600 dark:text-primary-400`}>
                         <Icon className="w-5 h-5" />
                     </div>
-                    <h3 className="font-bold text-lg text-gray-900">{title}</h3>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">{title}</h3>
                 </div>
                 <div className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
                     <ChevronDown className="w-5 h-5 text-gray-400" />
@@ -526,7 +526,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 {/* Insight Banner */}
                 {/* Insight Banner - Galaxy Theme */}
                 <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
-                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,#2D165D,transparent)]" />
+                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,var(--primary-600),transparent)]" />
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
                     <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
                         <Zap className="w-4 h-4 text-accent-400 fill-accent-400" />
@@ -559,47 +559,47 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                     </div>
 
                     {/* Confirmed Bookings */}
-                    <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex flex-col justify-between col-span-1">
+                    <div className="bg-white dark:bg-card rounded-[24px] p-5 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between col-span-1">
                         <div className="flex justify-between items-start">
-                            <div className="p-2 bg-primary-50 text-primary-600 rounded-xl"><CalendarDays className="w-5 h-5" /></div>
+                            <div className="p-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl"><CalendarDays className="w-5 h-5" /></div>
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black text-gray-900">{currentStats.bookings}</h3>
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white">{currentStats.bookings}</h3>
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Confirmed Bookings</p>
                         </div>
                     </div>
 
                     {/* Projected Revenue */}
-                    <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex flex-col justify-between col-span-1">
+                    <div className="bg-white dark:bg-card rounded-[24px] p-5 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between col-span-1">
                         <div className="flex justify-between items-start">
-                            <div className="p-2 bg-purple-50 text-purple-600 rounded-xl"><TrendingUp className="w-5 h-5" /></div>
-                            <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Next 30d</span>
+                            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-xl"><TrendingUp className="w-5 h-5" /></div>
+                            <span className="text-[10px] font-bold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">Next 30d</span>
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black text-gray-900">${forecast.revenue.toLocaleString()}</h3>
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white">${forecast.revenue.toLocaleString()}</h3>
                             <p className="text-xs font-bold text-purple-400 uppercase tracking-widest">Projected</p>
                         </div>
                     </div>
 
                     {/* Missed Opportunity */}
-                    <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex flex-col justify-between col-span-1">
+                    <div className="bg-white dark:bg-card rounded-[24px] p-5 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between col-span-1">
                         <div className="flex justify-between items-start">
-                            <div className="p-2 bg-red-50 text-red-500 rounded-xl"><Ban className="w-5 h-5" /></div>
+                            <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-xl"><Ban className="w-5 h-5" /></div>
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black text-gray-900">${currentStats.lostRevenue.toLocaleString()}</h3>
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white">${currentStats.lostRevenue.toLocaleString()}</h3>
                             <p className="text-xs font-bold text-red-400 uppercase tracking-widest">Missed Opp.</p>
                         </div>
                     </div>
 
                     {/* Schedule Filled % */}
-                    <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex flex-col justify-between relative overflow-hidden col-span-1">
+                    <div className="bg-white dark:bg-card rounded-[24px] p-5 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between relative overflow-hidden col-span-1">
                         <div className="flex justify-between items-start mb-2">
-                            <div className="p-2 bg-primary-50 text-primary-600 rounded-xl"><Clock className="w-5 h-5" /></div>
+                            <div className="p-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl"><Clock className="w-5 h-5" /></div>
                         </div>
                         <div className="flex items-center justify-between relative z-10">
                             <div>
-                                <h3 className="text-2xl font-black text-gray-900">{occupancyRate}%</h3>
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white">{occupancyRate}%</h3>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest max-w-[80px] leading-tight">Schedule Filled</p>
                             </div>
                             <div className="relative w-12 h-12 -mt-3">
@@ -614,8 +614,8 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             dataKey="value"
                                             stroke="none"
                                         >
-                                            <Cell fill="#7C3AED" />
-                                            <Cell fill="#F3F4F6" />
+                                            <Cell fill="#a855f7" />
+                                            <Cell fill="#2c2c2e" className="dark:fill-white/10" />
                                         </Pie>
                                     </PieChart>
                                 </ResponsiveContainer>
@@ -634,24 +634,24 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             >
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Bookings Trend Chart */}
-                    <div className="lg:col-span-2 bg-gray-50 rounded-2xl p-4">
-                        <h4 className="text-sm font-bold text-gray-900 mb-4">Bookings Over Time</h4>
+                    <div className="lg:col-span-2 bg-gray-50 dark:bg-white/5 rounded-2xl p-4">
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Bookings Over Time</h4>
                         <div className="h-48 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={bookingsGraphData}>
                                     <defs>
                                         <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#2D165D" stopOpacity={0.2} />
-                                            <stop offset="95%" stopColor="#2D165D" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2} />
+                                            <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF' }} />
                                     <Tooltip
-                                        cursor={{ stroke: '#2D165D', strokeWidth: 1 }}
+                                        cursor={{ stroke: '#a855f7', strokeWidth: 1 }}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                     />
-                                    <Area type="monotone" dataKey="value" stroke="#2D165D" strokeWidth={3} fill="url(#colorBookings)" />
+                                    <Area type="monotone" dataKey="value" stroke="#a855f7" strokeWidth={3} fill="url(#colorBookings)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -659,30 +659,30 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
 
                     {/* Breakdown & No-Show */}
                     <div className="space-y-4">
-                        <div className="bg-gray-50 rounded-2xl p-4">
-                            <h4 className="text-sm font-bold text-gray-900 mb-3">Status Breakdown</h4>
+                        <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-4">
+                            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Status Breakdown</h4>
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center text-xs">
-                                    <span className="flex items-center gap-2 text-gray-600"><span className="w-2 h-2 rounded-full bg-primary-500"></span> Upcoming</span>
-                                    <span className="font-bold text-gray-900">{bookingHealthMetrics.upcoming}</span>
+                                    <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400"><span className="w-2 h-2 rounded-full bg-primary-500"></span> Upcoming</span>
+                                    <span className="font-bold text-gray-900 dark:text-white">{bookingHealthMetrics.upcoming}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
-                                    <span className="flex items-center gap-2 text-gray-600"><span className="w-2 h-2 rounded-full bg-green-500"></span> Completed</span>
-                                    <span className="font-bold text-gray-900">{bookingHealthMetrics.completed}</span>
+                                    <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400"><span className="w-2 h-2 rounded-full bg-green-500"></span> Completed</span>
+                                    <span className="font-bold text-gray-900 dark:text-white">{bookingHealthMetrics.completed}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
-                                    <span className="flex items-center gap-2 text-gray-600"><span className="w-2 h-2 rounded-full bg-red-400"></span> Cancelled</span>
-                                    <span className="font-bold text-gray-900">{bookingHealthMetrics.cancelled}</span>
+                                    <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400"><span className="w-2 h-2 rounded-full bg-red-400"></span> Cancelled</span>
+                                    <span className="font-bold text-gray-900 dark:text-white">{bookingHealthMetrics.cancelled}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-red-50 rounded-2xl p-4 flex items-center justify-between">
+                        <div className="bg-red-50 dark:bg-red-900/10 rounded-2xl p-4 flex items-center justify-between">
                             <div>
-                                <h4 className="text-sm font-bold text-red-900">No-Show Rate</h4>
-                                <p className="text-[10px] text-red-600/70 font-medium">Missed appointments</p>
+                                <h4 className="text-sm font-bold text-red-900 dark:text-red-300">No-Show Rate</h4>
+                                <p className="text-[10px] text-red-600/70 dark:text-red-400/70 font-medium">Missed appointments</p>
                             </div>
-                            <span className="text-2xl font-black text-red-600">{bookingHealthMetrics.noShowRate.toFixed(1)}%</span>
+                            <span className="text-2xl font-black text-red-600 dark:text-red-400">{bookingHealthMetrics.noShowRate.toFixed(1)}%</span>
                         </div>
                     </div>
                 </div>
@@ -698,9 +698,9 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Peak Demand Heatmap */}
-                    <div className="bg-gray-50 rounded-2xl p-4">
+                    <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-4">
                         <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-bold text-gray-900">Peak Demand Hours</h4>
+                            <h4 className="text-sm font-bold text-gray-900 dark:text-white">Peak Demand Hours</h4>
                             <div className="flex gap-2 text-[10px] font-bold text-gray-400">
                                 <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary-600"></span> Busy</span>
                                 <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary-200"></span> Quiet</span>
@@ -725,54 +725,54 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
 
                     {/* Least Booked Hours */}
                     <div>
-                        <h4 className="text-sm font-bold text-gray-900 mb-4">Least Booked Hours</h4>
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Least Booked Hours</h4>
                         <div className="space-y-2">
                             {leastBookedHours.map((h, i) => (
-                                <div key={i} className="flex justify-between items-center p-3 bg-white border border-gray-100 rounded-xl">
+                                <div key={i} className="flex justify-between items-center p-3 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-gray-100 rounded-lg">
-                                            <Clock className="w-4 h-4 text-gray-500" />
+                                        <div className="p-1.5 bg-gray-100 dark:bg-white/10 rounded-lg">
+                                            <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                         </div>
-                                        <span className="text-sm font-bold text-gray-700">
+                                        <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
                                             {h.hour === 0 ? '12 AM' : h.hour < 12 ? `${h.hour} AM` : h.hour === 12 ? '12 PM' : `${h.hour - 12} PM`}
                                         </span>
                                     </div>
-                                    <span className="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{h.count} bookings</span>
+                                    <span className="text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2 py-1 rounded-md">{h.count} bookings</span>
                                 </div>
                             ))}
                             {leastBookedHours.length === 0 && <p className="text-xs text-gray-400 italic">No data available.</p>}
                         </div>
 
-                        <div className="mt-6 p-4 bg-primary-50 rounded-xl border border-primary-100/50">
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm font-bold text-primary-900">Avg. Daily Schedule Filled</span>
-                                <span className="text-sm font-black text-primary-600">{occupancyRate}%</span>
-                            </div>
+                    </div>
+
+                    <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/10 rounded-xl border border-primary-100/50 dark:border-primary-500/10">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm font-bold text-primary-900 dark:text-primary-300">Avg. Daily Schedule Filled</span>
+                            <span className="text-sm font-black text-primary-600 dark:text-primary-400">{occupancyRate}%</span>
                         </div>
                     </div>
                 </div>
-            </CollapsibleSection >
-
+            </CollapsibleSection>
 
             {/* 4. SERVICES PERFORMANCE (Collapsible) */}
-            < CollapsibleSection
+            <CollapsibleSection
                 title="Services Performance"
                 icon={Star}
                 isOpen={activeSections.services}
                 onToggle={() => toggleSection('services')}
             >
                 <div className="flex justify-end mb-4">
-                    <div className="flex bg-gray-100 p-1 rounded-lg">
+                    <div className="flex bg-gray-100 dark:bg-white/10 p-1 rounded-lg">
                         <button
                             onClick={() => setServiceSort('revenue')}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all ${serviceSort === 'revenue' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all ${serviceSort === 'revenue' ? 'bg-white dark:bg-card text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
                             type="button"
                         >
                             By Revenue
                         </button>
                         <button
                             onClick={() => setServiceSort('bookings')}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all ${serviceSort === 'bookings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all ${serviceSort === 'bookings' ? 'bg-white dark:bg-card text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
                             type="button"
                         >
                             By Bookings
@@ -782,20 +782,20 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
 
                 <div className="space-y-2">
                     {topServicesList.map((srv, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors border-b border-gray-100 last:border-0">
+                        <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors border-b border-gray-100 dark:border-white/5 last:border-0">
                             <div className="flex items-center gap-3 flex-1 min-w-0 mr-2">
-                                <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-xs font-black ${i < 3 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'}`}>
+                                <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-xs font-black ${i < 3 ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400'}`}>
                                     #{i + 1}
                                 </div>
-                                <span className="font-bold text-gray-900 text-sm leading-tight break-words">{srv.name}</span>
+                                <span className="font-bold text-gray-900 dark:text-white text-sm leading-tight break-words">{srv.name}</span>
                             </div>
                             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                                 <div className="text-right">
-                                    <div className="text-xs font-bold text-gray-900">{srv.count}</div>
+                                    <div className="text-xs font-bold text-gray-900 dark:text-white">{srv.count}</div>
                                     <div className="text-[9px] text-gray-400 font-bold uppercase">Bookings</div>
                                 </div>
                                 <div className="text-right w-14 sm:w-16">
-                                    <div className="text-sm font-black text-gray-900">${srv.revenue.toLocaleString()}</div>
+                                    <div className="text-sm font-black text-gray-900 dark:text-white">${srv.revenue.toLocaleString()}</div>
                                     <div className="text-[9px] text-gray-400 font-bold uppercase">Revenue</div>
                                 </div>
                             </div>
@@ -814,21 +814,21 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 onToggle={() => toggleSection('clientHealth')}
             >
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center">
-                        <div className="p-2 bg-primary-100 text-primary-600 rounded-full mb-2">
+                    <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl flex flex-col items-center justify-center text-center">
+                        <div className="p-2 bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full mb-2">
                             <Repeat className="w-5 h-5" />
                         </div>
-                        <h4 className="text-2xl font-black text-gray-900">
+                        <h4 className="text-2xl font-black text-gray-900 dark:text-white">
                             {((clientMetrics.mix[0].value / (clientMetrics.totalActive || 1)) * 100).toFixed(0)}%
                         </h4>
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Repeat Client Rate</p>
                     </div>
 
-                    <div className="p-4 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-center">
-                        <div className="p-2 bg-emerald-100 text-emerald-600 rounded-full mb-2">
+                    <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl flex flex-col items-center justify-center text-center">
+                        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-full mb-2">
                             <Users2 className="w-5 h-5" />
                         </div>
-                        <h4 className="text-2xl font-black text-gray-900">
+                        <h4 className="text-2xl font-black text-gray-900 dark:text-white">
                             {avgVisitsPerClient}
                         </h4>
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Avg Visits / Client</p>
@@ -845,7 +845,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 {/* Team Insight Banner */}
                 {/* Team Insight Banner - Galaxy Theme */}
                 <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
-                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,#2D165D,transparent)]" />
+                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,var(--primary-600),transparent)]" />
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
                     <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
                         <Zap className="w-4 h-4 text-accent-400 fill-accent-400" />
@@ -854,13 +854,13 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                    <h3 className="text-lg font-black text-gray-900 uppercase tracking-widest">Team Performance</h3>
-                    <div className="flex items-center gap-2 bg-gray-100/80 p-1 rounded-full overflow-x-auto max-w-full no-scrollbar">
+                    <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-widest">Team Performance</h3>
+                    <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/10 p-1 rounded-full overflow-x-auto max-w-full no-scrollbar">
                         {(['bookings', 'utilization', 'revenue'] as const).map(s => (
                             <button
                                 key={s}
                                 onClick={() => setStaffSort(s)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all capitalize whitespace-nowrap ${staffSort === s ? 'bg-primary-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all capitalize whitespace-nowrap ${staffSort === s ? 'bg-primary-600 text-white shadow-md' : 'text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                             >
                                 {s}
                             </button>
@@ -876,39 +876,39 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             <div
                                 key={member.id}
                                 className={`rounded-[24px] p-5 border transition-all group relative overflow-hidden ${isTopPerformer
-                                    ? 'bg-emerald-50 border-emerald-200 shadow-lg shadow-emerald-100/50 scale-[1.02] z-10'
-                                    : 'bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200'
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-500/20 shadow-lg shadow-emerald-100/50 dark:shadow-emerald-900/20 scale-[1.02] z-10'
+                                    : 'bg-white dark:bg-card border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md hover:border-gray-200 dark:hover:border-white/20'
                                     }`}
                             >
                                 {/* Rank Badge */}
-                                <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-[20px] font-black text-xs uppercase tracking-widest ${isTopPerformer ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400'
+                                <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-[20px] font-black text-xs uppercase tracking-widest ${isTopPerformer ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-400'
                                     }`}>
                                     #{index + 1}
                                 </div>
 
                                 <div className="flex items-center gap-4 mb-6 relative z-10">
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg transition-transform group-hover:scale-105 ${isTopPerformer
-                                        ? 'bg-emerald-600 text-white shadow-emerald-200'
-                                        : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'
+                                        ? 'bg-emerald-600 text-white shadow-emerald-200 dark:shadow-none'
+                                        : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20 dark:shadow-none'
                                         }`}>
                                         {member.name.charAt(0)}
                                     </div>
                                     <div>
-                                        <div className={`font-bold ${isTopPerformer ? 'text-emerald-900' : 'text-gray-900'}`}>{member.name}</div>
-                                        <div className={`text-xs font-medium ${isTopPerformer ? 'text-emerald-600' : 'text-gray-500'}`}>Retention: {member.repeatRate.toFixed(0)}%</div>
+                                        <div className={`font-bold ${isTopPerformer ? 'text-emerald-900 dark:text-emerald-300' : 'text-gray-900 dark:text-white'}`}>{member.name}</div>
+                                        <div className={`text-xs font-medium ${isTopPerformer ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>Retention: {member.repeatRate.toFixed(0)}%</div>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 relative z-10">
-                                    <div className={`p-3 rounded-2xl ${isTopPerformer ? 'bg-white/60' : 'bg-gray-50'}`}>
+                                    <div className={`p-3 rounded-2xl ${isTopPerformer ? 'bg-white/60 dark:bg-black/20' : 'bg-gray-50 dark:bg-white/5'}`}>
                                         <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Bookings</div>
-                                        <div className="text-xl font-black text-gray-900">{member.bookings}</div>
+                                        <div className="text-xl font-black text-gray-900 dark:text-white">{member.bookings}</div>
                                     </div>
-                                    <div className={`p-3 rounded-2xl ${isTopPerformer ? 'bg-white/60' : 'bg-gray-50'}`}>
+                                    <div className={`p-3 rounded-2xl ${isTopPerformer ? 'bg-white/60 dark:bg-black/20' : 'bg-gray-50 dark:bg-white/5'}`}>
                                         <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Utilization</div>
-                                        <div className="text-xl font-black text-gray-900">{member.utilization}%</div>
+                                        <div className="text-xl font-black text-gray-900 dark:text-white">{member.utilization}%</div>
                                     </div>
-                                    <div className={`col-span-2 p-3 rounded-2xl flex justify-between items-center ${isTopPerformer ? 'bg-emerald-500 text-white shadow-sm' : 'bg-primary-50 text-primary-600'
+                                    <div className={`col-span-2 p-3 rounded-2xl flex justify-between items-center ${isTopPerformer ? 'bg-emerald-500 text-white shadow-sm' : 'bg-primary-50 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300'
                                         }`}>
                                         <div className={`text-[10px] font-bold uppercase tracking-widest ${isTopPerformer ? 'text-emerald-100' : 'text-primary-400'}`}>Revenue</div>
                                         <div className="text-xl font-black">${member.revenue.toLocaleString()}</div>
@@ -935,7 +935,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 {/* Insight Banner */}
                 {/* Insight Banner - Galaxy Theme */}
                 <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
-                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,#2D165D,transparent)]" />
+                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,var(--primary-600),transparent)]" />
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
                     <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
                         <Sparkles className="w-4 h-4 text-accent-400 fill-accent-400" />
@@ -947,59 +947,59 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     {/* Total Active Clients */}
-                    <div className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                    <div className="bg-white dark:bg-card rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between relative overflow-hidden">
                         <div className="flex justify-between items-start z-10 relative">
                             <div>
-                                <h3 className="text-4xl font-black text-gray-900">{clientMetrics.totalActive}</h3>
+                                <h3 className="text-4xl font-black text-gray-900 dark:text-white">{clientMetrics.totalActive}</h3>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Active Clients</p>
                             </div>
-                            <div className="p-2 bg-primary-50 text-primary-600 rounded-xl"><Users2 className="w-5 h-5" /></div>
+                            <div className="p-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl"><Users2 className="w-5 h-5" /></div>
                         </div>
                         {/* Tiny Sparkline Decoration */}
                         <div className="absolute bottom-0 left-0 w-full h-12 opacity-10">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={[{ v: 10 }, { v: 20 }, { v: 15 }, { v: 25 }, { v: 30 }]}>
-                                    <Area type="monotone" dataKey="v" stroke="#2D165D" fill="#2D165D" strokeWidth={5} />
+                                    <Area type="monotone" dataKey="v" stroke="#a855f7" fill="#a855f7" strokeWidth={5} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
                     {/* Retention Rate */}
-                    <div className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div className="bg-white dark:bg-card rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h3 className="text-4xl font-black text-gray-900">
+                                <h3 className="text-4xl font-black text-gray-900 dark:text-white">
                                     {((clientMetrics.mix[0].value / (clientMetrics.mix[0].value + clientMetrics.mix[1].value || 1)) * 100).toFixed(0)}%
                                 </h3>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Retention Rate</p>
                             </div>
-                            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl"><Repeat className="w-5 h-5" /></div>
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl"><Repeat className="w-5 h-5" /></div>
                         </div>
-                        <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
+                        <div className="w-full bg-gray-100 dark:bg-white/10 h-1.5 rounded-full mt-4 overflow-hidden">
                             <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${((clientMetrics.mix[0].value / (clientMetrics.mix[0].value + clientMetrics.mix[1].value || 1)) * 100)}%` }}></div>
                         </div>
                     </div>
 
                     {/* At Risk */}
-                    <div className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div className="bg-white dark:bg-card rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h3 className="text-4xl font-black text-gray-900">{clientMetrics.atRisk}</h3>
+                                <h3 className="text-4xl font-black text-gray-900 dark:text-white">{clientMetrics.atRisk}</h3>
                                 <p className="text-xs font-bold text-red-300 uppercase tracking-widest mt-1">At Risk Clients</p>
                             </div>
-                            <div className="p-2 bg-red-50 text-red-500 rounded-xl"><UserMinus className="w-5 h-5" /></div>
+                            <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-xl"><UserMinus className="w-5 h-5" /></div>
                         </div>
                         <p className="text-[10px] text-gray-400 font-bold mt-4">Haven't visited in 90+ days</p>
                     </div>
                 </div>
 
                 {/* ROW 2: MINI CRM SECTION */}
-                <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100/50 min-h-[600px]">
+                <div className="bg-white dark:bg-card rounded-[32px] p-8 shadow-sm border border-gray-100/50 dark:border-white/10 min-h-[600px]">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
                         <div>
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-widest">Client Portal</h3>
-                            <p className="text-sm text-gray-500 font-medium mt-1">Manage relationships and track loyalty ({Array.from(new Set(appointments.filter(a => a.status !== AppointmentStatus.BLOCKED && !a.clientEmail.toLowerCase().includes('internal') && !a.clientName.toLowerCase().includes('blocked time')).map(a => a.clientEmail))).length} total)</p>
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-widest">Client Portal</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">Manage relationships and track loyalty ({Array.from(new Set(appointments.filter(a => a.status !== AppointmentStatus.BLOCKED && !a.clientEmail.toLowerCase().includes('internal') && !a.clientName.toLowerCase().includes('blocked time')).map(a => a.clientEmail))).length} total)</p>
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
@@ -1010,7 +1010,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                     placeholder="Search by name or email..."
                                     value={clientSearch}
                                     onChange={(e) => setClientSearch(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                                    className="w-full pl-11 pr-4 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 dark:text-white transition-all"
                                 />
                             </div>
 
@@ -1020,7 +1020,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                     <select
                                         value={clientStaffFilter}
                                         onChange={(e) => setClientStaffFilter(e.target.value)}
-                                        className="w-full pl-9 pr-8 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer min-w-[140px]"
+                                        className="w-full pl-9 pr-8 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer min-w-[140px] text-gray-900 dark:text-white"
                                     >
                                         <option value="all">Every Staff</option>
                                         {staff.map(s => (
@@ -1029,12 +1029,12 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                 </div>
-                                <div className="flex flex-wrap justify-center sm:flex-nowrap items-center gap-1 p-1 bg-gray-50 rounded-xl border border-gray-100 shadow-sm w-full sm:w-auto">
+                                <div className="flex flex-wrap justify-center sm:flex-nowrap items-center gap-1 p-1 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 shadow-sm w-full sm:w-auto">
                                     {(['ltv', 'visits', 'recent'] as const).map(s => (
                                         <button
                                             key={s}
                                             onClick={() => setClientSort(s)}
-                                            className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${clientSort === s ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                                            className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${clientSort === s ? 'bg-white dark:bg-primary-900/40 text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                                         >
                                             {s}
                                         </button>
@@ -1068,12 +1068,12 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                     <div
                                         key={client.email}
                                         className={`group p-6 rounded-[24px] border transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden ${isTopClient
-                                            ? 'bg-emerald-50 border-emerald-200 shadow-lg shadow-emerald-100/50 scale-[1.02] z-10'
-                                            : 'bg-white border-gray-100 hover:border-primary-200 hover:shadow-xl hover:shadow-primary-100/30'
+                                            ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-500/20 shadow-lg shadow-emerald-100/50 dark:shadow-emerald-900/20 scale-[1.02] z-10'
+                                            : 'bg-white dark:bg-card border-gray-100 dark:border-white/10 hover:border-primary-200 dark:hover:border-primary-500/30 hover:shadow-xl hover:shadow-primary-100/30 dark:hover:shadow-none'
                                             }`}
                                     >
                                         {/* Rank Badge */}
-                                        <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-[20px] font-black text-xs uppercase tracking-widest ${isTopClient ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400'
+                                        <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-[20px] font-black text-xs uppercase tracking-widest ${isTopClient ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-400'
                                             }`}>
                                             #{index + 1}
                                         </div>
@@ -1081,8 +1081,8 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                         <div className="relative z-10">
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm transition-all group-hover:scale-110 ${isTopClient
-                                                    ? 'bg-emerald-600 text-white shadow-emerald-200'
-                                                    : `${avatarGradient} text-white shadow-md shadow-black/5`
+                                                    ? 'bg-emerald-600 text-white shadow-emerald-200 dark:shadow-none'
+                                                    : `${avatarGradient} text-white shadow-md shadow-black/5 dark:shadow-none`
                                                     }`}>
                                                     {client.name.charAt(0)}
                                                 </div>
@@ -1092,40 +1092,40 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             </div>
 
                                             <div className="mb-6">
-                                                <h4 className={`font-bold truncate transition-colors ${isTopClient ? 'text-emerald-900' : 'text-gray-900 group-hover:text-primary-600'}`}>{client.name}</h4>
-                                                <p className={`text-[10px] font-bold uppercase tracking-wider truncate ${isTopClient ? 'text-emerald-600' : 'text-gray-400'}`}>{client.email}</p>
+                                                <h4 className={`font-bold truncate transition-colors ${isTopClient ? 'text-emerald-900 dark:text-emerald-300' : 'text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400'}`}>{client.name}</h4>
+                                                <p className={`text-[10px] font-bold uppercase tracking-wider truncate ${isTopClient ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500'}`}>{client.email}</p>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4 mb-6">
-                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/60' : 'bg-transparent'}`}>
+                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/60 dark:bg-black/20' : 'bg-transparent dark:bg-white/5'}`}>
                                                     <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Total LTV</div>
-                                                    <div className="text-lg font-black text-gray-900">${client.totalLtv.toLocaleString()}</div>
+                                                    <div className="text-lg font-black text-gray-900 dark:text-white">${client.totalLtv.toLocaleString()}</div>
                                                 </div>
-                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/60' : 'bg-transparent'}`}>
+                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/60 dark:bg-black/20' : 'bg-transparent dark:bg-white/5'}`}>
                                                     <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Visits</div>
                                                     <div className="flex items-center gap-2">
-                                                        <div className="text-lg font-black text-gray-900">{client.visits}</div>
+                                                        <div className="text-lg font-black text-gray-900 dark:text-white">{client.visits}</div>
                                                         <span className="text-[10px] text-gray-400 font-medium">total</span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className={`p-3 rounded-xl border mb-6 ${isTopClient ? 'bg-white/80 border-emerald-100' : 'bg-gray-50 border-gray-100/50'}`}>
+                                            <div className={`p-3 rounded-xl border mb-6 ${isTopClient ? 'bg-white/80 dark:bg-black/20 border-emerald-100 dark:border-emerald-500/20' : 'bg-gray-50 dark:bg-white/5 border-gray-100/50 dark:border-white/5'}`}>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Clock className="w-3 h-3 text-gray-400" />
                                                     <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Last Visit</span>
                                                 </div>
-                                                <div className="text-xs font-bold text-gray-700">{format(client.lastVisitDate, 'MMM d, yyyy')}</div>
-                                                <div className="text-[10px] text-gray-500 font-medium mt-0.5">{servicesMap.get(client.latestApt.serviceId)?.name || 'Service Unspecified'}</div>
+                                                <div className="text-xs font-bold text-gray-700 dark:text-gray-200">{format(client.lastVisitDate, 'MMM d, yyyy')}</div>
+                                                <div className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">{servicesMap.get(client.latestApt.serviceId)?.name || 'Service Unspecified'}</div>
                                             </div>
                                         </div>
 
-                                        <div className={`flex items-center gap-2 pt-4 border-t relative z-10 ${isTopClient ? 'border-emerald-200/50' : 'border-gray-50'}`}>
+                                        <div className={`flex items-center gap-2 pt-4 border-t relative z-10 ${isTopClient ? 'border-emerald-200/50 dark:border-emerald-500/20' : 'border-gray-50 dark:border-white/5'}`}>
                                             <button
                                                 onClick={() => setSelectedClientEmail(client.email)}
                                                 className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${isTopClient
                                                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                                    : 'bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white'
+                                                    : 'bg-primary-50 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300 hover:bg-primary-600 hover:text-white dark:hover:bg-primary-500'
                                                     }`}
                                             >
                                                 View History
@@ -1133,16 +1133,16 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             <a
                                                 href={`mailto:${client.email}?subject=Just checking in!`}
                                                 className={`p-2 rounded-xl border border-transparent transition-all shadow-sm ${isTopClient
-                                                    ? 'bg-white text-emerald-600 hover:border-emerald-200'
-                                                    : 'bg-gray-50 text-gray-400 hover:text-primary-600 hover:bg-white hover:border-primary-100'
+                                                    ? 'bg-white dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:border-emerald-200'
+                                                    : 'bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-white/10 hover:border-primary-100 dark:hover:border-primary-500/30'
                                                     }`}
                                                 title="Email Client"
                                             >
                                                 <Mail className="w-4 h-4" />
                                             </a>
                                             <button className={`p-2 rounded-xl border border-transparent transition-all shadow-sm ${isTopClient
-                                                ? 'bg-white text-emerald-600 hover:border-emerald-200'
-                                                : 'bg-gray-50 text-gray-400 hover:text-primary-600 hover:bg-white hover:border-primary-100'
+                                                ? 'bg-white dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:border-emerald-200'
+                                                : 'bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-white/10 hover:border-primary-100 dark:hover:border-primary-500/30'
                                                 }`}>
                                                 <Briefcase className="w-4 h-4" />
                                             </button>
@@ -1157,20 +1157,20 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
     };
 
     return (
-        <div className="w-full h-full flex flex-col bg-gray-50/50 overflow-hidden">
+        <div className="w-full h-full flex flex-col overflow-hidden">
             {/* Header */}
-            <header className="pt-8 pb-4 px-4 md:px-10 bg-white/80 backdrop-blur-2xl sticky top-0 z-50 shrink-0 border-b border-gray-100">
+            <div className="pt-8 pb-4 shrink-0 px-4 sm:px-6 lg:px-0">
                 <div className="max-w-[1800px] mx-auto w-full flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight text-gray-900 leading-tight mb-2">
+                        <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white leading-tight mb-2">
                             Analytics
                         </h1>
-                        <nav className="flex items-center gap-1 p-1 bg-gray-100/80 rounded-full w-fit">
+                        <nav className="flex items-center gap-1 p-1 bg-gray-100/80 dark:bg-white/10 rounded-full w-fit">
                             {['business', 'staff', 'clients'].map(t => (
                                 <button
                                     key={t}
                                     onClick={() => setActiveTab(t as TabType)}
-                                    className={`px-5 py-2.5 rounded-full transition-all capitalize text-sm font-bold ${activeTab === t ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'}`}
+                                    className={`px-5 py-2.5 rounded-full transition-all capitalize text-sm font-bold ${activeTab === t ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5'}`}
                                 >
                                     {t}
                                 </button>
@@ -1198,7 +1198,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             </div>
                         )}
 
-                        <div className="bg-gray-100/80 p-1 rounded-2xl flex text-xs font-bold w-full md:w-auto">
+                        <div className="bg-gray-100/80 dark:bg-white/10 p-1 rounded-2xl flex text-xs font-bold w-full md:w-auto">
                             {(['week', 'month', 'year', 'custom'] as TimeRange[]).map(r => (
                                 <button
                                     key={r}
@@ -1206,7 +1206,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                         setTimeRange(r);
                                         if (r === 'custom') setIsCustomDateModalOpen(true);
                                     }}
-                                    className={`flex-1 md:flex-none px-4 py-2.5 rounded-xl transition-all capitalize ${timeRange === r ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'}`}
+                                    className={`flex-1 md:flex-none px-4 py-2.5 rounded-xl transition-all capitalize ${timeRange === r ? 'bg-white dark:bg-card text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5'}`}
                                 >
                                     {r === 'custom' ? 'Custom' : `This ${r}`}
                                 </button>
@@ -1214,10 +1214,10 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
 
             {/* Main Content */}
-            <main className="flex-1 px-4 md:px-10 pt-8 pb-32 overflow-y-auto w-full scroll-smooth">
+            <main className="flex-1 pt-8 pb-32 overflow-y-auto w-full scroll-smooth px-4 sm:px-6 lg:px-0">
                 <div className="max-w-[1800px] mx-auto w-full">
                     {activeTab === 'business' && renderBusinessTab()}
                     {activeTab === 'staff' && renderStaffTab()}
@@ -1232,23 +1232,23 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300"
                         onClick={() => setSelectedClientEmail(null)}
                     />
-                    <div className="bg-white rounded-[32px] w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl relative z-10 animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 flex flex-col">
+                    <div className="bg-white dark:bg-card rounded-[32px] w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl relative z-10 animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 flex flex-col border border-gray-100 dark:border-white/10">
                         {/* Modal Header */}
-                        <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-20">
+                        <div className="p-8 border-b border-gray-100 dark:border-white/10 flex items-center justify-between bg-white dark:bg-card sticky top-0 z-20">
                             <div>
-                                <h3 className="text-2xl font-black text-gray-900">Client History</h3>
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white">Client History</h3>
                                 <p className="text-sm text-gray-400 font-bold uppercase tracking-widest mt-1">{selectedClientEmail}</p>
                             </div>
                             <button
                                 onClick={() => setSelectedClientEmail(null)}
-                                className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-400"
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors text-gray-400"
                             >
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
 
                         {/* History Timeline */}
-                        <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-gray-50/30">
+                        <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-gray-50/30 dark:bg-black/20">
                             {appointments
                                 .filter(a => a.clientEmail === selectedClientEmail)
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -1260,25 +1260,25 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                         <div key={apt.id} className="relative pl-8 group">
                                             {/* Vertical Line */}
                                             {idx !== appointments.filter(a => a.clientEmail === selectedClientEmail).length - 1 && (
-                                                <div className="absolute left-3.5 top-8 bottom-[-24px] w-0.5 bg-gray-100 group-hover:bg-primary-100 transition-colors" />
+                                                <div className="absolute left-3.5 top-8 bottom-[-24px] w-0.5 bg-gray-100 dark:bg-white/10 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/50 transition-colors" />
                                             )}
 
                                             {/* Dot */}
-                                            <div className="absolute left-0 top-1.5 w-7 h-7 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center z-10 group-hover:border-primary-500 transition-colors">
-                                                <div className="w-2 h-2 bg-gray-200 rounded-full group-hover:bg-primary-500 transition-colors" />
+                                            <div className="absolute left-0 top-1.5 w-7 h-7 bg-white dark:bg-card border-2 border-gray-200 dark:border-white/20 rounded-full flex items-center justify-center z-10 group-hover:border-primary-500 transition-colors">
+                                                <div className="w-2 h-2 bg-gray-200 dark:bg-white/20 rounded-full group-hover:bg-primary-500 transition-colors" />
                                             </div>
 
-                                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                                            <div className="bg-white dark:bg-card p-5 rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
                                                 <div className="flex justify-between items-start mb-3">
                                                     <div>
                                                         <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">
                                                             {format(new Date(apt.date), 'EEEE, MMMM d, yyyy')}
                                                         </div>
-                                                        <div className="text-lg font-bold text-gray-900">{service?.name || 'Unknown Service'}</div>
+                                                        <div className="text-lg font-bold text-gray-900 dark:text-white">{service?.name || 'Unknown Service'}</div>
                                                     </div>
-                                                    <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${apt.status === AppointmentStatus.COMPLETED ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                        apt.status === AppointmentStatus.CONFIRMED ? 'bg-primary-50 text-primary-600 border-primary-100' :
-                                                            'bg-gray-50 text-gray-400 border-gray-100'
+                                                    <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${apt.status === AppointmentStatus.COMPLETED ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20' :
+                                                        apt.status === AppointmentStatus.CONFIRMED ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-primary-100 dark:border-primary-500/20' :
+                                                            'bg-gray-50 dark:bg-white/5 text-gray-400 border-gray-100 dark:border-white/10'
                                                         }`}>
                                                         {apt.status}
                                                     </div>
@@ -1286,21 +1286,21 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="p-1.5 bg-gray-100 rounded-lg">
-                                                            <User className="w-3.5 h-3.5 text-gray-500" />
+                                                        <div className="p-1.5 bg-gray-100 dark:bg-white/10 rounded-lg">
+                                                            <User className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                                                         </div>
-                                                        <div className="text-xs font-bold text-gray-600">{staffMember?.name || 'Unassigned'}</div>
+                                                        <div className="text-xs font-bold text-gray-600 dark:text-gray-300">{staffMember?.name || 'Unassigned'}</div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <div className="p-1.5 bg-gray-100 rounded-lg">
-                                                            <DollarSign className="w-3.5 h-3.5 text-gray-500" />
+                                                        <div className="p-1.5 bg-gray-100 dark:bg-white/10 rounded-lg">
+                                                            <DollarSign className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                                                         </div>
-                                                        <div className="text-xs font-bold text-gray-600">${service?.price || 0}</div>
+                                                        <div className="text-xs font-bold text-gray-600 dark:text-gray-300">${service?.price || 0}</div>
                                                     </div>
                                                 </div>
 
                                                 {apt.notes && (
-                                                    <div className="mt-4 p-3 bg-primary-50/30 rounded-xl text-xs text-gray-500 italic border-l-2 border-primary-200">
+                                                    <div className="mt-4 p-3 bg-primary-50/30 dark:bg-primary-900/10 rounded-xl text-xs text-gray-500 dark:text-gray-400 italic border-l-2 border-primary-200 dark:border-primary-500/30">
                                                         "{apt.notes}"
                                                     </div>
                                                 )}
@@ -1311,10 +1311,10 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         </div>
 
                         {/* Summary Footer */}
-                        <div className="p-6 bg-white border-t border-gray-100 flex items-center justify-between">
+                        <div className="p-6 bg-white dark:bg-card border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
                             <button
                                 onClick={() => setSelectedClientEmail(null)}
-                                className="px-6 py-3 bg-gray-900 text-white rounded-2xl font-bold text-sm hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
+                                className="px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-black rounded-2xl font-bold text-sm hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-lg shadow-gray-200 dark:shadow-none"
                             >
                                 Close History
                             </button>
@@ -1330,9 +1330,9 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         className="absolute inset-0 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300"
                         onClick={() => setIsCustomDateModalOpen(false)}
                     />
-                    <div className="bg-white rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl relative z-10 animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 flex flex-col">
-                        <div className="p-8 border-b border-gray-100">
-                            <h3 className="text-2xl font-black text-gray-900">Custom Range</h3>
+                    <div className="bg-white dark:bg-card rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl relative z-10 animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 flex flex-col border border-gray-100 dark:border-white/10">
+                        <div className="p-8 border-b border-gray-100 dark:border-white/10">
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white">Custom Range</h3>
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Select your analysis window</p>
                         </div>
 
@@ -1345,7 +1345,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             type="date"
                                             value={customDateRange.start}
                                             onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
+                                            className="w-full px-4 py-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-900 dark:text-white focus:bg-white dark:focus:bg-black/40 focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
                                         />
                                     </div>
                                 </div>
@@ -1356,7 +1356,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             type="date"
                                             value={customDateRange.end}
                                             onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
+                                            className="w-full px-4 py-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-900 dark:text-white focus:bg-white dark:focus:bg-black/40 focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
                                         />
                                     </div>
                                 </div>
@@ -1364,13 +1364,13 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
 
                             <button
                                 onClick={() => setIsCustomDateModalOpen(false)}
-                                className="w-full py-4 bg-gray-900 text-white rounded-[20px] font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95"
+                                className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-black rounded-[20px] font-black text-xs uppercase tracking-widest hover:bg-black dark:hover:bg-gray-200 transition-all shadow-xl shadow-gray-200 dark:shadow-none active:scale-95"
                             >
                                 Apply Range
                             </button>
                             <button
                                 onClick={() => setIsCustomDateModalOpen(false)}
-                                className="w-full py-4 bg-transparent text-gray-400 font-black text-[10px] uppercase tracking-widest hover:text-gray-600 transition-colors"
+                                className="w-full py-4 bg-transparent text-gray-400 font-black text-[10px] uppercase tracking-widest hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                             >
                                 Cancel
                             </button>

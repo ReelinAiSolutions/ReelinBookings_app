@@ -1,6 +1,6 @@
-import React from 'react';
 import { Service } from '@/types';
 import { Clock, DollarSign, Edit2, Trash2, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image';
 
 interface ServiceCardProps {
     service: Service;
@@ -20,7 +20,7 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
     };
 
     return (
-        <div className="group relative bg-white rounded-[40px] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(168,85,247,0.15)] hover:-translate-y-2 hover:border-[#A855F7]/30">
+        <div className="group relative bg-white dark:bg-card rounded-[40px] border border-gray-100 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(168,85,247,0.15)] hover:-translate-y-2 hover:border-[#A855F7]/30">
             {/* Dark Premium Header */}
             <div className="h-24 relative overflow-hidden bg-gradient-to-br from-[#1a0b2e] to-[#2e1065]">
                 {/* Background Effects */}
@@ -45,12 +45,12 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
             <div className="absolute top-10 left-8 z-10">
                 <div className="relative">
                     <div className="absolute inset-0 bg-white/20 rounded-[2rem] blur-md transform group-hover:scale-110 transition-transform duration-500" />
-                    <div className="w-20 h-20 rounded-[2rem] border-4 border-white shadow-2xl overflow-hidden relative z-10 bg-white group-hover:scale-105 transition-transform duration-500">
+                    <div className="w-20 h-20 rounded-[2rem] border-4 border-white dark:border-white/10 shadow-2xl overflow-hidden relative z-10 bg-white dark:bg-black group-hover:scale-105 transition-transform duration-500">
                         {hasImage ? (
-                            <img src={service.imageUrl} alt={service.name} className="w-full h-full object-cover" />
+                            <Image src={service.imageUrl!} alt={service.name} width={80} height={80} className="w-full h-full object-cover" unoptimized />
                         ) : (
                             <div
-                                className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100"
+                                className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10"
                                 style={{
                                     /* Optional: Use category color for subtle tint */
                                     background: categoryColor ? `linear-gradient(135deg, ${hexToRgba(categoryColor, 0.1)}, ${hexToRgba(categoryColor, 0.05)})` : undefined
@@ -78,7 +78,7 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
                             {service.category}
                         </span>
                     )}
-                    <h3 className="text-2xl font-black text-gray-900 leading-tight tracking-tight group-hover:text-[#d946ef] transition-colors line-clamp-2">
+                    <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-tight tracking-tight group-hover:text-[#d946ef] transition-colors line-clamp-2">
                         {service.name}
                     </h3>
                 </div>
@@ -86,10 +86,10 @@ export default function ServiceCard({ service, onEdit, onDelete }: ServiceCardPr
                 {/* Price & Specs Row */}
                 <div className="flex items-center gap-4 mb-6">
                     <div className="flex items-center gap-1">
-                        <span className="text-3xl font-black text-gray-900 tracking-tighter">${service.price}</span>
+                        <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">${service.price}</span>
                     </div>
-                    <div className="h-8 w-px bg-gray-100"></div>
-                    <div className="flex items-center gap-2 text-gray-500">
+                    <div className="h-8 w-px bg-gray-100 dark:bg-white/10"></div>
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                         <Clock className="w-4 h-4 text-gray-300" />
                         <span className="text-xs font-bold uppercase tracking-wider">{service.durationMinutes}m</span>
                     </div>

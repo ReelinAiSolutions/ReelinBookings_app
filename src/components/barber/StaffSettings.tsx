@@ -1,141 +1,109 @@
 'use client';
-import { createClient } from '@/lib/supabase';
-
 import React, { useState, useEffect } from 'react';
-
-import { Button } from '@/components/ui/Button';
+import { createClient } from '@/lib/supabase';
 import {
-    User as UserIcon,
-    Camera,
-    Lock,
-    LogOut,
-    Mail,
-    ShieldCheck,
-    Bell,
-    ChevronRight,
-    Search,
-    UserCircle,
-    Phone,
-    Save,
-    Settings,
-    ChevronDown,
-    MapPin,
-    Globe
+    User, Mail, Camera, Lock, Bell, ChevronRight, Search, Phone, Save, Settings,
+    Shield, Smartphone, LogOut, Trash2, Plus, X, Briefcase, Clock, Building2, UserCircle
 } from 'lucide-react';
+import Image from 'next/image';
+import { Organization, Staff } from '@/types';
 import { useToast } from '@/context/ToastContext';
 import NotificationManager from '../admin/NotificationManager';
 
+const supabase = createClient();
+
 interface StaffSettingsProps {
     currentUser: any;
-    onUpdate?: () => void;
 }
-
-// Helper Interface for Accordion
-interface AccordionItemProps {
-    title: string;
-    subtitle: string;
-    icon: React.ElementType;
-    colorClass: string;
-    isOpen: boolean;
-    onToggle: () => void;
-    children: React.ReactNode;
-}
-
-const AccordionItem = ({ title, subtitle, icon: Icon, colorClass, isOpen, onToggle, children }: AccordionItemProps) => (
-    <div className={`bg-white rounded-[32px] shadow-sm border transition-all duration-300 overflow-hidden ${isOpen ? 'border-gray-200 ring-4 ring-gray-50' : 'border-gray-100'}`}>
-        <button
-            type="button"
-            onClick={onToggle}
-            className="w-full flex items-center justify-between p-8 text-left transition-colors hover:bg-gray-50/50"
-        >
-            <div className="flex items-center gap-4">
-                <div className={`p-3.5 rounded-2xl ${colorClass}`}>
-                    <Icon className="w-6 h-6" strokeWidth={2.5} />
-                </div>
-                <div>
-                    <h3 className="text-xl font-black text-gray-900 leading-tight">{title}</h3>
-                    <p className="text-sm text-gray-500 font-bold mt-0.5">{subtitle}</p>
-                </div>
-            </div>
-            <div className={`p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-gray-100 rotate-180' : 'bg-transparent'}`}>
-                <ChevronDown className="w-6 h-6 text-gray-400" />
-            </div>
-        </button>
-        <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="p-8 pt-0 border-t border-gray-100/50">
-                <div className="pt-8">
-                    {children}
-                </div>
-            </div>
-        </div>
-    </div>
-);
 
 export default function StaffSettings({ currentUser }: StaffSettingsProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [showChangePassword, setShowChangePassword] = useState(false);
     const [profileData, setProfileData] = useState<any>(null);
     const [openSection, setOpenSection] = useState<string | null>(null);
     const { toast } = useToast();
+    const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
 
     const [formData, setFormData] = useState({
         fullName: '',
-        password: '',
+        email: '',
+        phone: '',
+        role: '',
+        newPassword: '',
         confirmPassword: ''
     });
-
-    const supabase = createClient();
 
     useEffect(() => {
         const fetchProfile = async () => {
             if (!currentUser?.id) return;
-            const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
             if (data) {
                 setProfileData(data);
-                setFormData(prev => ({ ...prev, fullName: data.full_name || '' }));
+                setFormData(prev => ({
+                    ...prev,
+                    fullName: data.full_name || '',
+                    email: data.email || '',
+                    role: data.role || ''
+                }));
                 setPreviewUrl(data.avatar_url);
             }
         };
+
+        const fetchOrganization = async () => {
+            if (!currentUser?.organization_id) return;
+            const { data, error } = await supabase
+                .from('organizations')
+                .select('*')
+                .eq('id', currentUser.organization_id)
+                .single();
+            if (error) {
+                console.error('Error fetching organization:', error);
+            } else {
+                setCurrentOrg(data);
+            }
+        };
+
         fetchProfile();
+        fetchOrganization();
     }, [currentUser]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             setAvatarFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewUrl(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
-    const handleSignOut = async () => {
-        await supabase.auth.signOut();
-        window.location.href = '/login';
-    };
-
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSaveProfile = async () => {
         setIsLoading(true);
-
         try {
-            let avatarUrl = profileData?.avatar_url;
+            let avatarUrl = previewUrl;
 
             if (avatarFile) {
                 const fileExt = avatarFile.name.split('.').pop();
-                const fileName = `${currentUser.id}/avatar.${fileExt}`;
-
+                const fileName = `${currentUser.id}-${Math.random()}.${fileExt}`;
                 const { error: uploadError } = await supabase.storage
-                    .from('profile-assets')
-                    .upload(fileName, avatarFile, { upsert: true });
+                    .from('avatars')
+                    .upload(fileName, avatarFile);
 
                 if (uploadError) throw uploadError;
 
-                const { data: publicData } = supabase.storage
-                    .from('profile-assets')
+                const { data: { publicUrl } } = supabase.storage
+                    .from('avatars')
                     .getPublicUrl(fileName);
 
-                avatarUrl = publicData.publicUrl;
+                avatarUrl = publicUrl;
             }
 
             const { error: updateError } = await supabase
@@ -148,225 +116,188 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
 
             if (updateError) throw updateError;
 
-            if (showChangePassword && formData.password) {
-                if (formData.password !== formData.confirmPassword) {
-                    throw new Error("Passwords do not match");
+            if (formData.newPassword) {
+                if (formData.newPassword !== formData.confirmPassword) {
+                    throw new Error('Passwords do not match');
                 }
                 const { error: passwordError } = await supabase.auth.updateUser({
-                    password: formData.password
+                    password: formData.newPassword
                 });
                 if (passwordError) throw passwordError;
             }
 
-            toast('Profile updated successfully!', 'success');
-            setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
-            setShowChangePassword(false);
-
+            toast({
+                title: 'Success',
+                description: 'Profile updated successfully',
+                variant: 'default'
+            });
         } catch (error: any) {
-            console.error('Error updating profile:', error);
-            toast(error.message || 'Failed to update profile', 'error');
+            toast({
+                title: 'Error',
+                description: error.message,
+                variant: 'destructive'
+            });
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:px-0">
+        <div className="max-w-4xl mx-auto space-y-8 p-8">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-[32px] font-black text-gray-900 tracking-tight leading-none mb-2">Profile Settings</h1>
-                <p className="text-gray-500 font-medium">Manage your profile and account.</p>
+            <div>
+                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Staff Settings</h2>
+                <p className="text-gray-500 font-medium">Manage your profile, security, and notifications.</p>
             </div>
 
-
-            <form onSubmit={handleSave} className="space-y-4">
-
-                {/* Profile Information Accordion */}
-                <AccordionItem
-                    title="Public Profile"
-                    subtitle="Update your photo and personal details"
-                    icon={UserIcon}
-                    colorClass="bg-purple-50 text-purple-600"
-                    isOpen={openSection === 'profile'}
-                    onToggle={() => setOpenSection(openSection === 'profile' ? null : 'profile')}
-                >
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 space-y-8">
-                        {/* Avatar Upload */}
-                        <div className="flex items-center gap-8">
-                            <div className="relative group/avatar">
-                                <div className="absolute -inset-1 bg-gray-100 rounded-3xl blur group-hover/avatar:bg-gray-200 transition-colors"></div>
-                                <div className="relative w-32 h-32 bg-white rounded-3xl border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
-                                    {previewUrl ? (
-                                        <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <UserCircle className="w-16 h-16 text-gray-300" />
-                                    )}
-                                    <label className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all cursor-pointer backdrop-blur-sm">
-                                        <Camera className="w-6 h-6 text-white mb-1" />
-                                        <span className="text-[9px] font-black text-white uppercase tracking-widest">Change</span>
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                                    </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Left: Navigation */}
+                <div className="space-y-2">
+                    {[
+                        { id: 'profile', label: 'My Profile', icon: User, color: 'bg-blue-500' },
+                        { id: 'security', label: 'Security', icon: Shield, color: 'bg-indigo-500' },
+                        { id: 'notifications', label: 'Notifications', icon: Bell, color: 'bg-purple-500' },
+                        { id: 'organization', label: 'Workplace', icon: Building2, color: 'bg-amber-500' }
+                    ].map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setOpenSection(item.id)}
+                            className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${openSection === item.id
+                                    ? 'bg-white shadow-xl border-gray-100 ring-1 ring-black/5'
+                                    : 'hover:bg-white/50 text-gray-500'
+                                }`}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className={`p-2 rounded-xl text-white ${item.color} shadow-lg shadow-${item.color.split('-')[1]}-500/20`}>
+                                    <item.icon className="w-5 h-5" />
                                 </div>
+                                <span className="font-black uppercase tracking-widest text-xs">{item.label}</span>
                             </div>
-                            <div>
-                                <h4 className="text-lg font-black text-gray-900 mb-1">Make it yours</h4>
-                                <p className="text-sm text-gray-500 mb-4 max-w-md">Upload a clear photo to help clients identify you.</p>
-                                <div className="flex gap-3">
-                                    <label className="px-4 py-2 bg-gray-900 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-gray-800 cursor-pointer transition-colors shadow-lg shadow-gray-900/20">
-                                        Upload Photo
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
+                            <ChevronRight className={`w-4 h-4 transition-transform ${openSection === item.id ? 'rotate-90' : ''}`} />
+                        </button>
+                    ))}
+                </div>
 
-                        {/* Form Fields */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-900 uppercase tracking-wide ml-1">Full Name</label>
+                {/* Right: Content Area */}
+                <div className="md:col-span-2 space-y-6">
+                    {(!openSection || openSection === 'profile') && (
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Personal Profile</h3>
+
+                            <div className="flex flex-col items-center gap-6 mb-12">
                                 <div className="relative group">
+                                    <div className="absolute -inset-1 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[2.2rem] opacity-20 blur-sm group-hover:opacity-40 transition-opacity"></div>
+                                    {previewUrl ? (
+                                        <div className="relative w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-white shadow-xl">
+                                            <Image src={previewUrl} alt="Preview" width={128} height={128} className="w-full h-full object-cover" unoptimized />
+                                        </div>
+                                    ) : (
+                                        <div className="relative w-32 h-32 rounded-[2rem] bg-gray-50 flex items-center justify-center border-4 border-white shadow-lg">
+                                            <UserCircle className="w-12 h-12 text-gray-300" />
+                                        </div>
+                                    )}
+                                    <label className="absolute -bottom-2 -right-2 p-3 bg-primary-600 text-white rounded-2xl shadow-xl cursor-pointer hover:bg-primary-700 hover:scale-110 active:scale-95 transition-all outline-none border-4 border-white">
+                                        <Camera className="w-5 h-5" />
+                                        <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                                    </label>
+                                </div>
+                                <div className="text-center">
+                                    <h4 className="font-black text-gray-900 uppercase tracking-tight">{formData.fullName || 'No Name Set'}</h4>
+                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">{formData.role || 'Staff Member'}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Full Display Name</label>
                                     <input
                                         type="text"
                                         value={formData.fullName}
                                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                        className="w-full px-5 py-4 bg-white border-2 border-transparent rounded-2xl focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all font-bold text-gray-900 placeholder:text-gray-400 outline-none"
-                                        placeholder="e.g. John Doe"
+                                        className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-900"
+                                        placeholder="Enter your name"
                                     />
-                                    <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors pointer-events-none" />
                                 </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-900 uppercase tracking-wide ml-1">Email Address</label>
-                                <div className="relative opacity-60">
+                                <div>
+                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Email (Read-only)</label>
                                     <input
                                         type="email"
-                                        value={currentUser?.email || ''}
-                                        disabled
-                                        className="w-full px-5 py-4 bg-gray-100 border-2 border-transparent rounded-2xl font-bold text-gray-500 cursor-not-allowed"
+                                        value={formData.email}
+                                        readOnly
+                                        className="w-full px-6 py-4 bg-gray-100 border-2 border-transparent rounded-2xl outline-none font-bold text-gray-500 cursor-not-allowed"
                                     />
-                                    <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 </div>
                             </div>
                         </div>
+                    )}
 
-                        {/* Save Button for Profile */}
-                        <div className="flex justify-end pt-4">
-                            <Button
-                                type="submit"
-                                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-purple-900/10 transition-all active:scale-95"
-                                isLoading={isLoading}
-                            >
-                                Save Profile
-                            </Button>
-                        </div>
-                    </div>
-                </AccordionItem>
-
-
-                {/* Security Accordion */}
-                <AccordionItem
-                    title="Security & Privacy"
-                    subtitle="Manage your password and account access"
-                    icon={ShieldCheck}
-                    colorClass="bg-purple-50 text-purple-600"
-                    isOpen={openSection === 'security'}
-                    onToggle={() => setOpenSection(openSection === 'security' ? null : 'security')}
-                >
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 space-y-6">
-                        {!showChangePassword ? (
-                            <button
-                                type="button"
-                                onClick={() => setShowChangePassword(true)}
-                                className="w-full flex items-center justify-between p-6 bg-gray-50 hover:bg-white rounded-2xl border border-gray-100 transition-all group hover:shadow-md"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-purple-500 group-hover:bg-purple-50 transition-colors">
-                                        <Lock className="w-5 h-5" />
-                                    </div>
-                                    <div className="text-left">
-                                        <div className="font-black text-gray-900 text-sm">Change Password</div>
-                                        <div className="text-xs text-gray-500 font-medium mt-0.5">Update your login credentials</div>
-                                    </div>
+                    {openSection === 'security' && (
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Security & Password</h3>
+                            <div className="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">New Password</label>
+                                    <input
+                                        type="password"
+                                        value={formData.newPassword}
+                                        onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                                        className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-900"
+                                        placeholder="••••••••"
+                                    />
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-gray-300 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                        ) : (
-                            <div className="p-6 bg-gray-50/50 rounded-2xl border border-gray-100 space-y-4 animate-in fade-in slide-in-from-top-2">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">New Password</label>
-                                        <input
-                                            type="password"
-                                            value={formData.password}
-                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all font-bold outline-none"
-                                            placeholder="••••••••"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">Confirm</label>
-                                        <input
-                                            type="password"
-                                            value={formData.confirmPassword}
-                                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all font-bold outline-none"
-                                            placeholder="••••••••"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end gap-3 pt-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setShowChangePassword(false)}
-                                        className="text-xs font-bold uppercase tracking-wider"
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        size="sm"
-                                        className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold uppercase tracking-wider"
-                                        isLoading={isLoading}
-                                    >
-                                        Update Password
-                                    </Button>
+                                <div>
+                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        value={formData.confirmPassword}
+                                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                        className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-900"
+                                        placeholder="••••••••"
+                                    />
                                 </div>
                             </div>
-                        )}
-                    </div>
-                </AccordionItem>
-            </form>
+                        </div>
+                    )}
 
-            {/* Notifications Accordion */}
-            <AccordionItem
-                title="Notifications"
-                subtitle="Manage your alert preferences"
-                icon={Bell}
-                colorClass="bg-purple-50 text-purple-600"
-                isOpen={openSection === 'notifications'}
-                onToggle={() => setOpenSection(openSection === 'notifications' ? null : 'notifications')}
-            >
-                <NotificationManager />
-            </AccordionItem>
+                    {openSection === 'notifications' && (
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Notification Settings</h3>
+                            <NotificationManager orgId={currentUser?.organization_id} />
+                        </div>
+                    )}
 
-            {/* Sign Out Section - At Bottom */}
-            <div className="max-w-3xl pt-8 border-t border-gray-100">
-                <div className="bg-rose-50/50 rounded-2xl p-6 border border-rose-100 flex items-center justify-between">
-                    <div>
-                        <h4 className="text-sm font-black text-rose-900">Sign Out</h4>
-                        <p className="text-xs text-rose-500/80 font-medium mt-0.5">End your current session safely</p>
+                    {openSection === 'organization' && currentOrg && (
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Workplace</h3>
+                            <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                                {currentOrg.logo_url && (
+                                    <Image
+                                        src={currentOrg.logo_url}
+                                        alt="Company Logo"
+                                        width={80}
+                                        height={80}
+                                        className="w-20 h-20 object-contain rounded-2xl bg-white p-2 shadow-sm"
+                                        unoptimized
+                                    />
+                                )}
+                                <div>
+                                    <h4 className="text-lg font-black text-gray-900 uppercase tracking-tight">{currentOrg.name}</h4>
+                                    <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">{currentOrg.address || 'Global HQ'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Global Save Button */}
+                    <div className="pt-4">
+                        <Button
+                            onClick={handleSaveProfile}
+                            isLoading={isLoading}
+                            className="w-full py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-500/20"
+                        >
+                            Save All Changes
+                        </Button>
                     </div>
-                    <button
-                        type="button"
-                        onClick={handleSignOut}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-white text-rose-600 hover:bg-rose-50 border border-rose-100 hover:border-rose-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-md active:scale-95"
-                    >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                    </button>
                 </div>
             </div>
         </div>

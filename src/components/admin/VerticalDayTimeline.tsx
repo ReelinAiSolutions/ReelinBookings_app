@@ -142,7 +142,7 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                             const memberRule = availability.find(r => r.staffId === primaryStaff.id && r.dayOfWeek === todayDayOfWeek);
                             const showOffDuty = memberRule && !memberRule.isWorking;
 
-                            const staffColors = ['#4F46E5', '#10B981', '#7C3AED', '#F59E0B', '#EF4444'];
+                            const staffColors = ['var(--primary-600)', '#10B981', '#7C3AED', '#F59E0B', '#EF4444'];
                             const staffColor = staffColors[idx % staffColors.length];
 
                             return (
@@ -169,8 +169,8 @@ export default function VerticalDayTimeline({ appointments, staff, services, ava
                                         {/* Current Time Pulse (Refined) */}
                                         {currentTimeTopPx !== -1 && (
                                             <div className="absolute w-full flex items-center z-[60] pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                                <div className="w-3.5 h-3.5 bg-[#4F46E5] rounded-full -ml-1.75 shadow-lg live-pulse border-2 border-white"></div>
-                                                <div className="h-0.5 bg-[#4F46E5]/40 w-full"></div>
+                                                <div className="w-3.5 h-3.5 bg-primary-600 rounded-full -ml-1.75 shadow-lg live-pulse border-2 border-white"></div>
+                                                <div className="h-0.5 bg-primary-600/40 w-full"></div>
                                             </div>
                                         )}
 

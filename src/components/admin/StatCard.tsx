@@ -20,8 +20,8 @@ const colorMap = {
         fallback: 'bg-[#22c55e]'
     },
     blue: {
-        gradientStyle: { background: 'linear-gradient(135deg, #2D165D 0%, #7C3AED 100%)' },
-        glowVal: '45, 22, 93', // #2D165D
+        gradientStyle: { background: 'linear-gradient(135deg, #a855f7 0%, #7C3AED 100%)' },
+        glowVal: '168, 85, 247', // #a855f7
         fallback: 'bg-primary-600'
     },
     purple: {

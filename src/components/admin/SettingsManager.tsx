@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { useToast } from '@/context/ToastContext';
 import { Organization } from '@/types';
 import NotificationManager from './NotificationManager';
+import Image from 'next/image';
 
 interface SettingsManagerProps {
     org: Organization;
@@ -26,27 +27,27 @@ interface AccordionItemProps {
 }
 
 const AccordionItem = ({ title, subtitle, icon: Icon, colorClass, isOpen, onToggle, children }: AccordionItemProps) => (
-    <div className={`bg-white rounded-[32px] shadow-sm border transition-all duration-300 overflow-hidden ${isOpen ? 'border-gray-200 ring-4 ring-gray-50' : 'border-gray-100'}`}>
+    <div className={`bg-white dark:bg-card rounded-[32px] shadow-sm border transition-all duration-300 overflow-hidden ${isOpen ? 'border-gray-200 dark:border-white/10 ring-4 ring-gray-50 dark:ring-white/5' : 'border-gray-100 dark:border-white/5'}`}>
         <button
             type="button"
             onClick={onToggle}
-            className="w-full flex items-center justify-between p-8 text-left transition-colors hover:bg-gray-50/50"
+            className="w-full flex items-center justify-between p-8 text-left transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
         >
             <div className="flex items-center gap-4">
                 <div className={`p-3.5 rounded-2xl ${colorClass}`}>
                     <Icon className="w-6 h-6" strokeWidth={2.5} />
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-gray-900 leading-tight">{title}</h3>
-                    <p className="text-sm text-gray-500 font-bold mt-0.5">{subtitle}</p>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white leading-tight">{title}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-bold mt-0.5">{subtitle}</p>
                 </div>
             </div>
-            <div className={`p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-gray-100 rotate-180' : 'bg-transparent'}`}>
+            <div className={`p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-gray-100 dark:bg-white/10 rotate-180' : 'bg-transparent'}`}>
                 <ChevronDown className="w-6 h-6 text-gray-400" />
             </div>
         </button>
         <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="p-8 pt-0 border-t border-gray-100/50">
+            <div className="p-8 pt-0 border-t border-gray-100/50 dark:border-white/5">
                 <div className="pt-8">
                     {children}
                 </div>
@@ -92,6 +93,12 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
         notify_all_bookings: org.settings?.notifications?.all_bookings || false
     });
 
+    const [legalSettings, setLegalSettings] = useState({
+        cancellation_policy: org.settings?.policies?.cancellation_policy || '',
+        terms_url: org.terms_url || '',
+        policy_url: org.policy_url || ''
+    });
+
     const [calendarColor, setCalendarColor] = useState<'staff' | 'service'>(org.settings?.color_mode || 'staff');
 
     const supabase = createClient();
@@ -118,6 +125,11 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 sunday: { open: '10:00', close: '16:00', isOpen: false }
             },
             notify_all_bookings: org.settings?.notifications?.all_bookings || false
+        });
+        setLegalSettings({
+            cancellation_policy: org.settings?.policies?.cancellation_policy || '',
+            terms_url: org.terms_url || '',
+            policy_url: org.policy_url || ''
         });
         setCalendarColor(org.settings?.color_mode || 'staff');
         setPreviewUrl(org.logo_url || null);
@@ -175,11 +187,16 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                     settings: {
                         ...org.settings,
                         color_mode: calendarColor,
+                        policies: {
+                            cancellation_policy: legalSettings.cancellation_policy
+                        },
                         notifications: {
                             ...org.settings?.notifications,
                             all_bookings: bookingSettings.notify_all_bookings
                         }
-                    }
+                    },
+                    terms_url: legalSettings.terms_url,
+                    policy_url: legalSettings.policy_url
                 })
                 .eq('id', org.id)
                 .select()
@@ -204,10 +221,10 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pt-8 px-4 lg:px-0 lg:pt-0">
             <header className="mb-8">
-                <h1 className="text-[32px] font-black text-gray-900 tracking-tight leading-none mb-2">Settings</h1>
-                <p className="text-gray-500 font-medium">Manage your brand, business details, and preferences</p>
+                <h1 className="text-[32px] font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">Settings</h1>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">Manage your brand, business details, and preferences</p>
             </header>
 
 
@@ -222,7 +239,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                     isOpen={openSection === 'link'}
                     onToggle={() => toggleSection('link')}
                 >
-                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                    <div className="bg-gray-50 dark:bg-white/5 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
                         <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Your Public Booking URL</label>
                         <div className="flex items-center gap-3">
                             <div className="flex-1 relative group">
@@ -233,7 +250,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     type="text"
                                     readOnly
                                     value={`${typeof window !== 'undefined' ? window.location.origin : ''}/${org.slug}`}
-                                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20"
+                                    className="w-full pl-12 pr-4 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl font-bold text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20"
                                 />
                             </div>
                             <Button
@@ -276,7 +293,14 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                             <div className="flex items-center gap-5">
                                 <div className="w-28 h-28 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden relative group">
                                     {previewUrl ? (
-                                        <img src={previewUrl} alt="Logo" className="w-full h-full object-contain p-3" />
+                                        <Image
+                                            src={previewUrl}
+                                            alt="Business Logo"
+                                            width={112}
+                                            height={112}
+                                            className="w-full h-full object-contain p-3"
+                                            unoptimized
+                                        />
                                     ) : (
                                         <Building2 className="w-8 h-8 text-gray-300" />
                                     )}
@@ -306,11 +330,30 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                         type="text"
                                         value={formData.primary_color}
                                         onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                                        className="block w-full px-5 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] text-base uppercase font-bold text-gray-900 transition-all duration-200"
+                                        className="block w-full px-5 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] text-base uppercase font-bold text-gray-900 dark:text-white transition-all duration-200"
                                     />
                                     <p className="mt-2.5 text-xs text-gray-400 font-medium">Used for buttons, highlights, and accents</p>
                                 </div>
                             </div>
+                        </div>
+                        <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-5 h-5" />
+                                        Save Changes
+                                    </>
+                                )}
+                            </Button>
                         </div>
                     </div>
                 </AccordionItem>
@@ -336,7 +379,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 placeholder:text-gray-300 text-lg"
+                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300 text-lg"
                                     placeholder="Your Business Name"
                                 />
                             </div>
@@ -353,7 +396,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full pl-14 pr-5 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 placeholder:text-gray-300"
+                                        className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
                                         placeholder="(555) 123-4567"
                                     />
                                 </div>
@@ -369,7 +412,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full pl-14 pr-5 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 placeholder:text-gray-300"
+                                        className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
                                         placeholder="contact@business.com"
                                     />
                                 </div>
@@ -386,7 +429,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     type="text"
                                     value={formData.address}
                                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 placeholder:text-gray-300"
+                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
                                     placeholder="123 Main St, City, State 12345"
                                 />
                             </div>
@@ -402,10 +445,29 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     type="url"
                                     value={formData.website}
                                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 placeholder:text-gray-300"
+                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
                                     placeholder="https://yourbusiness.com"
                                 />
                             </div>
+                        </div>
+                        <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-5 h-5" />
+                                        Save Changes
+                                    </>
+                                )}
+                            </Button>
                         </div>
                     </div>
                 </AccordionItem>
@@ -429,7 +491,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                 <select
                                     value={bookingSettings.slot_interval}
                                     onChange={(e) => setBookingSettings({ ...bookingSettings, slot_interval: parseInt(e.target.value) })}
-                                    className="block w-full pl-14 pr-10 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 appearance-none text-base cursor-pointer hover:bg-gray-100"
+                                    className="block w-full pl-14 pr-10 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white appearance-none text-base cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10"
                                 >
                                     <option value={15}>Every 15 Minutes</option>
                                     <option value={30}>Every 30 Minutes</option>
@@ -448,7 +510,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                 {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
                                     const daySettings = getDaySettings(day);
                                     return (
-                                        <div key={day} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-200 border-2 ${daySettings.isOpen ? 'bg-white border-[#A855F7]/20 hover:border-[#d946ef]/50 shadow-sm' : 'bg-gray-50 border-transparent opacity-80'}`}>
+                                        <div key={day} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-200 border-2 ${daySettings.isOpen ? 'bg-white dark:bg-white/5 border-[#A855F7]/20 hover:border-[#d946ef]/50 shadow-sm' : 'bg-gray-50 dark:bg-white/5 border-transparent opacity-80'}`}>
                                             <div className="flex items-center gap-4">
                                                 <input
                                                     type="checkbox"
@@ -460,7 +522,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                                     }}
                                                     className="w-5 h-5 text-[#d946ef] focus:ring-[#d946ef] border-gray-300 rounded-lg cursor-pointer transition-all"
                                                 />
-                                                <span className={`text-sm font-bold capitalize w-24 ${daySettings.isOpen ? 'text-gray-900' : 'text-gray-400'}`}>{day}</span>
+                                                <span className={`text-sm font-bold capitalize w-24 ${daySettings.isOpen ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>{day}</span>
                                             </div>
 
                                             {daySettings.isOpen ? (
@@ -473,7 +535,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                                             newHours[day] = { ...daySettings, open: e.target.value };
                                                             setBookingSettings({ ...bookingSettings, business_hours: newHours });
                                                         }}
-                                                        className="block w-28 px-3 py-2 bg-gray-50 border border-transparent rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[#d946ef] focus:bg-white focus:border-[#d946ef] transition-all text-center"
+                                                        className="block w-28 px-3 py-2 bg-gray-50 dark:bg-black border border-transparent dark:border-white/10 rounded-xl text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-[#d946ef] focus:bg-white dark:focus:bg-black focus:border-[#d946ef] transition-all text-center"
                                                     />
                                                     <span className="text-gray-300 font-black text-xs">-</span>
                                                     <input
@@ -484,7 +546,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                                             newHours[day] = { ...daySettings, close: e.target.value };
                                                             setBookingSettings({ ...bookingSettings, business_hours: newHours });
                                                         }}
-                                                        className="block w-28 px-3 py-2 bg-gray-50 border border-transparent rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[#d946ef] focus:bg-white focus:border-[#d946ef] transition-all text-center"
+                                                        className="block w-28 px-3 py-2 bg-gray-50 dark:bg-black border border-transparent dark:border-white/10 rounded-xl text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-[#d946ef] focus:bg-white dark:focus:bg-black focus:border-[#d946ef] transition-all text-center"
                                                     />
                                                 </div>
                                             ) : (
@@ -497,6 +559,25 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                 })}
                             </div>
                         </div>
+                    </div>
+                    <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
+                        <Button
+                            type="submit"
+                            disabled={isLoading}
+                            className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-5 h-5" />
+                                    Save Changes
+                                </>
+                            )}
+                        </Button>
                     </div>
                 </AccordionItem>
 
@@ -518,7 +599,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     type="number"
                                     min={0}
                                     defaultValue={4}
-                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 text-lg"
+                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white text-lg"
                                 />
                                 <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">Hours</span>
                             </div>
@@ -533,7 +614,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     type="number"
                                     min={1}
                                     defaultValue={60}
-                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 text-lg"
+                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white text-lg"
                                 />
                                 <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">Days</span>
                             </div>
@@ -549,11 +630,30 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                     min={0}
                                     step={5}
                                     defaultValue={0}
-                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 border-2 border-transparent rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 text-lg"
+                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white text-lg"
                                 />
                                 <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">Mins</span>
                             </div>
                             <p className="mt-2 text-xs text-gray-400 font-medium">Gap after every appointment.</p>
+                        </div>
+                        <div className="col-span-1 md:col-span-3 flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-5 h-5" />
+                                        Save Changes
+                                    </>
+                                )}
+                            </Button>
                         </div>
                     </div>
                 </AccordionItem>
@@ -567,14 +667,64 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                     isOpen={openSection === 'policies'}
                     onToggle={() => toggleSection('policies')}
                 >
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         <div>
                             <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Cancellation Policy</label>
-                            <textarea
-                                rows={4}
-                                placeholder="e.g. Please provide at least 24 hours notice for cancellations to avoid being charged a fee."
-                                className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-[24px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 placeholder:text-gray-400 min-h-[120px]"
-                            />
+                            <div className="relative group">
+                                <textarea
+                                    rows={6}
+                                    value={legalSettings.cancellation_policy}
+                                    onChange={(e) => setLegalSettings({ ...legalSettings, cancellation_policy: e.target.value })}
+                                    className="w-full p-5 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300 min-h-[160px] resize-y"
+                                    placeholder="e.g. Please provide at least 24 hours notice for cancellations to avoid being charged a fee. Late cancellations will result in a 50% charge of the scheduled service."
+                                />
+                                <div className="absolute bottom-4 right-4 pointer-events-none">
+                                    <ShieldAlert className="w-5 h-5 text-gray-300 dark:text-gray-600" />
+                                </div>
+                            </div>
+                            <p className="mt-2 text-xs text-gray-400 font-medium ml-2">Displayed to clients before they confirm their booking.</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            <div>
+                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Terms of Service URL</label>
+                                <input
+                                    type="url"
+                                    value={legalSettings.terms_url}
+                                    onChange={(e) => setLegalSettings({ ...legalSettings, terms_url: e.target.value })}
+                                    className="w-full pl-5 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                    placeholder="https://..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Privacy Policy URL</label>
+                                <input
+                                    type="url"
+                                    value={legalSettings.policy_url}
+                                    onChange={(e) => setLegalSettings({ ...legalSettings, policy_url: e.target.value })}
+                                    className="w-full pl-5 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                    placeholder="https://..."
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-5 h-5" />
+                                        Save Changes
+                                    </>
+                                )}
+                            </Button>
                         </div>
                     </div>
                 </AccordionItem>
@@ -593,13 +743,13 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                             type="button"
                             onClick={() => setCalendarColor('staff')}
                             className={`group p-6 rounded-[24px] border-2 text-left transition-all duration-300 relative overflow-hidden ${calendarColor === 'staff'
-                                ? 'border-[#d946ef] bg-[#F3E8FF]/50 shadow-lg shadow-[#d946ef]/10'
-                                : 'border-gray-100 bg-gray-50 hover:bg-white hover:border-gray-300 hover:shadow-md'
+                                ? 'border-[#d946ef] bg-[#F3E8FF]/50 dark:bg-[#d946ef]/10 shadow-lg shadow-[#d946ef]/10'
+                                : 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-gray-300 hover:shadow-md'
                                 }`}
                         >
                             <div className="relative z-10 flex items-start justify-between">
                                 <div>
-                                    <div className={`font-black text-base mb-1 ${calendarColor === 'staff' ? 'text-[#A855F7]' : 'text-gray-900'}`}>
+                                    <div className={`font-black text-base mb-1 ${calendarColor === 'staff' ? 'text-[#A855F7]' : 'text-gray-900 dark:text-white'}`}>
                                         By Staff Member
                                     </div>
                                     <div className={`text-xs font-medium ${calendarColor === 'staff' ? 'text-[#d946ef]' : 'text-gray-500'}`}>
@@ -618,13 +768,13 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                             type="button"
                             onClick={() => setCalendarColor('service')}
                             className={`group p-6 rounded-[24px] border-2 text-left transition-all duration-300 relative overflow-hidden ${calendarColor === 'service'
-                                ? 'border-[#d946ef] bg-[#F3E8FF]/50 shadow-lg shadow-[#d946ef]/10'
-                                : 'border-gray-100 bg-gray-50 hover:bg-white hover:border-gray-300 hover:shadow-md'
+                                ? 'border-[#d946ef] bg-[#F3E8FF]/50 dark:bg-[#d946ef]/10 shadow-lg shadow-[#d946ef]/10'
+                                : 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-gray-300 hover:shadow-md'
                                 }`}
                         >
                             <div className="relative z-10 flex items-start justify-between">
                                 <div>
-                                    <div className={`font-black text-base mb-1 ${calendarColor === 'service' ? 'text-[#A855F7]' : 'text-gray-900'}`}>
+                                    <div className={`font-black text-base mb-1 ${calendarColor === 'service' ? 'text-[#A855F7]' : 'text-gray-900 dark:text-white'}`}>
                                         By Service Type
                                     </div>
                                     <div className={`text-xs font-medium ${calendarColor === 'service' ? 'text-[#d946ef]' : 'text-gray-500'}`}>
@@ -639,10 +789,29 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                             </div>
                         </button>
                     </div>
+                    <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
+                        <Button
+                            type="submit"
+                            disabled={isLoading}
+                            className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-5 h-5" />
+                                    Save Changes
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </AccordionItem>
 
             </form>
 
-        </div>
+        </div >
     );
 }

@@ -114,11 +114,11 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
     };
 
     return (
-        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header & Controls */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">
+                    <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
                         Service Menu
                     </h2>
                     <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
@@ -135,7 +135,7 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20 focus:border-[#d946ef] transition-all"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20 focus:border-[#d946ef] transition-all bg-white dark:bg-white/5 dark:text-white"
                         />
                     </div>
 
@@ -150,14 +150,14 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
             </div>
 
             {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4 bg-gray-100/80 p-3 rounded-[24px] border border-transparent">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 bg-gray-100/80 dark:bg-white/5 p-3 rounded-[24px] border border-transparent">
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 px-1">
                     {categories.map((category) => <button
                         key={category}
                         onClick={() => setSelectedCategory(category || 'All')}
                         className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${selectedCategory === category
-                            ? 'bg-[#F3E8FF] text-[#A855F7] border-[#A855F7]/20'
-                            : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                            ? 'bg-[#F3E8FF] dark:bg-primary-900/20 text-[#A855F7] dark:text-primary-400 border-[#A855F7]/20 dark:border-primary-500/20'
+                            : 'bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10'
                             }`}
                     >
                         {category}
@@ -165,16 +165,16 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                     )}
                 </div>
 
-                <div className="flex gap-1 bg-gray-200/50 p-1 rounded-xl">
+                <div className="flex gap-1 bg-gray-200/50 dark:bg-white/10 p-1 rounded-xl">
                     <button
                         onClick={() => setViewMode('grid')}
-                        className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-black text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
                     >
                         <Grid className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => setViewMode('list')}
-                        className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-black text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
                     >
                         <List className="w-4 h-4" />
                     </button>

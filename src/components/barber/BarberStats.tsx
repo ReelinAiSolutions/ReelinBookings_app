@@ -460,7 +460,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                 {/* Insight Banner */}
                 {/* Insight Banner - Galaxy Theme */}
                 <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
-                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,#2D165D,transparent)]" />
+                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,var(--primary-600),transparent)]" />
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
                     <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
                         <Sparkles className="w-4 h-4 text-accent-400 fill-accent-400" />
@@ -716,7 +716,7 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
             </header>
 
             {/* Main Content Area */}
-            <div className="px-4 lg:px-2 w-full">
+            <div className="px-4 lg:px-0 w-full">
                 {activeTab === 'my_stats' && renderMyStats()}
                 {activeTab === 'clients' && renderClients()}
             </div>

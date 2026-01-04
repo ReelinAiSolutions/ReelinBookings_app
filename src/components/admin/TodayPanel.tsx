@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Appointment, Service, Organization } from '@/types';
-import { Clock, Mail, Info, User as UserIcon, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { Clock, Mail, Info, User, Calendar, MessageSquare, Phone, ChevronRight, Filter, LayoutGrid, List } from 'lucide-react';
+import { format, isSameDay } from 'date-fns';
+import Image from 'next/image';
 import VerticalDayTimeline from './VerticalDayTimeline';
 
 interface TodayPanelProps {
@@ -161,10 +162,10 @@ export default function TodayPanel({ appointments, staff, services, availability
 
                                                 // Dynamic Colors (Match Weekly - REFINED PURPLE)
                                                 const colors = [
-                                                    { bg: 'bg-[#F5F3FF]', border: 'border-[#2D165D]', text: 'text-[#2D165D]', sub: 'text-[#2D165D]/70' },
+                                                    { bg: 'bg-primary-50', border: 'border-primary-600', text: 'text-primary-600', sub: 'text-primary-600/70' },
                                                     { bg: 'bg-[#FDF4FF]', border: 'border-[#7C3AED]', text: 'text-[#7C3AED]', sub: 'text-[#7C3AED]/70' },
                                                     { bg: 'bg-[#F8F6FF]', border: 'border-[#6D28D9]', text: 'text-[#6D28D9]', sub: 'text-[#6D28D9]/70' },
-                                                    { bg: 'bg-[#F5F3FF]', border: 'border-[#5B21B6]', text: 'text-[#5B21B6]', sub: 'text-[#5B21B6]/70' },
+                                                    { bg: 'bg-primary-50', border: 'border-primary-700', text: 'text-primary-700', sub: 'text-primary-700/70' },
                                                     { bg: 'bg-[#FAF5FF]', border: 'border-[#8B5CF6]', text: 'text-[#8B5CF6]', sub: 'text-[#8B5CF6]/70' },
                                                 ];
                                                 const staffIndex = apt.staffId ? apt.staffId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length : 0;

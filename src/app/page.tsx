@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase';
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
-import { ArrowRight, Calendar, Shield, Zap } from 'lucide-react';
+import { Calendar, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function LandingPage() {
@@ -43,7 +44,7 @@ export default function LandingPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <img src="/icon-180.png" alt="Reelin Bookings" className="w-20 h-20 animate-pulse" />
+          <Image src="/icon-180.png" alt="Reelin Bookings" width={80} height={80} className="animate-pulse" />
           <h2 className="text-xl font-bold text-gray-900">Reelin Bookings</h2>
           <div className="flex gap-1">
             <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -131,7 +132,7 @@ export default function LandingPage() {
           <h2 className="text-base font-semibold leading-7 text-primary-600">Core Capabilities</h2>
           <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Everything you need to run your shop</p>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            Streamline your view of the day, manage your team, and give your clients a booking experience they'll actually enjoy.
+            Streamline your view of the day, manage your team, and give your clients a booking experience they&apos;ll actually enjoy.
           </p>
         </div>
         <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">

@@ -72,7 +72,7 @@ export default function DesignPreviewPage() {
                     // DESKTOP MONITOR FRAME
                     <div className="relative scale-[0.45] md:scale-[0.65] lg:scale-[0.85] transition-transform duration-300 origin-center">
                         <div className="absolute -top-16 left-0 w-full text-center text-sm font-bold text-gray-500 uppercase tracking-widest">
-                            27" 5K Retina Display
+                            27&quot; 5K Retina Display
                         </div>
                         {/* Monitor Bezel */}
                         <div className="w-[1280px] h-[720px] bg-[#111] rounded-2xl p-4 shadow-2xl border border-[#333] relative">

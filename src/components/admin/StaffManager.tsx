@@ -47,7 +47,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         );
     }, [staff, searchQuery]);
 
-    const handleSave = async (data: Partial<Staff>, avatarFile: File | null) => {
+    const handleSave = async (data: Partial<Staff>, avatarFile?: File | null) => {
         if (readOnly) return;
         try {
             if (!data.name?.trim()) {
@@ -192,11 +192,11 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     };
 
     return (
-        <div className="flex flex-col h-full space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col h-full space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">
+                    <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
                         {readOnly ? 'Meet The Team' : 'Team Roster'}
                     </h1>
                 </div>
@@ -211,24 +211,24 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search team..."
-                            className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-[24px] text-sm font-bold focus:bg-white focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all outline-none shadow-sm"
+                            className="w-full pl-14 pr-6 py-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[24px] text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all outline-none shadow-sm dark:text-white"
                         />
                     </div>
 
                     <div className="flex items-center gap-3">
                         {/* View Toggle */}
-                        <div className="hidden lg:flex bg-gray-50 p-1.5 rounded-[24px] border border-gray-100 shadow-sm flex-1 sm:flex-none">
+                        <div className="hidden lg:flex bg-gray-50 dark:bg-white/5 p-1.5 rounded-[24px] border border-gray-100 dark:border-white/10 shadow-sm flex-1 sm:flex-none">
                             <button
                                 onClick={() => setViewMode('grid')}
                                 title="Grid View"
-                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'grid' ? 'bg-[#F3E8FF] text-[#A855F7] shadow-md ring-1 ring-[#A855F7]/10' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'grid' ? 'bg-[#F3E8FF] dark:bg-primary-900/20 text-[#A855F7] dark:text-primary-400 shadow-md ring-1 ring-[#A855F7]/10 dark:ring-primary-500/20' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                             >
                                 <Grid className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
                                 title="List View"
-                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'list' ? 'bg-[#F3E8FF] text-[#A855F7] shadow-md ring-1 ring-[#A855F7]/10' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'list' ? 'bg-[#F3E8FF] dark:bg-primary-900/20 text-[#A855F7] dark:text-primary-400 shadow-md ring-1 ring-[#A855F7]/10 dark:ring-primary-500/20' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                             >
                                 <List className="w-4 h-4" />
                             </button>

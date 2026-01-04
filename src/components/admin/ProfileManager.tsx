@@ -5,8 +5,9 @@ import React, { useState, useEffect } from 'react';
 
 import NotificationManager from './NotificationManager';
 import { Button } from '@/components/ui/Button';
-import { User, Camera, Save, Lock, User as UserIcon, Building2, LogOut, Mail, ShieldCheck, Settings as SettingsIcon, Key, ChevronDown } from 'lucide-react';
+import { User, Camera, Save, Lock, User as UserIcon, Building2, LogOut, Mail, ShieldCheck, Settings as SettingsIcon, Key, ChevronDown, Palette, Moon, Sun } from 'lucide-react';
 import { Organization } from '@/types';
+import Image from 'next/image';
 
 interface ProfileManagerProps {
     user: any;
@@ -26,27 +27,27 @@ interface AccordionItemProps {
 }
 
 const AccordionItem = ({ title, subtitle, icon: Icon, colorClass, isOpen, onToggle, children }: AccordionItemProps) => (
-    <div className={`bg-white rounded-[32px] shadow-sm border transition-all duration-300 overflow-hidden ${isOpen ? 'border-gray-200 ring-4 ring-gray-50' : 'border-gray-100'}`}>
+    <div className={`bg-white dark:bg-card rounded-[32px] shadow-sm border transition-all duration-300 overflow-hidden ${isOpen ? 'border-gray-200 dark:border-white/10 ring-4 ring-gray-50 dark:ring-white/5' : 'border-gray-100 dark:border-white/5'}`}>
         <button
             type="button"
             onClick={onToggle}
-            className="w-full flex items-center justify-between p-8 text-left transition-colors hover:bg-gray-50/50"
+            className="w-full flex items-center justify-between p-8 text-left transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
         >
             <div className="flex items-center gap-4">
                 <div className={`p-3.5 rounded-2xl ${colorClass}`}>
                     <Icon className="w-6 h-6" strokeWidth={2.5} />
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-gray-900 leading-tight">{title}</h3>
-                    <p className="text-sm text-gray-500 font-bold mt-0.5">{subtitle}</p>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white leading-tight">{title}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-bold mt-0.5">{subtitle}</p>
                 </div>
             </div>
-            <div className={`p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-gray-100 rotate-180' : 'bg-transparent'}`}>
+            <div className={`p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-gray-100 dark:bg-white/10 rotate-180' : 'bg-transparent'}`}>
                 <ChevronDown className="w-6 h-6 text-gray-400" />
             </div>
         </button>
         <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="p-8 pt-0 border-t border-gray-100/50">
+            <div className="p-8 pt-0 border-t border-gray-100/50 dark:border-white/5">
                 <div className="pt-8">
                     {children}
                 </div>
@@ -61,6 +62,28 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
     const [previewUrl, setPreviewUrl] = useState<string | null>(profile?.avatar_url || null);
     const [showChangePassword, setShowChangePassword] = useState(false);
     const [openSection, setOpenSection] = useState<string>('profile');
+    const [isDark, setIsDark] = useState(false);
+
+    useEffect(() => {
+        // Check local storage or system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setIsDark(true);
+            document.documentElement.classList.add('dark');
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        if (isDark) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            setIsDark(false);
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            setIsDark(true);
+        }
+    };
 
     const toggleSection = (id: string) => {
         setOpenSection(openSection === id ? '' : id);
@@ -155,11 +178,11 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
     };
 
     return (
-        <div className="space-y-8 pb-24 animate-in fade-in duration-500">
+        <div className="space-y-8 pb-24 animate-in fade-in duration-500 pt-8 px-4 lg:px-0 lg:pt-0">
             {/* Standard Header */}
             <header className="mb-8">
-                <h1 className="text-[32px] font-black text-gray-900 tracking-tight leading-none mb-2">Profile Settings</h1>
-                <p className="text-gray-500 font-medium">Manage your personal information and security details.</p>
+                <h1 className="text-[32px] font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">Profile Settings</h1>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">Manage your personal information and security details.</p>
             </header>
 
             <form onSubmit={handleSave} className="space-y-4">
@@ -175,13 +198,13 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                 >
                     <div className="space-y-8">
                         {/* Avatar Uploader - Refined for Accordion */}
-                        <div className="flex flex-col md:flex-row items-center gap-8 p-6 bg-gray-50 rounded-[24px] border border-gray-100">
+                        <div className="flex flex-col md:flex-row items-center gap-8 p-6 bg-gray-50 dark:bg-white/5 rounded-[24px] border border-gray-100 dark:border-white/5">
                             <div className="relative group/avatar shrink-0">
-                                <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden relative z-10 bg-white">
+                                <div className="w-24 h-24 rounded-full border-4 border-white dark:border-white/10 shadow-lg overflow-hidden relative z-10 bg-white dark:bg-card">
                                     {previewUrl ? (
-                                        <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                        <Image src={previewUrl} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" unoptimized />
                                     ) : (
-                                        <div className="w-full h-full bg-blue-50 flex items-center justify-center text-blue-300">
+                                        <div className="w-full h-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-300 dark:text-blue-500">
                                             <UserIcon className="w-10 h-10" />
                                         </div>
                                     )}
@@ -192,8 +215,8 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                                 </label>
                             </div>
                             <div className="text-center md:text-left">
-                                <h4 className="font-black text-gray-900 text-lg">Profile Photo</h4>
-                                <p className="text-sm text-gray-500 font-medium">This will be displayed on your account.</p>
+                                <h4 className="font-black text-gray-900 dark:text-white text-lg">Profile Photo</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">This will be displayed on your account.</p>
                             </div>
                         </div>
 
@@ -208,7 +231,7 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                                         type="text"
                                         value={formData.fullName}
                                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                        className="block w-full pl-11 pr-4 py-4 bg-gray-50/50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                        className="block w-full pl-11 pr-4 py-4 bg-gray-50/50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-400"
                                         placeholder="Admin Name"
                                     />
                                 </div>
@@ -223,7 +246,7 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                                         type="email"
                                         value={formData.email}
                                         disabled
-                                        className="block w-full pl-11 pr-4 py-4 bg-gray-100 border-2 border-transparent rounded-[1.25rem] cursor-not-allowed font-bold text-gray-500"
+                                        className="block w-full pl-11 pr-4 py-4 bg-gray-100 dark:bg-white/10 border-2 border-transparent rounded-[1.25rem] cursor-not-allowed font-bold text-gray-500 dark:text-gray-400"
                                     />
                                 </div>
                                 <p className="text-xs text-gray-400 font-medium ml-2 mt-1">Managed by organization settings</p>
@@ -257,18 +280,18 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                             <button
                                 type="button"
                                 onClick={() => setShowChangePassword(true)}
-                                className="w-full flex items-center justify-between p-6 bg-gray-50/50 hover:bg-white rounded-2xl border border-gray-100 transition-all group shadow-sm hover:shadow-md"
+                                className="w-full flex items-center justify-between p-6 bg-gray-50/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 rounded-2xl border border-gray-100 dark:border-white/5 transition-all group shadow-sm hover:shadow-md"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-400 group-hover:text-purple-600 transition-colors">
+                                    <div className="p-3 bg-white dark:bg-white/5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                                         <Lock className="w-5 h-5" />
                                     </div>
                                     <div className="text-left">
-                                        <div className="font-black text-gray-900 uppercase tracking-widest text-xs">Update Password</div>
-                                        <div className="text-xs text-gray-500 font-medium">Manage your login credentials</div>
+                                        <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Update Password</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Manage your login credentials</div>
                                     </div>
                                 </div>
-                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
+                                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center group-hover:bg-purple-50 dark:group-hover:bg-purple-500/20 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                                     <SettingsIcon className="w-4 h-4" />
                                 </div>
                             </button>
@@ -285,7 +308,7 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                                                 type="password"
                                                 value={formData.password}
                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[1.25rem] focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-400"
                                                 placeholder="••••••••"
                                             />
                                         </div>
@@ -300,7 +323,7 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                                                 type="password"
                                                 value={formData.confirmPassword}
                                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[1.25rem] focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-400"
                                                 placeholder="••••••••"
                                             />
                                         </div>
@@ -328,6 +351,37 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                                 </div>
                             </div>
                         )}
+                    </div>
+                </AccordionItem>
+
+                {/* Appearance Accordion */}
+                <AccordionItem
+                    title="Appearance"
+                    subtitle="Customize your visual experience"
+                    icon={Palette}
+                    colorClass="bg-pink-50 text-pink-600"
+                    isOpen={openSection === 'appearance'}
+                    onToggle={() => toggleSection('appearance')}
+                >
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between p-6 bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors ${isDark ? 'bg-gray-800 text-purple-400' : 'bg-white text-amber-500'}`}>
+                                    {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Dark Mode</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{isDark ? 'Easy on the eyes' : 'Bright and clear'}</div>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={toggleTheme}
+                                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 ${isDark ? 'bg-purple-600' : 'bg-gray-200'}`}
+                            >
+                                <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-[26px]' : 'translate-x-0'}`} />
+                            </button>
+                        </div>
                     </div>
                 </AccordionItem>
             </form>

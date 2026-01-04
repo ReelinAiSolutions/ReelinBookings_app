@@ -1,6 +1,6 @@
-import React from 'react';
 import { Staff } from '@/types';
 import { User as UserIcon, Star, ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
 
 interface StaffSelectionProps {
     staffMembers: Staff[];
@@ -55,10 +55,13 @@ export default function StaffSelection({ staffMembers, onSelect, onSelectAny, on
                             {staff.avatar ? (
                                 <div className="relative">
                                     <div className="absolute -inset-2 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-500"></div>
-                                    <img
+                                    <Image
                                         src={staff.avatar}
                                         alt={staff.name}
+                                        width={96}
+                                        height={96}
                                         className="relative w-24 h-24 rounded-full object-cover ring-4 ring-gray-50 group-hover:ring-white shadow-sm transition-all duration-500 group-hover:scale-110"
+                                        unoptimized
                                     />
                                 </div>
                             ) : (

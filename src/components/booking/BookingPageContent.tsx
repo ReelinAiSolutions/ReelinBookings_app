@@ -16,6 +16,7 @@ import StaffSelection from '@/components/booking/StaffSelection';
 import DateSelection from '@/components/booking/DateSelection';
 import BookingSummary from '@/components/booking/BookingSummary';
 import ConfirmationView from '@/components/booking/ConfirmationView';
+import Image from 'next/image';
 
 enum BookingStep {
     SERVICE = 0,
@@ -486,10 +487,13 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     {org.logo_url && (
                         <div className="relative w-24 h-24 md:w-28 md:h-28 mx-auto mb-8">
-                            <img
+                            <Image
                                 src={org.logo_url}
                                 alt={org.name + ' Logo'}
+                                width={112}
+                                height={112}
                                 className="relative h-full w-full object-contain drop-shadow-xl"
+                                unoptimized
                             />
                         </div>
                     )}

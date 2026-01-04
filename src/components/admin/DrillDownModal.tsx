@@ -29,7 +29,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                             <Bar dataKey="revenue" fill="#10B981" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                 {data.topStaff.map((_: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={['#10B981', '#2D165D', '#7C3AED', '#F59E0B'][index % 4]} />
+                                    <Cell key={`cell-${index}`} fill={['#10B981', 'var(--primary-600)', '#7C3AED', '#F59E0B'][index % 4]} />
                                 ))}
                             </Bar>
                         </BarChart>
@@ -83,7 +83,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                             <Bar dataKey="utilization" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                 {data.topStaff.map((_: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={['#2D165D', '#10B981', '#F59E0B', '#8B5CF6'][index % 4]} />
+                                    <Cell key={`cell-${index}`} fill={['var(--primary-600)', '#10B981', '#F59E0B', '#8B5CF6'][index % 4]} />
                                 ))}
                             </Bar>
                         </BarChart>
@@ -187,7 +187,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                             <Bar dataKey="bookings" fill="#F59E0B" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                 {data.topStaff.map((_: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={['#F59E0B', '#2D165D', '#10B981', '#8B5CF6'][index % 4]} />
+                                    <Cell key={`cell-${index}`} fill={['#F59E0B', 'var(--primary-600)', '#10B981', '#8B5CF6'][index % 4]} />
                                 ))}
                             </Bar>
                         </BarChart>

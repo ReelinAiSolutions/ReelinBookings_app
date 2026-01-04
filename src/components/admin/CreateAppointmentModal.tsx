@@ -220,7 +220,7 @@ export default function CreateAppointmentModal({
                 date,
                 timeSlot: time,
                 notes: notes,
-                durationMinutes: mode === 'blocking' ? customDuration : undefined,
+                durationMinutes: checkDuration,
                 bufferMinutes: checkBuffer
             };
 
@@ -248,22 +248,22 @@ export default function CreateAppointmentModal({
             ></div>
 
             {/* Modal Sheet */}
-            <div className="relative z-10 bg-[#F2F2F7] w-full md:max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20">
+            <div className="relative z-10 bg-[#F2F2F7] dark:bg-zinc-900 w-full md:max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[2.5rem] rounded-none shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-500 subpixel-antialiased border border-white/20 dark:border-white/10">
 
                 {/* Header (Sticky) */}
-                <div className="bg-[#F2F2F7]/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
+                <div className="bg-[#F2F2F7]/95 dark:bg-zinc-900/95 backdrop-blur-xl shrink-0 sticky top-0 z-20 pt-4">
                     <div className="w-full flex justify-center mb-2">
                         <div className="w-12 h-1.5 bg-gray-300/50 rounded-full"></div>
                     </div>
                     <div className="flex justify-between items-center px-6 h-14 pb-2">
-                        <button onClick={onClose} className="text-[#7C3AED] text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
-                        <span className="font-black text-[17px] text-gray-900 tracking-tight">
+                        <button onClick={onClose} className="text-[#7C3AED] dark:text-violet-400 text-[17px] font-medium hover:opacity-70 transition-opacity active:scale-95">Cancel</button>
+                        <span className="font-black text-[17px] text-gray-900 dark:text-white tracking-tight">
                             {mode === 'booking' ? 'New Event' : 'Block Time'}
                         </span>
                         <button
                             onClick={handleSubmit}
                             disabled={isLoading}
-                            className="font-black text-[#7C3AED] text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
+                            className="font-black text-[#7C3AED] dark:text-violet-400 text-[17px] hover:opacity-70 transition-opacity disabled:opacity-50 active:scale-95"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Add'}
                         </button>
@@ -283,9 +283,9 @@ export default function CreateAppointmentModal({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-left">
                         {/* 1. Client Information Module */}
-                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white overflow-hidden flex flex-col">
+                        <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 overflow-hidden flex flex-col">
                             {mode === 'booking' ? (
-                                <div className="divide-y divide-gray-50 flex-1 flex flex-col">
+                                <div className="divide-y divide-gray-50 dark:divide-white/5 flex-1 flex flex-col">
                                     <div className="px-5 py-4 flex-1">
                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
                                             Client Name
@@ -295,7 +295,7 @@ export default function CreateAppointmentModal({
                                             placeholder="E.g. John Doe"
                                             value={clientName}
                                             onChange={e => setClientName(e.target.value)}
-                                            className="w-full text-lg font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                            className="w-full text-lg font-bold placeholder-gray-300 dark:placeholder-gray-600 bg-transparent outline-none text-gray-900 dark:text-white"
                                         />
                                     </div>
                                     <div className="px-5 py-4 flex-1">
@@ -321,30 +321,30 @@ export default function CreateAppointmentModal({
                                 </div>
                             ) : (
                                 <div className="p-6 text-center flex-1 flex flex-col justify-center">
-                                    <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                    <div className="w-12 h-12 bg-red-50 dark:bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
                                         <X className="w-6 h-6 text-red-500" />
                                     </div>
-                                    <p className="text-sm font-bold text-gray-900">Blocking Off-Duty Time</p>
-                                    <p className="text-xs text-gray-500 mt-1">Prevent any bookings during this slot</p>
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white">Blocking Off-Duty Time</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Prevent any bookings during this slot</p>
                                 </div>
                             )}
                         </div>
 
                         {/* 2. Professional Metadata Module (Service/Staff) */}
-                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white divide-y divide-gray-50 overflow-hidden flex flex-col">
+                        <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 divide-y divide-gray-50 dark:divide-white/5 overflow-hidden flex flex-col">
                             {/* Service Overlay Row */}
                             <div className="p-5 flex-1 flex justify-between items-center group active:bg-gray-50 cursor-pointer transition-colors relative">
                                 <select
                                     value={serviceId}
                                     onChange={e => setServiceId(e.target.value)}
-                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer bg-white dark:bg-zinc-900 text-gray-900 dark:text-white"
                                 >
-                                    {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    {services.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">{s.name}</option>)}
                                 </select>
 
-                                <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Service</p>
+                                <p className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Service</p>
                                 <div className="flex items-center gap-2 pointer-events-none">
-                                    <span className="text-sm font-bold text-gray-500 text-right truncate max-w-[150px]">
+                                    <span className="text-sm font-bold text-gray-500 dark:text-gray-400 text-right truncate max-w-[150px]">
                                         {selectedService ? selectedService.name : 'Select Service'}
                                     </span>
                                     <ChevronRight className="w-4 h-4 text-gray-300" />
@@ -356,14 +356,14 @@ export default function CreateAppointmentModal({
                                 <select
                                     value={staffId}
                                     onChange={e => setStaffId(e.target.value)}
-                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer bg-white dark:bg-zinc-900 text-gray-900 dark:text-white"
                                 >
-                                    {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    {staff.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">{s.name}</option>)}
                                 </select>
 
-                                <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Staff Member</p>
+                                <p className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Staff Member</p>
                                 <div className="flex items-center gap-2 pointer-events-none">
-                                    <span className="text-sm font-bold text-gray-500 text-right truncate max-w-[150px]">
+                                    <span className="text-sm font-bold text-gray-500 dark:text-gray-400 text-right truncate max-w-[150px]">
                                         {selectedStaff ? selectedStaff.name : 'Select Staff'}
                                     </span>
                                     <ChevronRight className="w-4 h-4 text-gray-300" />
@@ -371,10 +371,10 @@ export default function CreateAppointmentModal({
                             </div>
 
                             <div
-                                className="p-5 flex justify-between items-center active:bg-gray-50 cursor-pointer transition-colors"
+                                className="p-5 flex justify-between items-center active:bg-gray-50 dark:active:bg-white/10 cursor-pointer transition-colors"
                                 onClick={() => setMode(prev => prev === 'booking' ? 'blocking' : 'booking')}
                             >
-                                <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Mode</p>
+                                <p className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Mode</p>
                                 <div className="flex items-center gap-2">
                                     <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${mode === 'booking' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                                         {mode === 'booking' ? 'Appointment' : 'Block Time'}
@@ -405,11 +405,11 @@ export default function CreateAppointmentModal({
                         </div>
 
                         {/* 3. Selection Group: Date & Time */}
-                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 flex flex-col justify-center space-y-5">
+                        <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 p-5 flex flex-col justify-center space-y-5">
                             {/* Date Row */}
                             <div className="flex justify-between items-center group relative">
-                                <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Date</span>
-                                <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden">
+                                <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Date</span>
+                                <div className="bg-gray-50 dark:bg-white/10 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden">
                                     <input
                                         type="date"
                                         value={date}
@@ -428,14 +428,14 @@ export default function CreateAppointmentModal({
 
                             {/* Time Row */}
                             <div className="flex justify-between items-center group relative">
-                                <span className="text-sm font-black text-gray-900 uppercase tracking-tight">Starts</span>
-                                <div className="bg-gray-50 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden flex items-center gap-1.5">
+                                <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Starts</span>
+                                <div className="bg-gray-50 dark:bg-white/10 px-4 py-2 rounded-xl group-active:scale-95 transition-transform relative overflow-hidden flex items-center gap-1.5">
                                     <select
                                         value={time}
                                         onChange={e => setTime(e.target.value)}
-                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer bg-white dark:bg-zinc-900 text-gray-900 dark:text-white"
                                     >
-                                        <option value="" disabled>
+                                        <option value="" disabled className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">
                                             {timeOptions.length === 0 ? (
                                                 (() => {
                                                     if (!date || !businessHours) return 'No slots';
@@ -448,7 +448,7 @@ export default function CreateAppointmentModal({
                                             ) : 'Select Time'}
                                         </option>
                                         {timeOptions.map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            <option key={opt.value} value={opt.value} className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">{opt.label}</option>
                                         ))}
                                     </select>
                                     <p className={`text-sm font-black pointer-events-none ${time ? 'text-primary-600' : 'text-gray-400'}`}>
@@ -462,16 +462,16 @@ export default function CreateAppointmentModal({
                         </div>
 
                         {/* 4. MINI TIMELINE VISUALIZER */}
-                        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 flex flex-col justify-center">
+                        <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 p-5 flex flex-col justify-center">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Schedule Impact</p>
                             <div className="flex justify-between text-[11px] font-bold text-gray-400 mb-2 px-1">
                                 <span>{displayHour > 0 ? (displayHour - 1 > 12 ? displayHour - 1 - 12 : displayHour - 1) : 11} {displayHour - 1 >= 12 ? 'PM' : 'AM'}</span>
                                 <span className="text-primary-600 font-black">{displayHour > 12 ? displayHour - 12 : displayHour} {displayHour >= 12 ? 'PM' : 'AM'}</span>
                                 <span>{(displayHour + 1 > 12 ? displayHour + 1 - 12 : displayHour + 1)} {displayHour + 1 >= 12 ? 'PM' : 'AM'}</span>
                             </div>
-                            <div className="h-14 bg-gray-50/50 rounded-2xl relative border border-gray-100 w-full overflow-hidden flex items-center justify-center">
+                            <div className="h-14 bg-gray-50/50 dark:bg-black/20 rounded-2xl relative border border-gray-100 dark:border-white/5 w-full overflow-hidden flex items-center justify-center">
                                 {selectedService || mode === 'blocking' ? (
-                                    <div className={`w-3/4 h-10 border-2 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300 ${mode === 'blocking' ? 'bg-red-50 border-red-200' : 'bg-primary-50 border-primary-200'}`}>
+                                    <div className={`w-3/4 h-10 border-2 rounded-xl relative flex items-center px-4 animate-in fade-in slide-in-from-left duration-300 ${mode === 'blocking' ? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20' : 'bg-primary-50 dark:bg-primary-500/10 border-primary-200 dark:border-primary-500/20'}`}>
                                         <div className={`w-2 h-2 rounded-full mr-3 shadow-sm ${mode === 'blocking' ? 'bg-red-500 shadow-red-500/50' : 'bg-primary-600 shadow-primary-500/50'}`}></div>
                                         <div className="flex-1 min-w-0">
                                             <p className={`text-[10px] font-black truncate uppercase tracking-tight ${mode === 'blocking' ? 'text-red-900' : 'text-primary-900'}`}>{mode === 'blocking' ? 'Blocked Time' : selectedService?.name || 'Service'}</p>
@@ -485,23 +485,23 @@ export default function CreateAppointmentModal({
                         </div>
 
                         {/* 5. Notes Area (Full Width) */}
-                        <div className="md:col-span-2 bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white p-5 pb-safe-bottom">
+                        <div className="md:col-span-2 bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 p-5 pb-safe-bottom">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Internal Notes</p>
                             <textarea
                                 placeholder="Add specifics about this booking..."
                                 value={notes}
                                 onChange={e => setNotes(e.target.value)}
-                                className="w-full h-24 text-sm font-bold text-gray-900 placeholder-gray-300 bg-gray-50/50 rounded-2xl p-4 outline-none resize-none border border-gray-100"
+                                className="w-full h-24 text-sm font-bold text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 bg-gray-50/50 dark:bg-black/20 rounded-2xl p-4 outline-none resize-none border border-gray-100 dark:border-white/5"
                             ></textarea>
                         </div>
                     </div>
                 </div>
 
                 {/* Buttons - Fixed Bottom */}
-                <div className="p-5 border-t border-gray-100 flex gap-3 bg-white/80 backdrop-blur-md rounded-b-[40px]">
+                <div className="p-5 border-t border-gray-100 dark:border-white/10 flex gap-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-b-[40px]">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98]"
+                        className="flex-1 py-4 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-900 dark:text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98]"
                     >
                         Cancel
                     </button>

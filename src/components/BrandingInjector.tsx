@@ -55,9 +55,16 @@ export default function BrandingInjector({ primaryColor }: BrandingInjectorProps
             --brand-primary-light: ${lightColor} !important;
             --brand-primary-dark: ${darkColor} !important;
             
-            --primary-50: ${lightColor} !important;
+            --primary-50: ${adjustColor(primaryColor, 0.95)} !important;
+            --primary-100: ${adjustColor(primaryColor, 0.85)} !important;
+            --primary-200: ${adjustColor(primaryColor, 0.7)} !important;
+            --primary-300: ${adjustColor(primaryColor, 0.5)} !important;
+            --primary-400: ${adjustColor(primaryColor, 0.3)} !important;
+            --primary-500: ${primaryColor} !important;
             --primary-600: ${primaryColor} !important;
-            --primary-700: ${darkColor} !important;
+            --primary-700: ${adjustColor(primaryColor, -0.15)} !important;
+            --primary-800: ${adjustColor(primaryColor, -0.3)} !important;
+            --primary-900: ${adjustColor(primaryColor, -0.45)} !important;
             
             /* Ensure ring/focus colors match */
             --ring: ${primaryColor} !important;

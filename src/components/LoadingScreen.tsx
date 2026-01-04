@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 export default function LoadingScreen() {
     return (
@@ -6,10 +7,12 @@ export default function LoadingScreen() {
             <div className="flex flex-col items-center gap-4">
                 {/* Reelin Logo */}
                 <div className="relative">
-                    <img
+                    <Image
                         src="/icon-180.png"
                         alt="Reelin Bookings"
-                        className="w-20 h-20 animate-pulse"
+                        width={80}
+                        height={80}
+                        className="animate-pulse"
                     />
                 </div>
 
