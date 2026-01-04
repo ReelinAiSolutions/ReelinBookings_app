@@ -1,9 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
+import { Button } from '@/components/ui/Button';
 import {
     User, Mail, Camera, Lock, Bell, ChevronRight, Search, Phone, Save, Settings,
-    Shield, Smartphone, LogOut, Trash2, Plus, X, Briefcase, Clock, Building2, UserCircle
+    Shield, Smartphone, LogOut, Trash2, Plus, X, Briefcase, Clock, Building2, UserCircle,
+    Palette, Moon, Sun
 } from 'lucide-react';
 import Image from 'next/image';
 import { Organization, Staff } from '@/types';
@@ -33,6 +35,29 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
         newPassword: '',
         confirmPassword: ''
     });
+
+    const [isDark, setIsDark] = useState(false);
+
+    useEffect(() => {
+        // Check local storage or system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setIsDark(true);
+            document.documentElement.classList.add('dark');
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        if (isDark) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            setIsDark(false);
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            setIsDark(true);
+        }
+    };
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -156,6 +181,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                     {[
                         { id: 'profile', label: 'My Profile', icon: User, color: 'bg-blue-500' },
                         { id: 'security', label: 'Security', icon: Shield, color: 'bg-indigo-500' },
+                        { id: 'appearance', label: 'Appearance', icon: Palette, color: 'bg-pink-500' },
                         { id: 'notifications', label: 'Notifications', icon: Bell, color: 'bg-purple-500' },
                         { id: 'organization', label: 'Workplace', icon: Building2, color: 'bg-amber-500' }
                     ].map((item) => (
@@ -163,8 +189,8 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                             key={item.id}
                             onClick={() => setOpenSection(item.id)}
                             className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${openSection === item.id
-                                    ? 'bg-white shadow-xl border-gray-100 ring-1 ring-black/5'
-                                    : 'hover:bg-white/50 text-gray-500'
+                                ? 'bg-white shadow-xl border-gray-100 ring-1 ring-black/5'
+                                : 'hover:bg-white/50 text-gray-500'
                                 }`}
                         >
                             <div className="flex items-center gap-4">
@@ -254,6 +280,32 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                         className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-900"
                                         placeholder="••••••••"
                                     />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {openSection === 'appearance' && (
+                        <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Appearance</h3>
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between p-6 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors ${isDark ? 'bg-gray-800 text-purple-400' : 'bg-white text-amber-500'}`}>
+                                            {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Dark Mode</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{isDark ? 'Easy on the eyes' : 'Bright and clear'}</div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={toggleTheme}
+                                        className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 ${isDark ? 'bg-purple-600' : 'bg-gray-200'}`}
+                                    >
+                                        <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-[26px]' : 'translate-x-0'}`} />
+                                    </button>
                                 </div>
                             </div>
                         </div>
