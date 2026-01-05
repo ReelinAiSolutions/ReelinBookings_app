@@ -405,7 +405,20 @@ export const getAllAvailability = async (orgId: string) => {
         .from('availability')
         .select('*')
         .eq('org_id', orgId);
-    return data || [];
+
+    if (error) {
+        console.error('Error fetching all availability:', error);
+        return [];
+    }
+
+    return (data || []).map((item: any) => ({
+        id: item.id,
+        staffId: item.staff_id,
+        dayOfWeek: item.day_of_week,
+        startTime: item.start_time,
+        endTime: item.end_time,
+        isWorking: item.is_working
+    }));
 };
 
 export const getAvailability = async (staffId: string) => {
@@ -413,8 +426,17 @@ export const getAvailability = async (staffId: string) => {
         .from('availability')
         .select('*')
         .eq('staff_id', staffId);
+
     if (error) throw error;
-    return data || [];
+
+    return (data || []).map((item: any) => ({
+        id: item.id,
+        staffId: item.staff_id,
+        dayOfWeek: item.day_of_week,
+        startTime: item.start_time,
+        endTime: item.end_time,
+        isWorking: item.is_working
+    }));
 };
 
 export const upsertAvailability = async (schedule: any[], staffId: string, orgId: string) => {

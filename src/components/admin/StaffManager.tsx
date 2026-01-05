@@ -7,6 +7,7 @@ import { Plus, Search, Grid, List, Users2, Filter, ChevronDown, ArrowUpDown } fr
 import { useToast } from '@/context/ToastContext';
 import StaffCard from './StaffCard';
 import StaffFormModal from './StaffFormModal';
+import StaffScheduleViewer from './StaffScheduleViewer';
 import { format, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 interface StaffManagerProps {
@@ -29,9 +30,15 @@ const DEFAULT_SCHEDULE = [
 
 export default function StaffManager({ staff, services, orgId = '', onRefresh = () => { }, readOnly = false }: StaffManagerProps) {
     const { toast } = useToast();
+
+    // Modal States
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
     const [modalSchedule, setModalSchedule] = useState<any[]>([]);
+
+    // Viewer States
+    const [isViewerOpen, setIsViewerOpen] = useState(false);
+    const [viewingStaff, setViewingStaff] = useState<Staff | null>(null);
 
     // Filters & Search
     const [searchQuery, setSearchQuery] = useState('');
@@ -52,18 +59,10 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         const fetchInsights = async () => {
             setLoadingInsights(true);
             try {
-                // Fetch all availability once
-                // getAllAvailability should return { staffId: Availability[] } or Array. Assuming Array based on usage
-                // Ideally this would be optimized, but client-side filtering for small orgs is acceptable.
                 const avails = await getAllAvailability(orgId);
-                // @ts-ignore - getAllAvailability might vary in dataService signature, assuming simple array return or I handle it
-                // Actually dataService might default to array. Let's assume array of Availability.
-                // If getAllAvailability is not available, I might need to fetch per user? No, that's N+1.
-                // Assuming it works or returns []
+                // @ts-ignore
                 setAllAvailability(Array.isArray(avails) ? avails : []);
 
-                // Fetch appointments
-                // Best to fetch only 'today'. but if getAppointments fetches all, we filter.
                 const apps = await getAppointments(orgId);
                 const today = new Date();
                 const todaysApps = apps.filter(app => isSameDay(parseISO(app.date), today) && app.status !== 'CANCELLED');
@@ -76,7 +75,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         };
 
         fetchInsights();
-    }, [orgId, staff.length]); // Refresh when staff list changes
+    }, [orgId, staff.length]);
 
     // Helper to calculate status
     const getStaffStatus = (staffId: string) => {
@@ -85,25 +84,18 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         const today = new Date();
         const currentDay = today.getDay(); // 0-6
 
-        // Find availability for today
         const userAvail = allAvailability.filter(a => a.staffId === staffId && a.dayOfWeek === currentDay);
-        // If multiple entries (shouldn't replace unique key constraint), take first relevant
         const todayRule = userAvail.find(a => a.dayOfWeek === currentDay);
 
-        // 1. Check if working today
         if (!todayRule || !todayRule.isWorking) {
             return { status: 'leave', text: 'Off Today' } as const;
         }
 
-        // 2. Check slots
-        // Simple slot calculation: (End - Start) / 60 mins (approx slot size 60m for simplicity or use org settings)
-        // Hardcoded 60m slot for now for "insight" estimation
         const startHour = parseInt(todayRule.startTime.split(':')[0]);
         const endHour = parseInt(todayRule.endTime.split(':')[0]);
         const totalHours = endHour - startHour;
-        const totalSlots = totalHours; // Assuming 1 hour slots
+        const totalSlots = totalHours;
 
-        // Count appointments
         const staffApps = todayAppointments.filter(a => a.staffId === staffId);
         const bookedCount = staffApps.length;
 
@@ -115,14 +107,12 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         return { status: 'available', text: `Available · ${slotsLeft} slots left` } as const;
     };
 
-
-    // Unique Roles for dropdown
+    // Filters...
     const availableRoles = useMemo(() => {
         const roles = new Set(staff.map(s => s.role).filter(Boolean));
         return Array.from(roles);
     }, [staff]);
 
-    // Filter Logic
     const filteredStaff = useMemo(() => {
         let result = staff.filter(member => {
             const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -136,7 +126,6 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
             return matchesSearch && matchesRole && matchesService;
         });
 
-        // Sort
         result.sort((a, b) => {
             return sortOrder === 'asc'
                 ? a.name.localeCompare(b.name)
@@ -146,6 +135,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         return result;
     }, [staff, searchQuery, roleFilter, serviceFilter, sortOrder]);
 
+    // Data Handlers
     const handleSave = async (data: Partial<Staff>, avatarFile?: File | null) => {
         if (readOnly) return;
         try {
@@ -160,7 +150,6 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
 
             let avatarUrl = data.avatar || '';
 
-            // Handle avatar upload
             if (avatarFile) {
                 const fileExt = avatarFile.name.split('.').pop();
                 const fileName = `${orgId}/staff/${editingStaff?.id || 'new'}-${Date.now()}.${fileExt}`;
@@ -197,6 +186,8 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                 toast('Team member added successfully', 'success');
             }
 
+            // Don't close modal here, allow them to continue editing tabs if they want? 
+            // Actually usually save closes modal.
             setIsModalOpen(false);
             setEditingStaff(null);
             onRefresh();
@@ -211,6 +202,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         setEditingStaff(member);
         setIsModalOpen(true);
         try {
+            // We fetch availability specifically for editing to ensure we have latest for this user
             const existing = await getAvailability(member.id);
             const merged = DEFAULT_SCHEDULE.map(def => {
                 const found = existing.find((e: any) => e.dayOfWeek === def.dayOfWeek);
@@ -223,8 +215,9 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     };
 
     const handleSchedule = async (member: Staff) => {
-        if (readOnly) return;
-        await handleEdit(member);
+        // VIEW ONLY Schedule
+        setViewingStaff(member);
+        setIsViewerOpen(true);
     };
 
     const handleDelete = async (member: Staff) => {
@@ -259,6 +252,10 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         try {
             await upsertAvailability(schedule, editingStaff.id, orgId);
             toast('Schedule saved successfully', 'success');
+            // Update local availability state to reflect changes immediately
+            const avails = await getAllAvailability(orgId);
+            // @ts-ignore
+            setAllAvailability(Array.isArray(avails) ? avails : []);
         } catch (e) {
             console.error(e);
             toast('Failed to save schedule', 'error');
@@ -386,7 +383,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                                     staff={member}
                                     services={services}
                                     onEdit={readOnly ? undefined : handleEdit}
-                                    onSchedule={readOnly ? undefined : handleSchedule}
+                                    onSchedule={handleSchedule} // Allow simple viewing even in readOnly? Yes.
                                     onDelete={readOnly ? undefined : handleDelete}
                                     status={status}
                                     statusDetails={text}
@@ -411,6 +408,19 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                     onSaveSchedule={handleSaveSchedule}
                     onSaveServices={handleSaveServices}
                     initialSchedule={modalSchedule}
+                />
+            )}
+
+            {/* Schedule Viewer Modal */}
+            {viewingStaff && (
+                <StaffScheduleViewer
+                    isOpen={isViewerOpen}
+                    onClose={() => {
+                        setIsViewerOpen(false);
+                        setViewingStaff(null);
+                    }}
+                    staff={viewingStaff}
+                    availability={allAvailability.filter(a => a.staffId === viewingStaff.id)}
                 />
             )}
         </div>
