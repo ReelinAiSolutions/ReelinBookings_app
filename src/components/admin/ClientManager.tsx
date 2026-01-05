@@ -50,28 +50,11 @@ export default function ClientManager({ appointments, services, isStaffView = fa
             if (rawName === 'Blocked Time' || email.includes('@internal') || email.includes('blocked@')) return;
 
             // IDENTITY RESOLUTION
-            // 1. Prefer Email as ID
-            // 2. Fallback to Name linkage if no email is present on this appointment
+            // 1. Prefer Email
+            // 2. Prefer Phone
+            // 3. Fallback to unique entry if neither exists (prevents "John Smith" merging)
 
-            let mainKey = email;
-
-            if (!mainKey) {
-                // No email on this appointment. Do we know this person by name?
-                if (clientsByName.has(normalizedName)) {
-                    mainKey = clientsByName.get(normalizedName)!;
-                } else {
-                    // Start a new record keyed by name
-                    mainKey = `name:${normalizedName}`;
-                }
-            } else {
-                // We HAVE an email.
-                // Register this name -> email mapping for future name-only lookups
-                if (!clientsByName.has(normalizedName)) {
-                    clientsByName.set(normalizedName, mainKey);
-                }
-                // Note: If this name was previously pointing to a different email, we have a collision.
-                // But for "Same Name = Same Person" logic, we generally assume consistency.
-            }
+            const mainKey = email || phone || `unverified-${apt.id}`;
 
             if (!clientMap.has(mainKey)) {
                 clientMap.set(mainKey, {
