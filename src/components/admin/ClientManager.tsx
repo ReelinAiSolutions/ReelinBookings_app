@@ -249,13 +249,13 @@ export default function ClientManager({ appointments, services, isStaffView = fa
 
                             {/* Metrics Row */}
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div className="!bg-white dark:!bg-white/5 p-3 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm relative z-10">
+                                <div className="p-3 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm relative z-10" style={{ backgroundColor: '#ffffff' }}>
                                     <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
                                     <div className="text-base font-black text-gray-900 dark:text-white">
                                         ${client.totalSpend.toLocaleString()}
                                     </div>
                                 </div>
-                                <div className="!bg-white dark:!bg-white/5 p-3 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm relative z-10">
+                                <div className="p-3 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm relative z-10" style={{ backgroundColor: '#ffffff' }}>
                                     <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Session Count</div>
                                     <div className="text-base font-black text-gray-900 dark:text-white">
                                         {client.visits} Visits
