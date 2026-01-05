@@ -34,23 +34,51 @@ export default function ClientManager({ appointments, services, isStaffView = fa
         const clientMap = new Map<string, ClientProfile>();
         const nameFrequency = new Map<string, number>();
 
-        // 1. Aggregation
+        // Index to lookup existing client ID by normalized name
+        // This allows us to find a client even if the current appointment has no email
+        const clientsByName = new Map<string, string>();
+
         appointments.forEach(apt => {
             if (apt.status === 'CANCELLED' || apt.status === 'NO_SHOW') return;
-            const name = apt.clientName || 'Unknown Client';
+
+            const rawName = apt.clientName || 'Unknown Client';
             const email = apt.clientEmail || '';
+            const phone = apt.clientPhone || '';
+            const normalizedName = rawName.toLowerCase().trim();
 
             // Skip blocked/internal
-            if (name === 'Blocked Time' || email.includes('@internal') || email.includes('blocked@')) return;
+            if (rawName === 'Blocked Time' || email.includes('@internal') || email.includes('blocked@')) return;
 
-            const key = email || name; // Unique ID
+            // IDENTITY RESOLUTION
+            // 1. Prefer Email as ID
+            // 2. Fallback to Name linkage if no email is present on this appointment
 
-            if (!clientMap.has(key)) {
-                clientMap.set(key, {
-                    id: key,
-                    name: name,
+            let mainKey = email;
+
+            if (!mainKey) {
+                // No email on this appointment. Do we know this person by name?
+                if (clientsByName.has(normalizedName)) {
+                    mainKey = clientsByName.get(normalizedName)!;
+                } else {
+                    // Start a new record keyed by name
+                    mainKey = `name:${normalizedName}`;
+                }
+            } else {
+                // We HAVE an email.
+                // Register this name -> email mapping for future name-only lookups
+                if (!clientsByName.has(normalizedName)) {
+                    clientsByName.set(normalizedName, mainKey);
+                }
+                // Note: If this name was previously pointing to a different email, we have a collision.
+                // But for "Same Name = Same Person" logic, we generally assume consistency.
+            }
+
+            if (!clientMap.has(mainKey)) {
+                clientMap.set(mainKey, {
+                    id: mainKey,
+                    name: rawName,
                     email: email,
-                    phone: apt.clientPhone || '',
+                    phone: phone,
                     lastVisit: '0',
                     visits: 0,
                     totalSpend: 0,
@@ -59,18 +87,25 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                     status: 'STEADY', // Default
                     isDuplicate: false
                 });
+                // Ensure name points here
+                clientsByName.set(normalizedName, mainKey);
             }
 
-            const client = clientMap.get(key)!;
+            const client = clientMap.get(mainKey)!;
+
+            // Merge / Enhance Data
+            // If the client didn't have an email/phone before but this appt has one, save it.
+            if (!client.email && email) client.email = email;
+            if (!client.phone && phone) client.phone = phone;
+
             client.visits += 1;
-            if (apt.clientPhone) client.phone = apt.clientPhone;
 
             const service = services.find(s => s.id === apt.serviceId);
             if (service) client.totalSpend += service.price;
 
             // Update Last Visit
             try {
-                const dateStr = apt.date; // ISO YYYY-MM-DD
+                const dateStr = apt.date;
                 if (dateStr && (client.lastVisit === '0' || dateStr > client.lastVisit)) {
                     client.lastVisit = dateStr;
                 }
@@ -87,9 +122,11 @@ export default function ClientManager({ appointments, services, isStaffView = fa
         const processedClients = Array.from(clientMap.values());
         const today = new Date();
 
-        // Count names for duplicate detection
+        // Calculate Stats & Duplicate Detection
+        // We only count names that appear in DIFFERENT client records (IDs)
         processedClients.forEach(c => {
             const normalized = c.name.toLowerCase().trim();
+            if (normalized.includes('walk-in') || normalized.includes('unknown')) return;
             nameFrequency.set(normalized, (nameFrequency.get(normalized) || 0) + 1);
         });
 
@@ -106,7 +143,11 @@ export default function ClientManager({ appointments, services, isStaffView = fa
             }
 
             // Duplicate Logic
-            if ((nameFrequency.get(client.name.toLowerCase().trim()) || 0) > 1) {
+            // Only flag if >1 UNIQUE client record exists with this name.
+            // Since we merged aggressively by name above, true duplicates (same name, diff email) 
+            // will still exist as separate records, which correct.
+            const normalized = client.name.toLowerCase().trim();
+            if (!normalized.includes('walk-in') && (nameFrequency.get(normalized) || 0) > 1) {
                 client.isDuplicate = true;
             }
         });
@@ -264,7 +305,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                 <div className="mt-4 p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 flex items-start gap-3">
                                     <AlertCircle className="w-4 h-4 text-gray-400 mt-0.5" />
                                     <div className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                                        <strong className="text-gray-900 dark:text-white">Duplicate Detected.</strong> Another profile shares this name. You might want to merge them.
+                                        <strong className="text-gray-900 dark:text-white">Duplicate Detected.</strong> Another profile shares this exact name.
                                     </div>
                                 </div>
                             )}
@@ -280,7 +321,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                 </div>
             </div>
 
-            {/* SLIDE-OVER MODAL (Simplified for this iteration, reusing logic) */}
+            {/* SLIDE-OVER MODAL */}
             {selectedClient && typeof document !== 'undefined' && createPortal(
                 <div className="fixed inset-0 z-[100] flex justify-end font-sans">
                     <div
