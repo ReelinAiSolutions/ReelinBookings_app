@@ -220,33 +220,31 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                             className="bg-white !bg-white dark:bg-card p-5 rounded-[24px] shadow-sm hover:shadow-xl hover:shadow-purple-500/5 dark:shadow-none border border-gray-100 dark:border-white/5 transition-all cursor-pointer active:scale-[0.99]"
                             style={{ backgroundColor: '#ffffff' }}
                         >
-                            {/* Card Header */}
-                            <div className="flex items-start justify-between mb-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white flex items-center justify-center text-xl font-black shadow-lg shadow-purple-500/20">
-                                        {getInitials(client.name)}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">
-                                            {client.name}
-                                        </h3>
-                                        <div className="text-xs font-medium text-gray-400 mt-1 truncate max-w-[200px]">
-                                            {client.email || (client.phone ? client.phone : 'No credentials')}
-                                        </div>
-                                    </div>
+                            {/* Header: Avatar and Badge */}
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="w-16 h-16 rounded-[1.2rem] bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-purple-500/20">
+                                    {getInitials(client.name)}
                                 </div>
-                                <div className="flex flex-col items-end gap-2">
-                                    <span className={`px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest border ${getStatusColor(client.status)}`}>
-                                        {client.status}
-                                    </span>
-                                    {client.isDuplicate && (
-                                        <span className="px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1">
-                                            <Copy className="w-3 h-3" />
-                                            Duplicate
-                                        </span>
-                                    )}
+                                <span className={`px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest border ${getStatusColor(client.status)}`}>
+                                    {client.status}
+                                </span>
+                            </div>
+
+                            {/* Info: Name and Credentials */}
+                            <div className="mb-4">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white leading-tight mb-1">
+                                    {client.name}
+                                </h3>
+                                <div className="text-xs font-medium text-gray-400 truncate max-w-[200px]">
+                                    {client.email || (client.phone ? client.phone : 'No credentials')}
                                 </div>
                             </div>
+                            {client.isDuplicate && (
+                                <span className="px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1 mb-4">
+                                    <Copy className="w-3 h-3" />
+                                    Duplicate
+                                </span>
+                            )}
 
                             {/* Metrics Row */}
                             <div className="grid grid-cols-2 gap-4 mb-4">
