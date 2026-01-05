@@ -33,7 +33,7 @@ export default function StaffSidebar({ staff, organization, currentTab, onTabCha
     ];
 
     return (
-        <div className="w-80 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-50">
+        <div className="hidden lg:flex w-80 bg-white border-r border-gray-100 flex-col h-screen sticky top-0 z-50">
             {/* Header / Org Info */}
             <div className="p-8">
                 <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-[2rem] border border-gray-100 group transition-all hover:shadow-lg">
@@ -72,8 +72,8 @@ export default function StaffSidebar({ staff, organization, currentTab, onTabCha
                         key={item.id}
                         onClick={() => onTabChange(item.id)}
                         className={`w-full flex items-center justify-between group px-6 py-4 rounded-2xl transition-all duration-300 ${currentTab === item.id
-                                ? 'bg-black text-white shadow-2xl shadow-black/20 scale-[1.02]'
-                                : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'
+                            ? 'bg-black text-white shadow-2xl shadow-black/20 scale-[1.02]'
+                            : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'
                             }`}
                     >
                         <div className="flex items-center gap-4">

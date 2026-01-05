@@ -76,14 +76,14 @@ export default function StaffDashboard({
     onStatusUpdate,
     onRefresh
 }: StaffDashboardProps) {
-    const [activeTab, setActiveTab] = useState<'schedule' | 'performance' | 'settings' | 'team' | 'clients'>('schedule');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'performance' | 'settings' | 'team' | 'clients'>('dashboard');
 
     // Deep Linking
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const tabParam = params.get('tab');
-            if (tabParam && ['schedule', 'performance', 'settings', 'team', 'clients'].includes(tabParam)) {
+            if (tabParam && ['dashboard', 'schedule', 'performance', 'settings', 'team', 'clients'].includes(tabParam)) {
                 setActiveTab(tabParam as any);
             }
         }
@@ -245,7 +245,7 @@ export default function StaffDashboard({
             {/* Desktop Sidebar (Fixed) */}
             <StaffSidebar
                 activeTab={activeTab}
-                setActiveTab={setActiveTab}
+                onTabChange={(tab) => setActiveTab(tab as any)}
                 currentOrg={currentOrg || null}
             />
 
@@ -278,7 +278,7 @@ export default function StaffDashboard({
                         </div>
                     )}
 
-                    {activeTab === 'performance' && (
+                    {(activeTab === 'performance' || activeTab === 'dashboard') && (
                         <div className="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <StaffStats
                                 appointments={appointments}
@@ -313,79 +313,79 @@ export default function StaffDashboard({
                         <div className="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto">
                             <StaffSettings
                                 currentUser={currentUser}
-                                onUpdate={() => onRefresh?.()}
                             />
                         </div>
                     )}
 
-                    <RescheduleModal
-                        isOpen={!!selectedAppointment}
-                        appointment={selectedAppointment}
-                        onClose={() => setSelectedAppointment(null)}
-                        onReschedule={handleReschedule}
-                        onCancel={handleCancel}
-                        onRestore={handleRestore}
-                        onArchive={handleArchive}
-                        services={services}
-                        staff={staff}
-                        slotInterval={currentOrg?.slot_interval}
-                        businessHours={currentOrg?.business_hours}
-                    />
-
-                    <CreateAppointmentModal
-                        isOpen={isCreateModalOpen}
-                        onClose={() => setIsCreateModalOpen(false)}
-                        onConfirm={handleCreateConfirm}
-                        defaultDate={createSelection.date}
-                        defaultTime={createSelection.time}
-                        services={services}
-                        staff={staff}
-                        appointments={appointments}
-                        availability={availability}
-                        slotInterval={currentOrg?.slot_interval}
-                        businessHours={currentOrg?.business_hours}
-                    />
-                </div>
-
-                {/* Mobile Navigation */}
-                <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-lg border-t border-gray-100 flex justify-around items-center z-50 px-6 pb-2 safe-area-pb">
-                    <button
-                        onClick={() => setActiveTab('schedule')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'schedule' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
-                    >
-                        <CalendarIcon className={`w-6 h-6 ${activeTab === 'schedule' ? 'fill-[#A855F7]/10' : ''}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Schedule</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('performance')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'performance' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
-                    >
-                        <BarChart3 className={`w-6 h-6 ${activeTab === 'performance' ? 'fill-[#A855F7]/10' : ''}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Stats</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('team')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'team' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
-                    >
-                        <Users className={`w-6 h-6 ${activeTab === 'team' ? 'fill-[#A855F7]/10' : ''}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Team</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('clients')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'clients' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
-                    >
-                        <Contact className={`w-6 h-6 ${activeTab === 'clients' ? 'fill-[#A855F7]/10' : ''}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Clients</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('settings')}
-                        className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
-                    >
-                        <UserIcon className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-[#A855F7]/10' : ''}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
-                    </button>
                 </div>
             </main>
+
+            {/* Mobile Bottom Navigation */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-lg border-t border-gray-100 flex justify-around items-center z-50 px-6 pb-2 safe-area-pb">
+                <button
+                    onClick={() => setActiveTab('schedule')}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'schedule' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                >
+                    <CalendarIcon className={`w-6 h-6 ${activeTab === 'schedule' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Schedule</span>
+                </button>
+                <button
+                    onClick={() => setActiveTab('performance')}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'performance' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                >
+                    <BarChart3 className={`w-6 h-6 ${activeTab === 'performance' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Stats</span>
+                </button>
+                <button
+                    onClick={() => setActiveTab('team')}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'team' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                >
+                    <Users className={`w-6 h-6 ${activeTab === 'team' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Team</span>
+                </button>
+                <button
+                    onClick={() => setActiveTab('clients')}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'clients' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                >
+                    <Contact className={`w-6 h-6 ${activeTab === 'clients' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Clients</span>
+                </button>
+                <button
+                    onClick={() => setActiveTab('settings')}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                >
+                    <UserIcon className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
+                </button>
+            </div>
+
+            <RescheduleModal
+                isOpen={!!selectedAppointment}
+                appointment={selectedAppointment}
+                onClose={() => setSelectedAppointment(null)}
+                onReschedule={handleReschedule}
+                onCancel={handleCancel}
+                onRestore={handleRestore}
+                onArchive={handleArchive}
+                services={services}
+                staff={staff}
+                slotInterval={currentOrg?.slot_interval}
+                businessHours={currentOrg?.business_hours}
+            />
+
+            <CreateAppointmentModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onConfirm={handleCreateConfirm}
+                defaultDate={createSelection.date}
+                defaultTime={createSelection.time}
+                services={services}
+                staff={staff}
+                appointments={appointments}
+                availability={availability}
+                slotInterval={currentOrg?.slot_interval}
+                businessHours={currentOrg?.business_hours}
+            />
         </div>
     );
 }
