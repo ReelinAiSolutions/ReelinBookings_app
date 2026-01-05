@@ -280,7 +280,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
             <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
                 <div>
                     <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
-                        {readOnly ? 'Meet The Team' : 'Team Roster'}
+                        Team Roster
                     </h1>
                     <p className="text-gray-500 font-medium">Manage your staff, roles, and schedules.</p>
                 </div>
@@ -295,7 +295,8 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search staff..."
-                            className="w-full pl-12 pr-6 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all outline-none shadow-sm dark:text-white"
+                            className="w-full pl-12 pr-6 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all outline-none shadow-sm dark:text-white"
+                            style={{ backgroundColor: '#ffffff' }}
                         />
                     </div>
 
@@ -304,7 +305,8 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                         <select
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
-                            className="appearance-none w-full sm:w-auto pl-4 pr-10 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none cursor-pointer"
+                            className="appearance-none w-full sm:w-auto pl-4 pr-10 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none cursor-pointer"
+                            style={{ backgroundColor: '#ffffff' }}
                         >
                             <option value="all">All Roles</option>
                             {availableRoles.map(role => (
@@ -319,7 +321,8 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                         <select
                             value={serviceFilter}
                             onChange={(e) => setServiceFilter(e.target.value)}
-                            className="appearance-none w-full sm:w-auto pl-4 pr-10 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none cursor-pointer"
+                            className="appearance-none w-full sm:w-auto pl-4 pr-10 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none cursor-pointer"
+                            style={{ backgroundColor: '#ffffff' }}
                         >
                             <option value="all">All Services</option>
                             {services.map(service => (
