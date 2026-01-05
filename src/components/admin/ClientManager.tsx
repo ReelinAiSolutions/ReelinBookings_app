@@ -191,14 +191,16 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search clients..."
-                            className="w-full pl-12 pr-6 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all outline-none shadow-sm dark:text-white"
+                            className="w-full pl-12 pr-6 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all outline-none shadow-sm dark:text-white"
+                            style={{ backgroundColor: '#ffffff' }}
                         />
                     </div>
                     <div className="relative">
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value as any)}
-                            className="appearance-none pl-4 pr-10 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none shadow-sm cursor-pointer"
+                            className="appearance-none pl-4 pr-10 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none shadow-sm cursor-pointer"
+                            style={{ backgroundColor: '#ffffff' }}
                         >
                             <option value="ALL">All Statuses</option>
                             <option value="NEW">New</option>
