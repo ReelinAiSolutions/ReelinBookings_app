@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase';
 import React, { useState, useMemo, useEffect } from 'react';
-import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments, getAllAppointments, getAllAvailability } from '@/services/dataService';
+import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments, getAppointments, getAllAvailability } from '@/services/dataService';
 import { Service, Staff, Appointment, Availability } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Plus, Search, Grid, List, Users2, Filter, ChevronDown, ArrowUpDown } from 'lucide-react';
@@ -64,7 +64,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
 
                 // Fetch appointments
                 // Best to fetch only 'today'. but if getAppointments fetches all, we filter.
-                const apps = await getAllAppointments(orgId);
+                const apps = await getAppointments(orgId);
                 const today = new Date();
                 const todaysApps = apps.filter(app => isSameDay(parseISO(app.date), today) && app.status !== 'CANCELLED');
                 setTodayAppointments(todaysApps);
