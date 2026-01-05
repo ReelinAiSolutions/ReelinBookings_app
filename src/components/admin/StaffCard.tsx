@@ -11,9 +11,12 @@ interface StaffCardProps {
     onSchedule?: (staff: Staff) => void;
     onDelete?: (staff: Staff) => void;
     appointmentCount?: number;
+    // Real-time Status Props
+    status?: 'available' | 'limited' | 'busy' | 'leave' | 'error';
+    statusDetails?: string;
 }
 
-export default function StaffCard({ staff, services, onEdit, onSchedule, onDelete }: StaffCardProps) {
+export default function StaffCard({ staff, services, onEdit, onSchedule, onDelete, status = 'available', statusDetails = 'Checking availability...' }: StaffCardProps) {
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const hasAvatar = staff.avatar && staff.avatar.trim() !== '';
@@ -61,6 +64,47 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
         );
     };
 
+    // Status Indicator Logic
+    const getStatusIndicator = () => {
+        switch (status) {
+            case 'available':
+                return (
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/20" />
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{statusDetails || 'Available today'}</span>
+                    </div>
+                );
+            case 'limited':
+                return (
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-yellow-500 shadow-lg shadow-yellow-500/20" />
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{statusDetails || 'Limited availability'}</span>
+                    </div>
+                );
+            case 'busy':
+                return (
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500 shadow-lg shadow-red-500/20" />
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{statusDetails || 'Fully Booked'}</span>
+                    </div>
+                );
+            case 'leave':
+                return (
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        <span className="text-xs font-bold text-gray-400 dark:text-gray-500">{statusDetails || 'Off Today'}</span>
+                    </div>
+                );
+            default:
+                return (
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-200" />
+                        <span className="text-xs font-bold text-gray-400">Loading...</span>
+                    </div>
+                );
+        }
+    };
+
     return (
         <div className="group bg-white dark:bg-card rounded-[2rem] border border-gray-100 dark:border-white/5 p-6 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-[#d946ef]/30 transition-all duration-300 relative overflow-visible">
 
@@ -79,10 +123,9 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
             {/* Info & Status */}
             <div className="mb-6">
                 <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1 leading-snug">{staff.name}</h3>
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400">Available today</span>
-                </div>
+                {/* Dynamic Status */}
+                {getStatusIndicator()}
+
                 {staff.email && (
                     <div className="flex items-center gap-1.5 mt-2 opacity-60">
                         <Mail className="w-3 h-3 text-gray-400" />

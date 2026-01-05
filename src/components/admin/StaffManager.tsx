@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase';
-import React, { useState, useMemo } from 'react';
-import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments } from '@/services/dataService';
-import { Service, Staff } from '@/types';
+import React, { useState, useMemo, useEffect } from 'react';
+import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments, getAllAppointments, getAllAvailability } from '@/services/dataService';
+import { Service, Staff, Appointment, Availability } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Plus, Search, Grid, List, Users2, Filter, ChevronDown, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import StaffCard from './StaffCard';
 import StaffFormModal from './StaffFormModal';
+import { format, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 interface StaffManagerProps {
     staff: Staff[];
@@ -38,7 +39,82 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     const [serviceFilter, setServiceFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
+    // Real-time Availability Data
+    const [todayAppointments, setTodayAppointments] = useState<Appointment[]>([]);
+    const [allAvailability, setAllAvailability] = useState<Availability[]>([]);
+    const [loadingInsights, setLoadingInsights] = useState(false);
+
     const supabase = createClient();
+
+    // Fetch Insights Data
+    useEffect(() => {
+        if (!orgId) return;
+        const fetchInsights = async () => {
+            setLoadingInsights(true);
+            try {
+                // Fetch all availability once
+                // getAllAvailability should return { staffId: Availability[] } or Array. Assuming Array based on usage
+                // Ideally this would be optimized, but client-side filtering for small orgs is acceptable.
+                const avails = await getAllAvailability(orgId);
+                // @ts-ignore - getAllAvailability might vary in dataService signature, assuming simple array return or I handle it
+                // Actually dataService might default to array. Let's assume array of Availability.
+                // If getAllAvailability is not available, I might need to fetch per user? No, that's N+1.
+                // Assuming it works or returns []
+                setAllAvailability(Array.isArray(avails) ? avails : []);
+
+                // Fetch appointments
+                // Best to fetch only 'today'. but if getAppointments fetches all, we filter.
+                const apps = await getAllAppointments(orgId);
+                const today = new Date();
+                const todaysApps = apps.filter(app => isSameDay(parseISO(app.date), today) && app.status !== 'CANCELLED');
+                setTodayAppointments(todaysApps);
+            } catch (e) {
+                console.error("Failed to fetch insights", e);
+            } finally {
+                setLoadingInsights(false);
+            }
+        };
+
+        fetchInsights();
+    }, [orgId, staff.length]); // Refresh when staff list changes
+
+    // Helper to calculate status
+    const getStaffStatus = (staffId: string) => {
+        if (loadingInsights) return { status: 'available', text: 'Updating...' } as const;
+
+        const today = new Date();
+        const currentDay = today.getDay(); // 0-6
+
+        // Find availability for today
+        const userAvail = allAvailability.filter(a => a.staffId === staffId && a.dayOfWeek === currentDay);
+        // If multiple entries (shouldn't replace unique key constraint), take first relevant
+        const todayRule = userAvail.find(a => a.dayOfWeek === currentDay);
+
+        // 1. Check if working today
+        if (!todayRule || !todayRule.isWorking) {
+            return { status: 'leave', text: 'Off Today' } as const;
+        }
+
+        // 2. Check slots
+        // Simple slot calculation: (End - Start) / 60 mins (approx slot size 60m for simplicity or use org settings)
+        // Hardcoded 60m slot for now for "insight" estimation
+        const startHour = parseInt(todayRule.startTime.split(':')[0]);
+        const endHour = parseInt(todayRule.endTime.split(':')[0]);
+        const totalHours = endHour - startHour;
+        const totalSlots = totalHours; // Assuming 1 hour slots
+
+        // Count appointments
+        const staffApps = todayAppointments.filter(a => a.staffId === staffId);
+        const bookedCount = staffApps.length;
+
+        const slotsLeft = Math.max(0, totalSlots - bookedCount);
+
+        if (slotsLeft === 0) return { status: 'busy', text: 'Fully Booked' } as const;
+        if (slotsLeft <= 2) return { status: 'limited', text: `${slotsLeft} slot${slotsLeft === 1 ? '' : 's'} left` } as const;
+
+        return { status: 'available', text: `Available · ${slotsLeft} slots left` } as const;
+    };
+
 
     // Unique Roles for dropdown
     const availableRoles = useMemo(() => {
@@ -134,7 +210,6 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         if (readOnly) return;
         setEditingStaff(member);
         setIsModalOpen(true);
-        // Load schedule in parallel if needed, or component handles it
         try {
             const existing = await getAvailability(member.id);
             const merged = DEFAULT_SCHEDULE.map(def => {
@@ -148,9 +223,6 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     };
 
     const handleSchedule = async (member: Staff) => {
-        // Even in readOnly, we might want to view schedule, but existing structure uses modal.
-        // If readOnly, maybe we just show readOnly schedule? 
-        // For now, assume consistent behaviour: if readOnly, handleEdit won't run.
         if (readOnly) return;
         await handleEdit(member);
     };
@@ -306,16 +378,21 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                        {filteredStaff.map((member) => (
-                            <StaffCard
-                                key={member.id}
-                                staff={member}
-                                services={services}
-                                onEdit={readOnly ? undefined : handleEdit}
-                                onSchedule={readOnly ? undefined : handleSchedule}
-                                onDelete={readOnly ? undefined : handleDelete}
-                            />
-                        ))}
+                        {filteredStaff.map((member) => {
+                            const { status, text } = getStaffStatus(member.id);
+                            return (
+                                <StaffCard
+                                    key={member.id}
+                                    staff={member}
+                                    services={services}
+                                    onEdit={readOnly ? undefined : handleEdit}
+                                    onSchedule={readOnly ? undefined : handleSchedule}
+                                    onDelete={readOnly ? undefined : handleDelete}
+                                    status={status}
+                                    statusDetails={text}
+                                />
+                            );
+                        })}
                     </div>
                 )}
             </div>
