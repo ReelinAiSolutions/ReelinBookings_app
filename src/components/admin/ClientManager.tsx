@@ -51,11 +51,11 @@ export default function ClientManager({ appointments, services, isStaffView = fa
             if (rawName === 'Blocked Time' || email.includes('@internal') || email.includes('blocked@')) return;
 
             // IDENTITY RESOLUTION
-            // 1. Prefer Email
-            // 2. Prefer Phone
+            // 1. Prefer Phone (Mobile-first unique ID, merges users who change emails)
+            // 2. Prefer Email
             // 3. Fallback to unique entry if neither exists (prevents "John Smith" merging)
 
-            const mainKey = email || phone || `unverified-${apt.id}`;
+            const mainKey = phone || email || `unverified-${apt.id}`;
 
             if (!clientMap.has(mainKey)) {
                 clientMap.set(mainKey, {
