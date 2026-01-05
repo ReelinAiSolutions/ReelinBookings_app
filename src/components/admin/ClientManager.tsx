@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Appointment, Service } from '@/types';
-import { Search, Filter, MoreVertical, Mail, Phone, Calendar, Clock, User as UserIcon, X, ChevronRight, Star, AlertCircle, Copy, Users } from 'lucide-react';
+import { Search, Filter, MoreVertical, Mail, Phone, Calendar, Clock, User as UserIcon, X, ChevronRight, Star, AlertCircle, Copy, Users, ChevronDown } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 
 interface ClientManagerProps {
