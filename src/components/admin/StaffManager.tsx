@@ -289,9 +289,9 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                 </div>
 
                 {/* Actions & Filters */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
+                <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full xl:w-auto">
                     {/* Search */}
-                    <div className="relative group flex-1 xl:w-80">
+                    <div className="relative group flex-1 min-w-[200px] xl:w-80">
                         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
                         <input
                             type="text"
