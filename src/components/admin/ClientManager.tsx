@@ -222,7 +222,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                         <div
                             key={client.id}
                             onClick={() => setSelectedClient(client)}
-                            className="bg-white dark:bg-card p-5 rounded-[24px] shadow-sm hover:shadow-xl hover:shadow-purple-500/5 dark:shadow-none border border-gray-100 dark:border-white/5 transition-all cursor-pointer active:scale-[0.99]"
+                            className="bg-white dark:bg-card p-5 rounded-[24px] hover:shadow-xl hover:shadow-purple-500/5 dark:shadow-none border border-gray-100 dark:border-white/5 transition-all cursor-pointer active:scale-[0.99]"
                         >
                             {/* Card Header */}
                             <div className="flex items-start justify-between mb-6">

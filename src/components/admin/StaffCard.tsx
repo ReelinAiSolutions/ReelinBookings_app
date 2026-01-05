@@ -121,7 +121,7 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
             </div>
 
             {/* Info & Status */}
-            <div className="mb-6">
+            <div className="mb-4">
                 <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1 leading-snug">{staff.name}</h3>
                 {/* Dynamic Status */}
                 {getStatusIndicator()}
@@ -135,7 +135,7 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
             </div>
 
             {/* Services */}
-            <div className="mb-8 flex-1">
+            <div className="mb-4 flex-1">
                 <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Services Offered</p>
                 <div className="flex flex-wrap gap-2">
                     {specialtyServices.length > 0 ? (
