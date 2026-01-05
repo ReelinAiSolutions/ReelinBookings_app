@@ -106,7 +106,7 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
     };
 
     return (
-        <div className="group bg-white dark:bg-card rounded-[24px] border border-gray-100 dark:border-white/5 p-5 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-[#d946ef]/30 transition-all duration-300 relative overflow-visible" style={{ backgroundColor: '#ffffff' }}>
+        <div className="group bg-white !bg-white dark:bg-card rounded-[24px] shadow-sm border border-gray-100 dark:border-white/5 p-5 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-[#d946ef]/30 transition-all duration-300 relative overflow-visible" style={{ backgroundColor: '#ffffff' }}>
 
             {/* Header */}
             <div className="flex justify-between items-start mb-4">

@@ -166,7 +166,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     };
 
     return (
-        <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-700 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+        <div className="flex flex-col h-full bg-gray-50 dark:bg-black/5 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header Section */}
             <div className="flex flex-col gap-4 max-w-3xl mx-auto w-full mb-6">
                 {/* Title Row */}
@@ -217,7 +217,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                         <div
                             key={client.id}
                             onClick={() => setSelectedClient(client)}
-                            className="bg-white dark:bg-card p-5 rounded-[24px] hover:shadow-xl hover:shadow-purple-500/5 dark:shadow-none border border-gray-100 dark:border-white/5 transition-all cursor-pointer active:scale-[0.99]"
+                            className="bg-white !bg-white dark:bg-card p-5 rounded-[24px] shadow-sm hover:shadow-xl hover:shadow-purple-500/5 dark:shadow-none border border-gray-100 dark:border-white/5 transition-all cursor-pointer active:scale-[0.99]"
                             style={{ backgroundColor: '#ffffff' }}
                         >
                             {/* Card Header */}
