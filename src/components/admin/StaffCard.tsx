@@ -106,7 +106,7 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
     };
 
     return (
-        <div className="group bg-white dark:bg-card rounded-[2rem] border border-gray-100 dark:border-white/5 p-6 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-[#d946ef]/30 transition-all duration-300 relative overflow-visible">
+        <div className="group bg-white dark:bg-card rounded-[24px] border border-gray-100 dark:border-white/5 p-5 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-[#d946ef]/30 transition-all duration-300 relative overflow-visible">
 
             {/* Header */}
             <div className="flex justify-between items-start mb-4">
@@ -141,12 +141,12 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                     {specialtyServices.length > 0 ? (
                         <>
                             {specialtyServices.slice(0, 3).map(service => (
-                                <span key={service.id} className="px-3 py-1.5 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 truncate max-w-[150px]">
+                                <span key={service.id} className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 truncate max-w-[150px]">
                                     {service.name}
                                 </span>
                             ))}
                             {specialtyServices.length > 3 && (
-                                <span className="px-3 py-1.5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-500 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5">
+                                <span className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-400 dark:text-gray-500 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5">
                                     +{specialtyServices.length - 3} more
                                 </span>
                             )}
