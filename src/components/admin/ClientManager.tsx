@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Appointment, Service } from '@/types';
-import { Search, Filter, MoreVertical, Mail, Phone, Calendar, Clock, DollarSign, User as UserIcon, X, ChevronRight, ArrowUpDown, Star } from 'lucide-react';
-import { format } from 'date-fns';
+import { Search, Filter, MoreVertical, Mail, Phone, Calendar, Clock, User as UserIcon, X, ChevronRight, Star, AlertCircle, Copy, Users } from 'lucide-react';
+import { format, differenceInDays, parseISO } from 'date-fns';
 
 interface ClientManagerProps {
     appointments: Appointment[];
@@ -10,26 +10,40 @@ interface ClientManagerProps {
     isStaffView?: boolean;
 }
 
+interface ClientProfile {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    lastVisit: string;
+    visits: number;
+    totalSpend: number;
+    history: any[];
+    notes: string[];
+    status: 'NEW' | 'STEADY' | 'INACTIVE';
+    isDuplicate: boolean;
+}
+
 export default function ClientManager({ appointments, services, isStaffView = false }: ClientManagerProps) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
-    const [selectedClient, setSelectedClient] = useState<any | null>(null);
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'NEW' | 'STEADY' | 'INACTIVE'>('ALL');
+    const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
 
-    // Derived Clients List
+    // Process Clients & Intelligence
     const clients = useMemo(() => {
-        const clientMap = new Map();
+        const clientMap = new Map<string, ClientProfile>();
+        const nameFrequency = new Map<string, number>();
 
+        // 1. Aggregation
         appointments.forEach(apt => {
-            // Filter out cancelled, no-show, and internal/blocked time
             if (apt.status === 'CANCELLED' || apt.status === 'NO_SHOW') return;
-
             const name = apt.clientName || 'Unknown Client';
             const email = apt.clientEmail || '';
 
-            // Filter out Blocked Time and Internal System Users
+            // Skip blocked/internal
             if (name === 'Blocked Time' || email.includes('@internal') || email.includes('blocked@')) return;
 
-            const key = email || name; // Prefer email as unique ID
+            const key = email || name; // Unique ID
 
             if (!clientMap.has(key)) {
                 clientMap.set(key, {
@@ -41,430 +55,276 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                     visits: 0,
                     totalSpend: 0,
                     history: [],
-                    notes: []
+                    notes: [],
+                    status: 'STEADY', // Default
+                    isDuplicate: false
                 });
             }
 
-            const client = clientMap.get(key);
+            const client = clientMap.get(key)!;
             client.visits += 1;
-
-            // Update Phone if available (prefer latest)
             if (apt.clientPhone) client.phone = apt.clientPhone;
 
-            // Add to History
             const service = services.find(s => s.id === apt.serviceId);
-            client.history.push({
-                date: apt.date,
-                time: apt.timeSlot,
-                serviceName: service?.name || 'Unknown Service',
-                price: service?.price || 0,
-                status: apt.status,
-                notes: apt.notes
-            });
+            if (service) client.totalSpend += service.price;
 
-            // Collect Notes
-            if (apt.notes) client.notes.push(apt.notes);
-
+            // Update Last Visit
             try {
-                const dateStr = apt.date ? apt.date.split('T')[0] : new Date().toISOString().split('T')[0];
-                const timeStr = apt.timeSlot || '00:00';
-                const aptDate = new Date(`${dateStr}T${timeStr}`);
-
-                if (!isNaN(aptDate.getTime()) && new Date(client.lastVisit).getTime() < aptDate.getTime()) {
-                    client.lastVisit = aptDate.toISOString();
+                const dateStr = apt.date; // ISO YYYY-MM-DD
+                if (dateStr && (client.lastVisit === '0' || dateStr > client.lastVisit)) {
+                    client.lastVisit = dateStr;
                 }
             } catch (e) { }
 
-            if (service) {
-                client.totalSpend += service.price;
+            client.history.push({
+                ...apt,
+                serviceName: service?.name || 'Unknown Service',
+                price: service?.price || 0
+            });
+        });
+
+        // 2. Intelligence Processing
+        const processedClients = Array.from(clientMap.values());
+        const today = new Date();
+
+        // Count names for duplicate detection
+        processedClients.forEach(c => {
+            const normalized = c.name.toLowerCase().trim();
+            nameFrequency.set(normalized, (nameFrequency.get(normalized) || 0) + 1);
+        });
+
+        processedClients.forEach(client => {
+            // Status Logic
+            const daysSinceVisit = differenceInDays(today, parseISO(client.lastVisit));
+
+            if (client.visits === 1) {
+                client.status = 'NEW';
+            } else if (daysSinceVisit > 90) {
+                client.status = 'INACTIVE';
+            } else {
+                client.status = 'STEADY';
+            }
+
+            // Duplicate Logic
+            if ((nameFrequency.get(client.name.toLowerCase().trim()) || 0) > 1) {
+                client.isDuplicate = true;
             }
         });
 
-        let result = Array.from(clientMap.values());
+        // Sort: Most Recent first
+        return processedClients.sort((a, b) => b.lastVisit.localeCompare(a.lastVisit));
+    }, [appointments, services]);
 
-        // Sort by Last Visit Descending by default
-        if (sortConfig) {
-            result.sort((a, b) => {
-                if (sortConfig.key === 'name') return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-                if (sortConfig.key === 'visits') return sortConfig.direction === 'asc' ? a.visits - b.visits : b.visits - a.visits;
-                if (sortConfig.key === 'totalSpend') return sortConfig.direction === 'asc' ? a.totalSpend - b.totalSpend : b.totalSpend - a.totalSpend;
-                if (sortConfig.key === 'lastVisit') return sortConfig.direction === 'asc'
-                    ? new Date(a.lastVisit).getTime() - new Date(b.lastVisit).getTime()
-                    : new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
-                return 0;
-            });
-        } else {
-            result.sort((a, b) => new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime());
-        }
-
-        return result;
-    }, [appointments, services, sortConfig]);
-
-    // ... (Filter logic remains same)
+    // Filtering
     const filteredClients = useMemo(() => {
-        return clients.filter(c =>
-            (c.name && c.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-            (c.email && c.email.toLowerCase().includes(searchQuery.toLowerCase()))
-        );
-    }, [clients, searchQuery]);
+        return clients.filter(c => {
+            const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                c.email.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesStatus = statusFilter === 'ALL' || c.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        });
+    }, [clients, searchQuery, statusFilter]);
 
-    const handleSort = (key: string) => {
-        setSortConfig(current => ({
-            key,
-            direction: current?.key === key && current.direction === 'desc' ? 'asc' : 'desc'
-        }));
-    };
+    // Helpers
+    const getInitials = (name: string) => name.charAt(0).toUpperCase();
 
-    // Helper to clean up display names
-    const getDisplayName = (name: string) => {
-        if (name.toLowerCase().includes('walk-in')) return 'Walk-in Client'; // Simplify Walk-ins
-        return name;
-    };
-
-    // Helper to clean up emails
-    const getDisplayEmail = (email: string) => {
-        if (!email || email.includes('walkin-')) return 'No credentials'; // Hide generated walk-in emails
-        return email;
+    // Determine Status Colors
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'NEW': return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800';
+            case 'STEADY': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
+            case 'INACTIVE': return 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800';
+            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+        }
     };
 
     return (
-        <div className="flex flex-col h-full space-y-8">
-            <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 pt-8 px-4 lg:px-0 lg:pt-0">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                            {isStaffView ? 'My Roster' : 'Client Intelligence'}
-                        </h1>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                            <UserIcon className="w-4 h-4" />
-                            {clients.length} Registered Profiles
-                        </p>
+        <div className="flex flex-col h-full bg-gray-50/50 dark:bg-black/20 min-h-screen pb-20 sm:pb-0">
+            {/* STICKY HEADER */}
+            <div className="sticky top-0 z-30 bg-white/90 dark:bg-[#1a1b1e]/90 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 pt-6 pb-4 px-4 sm:px-8">
+                <div className="flex flex-col gap-4 max-w-3xl mx-auto">
+                    {/* Title Row */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                                {isStaffView ? 'My Clients' : 'Client Intelligence'}
+                            </h1>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                <Users className="w-3.5 h-3.5" />
+                                {clients.length} Registered Profiles
+                            </p>
+                        </div>
+                        <button className="p-2 -mr-2 text-gray-400 hover:text-purple-600 transition-colors">
+                            <MoreVertical className="w-5 h-5" />
+                        </button>
                     </div>
 
-                    {/* Search */}
-                    <div className="flex items-center gap-4">
-                        <div className="relative group w-full md:w-80">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#d946ef] transition-colors" />
+                    {/* Controls Row */}
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1 relative group">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Identify client..."
-                                className="w-full pl-11 pr-4 py-3 bg-gray-100/80 dark:bg-white/5 border border-transparent dark:border-white/10 rounded-[20px] text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all outline-none shadow-sm dark:text-white"
+                                placeholder="Search clients..."
+                                className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-white/5 border-none rounded-2xl text-sm font-bold placeholder:font-medium focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white transition-all shadow-inner"
                             />
+                        </div>
+                        <div className="relative">
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                                className="appearance-none pl-4 pr-10 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-white focus:ring-2 focus:ring-purple-500/20 outline-none shadow-sm"
+                            >
+                                <option value="ALL">All Statuses</option>
+                                <option value="NEW">New</option>
+                                <option value="STEADY">Steady</option>
+                                <option value="INACTIVE">Inactive</option>
+                            </select>
+                            <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Client Table */}
-                <div className="flex-1 bg-white dark:bg-card border border-gray-100 dark:border-white/10 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col">
-                    {filteredClients.length === 0 ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-                            <div className="w-16 h-16 mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                                <UserIcon className="w-8 h-8 text-gray-300" />
-                            </div>
-                            <h3 className="text-lg font-black text-gray-900 mb-1">No profiles found</h3>
-                            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest max-w-xs mx-auto">
-                                {searchQuery ? 'Adjust identifiers and try search again' : 'Client activity will populate this database'}
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Mobile Card View */}
-                            <div className="md:hidden divide-y divide-gray-50 overflow-y-auto">
-                                {filteredClients.map((client) => {
-                                    const isVIP = client.totalSpend > 500;
-                                    const isNew = client.visits === 1;
-                                    const displayName = getDisplayName(client.name);
-                                    const displayEmail = getDisplayEmail(client.email);
-
-                                    return (
-                                        <div
-                                            key={client.id}
-                                            onClick={() => setSelectedClient(client)}
-                                            className="p-6 space-y-4 active:bg-gray-50 transition-colors cursor-pointer"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    {/* Premium Avatar */}
-                                                    <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-primary-100 shadow-lg ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'}`}>
-                                                        {displayName.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-black text-gray-900 flex items-center gap-2 text-lg">
-                                                            {displayName}
-                                                            {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
-                                                        </div>
-                                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                            <span>{displayEmail}</span>
-                                                            {client.phone && (
-                                                                <>
-                                                                    <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                                                                    <span className="text-gray-500">{client.phone}</span>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="bg-gray-50/50 dark:bg-white/5 p-3 rounded-2xl border border-gray-100 dark:border-white/10">
-                                                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
-                                                    <div className="text-sm font-black text-gray-900 dark:text-white">${client.totalSpend.toLocaleString()}</div>
-                                                </div>
-                                                <div className="bg-gray-50/50 dark:bg-white/5 p-3 rounded-2xl border border-gray-100 dark:border-white/10">
-                                                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Session Count</div>
-                                                    <div className="text-sm font-black text-gray-900 dark:text-white">{client.visits} Visits</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-between pt-2">
-                                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                    Last: {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'MMM d, yyyy') : '-'}
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    {isVIP && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-100">VIP</span>}
-                                                    {isNew && <span className="px-2 py-0.5 bg-[#F3E8FF] text-[#A855F7] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#A855F7]/20">New</span>}
-                                                    {!isVIP && !isNew && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-gray-200">Steady</span>}
-                                                </div>
-                                            </div>
+            {/* CONTENT GRID */}
+            <div className="flex-1 px-4 sm:px-8 py-6 overflow-y-auto">
+                <div className="max-w-3xl mx-auto space-y-4">
+                    {filteredClients.map(client => (
+                        <div
+                            key={client.id}
+                            onClick={() => setSelectedClient(client)}
+                            className="bg-white dark:bg-card p-5 rounded-[24px] shadow-sm hover:shadow-xl hover:shadow-purple-500/5 dark:shadow-none border border-gray-100 dark:border-white/5 transition-all cursor-pointer active:scale-[0.99]"
+                        >
+                            {/* Card Header */}
+                            <div className="flex items-start justify-between mb-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white flex items-center justify-center text-xl font-black shadow-lg shadow-purple-500/20">
+                                        {getInitials(client.name)}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">
+                                            {client.name}
+                                        </h3>
+                                        <div className="text-xs font-medium text-gray-400 mt-1 truncate max-w-[200px]">
+                                            {client.email || (client.phone ? client.phone : 'No credentials')}
                                         </div>
-                                    );
-                                })}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <span className={`px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest border ${getStatusColor(client.status)}`}>
+                                        {client.status}
+                                    </span>
+                                    {client.isDuplicate && (
+                                        <span className="px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1">
+                                            <Copy className="w-3 h-3" />
+                                            Duplicate
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* Desktop Table View */}
-                            <div className="hidden md:block overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="border-b border-gray-50 dark:border-white/5 bg-gray-50/30 dark:bg-white/5">
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group whitespace-nowrap" onClick={() => handleSort('name')}>
-                                                <div className="flex items-center gap-2">Client Identity <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                                            </th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('lastVisit')}>
-                                                <div className="flex items-center justify-end gap-2">Last Active <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                                            </th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('visits')}>
-                                                <div className="flex items-center justify-end gap-2">Session Count <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                                            </th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-[#d946ef] transition-colors group text-right whitespace-nowrap" onClick={() => handleSort('totalSpend')}>
-                                                <div className="flex items-center justify-end gap-2">Gross Revenue <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
-                                            </th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right whitespace-nowrap">
-                                                Status
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {filteredClients.map((client) => {
-                                            const isVIP = client.totalSpend > 500;
-                                            const isNew = client.visits === 1;
-                                            const displayName = getDisplayName(client.name);
-                                            const displayEmail = getDisplayEmail(client.email);
-
-                                            return (
-                                                <tr
-                                                    key={client.id}
-                                                    onClick={() => setSelectedClient(client)}
-                                                    className="group hover:bg-[#A855F7]/5 transition-all cursor-pointer"
-                                                >
-                                                    {/* Client Profile */}
-                                                    <td className="px-8 py-5 whitespace-nowrap">
-                                                        <div className="flex items-center gap-4">
-                                                            {/* Premium Avatars with Purple Gradient */}
-                                                            <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform duration-300 ${isVIP ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'
-                                                                }`}>
-                                                                {displayName.charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-black text-gray-900 dark:text-white group-hover:text-[#d946ef] transition-colors flex items-center gap-2 text-base">
-                                                                    {displayName}
-                                                                    {isVIP && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
-                                                                </div>
-                                                                <div className="text-[10px] font-black text-gray-400 flex items-center gap-1.5 mt-1 uppercase tracking-widest">
-                                                                    <Mail className="w-3 h-3" />
-                                                                    {displayEmail}
-                                                                    {client.phone && (
-                                                                        <span className="flex items-center gap-1.5 ml-2 text-gray-500">
-                                                                            <Phone className="w-3 h-3" />
-                                                                            {client.phone}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-
-                                                    {/* Last Visit */}
-                                                    <td className="px-8 py-5 text-right whitespace-nowrap">
-                                                        <div className="text-sm font-black text-gray-900 dark:text-white">
-                                                            {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'MMM d, yyyy') : '-'}
-                                                        </div>
-                                                        <div className="text-[10px] font-black text-gray-400 mt-1 uppercase tracking-widest">
-                                                            {client.lastVisit !== '0' ? format(new Date(client.lastVisit), 'h:mm a') : ''}
-                                                        </div>
-                                                    </td>
-
-                                                    {/* Visits */}
-                                                    <td className="px-8 py-5 text-right whitespace-nowrap">
-                                                        <span className="inline-flex items-center px-3 py-1 rounded-xl bg-gray-50 dark:bg-white/10 text-gray-900 dark:text-white text-[10px] font-black uppercase tracking-widest border border-gray-100 dark:border-white/5">
-                                                            {client.visits} Sessions
-                                                        </span>
-                                                    </td>
-
-                                                    {/* Total Spend */}
-                                                    <td className="px-8 py-5 text-right whitespace-nowrap">
-                                                        <div className="text-sm font-black text-gray-900 dark:text-white">
-                                                            ${client.totalSpend.toLocaleString()}
-                                                        </div>
-                                                    </td>
-
-                                                    {/* Badges */}
-                                                    <td className="px-8 py-5 text-right whitespace-nowrap">
-                                                        <div className="flex justify-end gap-2">
-                                                            {isVIP && (
-                                                                <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-100">
-                                                                    VIP
-                                                                </span>
-                                                            )}
-                                                            {isNew && (
-                                                                <span className="px-2 py-0.5 bg-[#F3E8FF] text-[#A855F7] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#A855F7]/20">
-                                                                    New
-                                                                </span>
-                                                            )}
-                                                            {!isVIP && !isNew && (
-                                                                <span className="px-2 py-0.5 bg-gray-50 text-gray-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-gray-100">
-                                                                    Steady
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                            {/* Metrics Row */}
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-2xl border border-gray-100 dark:border-white/5">
+                                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
+                                    <div className="text-base font-black text-gray-900 dark:text-white">
+                                        ${client.totalSpend.toLocaleString()}
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-2xl border border-gray-100 dark:border-white/5">
+                                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Session Count</div>
+                                    <div className="text-base font-black text-gray-900 dark:text-white">
+                                        {client.visits} Visits
+                                    </div>
+                                </div>
                             </div>
-                        </>
+
+                            {/* Recency & Intelligence Footer */}
+                            <div className="flex items-center justify-between pt-2">
+                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400">
+                                    <Calendar className="w-4 h-4 text-gray-300" />
+                                    <span>Last Booked: {client.lastVisit !== '0' ? format(parseISO(client.lastVisit), 'MMM d, yyyy') : 'Never'}</span>
+                                </div>
+
+                                {client.status === 'INACTIVE' && (
+                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg">
+                                        {differenceInDays(new Date(), parseISO(client.lastVisit))} days inactive
+                                    </span>
+                                )}
+                                {client.status === 'NEW' && (
+                                    <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded-lg">
+                                        1st Booking
+                                    </span>
+                                )}
+                            </div>
+
+                            {client.isDuplicate && (
+                                <div className="mt-4 p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 flex items-start gap-3">
+                                    <AlertCircle className="w-4 h-4 text-gray-400 mt-0.5" />
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                                        <strong className="text-gray-900 dark:text-white">Duplicate Detected.</strong> Another profile shares this name. You might want to merge them.
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+
+                    {filteredClients.length === 0 && (
+                        <div className="text-center py-20 opacity-50">
+                            <UserIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                            <p className="font-bold">No clients found matching your filter</p>
+                        </div>
                     )}
                 </div>
             </div>
 
-            {/* Client Profile Modal (Slide Over) - Portal to Body */}
+            {/* SLIDE-OVER MODAL (Simplified for this iteration, reusing logic) */}
             {selectedClient && typeof document !== 'undefined' && createPortal(
-                <div className="fixed inset-0 z-[9999] flex justify-end font-sans">
-                    {/* Backdrop */}
+                <div className="fixed inset-0 z-[100] flex justify-end font-sans">
                     <div
-                        className="absolute inset-0 bg-gray-900/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-300"
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in"
                         onClick={() => setSelectedClient(null)}
                     />
-
-                    {/* Modal Content */}
-                    <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col border-l border-gray-100 dark:border-white/10">
-                        {/* Header */}
-                        <div className="p-8 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/20">
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center text-2xl font-black shadow-lg ${selectedClient.totalSpend > 500 ? 'bg-gradient-to-br from-amber-200 to-yellow-400 text-yellow-950' : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20'}`}>
-                                        {getDisplayName(selectedClient.name).charAt(0).toUpperCase()}
+                    <div className="relative w-full max-w-md bg-white dark:bg-[#1a1b1e] h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+                        <div className="p-6 border-b border-gray-100 dark:border-white/10 flex justify-between items-center">
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white">{selectedClient.name}</h2>
+                            <button onClick={() => setSelectedClient(null)} className="p-2 bg-gray-100 dark:bg-white/10 rounded-full">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto space-y-6">
+                            {/* Detailed stats or history reuse */}
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Contact</h3>
+                                {selectedClient.email && (
+                                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-white/5">
+                                        <Mail className="w-4 h-4 text-gray-400" />
+                                        <span className="font-bold text-sm dark:text-white">{selectedClient.email}</span>
                                     </div>
-                                    <div>
-                                        <h2 className="text-xl font-black text-gray-900 dark:text-white">{getDisplayName(selectedClient.name)}</h2>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            {selectedClient.totalSpend > 500 && <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-200 dark:border-amber-500/20">VIP Client</span>}
-                                            <span className="px-2 py-0.5 bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-gray-200 dark:border-white/5">
-                                                {selectedClient.visits} Visits
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setSelectedClient(null)}
-                                    className="p-2 bg-white dark:bg-white/5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors shadow-sm dark:shadow-none"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-
-                            {/* Contact Details */}
-                            <div className="mt-8 space-y-3">
-                                <div className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none">
-                                    <div className="p-2 bg-[#F3E8FF] dark:bg-primary-900/20 text-[#A855F7] dark:text-primary-400 rounded-lg">
-                                        <Mail className="w-4 h-4" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</div>
-                                        <div className="text-sm font-bold text-gray-900 dark:text-white">{getDisplayEmail(selectedClient.email)}</div>
-                                    </div>
-                                </div>
+                                )}
                                 {selectedClient.phone && (
-                                    <div className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none">
-                                        <div className="p-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg">
-                                            <Phone className="w-4 h-4" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</div>
-                                            <div className="text-sm font-bold text-gray-900 dark:text-white">{selectedClient.phone}</div>
-                                        </div>
+                                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-white/5">
+                                        <Phone className="w-4 h-4 text-gray-400" />
+                                        <span className="font-bold text-sm dark:text-white">{selectedClient.phone}</span>
                                     </div>
                                 )}
                             </div>
-                        </div>
 
-                        {/* Recent History */}
-                        <div className="flex-1 overflow-y-auto p-8">
-                            <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <Clock className="w-4 h-4 text-gray-400" />
-                                Appointment History
-                            </h3>
-
-                            <div className="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-100 dark:before:bg-white/10">
-                                {selectedClient.history.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((apt: any, idx: number) => (
-                                    <div key={idx} className="relative z-10 pl-10 group">
-                                        {/* Timeline Dot */}
-                                        <div className="absolute left-0 top-1.5 w-10 h-10 flex items-center justify-center">
-                                            <div className="w-3 h-3 rounded-full bg-[#F3E8FF] dark:bg-primary-900/50 border-2 border-[#d946ef] dark:border-primary-500 group-hover:scale-125 transition-transform" />
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">History</h3>
+                                {selectedClient.history.map((h, i) => (
+                                    <div key={i} className="p-4 rounded-2xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
+                                        <div className="flex justify-between mb-1">
+                                            <span className="font-bold dark:text-white">{h.serviceName}</span>
+                                            <span className="font-black dark:text-white">${h.price}</span>
                                         </div>
-
-                                        <div className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 p-4 shadow-sm hover:shadow-md dark:shadow-none transition-all">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                                                    {format(new Date(apt.date), 'MMMM d, yyyy')}
-                                                </div>
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${apt.status === 'COMPLETED' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-500/20' :
-                                                    apt.status === 'CANCELLED' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20' :
-                                                        'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/5'
-                                                    }`}>
-                                                    {apt.status}
-                                                </span>
-                                            </div>
-                                            <div className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">{apt.serviceName}</div>
-                                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                                <span>{apt.time}</span>
-                                                <span className="font-bold text-gray-900 dark:text-white">${apt.price}</span>
-                                            </div>
-                                            {apt.notes && (
-                                                <div className="mt-3 pt-3 border-t border-gray-50 dark:border-white/5 text-xs text-gray-600 dark:text-gray-300 italic bg-gray-50/50 dark:bg-white/5 p-2 rounded-lg">
-                                                    "{apt.notes}"
-                                                </div>
-                                            )}
+                                        <div className="text-xs text-gray-500 font-medium">
+                                            {format(parseISO(h.date), 'MMM d, yyyy')} at {h.timeSlot}
                                         </div>
                                     </div>
                                 ))}
-                            </div>
-                        </div>
-
-                        {/* Footer Stats - Increased Padding for Mobile Safe Area */}
-                        <div className="p-6 pb-24 sm:pb-6 bg-gray-50 dark:bg-black/20 border-t border-gray-100 dark:border-white/10 grid grid-cols-2 gap-4">
-                            <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none text-center">
-                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lifetime Value</div>
-                                <div className="text-xl font-black text-gray-900 dark:text-white">${selectedClient.totalSpend.toLocaleString()}</div>
-                            </div>
-                            <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none text-center">
-                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Sessions</div>
-                                <div className="text-xl font-black text-gray-900 dark:text-white">{selectedClient.visits}</div>
                             </div>
                         </div>
                     </div>
