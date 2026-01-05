@@ -166,51 +166,46 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50/50 dark:bg-black/20 min-h-screen pb-20 sm:pb-0">
-            {/* STICKY HEADER */}
-            <div className="sticky top-0 z-30 bg-white/90 dark:bg-[#1a1b1e]/90 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 pt-6 pb-4 px-4 sm:px-8">
-                <div className="flex flex-col gap-4 max-w-3xl mx-auto">
-                    {/* Title Row */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-                                {isStaffView ? 'My Clients' : 'Client Intelligence'}
-                            </h1>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                                <Users className="w-3.5 h-3.5" />
-                                {clients.length} Registered Profiles
-                            </p>
-                        </div>
-                        <button className="p-2 -mr-2 text-gray-400 hover:text-purple-600 transition-colors">
-                            <MoreVertical className="w-5 h-5" />
-                        </button>
+        <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-700 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+            {/* Header Section */}
+            <div className="flex flex-col gap-4 max-w-3xl mx-auto w-full mb-6">
+                {/* Title Row */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-none mb-1">
+                            {isStaffView ? 'My Clients' : 'Client Intelligence'}
+                        </h1>
+                        <p className="text-gray-500 font-medium text-sm flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5" />
+                            {clients.length} Registered Profiles
+                        </p>
                     </div>
+                </div>
 
-                    {/* Controls Row */}
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1 relative group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search clients..."
-                                className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-white/5 border-none rounded-2xl text-sm font-bold placeholder:font-medium focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white transition-all shadow-inner"
-                            />
-                        </div>
-                        <div className="relative">
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value as any)}
-                                className="appearance-none pl-4 pr-10 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-white focus:ring-2 focus:ring-purple-500/20 outline-none shadow-sm"
-                            >
-                                <option value="ALL">All Statuses</option>
-                                <option value="NEW">New</option>
-                                <option value="STEADY">Steady</option>
-                                <option value="INACTIVE">Inactive</option>
-                            </select>
-                            <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                        </div>
+                {/* Controls Row */}
+                <div className="flex items-center gap-3">
+                    <div className="flex-1 relative group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search clients..."
+                            className="w-full pl-12 pr-6 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all outline-none shadow-sm dark:text-white"
+                        />
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as any)}
+                            className="appearance-none pl-4 pr-10 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none shadow-sm cursor-pointer"
+                        >
+                            <option value="ALL">All Statuses</option>
+                            <option value="NEW">New</option>
+                            <option value="STEADY">Steady</option>
+                            <option value="INACTIVE">Inactive</option>
+                        </select>
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
                 </div>
             </div>
