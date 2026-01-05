@@ -1097,7 +1097,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4 mb-6">
-                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/60 dark:bg-black/20' : 'bg-transparent dark:bg-white/5'}`}>
+                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/60 dark:bg-black/20' : 'bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 shadow-sm'}`}>
                                                     <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Total LTV</div>
                                                     <div className="text-lg font-black text-gray-900 dark:text-white">${client.totalLtv.toLocaleString()}</div>
                                                 </div>
