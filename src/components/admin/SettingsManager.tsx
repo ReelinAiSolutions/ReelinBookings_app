@@ -1,7 +1,7 @@
 'use client';
 import { createClient } from '@/lib/supabase';
 
-import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2, Tag, ChevronDown, ChevronUp, ShieldAlert, CalendarDays, FileText, LogOut } from 'lucide-react';
+import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2, Tag, ChevronDown, ChevronUp, ShieldAlert, CalendarDays, FileText, LogOut, Moon, Sun } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/Button';
@@ -100,6 +100,30 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
     });
 
     const [calendarColor, setCalendarColor] = useState<'staff' | 'service'>(org.settings?.color_mode || 'staff');
+
+    // Appearance State
+    const [isDark, setIsDark] = useState(false);
+
+    useEffect(() => {
+        // Check local storage or system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setIsDark(true);
+            document.documentElement.classList.add('dark');
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        if (isDark) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            setIsDark(false);
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            setIsDark(true);
+        }
+    };
 
     const supabase = createClient();
 
@@ -807,6 +831,37 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                                 </>
                             )}
                         </Button>
+                    </div>
+                </AccordionItem>
+
+                {/* 7. App Appearance (NEW) */}
+                <AccordionItem
+                    title="Your View Preference"
+                    subtitle="Customize your personal app experience"
+                    icon={Palette}
+                    colorClass="bg-pink-50 text-pink-600"
+                    isOpen={openSection === 'appearance'}
+                    onToggle={() => toggleSection('appearance')}
+                >
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between p-6 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors ${isDark ? 'bg-gray-800 text-purple-400' : 'bg-white text-amber-500'}`}>
+                                    {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Dark Mode</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{isDark ? 'Easy on the eyes' : 'Bright and clear'}</div>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={toggleTheme}
+                                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 ${isDark ? 'bg-purple-600' : 'bg-gray-200'}`}
+                            >
+                                <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-[26px]' : 'translate-x-0'}`} />
+                            </button>
+                        </div>
                     </div>
                 </AccordionItem>
 
