@@ -248,19 +248,24 @@ export default function ClientManager({ appointments, services, isStaffView = fa
 
                             {/* Metrics Row */}
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div className="p-3 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm relative z-10" style={{ backgroundColor: '#ffffff' }}>
+                                <div className="p-3 rounded-2xl border border-gray-100 dark:border-white/5 relative z-10" style={{ backgroundColor: '#ffffff' }}>
                                     <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
-                                    <div className="text-base font-black text-gray-900 dark:text-white">
+                                    <div className="text-base font-black text-gray-900 dark:text-gray-900">
                                         ${client.totalSpend.toLocaleString()}
                                     </div>
                                 </div>
-                                <div className="p-3 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm relative z-10" style={{ backgroundColor: '#ffffff' }}>
+                                <div className="p-3 rounded-2xl border border-gray-100 dark:border-white/5 relative z-10" style={{ backgroundColor: '#ffffff' }}>
                                     <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Session Count</div>
-                                    <div className="text-base font-black text-gray-900 dark:text-white">
+                                    <div className="text-base font-black text-gray-900 dark:text-gray-900">
                                         {client.visits} Visits
                                     </div>
                                 </div>
                             </div>
+
+                            {/* View Profile Button */}
+                            <button className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm transition-colors shadow-lg shadow-purple-500/20 mb-4">
+                                VIEW PROFILE
+                            </button>
 
                             {/* Recency & Intelligence Footer */}
                             <div className="flex items-center justify-between pt-2">
