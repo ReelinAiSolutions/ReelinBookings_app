@@ -32,7 +32,8 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     // Process Clients & Intelligence
     const clients = useMemo(() => {
         const clientMap = new Map<string, ClientProfile>();
-        const nameFrequency = new Map<string, number>();
+        // const nameFrequency = new Map<string, number>(); // REMOVED: Name duplicates are often false positives
+        const phoneFrequency = new Map<string, number>();
 
         // Index to lookup existing client ID by normalized name
         // This allows us to find a client even if the current appointment has no email
@@ -70,8 +71,6 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                     status: 'STEADY', // Default
                     isDuplicate: false
                 });
-                // Ensure name points here
-                clientsByName.set(normalizedName, mainKey);
             }
 
             const client = clientMap.get(mainKey)!;
@@ -106,11 +105,16 @@ export default function ClientManager({ appointments, services, isStaffView = fa
         const today = new Date();
 
         // Calculate Stats & Duplicate Detection
-        // We only count names that appear in DIFFERENT client records (IDs)
+        // STRATEGY: Only flag duplicates if they share a PHONE NUMBER.
         processedClients.forEach(c => {
-            const normalized = c.name.toLowerCase().trim();
-            if (normalized.includes('walk-in') || normalized.includes('unknown')) return;
-            nameFrequency.set(normalized, (nameFrequency.get(normalized) || 0) + 1);
+            if (c.phone) {
+                const normalizedPhone = c.phone.replace(/\D/g, ''); // strip formatting
+                // Only count valid-ish phones (avoid '555555' etc if possible, but >6 digits is a fair start)
+                // Also ignore common placeholders if any
+                if (normalizedPhone.length > 6) {
+                    phoneFrequency.set(normalizedPhone, (phoneFrequency.get(normalizedPhone) || 0) + 1);
+                }
+            }
         });
 
         processedClients.forEach(client => {
@@ -125,13 +129,12 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                 client.status = 'STEADY';
             }
 
-            // Duplicate Logic
-            // Only flag if >1 UNIQUE client record exists with this name.
-            // Since we merged aggressively by name above, true duplicates (same name, diff email) 
-            // will still exist as separate records, which correct.
-            const normalized = client.name.toLowerCase().trim();
-            if (!normalized.includes('walk-in') && (nameFrequency.get(normalized) || 0) > 1) {
-                client.isDuplicate = true;
+            // Duplicate Logic: strict phone match only
+            if (client.phone) {
+                const normalized = client.phone.replace(/\D/g, '');
+                if (normalized.length > 6 && (phoneFrequency.get(normalized) || 0) > 1) {
+                    client.isDuplicate = true;
+                }
             }
         });
 
@@ -288,7 +291,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                 <div className="mt-4 p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 flex items-start gap-3">
                                     <AlertCircle className="w-4 h-4 text-gray-400 mt-0.5" />
                                     <div className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                                        <strong className="text-gray-900 dark:text-white">Duplicate Detected.</strong> Another profile shares this exact name.
+                                        <strong className="text-gray-900 dark:text-white">Possible Duplicate.</strong> Another profile shares this phone number.
                                     </div>
                                 </div>
                             )}
