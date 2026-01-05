@@ -275,7 +275,7 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 dark:bg-black/5 space-y-8 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+        <div className="flex flex-col h-full space-y-8 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header Section */}
             <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
                 <div>
