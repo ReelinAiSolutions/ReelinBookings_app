@@ -332,8 +332,9 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                     {/* Sort */}
                     <button
                         onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                        className="flex items-center justify-center gap-2 px-4 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                        className="flex items-center justify-center gap-2 px-4 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm"
                         title="Toggle Sort Order"
+                        style={{ backgroundColor: '#ffffff' }}
                     >
                         <ArrowUpDown className="w-4 h-4" />
                         <span className="hidden sm:inline">{sortOrder === 'asc' ? 'A-Z' : 'Z-A'}</span>

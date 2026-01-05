@@ -141,12 +141,12 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                     {specialtyServices.length > 0 ? (
                         <>
                             {specialtyServices.slice(0, 3).map(service => (
-                                <span key={service.id} className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 truncate max-w-[150px]">
+                                <span key={service.id} className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 truncate max-w-[150px] shadow-sm" style={{ backgroundColor: '#ffffff' }}>
                                     {service.name}
                                 </span>
                             ))}
                             {specialtyServices.length > 3 && (
-                                <span className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-400 dark:text-gray-500 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5">
+                                <span className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-400 dark:text-gray-500 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 shadow-sm" style={{ backgroundColor: '#ffffff' }}>
                                     +{specialtyServices.length - 3} more
                                 </span>
                             )}
