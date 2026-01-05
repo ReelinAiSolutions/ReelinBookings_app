@@ -166,7 +166,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     };
 
     return (
-        <div className="flex flex-col h-full pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+        <div className="flex flex-col h-full bg-gray-50 dark:bg-black/5 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header Section */}
             <div className="flex flex-col gap-4 max-w-3xl mx-auto w-full mb-6">
                 {/* Title Row */}
