@@ -3,8 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { createStaff, deleteStaff, getAvailability, upsertAvailability, updateStaffServices, updateStaff, checkActiveAppointments } from '@/services/dataService';
 import { Service, Staff } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Plus, Search, Grid, List, Users2 } from 'lucide-react';
-
+import { Plus, Search, Grid, List, Users2, Filter, ChevronDown, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import StaffCard from './StaffCard';
 import StaffFormModal from './StaffFormModal';
@@ -31,21 +30,45 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     const { toast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [modalSchedule, setModalSchedule] = useState<any[]>([]);
-    const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
+
+    // Filters & Search
+    const [searchQuery, setSearchQuery] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [serviceFilter, setServiceFilter] = useState('all');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     const supabase = createClient();
 
-    // Filter staff
+    // Unique Roles for dropdown
+    const availableRoles = useMemo(() => {
+        const roles = new Set(staff.map(s => s.role).filter(Boolean));
+        return Array.from(roles);
+    }, [staff]);
+
+    // Filter Logic
     const filteredStaff = useMemo(() => {
-        return staff.filter(member =>
-            member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            member.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            member.email?.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [staff, searchQuery]);
+        let result = staff.filter(member => {
+            const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                member.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                member.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
+            const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+
+            const matchesService = serviceFilter === 'all' || (member.specialties && member.specialties.includes(serviceFilter));
+
+            return matchesSearch && matchesRole && matchesService;
+        });
+
+        // Sort
+        result.sort((a, b) => {
+            return sortOrder === 'asc'
+                ? a.name.localeCompare(b.name)
+                : b.name.localeCompare(a.name);
+        });
+
+        return result;
+    }, [staff, searchQuery, roleFilter, serviceFilter, sortOrder]);
 
     const handleSave = async (data: Partial<Staff>, avatarFile?: File | null) => {
         if (readOnly) return;
@@ -80,7 +103,6 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
             }
 
             if (editingStaff) {
-                // Update existing
                 await updateStaff(editingStaff.id, {
                     name: data.name,
                     role: data.role || '',
@@ -89,7 +111,6 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                 }, orgId);
                 toast('Team member updated successfully', 'success');
             } else {
-                // Create new
                 await createStaff({
                     name: data.name,
                     role: data.role || '',
@@ -112,9 +133,8 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     const handleEdit = async (member: Staff) => {
         if (readOnly) return;
         setEditingStaff(member);
-
-        // Load schedule
-        setIsLoadingSchedule(true);
+        setIsModalOpen(true);
+        // Load schedule in parallel if needed, or component handles it
         try {
             const existing = await getAvailability(member.id);
             const merged = DEFAULT_SCHEDULE.map(def => {
@@ -123,16 +143,14 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
             });
             setModalSchedule(merged);
         } catch (e) {
-            console.error(e);
             setModalSchedule(DEFAULT_SCHEDULE);
-        } finally {
-            setIsLoadingSchedule(false);
         }
-
-        setIsModalOpen(true);
     };
 
     const handleSchedule = async (member: Staff) => {
+        // Even in readOnly, we might want to view schedule, but existing structure uses modal.
+        // If readOnly, maybe we just show readOnly schedule? 
+        // For now, assume consistent behaviour: if readOnly, handleEdit won't run.
         if (readOnly) return;
         await handleEdit(member);
     };
@@ -166,20 +184,17 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
 
     const handleSaveSchedule = async (schedule: any[]) => {
         if (readOnly || !editingStaff) return;
-
         try {
             await upsertAvailability(schedule, editingStaff.id, orgId);
             toast('Schedule saved successfully', 'success');
         } catch (e) {
             console.error(e);
             toast('Failed to save schedule', 'error');
-            throw e;
         }
     };
 
     const handleSaveServices = async (serviceIds: string[]) => {
         if (readOnly || !editingStaff) return;
-
         try {
             await updateStaffServices(editingStaff.id, serviceIds);
             toast('Services updated successfully', 'success');
@@ -187,81 +202,100 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
         } catch (e) {
             console.error(e);
             toast('Failed to update services', 'error');
-            throw e;
         }
     };
 
     return (
-        <div className="flex flex-col h-full space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header Section */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
                         {readOnly ? 'Meet The Team' : 'Team Roster'}
                     </h1>
+                    <p className="text-gray-500 font-medium">Manage your staff, roles, and schedules.</p>
                 </div>
 
                 {/* Actions & Filters */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
                     {/* Search */}
-                    <div className="relative group flex-1 lg:w-96">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#d946ef] transition-all" />
+                    <div className="relative group flex-1 xl:w-80">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search team..."
-                            className="w-full pl-14 pr-6 py-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[24px] text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all outline-none shadow-sm dark:text-white"
+                            placeholder="Search staff..."
+                            className="w-full pl-12 pr-6 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all outline-none shadow-sm dark:text-white"
                         />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        {/* View Toggle */}
-                        <div className="hidden lg:flex bg-gray-50 dark:bg-white/5 p-1.5 rounded-[24px] border border-gray-100 dark:border-white/10 shadow-sm flex-1 sm:flex-none">
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                title="Grid View"
-                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'grid' ? 'bg-[#F3E8FF] dark:bg-primary-900/20 text-[#A855F7] dark:text-primary-400 shadow-md ring-1 ring-[#A855F7]/10 dark:ring-primary-500/20' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                            >
-                                <Grid className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setViewMode('list')}
-                                title="List View"
-                                className={`flex-1 sm:p-2.5 p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${viewMode === 'list' ? 'bg-[#F3E8FF] dark:bg-primary-900/20 text-[#A855F7] dark:text-primary-400 shadow-md ring-1 ring-[#A855F7]/10 dark:ring-primary-500/20' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                            >
-                                <List className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {!readOnly && (
-                            <button
-                                onClick={handleAddNew}
-                                className="bg-gradient-to-r from-[#A855F7] to-[#d946ef] hover:opacity-90 text-white rounded-[24px] px-6 sm:px-8 py-4 font-black text-xs uppercase tracking-widest shadow-2xl shadow-[#d946ef]/20 transition-all active:scale-95 flex items-center justify-center gap-2 group flex-[2] sm:flex-none"
-                            >
-                                <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
-                                <span className="hidden xs:inline">Add Member</span>
-                                <span className="xs:hidden">Add</span>
-                            </button>
-                        )}
+                    {/* Filter: Role */}
+                    <div className="relative">
+                        <select
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value)}
+                            className="appearance-none w-full sm:w-auto pl-4 pr-10 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none cursor-pointer"
+                        >
+                            <option value="all">All Roles</option>
+                            {availableRoles.map(role => (
+                                <option key={role} value={role}>{role}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
+
+                    {/* Filter: Service */}
+                    <div className="relative">
+                        <select
+                            value={serviceFilter}
+                            onChange={(e) => setServiceFilter(e.target.value)}
+                            className="appearance-none w-full sm:w-auto pl-4 pr-10 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none cursor-pointer"
+                        >
+                            <option value="all">All Services</option>
+                            {services.map(service => (
+                                <option key={service.id} value={service.id}>{service.name}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+
+                    {/* Sort */}
+                    <button
+                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                        className="flex items-center justify-center gap-2 px-4 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                        title="Toggle Sort Order"
+                    >
+                        <ArrowUpDown className="w-4 h-4" />
+                        <span className="hidden sm:inline">{sortOrder === 'asc' ? 'A-Z' : 'Z-A'}</span>
+                    </button>
+
+                    {!readOnly && (
+                        <button
+                            onClick={handleAddNew}
+                            className="bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-200 text-white dark:text-black rounded-2xl px-6 py-3.5 font-black text-xs uppercase tracking-widest shadow-xl shadow-gray-200/50 dark:shadow-none transition-all active:scale-95 flex items-center justify-center gap-2 group whitespace-nowrap"
+                        >
+                            <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
+                            <span>Add Member</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* Team Grid/List */}
-            <div className="flex-1">
+            {/* Team Grid */}
+            <div className="flex-1 pb-24">
                 {filteredStaff.length === 0 ? (
-                    <div className="h-96 flex flex-col items-center justify-center text-center bg-white rounded-3xl border border-gray-100 border-dashed">
-                        <div className="w-16 h-16 mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                            <Users2 className="w-8 h-8 text-gray-300" />
+                    <div className="h-96 flex flex-col items-center justify-center text-center bg-white dark:bg-white/5 rounded-[2rem] border border-gray-100 dark:border-white/5 border-dashed">
+                        <div className="w-20 h-20 mb-6 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center">
+                            <Users2 className="w-10 h-10 text-gray-300 dark:text-gray-600" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">
-                            {searchQuery ? 'No members found' : 'No team members'}
+                        <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">
+                            {searchQuery ? 'No members match filters' : 'No team members found'}
                         </h3>
-                        <p className="text-gray-500 mb-6 text-sm max-w-xs mx-auto">
+                        <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-xs mx-auto font-medium">
                             {searchQuery
-                                ? 'Try adjusting your search terms'
-                                : 'Get started by adding your first team member to the roster'}
+                                ? 'Try adjusting your search or filters'
+                                : 'Get started by adding your first team member'}
                         </p>
                         {!readOnly && !searchQuery && (
                             <Button onClick={handleAddNew} variant="outline">
@@ -271,27 +305,22 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
                         )}
                     </div>
                 ) : (
-                    <div className={
-                        viewMode === 'grid'
-                            ? 'grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-4 md:gap-6'
-                            : 'space-y-3'
-                    }>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                         {filteredStaff.map((member) => (
-                            <div key={member.id} className={readOnly ? "pointer-events-none" : ""}>
-                                <StaffCard
-                                    staff={member}
-                                    services={services}
-                                    onEdit={readOnly ? undefined : handleEdit}
-                                    onSchedule={readOnly ? undefined : handleSchedule}
-                                    onDelete={readOnly ? undefined : handleDelete}
-                                />
-                            </div>
+                            <StaffCard
+                                key={member.id}
+                                staff={member}
+                                services={services}
+                                onEdit={readOnly ? undefined : handleEdit}
+                                onSchedule={readOnly ? undefined : handleSchedule}
+                                onDelete={readOnly ? undefined : handleDelete}
+                            />
                         ))}
                     </div>
                 )}
             </div>
 
-            {/* Form Modal - Only render if not readOnly */}
+            {/* Form Modal */}
             {!readOnly && (
                 <StaffFormModal
                     isOpen={isModalOpen}

@@ -1,6 +1,8 @@
 import { Staff, Service } from '@/types';
-import { Mail, Scissors, Edit2, Trash2, Calendar, TrendingUp, MoreHorizontal, Clock } from 'lucide-react';
+import { Mail, Edit2, Trash2, MoreHorizontal, Calendar, CheckCircle2, Crown, Shield, User } from 'lucide-react';
 import Image from 'next/image';
+import { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/Button';
 
 interface StaffCardProps {
     staff: Staff;
@@ -11,104 +13,153 @@ interface StaffCardProps {
     appointmentCount?: number;
 }
 
-export default function StaffCard({ staff, services, onEdit, onSchedule, onDelete, appointmentCount = 0 }: StaffCardProps) {
+export default function StaffCard({ staff, services, onEdit, onSchedule, onDelete }: StaffCardProps) {
+    const [showMenu, setShowMenu] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
     const hasAvatar = staff.avatar && staff.avatar.trim() !== '';
-    const specialtyServices = services.filter(s => staff.specialties.includes(s.id));
 
-    // Bright Neon Brand Gradient (Purple-500 to Fuchsia-500)
-    const avatarGradient = 'from-[#A855F7] to-[#d946ef]';
+    // Safety check for specialties
+    const staffSpecialties = Array.isArray(staff.specialties) ? staff.specialties : [];
+    const specialtyServices = services.filter(s => staffSpecialties.includes(s.id));
+
+    // Handle click outside for overflow menu
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setShowMenu(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    // Role Badge Style
+    const getRoleBadge = () => {
+        const role = staff.role?.toLowerCase() || 'staff';
+        if (role.includes('owner')) {
+            return (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest border border-amber-200 dark:border-amber-700/50">
+                    <Crown className="w-3 h-3" strokeWidth={3} />
+                    Owner
+                </span>
+            );
+        } else if (role.includes('manager')) {
+            return (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest border border-indigo-200 dark:border-indigo-700/50">
+                    <Shield className="w-3 h-3" strokeWidth={3} />
+                    Manager
+                </span>
+            );
+        }
+        return (
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">
+                <User className="w-3 h-3" strokeWidth={3} />
+                Staff
+            </span>
+        );
+    };
 
     return (
-        <div className="group p-3 sm:p-5 rounded-[24px] bg-white dark:bg-card border border-gray-100 dark:border-white/10 hover:border-purple-100 dark:hover:border-purple-500/20 hover:shadow-xl hover:shadow-purple-100/20 dark:hover:shadow-purple-900/10 transition-all duration-300 flex flex-col h-full relative overflow-hidden">
+        <div className="group bg-white dark:bg-card rounded-[2rem] border border-gray-100 dark:border-white/5 p-6 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-[#d946ef]/30 transition-all duration-300 relative overflow-visible">
 
-            {/* Header: Avatar + Role */}
-            <div className="flex items-start justify-between mb-3 sm:mb-5 relative z-10">
-                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${avatarGradient} text-white flex items-center justify-center text-lg sm:text-2xl font-black shadow-lg shadow-[#7C3AED]/20 overflow-hidden relative group-hover:scale-105 transition-transform duration-500`}>
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div className={`w-16 h-16 rounded-[1.2rem] bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-purple-500/20 overflow-hidden`}>
                     {hasAvatar ? (
                         <Image src={staff.avatar!} alt={staff.name} width={64} height={64} className="w-full h-full object-cover" unoptimized />
                     ) : (
-                        <span className="drop-shadow-sm">{staff.name.charAt(0).toUpperCase()}</span>
+                        <span>{staff.name.charAt(0).toUpperCase()}</span>
                     )}
                 </div>
-
-                <span className="px-2 sm:px-3 py-1 rounded-xl bg-gray-50 dark:bg-white/10 text-gray-500 dark:text-gray-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-gray-100 dark:border-white/5 group-hover:bg-[#F3E8FF] dark:group-hover:bg-primary-900/20 group-hover:text-[#A855F7] dark:group-hover:text-primary-400 transition-colors">
-                    {staff.role || 'Member'}
-                </span>
+                <div>{getRoleBadge()}</div>
             </div>
 
-            {/* Info Section */}
-            <div className="mb-3 sm:mb-6 relative z-10">
-                <h3 className="text-sm sm:text-xl font-black text-gray-900 dark:text-white group-hover:text-[#d946ef] transition-colors truncate leading-tight">
-                    {staff.name}
-                </h3>
-                {staff.email ? (
-                    <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                        <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 dark:text-gray-500" />
-                        <p className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">{staff.email}</p>
+            {/* Info & Status */}
+            <div className="mb-6">
+                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1 leading-snug">{staff.name}</h3>
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400">Available today</span>
+                </div>
+                {staff.email && (
+                    <div className="flex items-center gap-1.5 mt-2 opacity-60">
+                        <Mail className="w-3 h-3 text-gray-400" />
+                        <span className="text-[10px] font-bold text-gray-400">{staff.email}</span>
                     </div>
-                ) : (
-                    <div className="h-4 sm:h-5 mt-1 sm:mt-1.5" /> /* Spacer */
                 )}
             </div>
 
-            {/* Specialties Section */}
-            <div className="mb-4 sm:mb-6 flex-1 relative z-10">
-                <p className="text-[8px] sm:text-[9px] font-black text-gray-300 uppercase tracking-widest mb-2 sm:mb-3 pl-1">Top Specialties</p>
-                <div className="flex flex-wrap gap-1 sm:gap-1.5">
+            {/* Services */}
+            <div className="mb-8 flex-1">
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Services Offered</p>
+                <div className="flex flex-wrap gap-2">
                     {specialtyServices.length > 0 ? (
                         <>
                             {specialtyServices.slice(0, 3).map(service => (
-                                <span key={service.id} className="px-2 sm:px-2.5 py-1 sm:py-1.5 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider rounded-lg border border-gray-100 dark:border-white/5 group-hover:border-[#A855F7]/20 dark:group-hover:border-primary-500/20 group-hover:bg-[#F3E8FF] dark:group-hover:bg-primary-900/20 group-hover:text-[#A855F7] dark:group-hover:text-primary-400 transition-colors whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
+                                <span key={service.id} className="px-3 py-1.5 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 truncate max-w-[150px]">
                                     {service.name}
                                 </span>
                             ))}
                             {specialtyServices.length > 3 && (
-                                <span className="px-2 py-1 sm:py-1.5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-500 text-[8px] sm:text-[9px] font-bold rounded-lg border border-gray-100 dark:border-white/5">
-                                    +{specialtyServices.length - 3}
+                                <span className="px-3 py-1.5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-500 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5">
+                                    +{specialtyServices.length - 3} more
                                 </span>
                             )}
                         </>
                     ) : (
-                        <span className="text-[9px] sm:text-[10px] font-bold text-gray-300 pl-1 italic">Generalist</span>
+                        <span className="text-xs font-medium text-gray-400 italic">Generalist (All Services)</span>
                     )}
                 </div>
             </div>
 
-            {/* Stats / Metrics (Optional) */}
-            {appointmentCount > 0 && (
-                <div className="p-2 sm:p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 mb-4 sm:mb-6 group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">Bookings</span>
-                        <span className="text-xs sm:text-sm font-black text-gray-900 dark:text-white">{appointmentCount}</span>
+            {/* Actions */}
+            <div className="mt-auto grid grid-cols-[1fr,auto,auto] gap-2 items-center">
+                {onSchedule ? (
+                    <button
+                        onClick={() => onSchedule(staff)}
+                        className="w-full bg-[#A855F7] hover:bg-[#9333ea] text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-purple-500/20 active:scale-95 transition-all text-center"
+                    >
+                        View Schedule
+                    </button>
+                ) : (
+                    <div className="w-full" />
+                )}
+
+                {onEdit && (
+                    <button
+                        onClick={() => onEdit(staff)}
+                        className="h-[42px] px-4 rounded-xl border-2 border-gray-100 dark:border-white/10 text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2 active:scale-95 transition-all"
+                    >
+                        <Edit2 className="w-4 h-4" />
+                        <span className="hidden sm:inline text-xs">Edit</span>
+                    </button>
+                )}
+
+                {(onDelete) && (
+                    <div className="relative" ref={menuRef}>
+                        <button
+                            onClick={() => setShowMenu(!showMenu)}
+                            className="h-[42px] w-[42px] flex items-center justify-center rounded-xl border border-transparent hover:bg-gray-50 dark:hover:bg-white/5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                        >
+                            <MoreHorizontal className="w-5 h-5" />
+                        </button>
+
+                        {/* Overflow Menu */}
+                        {showMenu && (
+                            <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-[#1a1b1e] rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowMenu(false); onDelete?.(staff); }}
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-bold transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete Member
+                                </button>
+                            </div>
+                        )}
                     </div>
-                </div>
-            )}
-
-
-            {/* Footer Actions */}
-            <div className="pt-3 sm:pt-4 mt-auto border-t border-gray-50 flex items-center gap-2 relative z-10">
-
-
-                <div className="flex items-center gap-1">
-                    {onEdit && (
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onEdit(staff); }}
-                            className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-400 dark:text-gray-500 rounded-xl hover:border-[#A855F7] dark:hover:border-primary-500 hover:text-[#A855F7] dark:hover:text-primary-400 hover:bg-[#F3E8FF] dark:hover:bg-primary-900/20 transition-all active:scale-95"
-                            title="Edit Profile"
-                        >
-                            <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                    )}
-                    {onDelete && (
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onDelete(staff); }}
-                            className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-white border border-gray-200 text-gray-400 rounded-xl hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-all active:scale-95"
-                            title="Remove Member"
-                        >
-                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                    )}
-                </div>
+                )}
             </div>
         </div>
     );
