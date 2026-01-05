@@ -166,7 +166,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 dark:bg-black/5 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+        <div className="flex flex-col h-full pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header Section */}
             <div className="flex flex-col gap-4 max-w-3xl mx-auto w-full mb-6">
                 {/* Title Row */}
@@ -212,7 +212,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
 
             {/* CONTENT GRID */}
             <div className="flex-1 px-4 sm:px-8 py-6 overflow-y-auto">
-                <div className="max-w-3xl mx-auto space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {filteredClients.map(client => (
                         <div
                             key={client.id}
