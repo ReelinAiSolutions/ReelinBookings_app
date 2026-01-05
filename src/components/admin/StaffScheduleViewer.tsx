@@ -21,6 +21,16 @@ export default function StaffScheduleViewer({ isOpen, onClose, staff, availabili
         return availability.find(a => a.dayOfWeek === dayIndex);
     };
 
+    // Helper to format time to 12h
+    const formatTime = (timeStr: string) => {
+        if (!timeStr) return '';
+        // Handle "HH:mm:ss" or "HH:mm"
+        const [hours, minutes] = timeStr.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours), parseInt(minutes));
+        return format(date, 'h:mm a');
+    };
+
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -90,7 +100,9 @@ export default function StaffScheduleViewer({ isOpen, onClose, staff, availabili
                                     {isWorking ? (
                                         <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-xs font-bold border border-green-100 dark:border-green-800/30">
                                             <Clock className="w-3.5 h-3.5" />
-                                            <span>{rule?.startTime} - {rule?.endTime}</span>
+                                            <span>
+                                                {formatTime(rule?.startTime || '')} - {formatTime(rule?.endTime || '')}
+                                            </span>
                                         </div>
                                     ) : (
                                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
