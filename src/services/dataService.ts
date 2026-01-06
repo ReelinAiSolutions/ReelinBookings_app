@@ -210,13 +210,11 @@ export const deleteService = async (id: string, orgId: string) => {
 // --- STAFF ---
 
 export const getStaff = async (orgId: string): Promise<Staff[]> => {
-    const { data, error } = await supabase
+    // 1. Fetch Staff
+    const { data: staffData, error } = await supabase
         .from('staff')
         .select(`
             *,
-            profiles:user_id (
-                avatar_url
-            ),
             staff_services (
                 service_id
             )
@@ -228,13 +226,34 @@ export const getStaff = async (orgId: string): Promise<Staff[]> => {
         return [];
     }
 
-    return data.map((item: any) => ({
+    // 2. Fetch Profiles for these staff members to get their avatars
+    const userIds = staffData
+        .filter((s: any) => s.user_id)
+        .map((s: any) => s.user_id);
+
+    let profileMap: Record<string, string> = {};
+
+    if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, avatar_url')
+            .in('id', userIds);
+
+        if (profiles) {
+            profiles.forEach((p: any) => {
+                if (p.avatar_url) profileMap[p.id] = p.avatar_url;
+            });
+        }
+    }
+
+    // 3. Merge
+    return staffData.map((item: any) => ({
         id: item.id,
         userId: item.user_id,
         name: item.name,
         role: item.role,
-        // Use staff specific avatar if set, otherwise fallback to linked user profile avatar
-        avatar: item.avatar_url || item.profiles?.avatar_url || '',
+        // Use manually set staff avatar, or fallback to profile avatar
+        avatar: item.avatar_url || profileMap[item.user_id] || '',
         email: item.email,
         specialties: item.staff_services?.map((ss: any) => ss.service_id) || []
     }));
