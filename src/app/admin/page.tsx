@@ -444,7 +444,7 @@ export default function AdminDashboard() {
 
             {/* Main Content Area (Mobile: Scrollable Page, Desktop: Fixed Height App Shell) */}
             <main className={`w-full lg:ml-64 lg:min-h-screen ${activeTab === 'operations' ? 'flex flex-col h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'block min-h-screen'} dark:bg-black`} style={activeTab === 'operations' ? { overscrollBehavior: 'none' } : {}}>
-                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden p-0' : 'px-0 py-4 pb-24 lg:p-10 space-y-6'}`}>
+                <div className={`${activeTab === 'operations' ? 'flex-1 flex flex-col h-full overflow-hidden p-0' : 'px-0 pt-6 pb-24 lg:p-10 space-y-6'}`}>
                     {/* Mobile Header (Only for non-operations tabs) */}
 
 

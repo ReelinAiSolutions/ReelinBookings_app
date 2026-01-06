@@ -73,6 +73,7 @@ interface WeeklyCalendarProps {
     showStaffFilter?: boolean;
     currentStaffId?: string;
     holidays?: string[];
+    userThemeColor?: string; // New prop for personal branding
 }
 
 interface DragState {
@@ -101,7 +102,8 @@ export default function WeeklyCalendar({
     colorMode,
     showStaffFilter = true,
     currentStaffId,
-    holidays = []
+    holidays = [],
+    userThemeColor
 }: WeeklyCalendarProps) {
     // -- BUSINESS HOURS CALCULATION --
     const { minHour, maxHour, calendarHours } = React.useMemo(() => {
@@ -259,24 +261,48 @@ export default function WeeklyCalendar({
     const weekDates = Array.from({ length: 7 }).map((_, i) => addDays(startOfCurrentWeek, i));
 
     // -- DYNAMIC COLOR PALETTE --
-    // Shades of Blue, Pink, Purple, Indigo, Violet, Cyan, Teal, Rose (Apple-like/Premium)
+    // Updated to match the "Card Vibe" (More saturated, less pastel/washed out)
     const PREMIUM_PALETTE = [
-        { bg: 'bg-indigo-50 dark:bg-indigo-500/20', border: 'border-indigo-200 dark:border-indigo-500/30', text: 'text-indigo-700 dark:text-indigo-300', dot: 'bg-indigo-500' },
-        { bg: 'bg-violet-50 dark:bg-violet-500/20', border: 'border-violet-200 dark:border-violet-500/30', text: 'text-violet-700 dark:text-violet-300', dot: 'bg-violet-500' },
-        { bg: 'bg-fuchsia-50 dark:bg-fuchsia-500/20', border: 'border-fuchsia-200 dark:border-fuchsia-500/30', text: 'text-fuchsia-700 dark:text-fuchsia-300', dot: 'bg-fuchsia-500' },
-        { bg: 'bg-pink-50 dark:bg-pink-500/20', border: 'border-pink-200 dark:border-pink-500/30', text: 'text-pink-700 dark:text-pink-300', dot: 'bg-pink-500' },
-        { bg: 'bg-rose-50 dark:bg-rose-500/20', border: 'border-rose-200 dark:border-rose-500/30', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-500' },
-        { bg: 'bg-purple-50 dark:bg-purple-500/20', border: 'border-purple-200 dark:border-purple-500/30', text: 'text-purple-700 dark:text-purple-300', dot: 'bg-purple-500' },
-        { bg: 'bg-blue-50 dark:bg-blue-500/20', border: 'border-blue-200 dark:border-blue-500/30', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-500' },
-        { bg: 'bg-sky-50 dark:bg-sky-500/20', border: 'border-sky-200 dark:border-sky-500/30', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-500' },
-        { bg: 'bg-cyan-50 dark:bg-cyan-500/20', border: 'border-cyan-200 dark:border-cyan-500/30', text: 'text-cyan-700 dark:text-cyan-300', dot: 'bg-cyan-500' },
-        { bg: 'bg-teal-50 dark:bg-teal-500/20', border: 'border-teal-200 dark:border-teal-500/30', text: 'text-teal-700 dark:text-teal-300', dot: 'bg-teal-500' },
-        { bg: 'bg-emerald-50 dark:bg-emerald-500/20', border: 'border-emerald-200 dark:border-emerald-500/30', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-500' },
+        { bg: 'bg-indigo-50 dark:bg-indigo-500/10', border: 'border-indigo-200 dark:border-indigo-500/20', text: 'text-indigo-700 dark:text-indigo-300', dot: 'bg-indigo-600', dotText: 'text-white' },
+        { bg: 'bg-violet-50 dark:bg-violet-500/10', border: 'border-violet-200 dark:border-violet-500/20', text: 'text-violet-700 dark:text-violet-300', dot: 'bg-violet-600', dotText: 'text-white' },
+        { bg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10', border: 'border-fuchsia-200 dark:border-fuchsia-500/20', text: 'text-fuchsia-700 dark:text-fuchsia-300', dot: 'bg-fuchsia-600', dotText: 'text-white' },
+        { bg: 'bg-pink-50 dark:bg-pink-500/10', border: 'border-pink-200 dark:border-pink-500/20', text: 'text-pink-700 dark:text-pink-300', dot: 'bg-pink-600', dotText: 'text-white' },
+        { bg: 'bg-rose-50 dark:bg-rose-500/10', border: 'border-rose-200 dark:border-rose-500/20', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-600', dotText: 'text-white' },
+        { bg: 'bg-orange-50 dark:bg-orange-500/10', border: 'border-orange-200 dark:border-orange-500/20', text: 'text-orange-700 dark:text-orange-300', dot: 'bg-orange-600', dotText: 'text-white' },
+        { bg: 'bg-amber-50 dark:bg-amber-500/10', border: 'border-amber-200 dark:border-amber-500/20', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-600', dotText: 'text-white' },
+        { bg: 'bg-blue-50 dark:bg-blue-500/10', border: 'border-blue-200 dark:border-blue-500/20', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-600', dotText: 'text-white' },
+        { bg: 'bg-sky-50 dark:bg-sky-500/10', border: 'border-sky-200 dark:border-sky-500/20', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-600', dotText: 'text-white' },
+        { bg: 'bg-cyan-50 dark:bg-cyan-500/10', border: 'border-cyan-200 dark:border-cyan-500/20', text: 'text-cyan-700 dark:text-cyan-300', dot: 'bg-cyan-600', dotText: 'text-white' },
+        { bg: 'bg-teal-50 dark:bg-teal-500/10', border: 'border-teal-200 dark:border-teal-500/20', text: 'text-teal-700 dark:text-teal-300', dot: 'bg-teal-600', dotText: 'text-white' },
+        { bg: 'bg-emerald-50 dark:bg-emerald-500/10', border: 'border-emerald-200 dark:border-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-600', dotText: 'text-white' },
     ];
 
     // creating a determinstic hash for consistency across renders
-    const getColor = (id: string | undefined) => {
-        if (!id) return PREMIUM_PALETTE[0];
+    const getColor = (id: string | undefined): { bg: string, border: string, text: string, dot: string, dotText?: string, style?: any, dotStyle?: any } => {
+        if (!id) return { ...PREMIUM_PALETTE[0], dotText: '' };
+
+        // 1. Personal Branding Override (If applicable)
+        if (currentStaffId && id === currentStaffId && userThemeColor) {
+            // Using style injection to support ANY arbitrary hex color from the picker
+            // We use opacity versions for bg/border to match the palette system
+            return {
+                bg: '', // Handled by style
+                border: '', // Handled by style
+                text: '', // Handled by style
+                dot: '', // Handled by style
+                style: {
+                    backgroundColor: `${userThemeColor}10`, // 5-10% opacity for bg
+                    borderColor: `${userThemeColor}40`,     // 20-30% opacity for border
+                    borderLeftColor: userThemeColor,        // 100% for accent border
+                    color: userThemeColor,                  // 100% for text
+                },
+                dotStyle: {
+                    backgroundColor: userThemeColor,
+                    color: '#fff'
+                }
+            };
+        }
+
         let hash = 0;
         for (let i = 0; i < id.length; i++) {
             hash = id.charCodeAt(i) + ((hash << 5) - hash);
@@ -593,8 +619,9 @@ export default function WeeklyCalendar({
             const relativeX = e.clientX - containerRect.left - timeColumnWidth + scrollLeft;
 
             // Total width of the staff area
-            const gridWidth = scrollContainerRef.current.querySelector('.flex-1.relative')?.clientWidth || (containerRect.width - timeColumnWidth);
-            const columnWidth = gridWidth / staff.length;
+            // Fix: querySelector returns the first column, which is ALREADY the column width.
+            const firstColumn = scrollContainerRef.current.querySelector('.flex-1.relative');
+            const columnWidth = firstColumn ? firstColumn.clientWidth : ((containerRect.width - timeColumnWidth) / staff.length);
 
             const staffIndex = Math.floor(relativeX / columnWidth);
             const clampedIndex = Math.max(0, Math.min(staffIndex, staff.length - 1));
@@ -997,13 +1024,19 @@ export default function WeeklyCalendar({
                                     return (
                                         <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 dark:border-sidebar-border bg-white dark:bg-sidebar relative group h-full flex items-center`}>
                                             <div className="flex items-center gap-3 px-4 w-full">
+                                                {/* Avatar / Circle - Now uses consistent color logic */}
                                                 {member.avatar ? (
                                                     <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-white/10 shrink-0">
                                                         <Image src={member.avatar} alt={member.name} fill className="object-cover" unoptimized />
                                                     </div>
                                                 ) : (
-                                                    <div className={`w-8 h-8 shrink-0 rounded-full ${colorScheme.dot} opacity-20 flex items-center justify-center text-[10px] font-black`}>
-                                                        {member.name.charAt(0).toUpperCase()}
+                                                    <div
+                                                        className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-[10px] font-black shadow-sm ${colorScheme.dot}`}
+                                                        style={colorScheme.dotStyle}
+                                                    >
+                                                        <span className={colorScheme.dotText || 'text-white'}>
+                                                            {member.name.charAt(0).toUpperCase()}
+                                                        </span>
                                                     </div>
                                                 )}
                                                 <div className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider truncate">{member.name}</div>
@@ -1084,10 +1117,11 @@ export default function WeeklyCalendar({
                                                 className={`absolute rounded-[12px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} ${colorScheme.text} border-l-[4px]`} py-1 px-2 z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-primary-300 opacity-90 cursor-grabbing' : ''}`}
                                                 style={{
                                                     top: `${displayTop}px`,
-                                                    height: `${Math.max(24, duration * 2)}px`,
+                                                    height: `${Math.max(44, duration * 2)}px`,
                                                     left: `calc(${leftPct}% + 1px)`,
                                                     width: `calc(${widthPct}% - 2px)`,
-                                                    transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                    transition: isDragging ? 'none' : 'all 0.2s ease-out',
+                                                    ...(colorScheme.style || {}) // Apply style override for personal branding
                                                 }}
                                             >
                                                 <div className="flex flex-col h-full overflow-hidden">
@@ -1143,8 +1177,11 @@ export default function WeeklyCalendar({
                                                             className={`absolute left-0.5 right-0.5 rounded-[8px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} ${colorScheme.text} border-l-[4px]`} py-1 px-2 z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-primary-300 opacity-90 cursor-grabbing' : ''}`}
                                                             style={{
                                                                 top: `${displayTop}px`,
-                                                                height: `${Math.max(24, duration * 2)}px`,
-                                                                transition: isDragging ? 'none' : 'all 0.2s ease-out'
+                                                                height: `${Math.max(44, duration * 2)}px`,
+                                                                transition: isDragging ? 'none' : 'all 0.2s ease-out',
+                                                                transform: isDragging ? `translateX(${dragState?.deltaX || 0}px)` : undefined,
+                                                                zIndex: isDragging ? 50 : undefined,
+                                                                ...(colorScheme.style || {}) // Apply style override for personal branding
                                                             }}
                                                         >
                                                             <div className="flex flex-col h-full overflow-hidden">
@@ -1154,11 +1191,10 @@ export default function WeeklyCalendar({
                                                                 <div className="text-[11px] font-black leading-tight truncate">
                                                                     {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'Reason') : apt.clientName}
                                                                 </div>
-                                                                {duration >= 30 && (
-                                                                    <div className="mt-auto text-[9px] font-bold flex justify-between">
-                                                                        <span>{formatTo12Hour(displayTime)}</span>
-                                                                    </div>
-                                                                )}
+                                                                <div className="mt-auto text-[9px] font-bold flex justify-between">
+                                                                    <span>{formatTo12Hour(displayTime)}</span>
+                                                                    <span className="opacity-50">{duration}m</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </React.Fragment>

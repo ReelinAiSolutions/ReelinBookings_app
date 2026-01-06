@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Appointment, Service } from '@/types';
 import { Search, Filter, MoreVertical, Mail, Phone, Calendar, Clock, User as UserIcon, X, ChevronRight, Star, AlertCircle, Copy, Users, ChevronDown } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
+import { getClientGradient } from '@/utils/colorUtils';
 
 interface ClientManagerProps {
     appointments: Appointment[];
@@ -166,7 +167,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     };
 
     return (
-        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 px-4 sm:px-6 lg:px-0">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
@@ -223,7 +224,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                         >
                             {/* Header: Avatar and Badge */}
                             <div className="flex justify-between items-start mb-2 sm:mb-4">
-                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[1.2rem] bg-gradient-to-br from-primary-600 to-primary-500 text-white flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-500/20">
+                                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-[1.2rem] ${getClientGradient(client.name)} text-white flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg`}>
                                     {getInitials(client.name)}
                                 </div>
                                 <span className={`px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest border ${getStatusColor(client.status)}`}>

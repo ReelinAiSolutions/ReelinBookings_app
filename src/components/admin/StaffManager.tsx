@@ -275,42 +275,41 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     };
 
     return (
-        <div className="flex flex-col h-full space-y-8 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                        Team Roster
-                    </h2>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                        <Users2 className="w-4 h-4" />
-                        {staff.length} Team Members
-                    </p>
-                </div>
-
-                {/* Actions & Filters */}
-                <div className="flex flex-wrap items-center gap-4">
-                    {/* Search */}
-                    <div className="relative group w-full md:w-96">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search staff..."
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-white dark:bg-white/5 dark:text-white"
-                        />
+        <div className="flex flex-col h-full w-full space-y-8">
+            {/* Header Section - Refined for Pro Parity */}
+            <div>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h1 className="text-[32px] font-black tracking-tight text-gray-900 dark:text-white leading-none mb-2">
+                            Team Roster
+                        </h1>
+                        <p className="text-gray-500 dark:text-gray-400 font-medium">{staff.length} professional team members registered.</p>
                     </div>
 
-                    {!readOnly && (
-                        <button
-                            onClick={handleAddNew}
-                            className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-500/20 active:scale-95 text-sm border-transparent"
-                        >
-                            <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
-                            Add Member
-                        </button>
-                    )}
+                    {/* Actions & Filters */}
+                    <div className="flex flex-wrap items-center gap-4">
+                        {/* Search */}
+                        <div className="relative group w-full md:w-96">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search staff..."
+                                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-white dark:bg-white/5 dark:text-white"
+                            />
+                        </div>
+
+                        {!readOnly && (
+                            <button
+                                onClick={handleAddNew}
+                                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-500/20 active:scale-95 text-sm border-transparent"
+                            >
+                                <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
+                                Add Member
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

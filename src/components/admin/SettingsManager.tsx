@@ -286,7 +286,7 @@ export default function SettingsManager({
                                                     navigator.clipboard.writeText(`${window.location.origin}/${org.slug}`);
                                                     toast('Link copied to clipboard!', 'success');
                                                 }}
-                                                className="flex-1 md:flex-none bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10 px-6 py-3 rounded-xl font-bold shadow-sm transition-all active:scale-95"
+                                                className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white border-transparent px-8 py-3 rounded-xl font-bold shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:-translate-y-0.5"
                                             >
                                                 Copy
                                             </Button>
@@ -309,56 +309,73 @@ export default function SettingsManager({
 
                         {/* Brand Appearance */}
                         {activeTab === 'brand' && (
-                            <div className="bg-white dark:bg-card rounded-[1.25rem] sm:rounded-[2.5rem] p-4 sm:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
-                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Brand Appearance</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-10">Brand Appearance</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    {/* Logo Section - Elite Stlye */}
                                     <div>
-                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Company Logo</label>
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-28 h-28 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center bg-gray-50 dark:bg-white/5 overflow-hidden relative group">
-                                                {previewUrl ? (
-                                                    <Image
-                                                        src={previewUrl}
-                                                        alt="Business Logo"
-                                                        width={112}
-                                                        height={112}
-                                                        className="w-full h-full object-contain p-3"
-                                                        unoptimized
-                                                    />
-                                                ) : (
-                                                    <Building2 className="w-8 h-8 text-gray-300 dark:text-gray-600" />
-                                                )}
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Company Logo</label>
+                                        <div className="flex items-center gap-6">
+                                            <div className="relative group">
+                                                <div className="absolute -inset-1 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] opacity-20 blur-sm group-hover:opacity-40 transition-opacity"></div>
+                                                <div className="relative w-32 h-32 rounded-[1.8rem] border-4 border-white dark:border-gray-800 flex items-center justify-center bg-gray-50 dark:bg-white/5 overflow-hidden shadow-lg">
+                                                    {previewUrl ? (
+                                                        <Image
+                                                            src={previewUrl}
+                                                            alt="Business Logo"
+                                                            width={100}
+                                                            height={100}
+                                                            className="w-full h-full object-contain p-4"
+                                                            unoptimized
+                                                        />
+                                                    ) : (
+                                                        <Building2 className="w-10 h-10 text-gray-300 dark:text-gray-600" />
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <label className="cursor-pointer inline-flex items-center px-5 py-3 border-2 border-primary-500/20 shadow-sm text-sm font-bold rounded-xl text-primary-600 bg-primary-50/50 hover:bg-primary-50 transition-all duration-200">
-                                                    <Upload className="w-4 h-4 mr-2" />
+
+                                            <div className="flex-1 space-y-3">
+                                                <label className="cursor-pointer inline-flex items-center px-6 py-4 border-2 border-primary-500/20 shadow-sm text-xs font-black uppercase tracking-wider rounded-2xl text-primary-600 bg-primary-50/50 hover:bg-primary-50 hover:-translate-y-0.5 transition-all duration-200">
+                                                    <Upload className="w-4 h-4 mr-2.5" />
                                                     Upload New Logo
                                                     <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                                                 </label>
-                                                <p className="mt-2.5 text-xs text-gray-400 font-medium">Recommended: 500x500 PNG or SVG</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Recommended: 500x500 PNG/SVG</p>
                                             </div>
                                         </div>
                                     </div>
 
+                                    {/* Color Section - Elite Style */}
                                     <div>
-                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Booking Interface Color</label>
-                                        <div className="flex items-center gap-4">
-                                            <input
-                                                type="color"
-                                                value={formData.primary_color}
-                                                onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                                                className="h-14 w-24 p-1.5 rounded-xl border border-gray-200 dark:border-white/10 cursor-pointer shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-card"
-                                            />
-                                            <div className="flex-1">
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Wayfinding Color</label>
+                                        <div className="flex items-center justify-between p-1.5 pr-2 bg-gray-50 dark:bg-white/5 rounded-[1.5rem] border border-gray-100 dark:border-white/5 relative group hover:border-gray-200 dark:hover:border-white/10 transition-colors">
+                                            <div className="flex items-center gap-4 flex-1">
+                                                <div className="w-16 h-16 rounded-[1.2rem] shadow-sm flex items-center justify-center transition-colors" style={{ backgroundColor: formData.primary_color }}>
+                                                    <Palette className="w-6 h-6 text-white" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Interface Tint</div>
+                                                    <div className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mt-1.5 opacity-70">
+                                                        {formData.primary_color}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="relative">
                                                 <input
-                                                    type="text"
+                                                    type="color"
                                                     value={formData.primary_color}
                                                     onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                                                    className="block w-full px-5 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 text-base uppercase font-bold text-gray-900 dark:text-white transition-all duration-200"
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                                 />
-                                                <p className="mt-2.5 text-xs text-gray-400 font-medium">Applied to your public booking page journey.</p>
+                                                <div className="px-5 py-3 bg-white dark:bg-black rounded-xl text-xs font-black uppercase tracking-wider shadow-sm border border-gray-100 dark:border-white/10 group-hover:scale-105 transition-transform">
+                                                    Change
+                                                </div>
                                             </div>
                                         </div>
+                                        <p className="mt-4 text-[10px] text-gray-400 font-bold uppercase tracking-wide ml-1">
+                                            Applied to your public booking page journey.
+                                        </p>
                                     </div>
                                 </div>
                             </div>

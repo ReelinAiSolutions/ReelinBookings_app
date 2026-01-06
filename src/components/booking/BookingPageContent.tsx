@@ -17,6 +17,7 @@ import DateSelection from '@/components/booking/DateSelection';
 import BookingSummary from '@/components/booking/BookingSummary';
 import ConfirmationView from '@/components/booking/ConfirmationView';
 import Image from 'next/image';
+import BrandingInjector from '@/components/BrandingInjector';
 
 enum BookingStep {
     SERVICE = 0,
@@ -531,7 +532,8 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                         )}
                     </div>
 
-                    <div className="flex-1 w-full" style={{ '--primary-color': org.primary_color || '#4F46E5' } as React.CSSProperties}>
+                    <div className="flex-1 w-full">
+                        <BrandingInjector primaryColor={org.primary_color} />
 
                         {/* Mobile Header Steps - Minimized Margin */}
                         <div className="lg:hidden mb-1">

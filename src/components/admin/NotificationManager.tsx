@@ -194,48 +194,52 @@ export default function NotificationManager({ orgId }: NotificationManagerProps 
     if (loading && !isSupported) return null;
 
     return (
-        <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-100 dark:border-white/5 transition-all duration-300">
-            <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${isSubscribed ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'}`}>
-                    {isSubscribed ? <Bell className="w-6 h-6" /> : <BellOff className="w-6 h-6" />}
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-8 border border-gray-100 dark:border-white/10 shadow-sm transition-all duration-500 hover:shadow-xl group">
+            <div className="flex flex-col sm:flex-row items-start gap-8">
+                <div className={`p-4 rounded-[20px] transition-all duration-700 shadow-2xl group-hover:scale-110 group-hover:rotate-3 ${isSubscribed ? 'bg-emerald-600 text-white shadow-emerald-500/30' : 'bg-primary-600 text-white shadow-primary-500/30'}`}>
+                    {isSubscribed ? <Bell className="w-8 h-8 animate-pulse" /> : <BellOff className="w-8 h-8" />}
                 </div>
-                <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Mobile Notifications</h3>
+                <div className="flex-1 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 className="text-2xl font-[950] text-gray-900 dark:text-white tracking-tight">System Alerts</h3>
+                            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-1">Direct Mobile Synchronization</p>
+                        </div>
                         {isSubscribed && (
                             <button
                                 onClick={resetSubscription}
-                                className="p-2 text-gray-400 hover:text-purple-600 transition-colors"
+                                className="p-2.5 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[15px] transition-all hover:rotate-180 duration-700"
                                 title="Reset Connection"
                             >
                                 <RefreshCcw className="w-4 h-4" />
                             </button>
                         )}
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 leading-relaxed">
-                        Receive instant alerts on your phone screen when clients book or cancel appointments.
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 leading-relaxed font-medium">
+                        Enable elite responsiveness. Receive instant session updates, client arrivals, and scheduling shifts directly on your mobile device.
                     </p>
 
                     {/* Pro Feature: Admin Broadcast Toggle */}
                     {profile?.role === 'owner' && (
-                        <div className="mb-6 p-4 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm animate-in fade-in slide-in-from-top-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                                        <Smartphone className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <div className="mb-10 p-6 bg-gray-950 dark:bg-white/5 rounded-[24px] border border-white/10 shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-600/10 rounded-full blur-3xl" />
+                            <div className="flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-white/10 rounded-[15px] border border-white/10">
+                                        <Smartphone className="w-5 h-5 text-primary-400" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-black text-gray-900 dark:text-white leading-tight">Organization Overview</p>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Receive alerts for all staff bookings</p>
+                                        <p className="text-sm font-[950] text-white tracking-tight">Organization Command</p>
+                                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Listen to all staff activity</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={toggleReceiveAll}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${profile.receive_all_notifications !== false ? 'bg-primary-600' : 'bg-gray-200'
+                                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-500 focus:outline-none ${profile.receive_all_notifications !== false ? 'bg-primary-600 shadow-lg shadow-primary-500/20' : 'bg-white/10'
                                         }`}
                                 >
                                     <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${profile.receive_all_notifications !== false ? 'translate-x-6' : 'translate-x-1'
+                                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-xl transition-all duration-500 ${profile.receive_all_notifications !== false ? 'translate-x-6' : 'translate-x-1'
                                             }`}
                                     />
                                 </button>
@@ -244,28 +248,28 @@ export default function NotificationManager({ orgId }: NotificationManagerProps 
                     )}
 
                     {!isSupported ? (
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 rounded-lg text-sm border border-amber-100 dark:border-amber-900/20 font-medium">
-                                <AlertCircle className="w-4 h-4 shrink-0" />
-                                <p>To enable, please tap the <strong>Share</strong> button in Safari and select <strong>"Add to Home Screen"</strong>.</p>
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-4 p-5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-[20px] text-sm border border-amber-500/20 font-black tracking-tight">
+                                <AlertCircle className="w-5 h-5 shrink-0" />
+                                <p>Safari Engine detected: Tap <strong className="text-amber-700 dark:text-amber-300">Share</strong> & select <strong className="text-amber-700 dark:text-amber-300">"Add to Home Screen"</strong> for full synchronization.</p>
                             </div>
 
                             {error && (
-                                <div className="p-3 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-[10px] font-mono text-gray-400">
-                                    <p className="uppercase font-bold mb-1 opacity-50">Debug Diagnostics:</p>
-                                    <p>{error.diagnostic}</p>
-                                    <p className="mt-1">Hostname: {window.location.hostname}</p>
-                                    <p>iOS Standalone: {(window.navigator as any).standalone ? 'Yes' : 'No'}</p>
+                                <div className="p-5 bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[24px] text-[10px] font-bold text-gray-400">
+                                    <p className="uppercase tracking-[0.2em] mb-2 opacity-60">System Diagnostics</p>
+                                    <p className="mb-1">{error.diagnostic}</p>
+                                    <p className="mb-1">NODE: {window.location.hostname}</p>
+                                    <p>IOS_STANDALONE: {(window.navigator as any).standalone ? 'YES' : 'NO'}</p>
                                 </div>
                             )}
                         </div>
                     ) : (
                         <>
                             {isSubscribed ? (
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg w-fit">
+                                <div className="flex flex-col gap-6">
+                                    <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-black text-[11px] uppercase tracking-[0.2em] bg-emerald-500/10 px-5 py-3 rounded-[15px] w-fit border border-emerald-500/20 shadow-sm">
                                         <CheckCircle2 className="w-4 h-4" />
-                                        <span>Notifications Active</span>
+                                        <span>Connection Optimized</span>
                                     </div>
 
                                     <button
@@ -299,10 +303,16 @@ export default function NotificationManager({ orgId }: NotificationManagerProps 
                                 <button
                                     onClick={subscribe}
                                     disabled={loading}
-                                    className="flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                    className="flex items-center justify-center gap-3 bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-[20px] font-[950] uppercase tracking-[0.3em] text-[11px] shadow-2xl shadow-primary-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 w-full sm:w-auto"
                                 >
-                                    <Smartphone className="w-4 h-4" />
-                                    {loading ? 'Processing...' : 'Enable on this Device'}
+                                    {loading ? (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            <Smartphone className="w-4 h-4" />
+                                            Synchronize Device
+                                        </>
+                                    )}
                                 </button>
                             )}
 

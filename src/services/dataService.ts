@@ -63,10 +63,11 @@ export const getUserProfile = async () => {
     return { user, profile };
 };
 
-export const updateUserProfile = async (userId: string, orgId: string, updates: { fullName?: string; avatarUrl?: string }) => {
+export const updateUserProfile = async (userId: string, orgId: string, updates: { fullName?: string; avatarUrl?: string; settings?: any }) => {
     const profilePayload: any = {};
     if (updates.fullName) profilePayload.full_name = updates.fullName;
     if (updates.avatarUrl) profilePayload.avatar_url = updates.avatarUrl;
+    if (updates.settings) profilePayload.settings = updates.settings;
 
     // 1. Update Profile
     const { error: profileError } = await supabase
@@ -304,7 +305,8 @@ export const getAppointments = async (orgId: string, startDate?: string, endDate
             *,
             service_name,
             service_price,
-            staff_name
+            staff_name,
+            services (*)
         `)
         .eq('org_id', orgId);
 

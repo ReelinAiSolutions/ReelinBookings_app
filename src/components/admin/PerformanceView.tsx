@@ -33,6 +33,7 @@ import {
 import { Appointment, Staff, Service, AppointmentStatus } from '@/types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line } from 'recharts';
 import { format, startOfWeek, addDays, isSameDay, subDays, startOfYear, eachMonthOfInterval, isWithinInterval, startOfMonth, subMonths, endOfDay, startOfDay, subWeeks, getYear, differenceInDays, getHours, getDay } from 'date-fns';
+import { getClientGradient } from '@/utils/colorUtils';
 
 interface PerformanceViewProps {
     appointments: Appointment[];
@@ -1056,7 +1057,6 @@ export default function PerformanceView({ appointments, services, staff, primary
                             })
                             .map((client, index) => {
                                 const isTopClient = index === 0 && (clientSearch === '' && clientStaffFilter === 'all');
-                                const avatarGradient = 'bg-gradient-to-br from-primary-500 to-primary-600 shadow-primary-500/20';
 
                                 const statusStyles = {
                                     'VIP': 'bg-amber-50 text-amber-700 border-amber-100',
@@ -1083,7 +1083,7 @@ export default function PerformanceView({ appointments, services, staff, primary
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm transition-all group-hover:scale-110 ${isTopClient
                                                     ? 'bg-emerald-600 text-white shadow-emerald-200 dark:shadow-none'
-                                                    : `${avatarGradient} text-white shadow-md shadow-black/5 dark:shadow-none`
+                                                    : `${getClientGradient(client.name)} text-white shadow-md dark:shadow-none`
                                                     }`}>
                                                     {client.name.charAt(0)}
                                                 </div>
@@ -1158,7 +1158,7 @@ export default function PerformanceView({ appointments, services, staff, primary
     };
 
     return (
-        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0 overflow-hidden">
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 px-4 sm:px-6 lg:px-0 overflow-hidden">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>

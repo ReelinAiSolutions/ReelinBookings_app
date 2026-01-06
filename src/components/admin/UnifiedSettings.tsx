@@ -43,7 +43,7 @@ export default function UnifiedSettings({ org, user, profile, onUpdate }: Unifie
     const currentMenu = view === 'business' ? businessMenu : profileMenu;
 
     return (
-        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 px-4 sm:px-6 lg:px-0">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>

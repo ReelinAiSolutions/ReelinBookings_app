@@ -18,7 +18,10 @@ import {
     Clock,
     X,
     Repeat,
-    ChevronDown
+    ChevronDown,
+    RotateCcw,
+    Zap,
+    Maximize
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -30,6 +33,7 @@ import {
     startOfMonth, subMonths, endOfDay, startOfDay,
     subWeeks, getYear, differenceInDays, getHours
 } from 'date-fns';
+import { getClientGradient } from '@/utils/colorUtils';
 
 interface StaffStatsProps {
     appointments: Appointment[];
@@ -334,127 +338,182 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
         const avgAptsPerDay = daysInPeriod > 0 ? (currentStats.bookings / daysInPeriod) : 0;
 
         return (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
+            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24">
 
-                {/* ROW 1: PERSONAL PERFORMANCE SUMMARY (Matched to Admin Style) */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* ROW 1: ELITE PERFORMANCE SUMMARY */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    {/* 1. Revenue (Hero - Standard Gray Theme) */}
-                    <div className="col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 dark:from-white/10 dark:to-transparent rounded-[24px] p-6 text-white relative overflow-hidden shadow-xl flex flex-col justify-between min-h-[180px]">
-                        {/* Abstract BG Shape */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    {/* 1. Revenue Hero Card */}
+                    <div className="lg:col-span-2 group relative">
+                        {/* Glow effect */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-primary-600 to-indigo-600 rounded-[32px] blur-xl opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
 
-                        <div className="relative z-10 flex justify-between items-start">
-                            <div>
-                                <h3 className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-1">My Revenue</h3>
-                                <h1 className="text-4xl lg:text-5xl font-black tracking-tight">${currentStats.revenue.toLocaleString()}</h1>
-                            </div>
-                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md border border-white/10 ${revenueChange >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
-                                {revenueChange >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                {Math.abs(revenueChange).toFixed(0)}%
-                            </div>
-                        </div>
+                        <div className="relative bg-gray-950 dark:bg-card border border-white/5 rounded-[32px] p-8 text-white min-h-[240px] flex flex-col justify-between shadow-2xl overflow-hidden">
+                            {/* Decorative Elements */}
+                            <div className="absolute top-0 right-0 w-80 h-80 bg-primary-600/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none group-hover:bg-primary-500/20 transition-all duration-1000"></div>
 
-                        <div className="relative z-10 mt-4">
-                            <div className="h-1 bg-gray-700/50 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary-600 w-full animate-pulse"></div>
-                            </div>
-                            <p className="text-[10px] text-gray-500 mt-2 font-medium uppercase tracking-wider">Generated from completed appointments</p>
-                        </div>
-                    </div>
-
-                    {/* 2. My Bookings */}
-                    <div className="bg-white dark:bg-white/5 rounded-[24px] p-5 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                            <div className="p-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl"><Briefcase className="w-5 h-5" /></div>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bookingsChange >= 0 ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
-                                {bookingsChange >= 0 ? '+' : ''}{bookingsChange.toFixed(0)}%
-                            </span>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-black text-gray-900 dark:text-white">{currentStats.bookings}</h3>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Confirmed Bookings</p>
-                        </div>
-                    </div>
-
-                    {/* 3. Missed Appointments */}
-                    <div className="bg-white dark:bg-white/5 rounded-[24px] p-5 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                            <div className="p-2 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl"><Ban className="w-5 h-5" /></div>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-black text-gray-900 dark:text-white">{currentStats.cancelled}</h3>
-                            <p className="text-xs font-bold text-red-400 uppercase tracking-widest mt-1">Missed Appts</p>
-                            <div className="flex items-center gap-2 mt-2">
-                                <div className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 rounded-md">
-                                    {occupancyRate}% Utilization
+                            <div className="relative z-10 flex justify-between items-start">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-2 h-2 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(var(--brand-primary-rgb,79,70,229),0.6)] animate-pulse" />
+                                        <h3 className="text-gray-400 font-black text-[11px] uppercase tracking-[0.2em]">Personal Revenue</h3>
+                                    </div>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-2xl font-black text-primary-500/50 mr-1">$</span>
+                                        <h1 className="text-5xl lg:text-7xl font-[950] tracking-tighter leading-none">
+                                            {currentStats.revenue.toLocaleString()}
+                                        </h1>
+                                    </div>
                                 </div>
+
+                                <div className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-black backdrop-blur-xl border border-white/10 ${revenueChange >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                    {revenueChange >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                                    {Math.abs(revenueChange).toFixed(1)}%
+                                </div>
+                            </div>
+
+                            <div className="relative z-10 mt-8">
+                                <div className="flex justify-between items-end mb-3">
+                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.15em]">Growth Target Met</p>
+                                    <span className="text-sm font-black text-primary-400">{occupancyRate}%</span>
+                                </div>
+                                <div className="h-3 bg-white/5 rounded-full overflow-hidden p-0.5">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full shadow-[0_0_15px_rgba(var(--brand-primary-rgb,79,70,229),0.3)] transition-all duration-1000 ease-out"
+                                        style={{ width: `${occupancyRate}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Secondary Stats Grid */}
+                    <div className="space-y-6">
+                        {/* Bookings Card */}
+                        <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-6 border border-gray-100/50 dark:border-white/5 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="p-3.5 bg-primary-600 shadow-lg shadow-primary-500/30 text-white rounded-[20px] transition-transform group-hover:scale-110 duration-500">
+                                    <Briefcase className="w-5 h-5" />
+                                </div>
+                                <div className={`flex items-center gap-1 text-[11px] font-black ${bookingsChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                    {bookingsChange >= 0 ? <TrendingUp className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                    {bookingsChange.toFixed(0)}%
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-4xl font-[950] text-gray-900 dark:text-white tracking-tight">{currentStats.bookings}</h3>
+                                <p className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-2">Active Sessions</p>
+                            </div>
+                        </div>
+
+                        {/* Efficiency Card */}
+                        <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-6 border border-gray-100/50 dark:border-white/5 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="p-3.5 bg-gray-900 dark:bg-white/10 text-white rounded-[20px] transition-transform group-hover:scale-110 duration-500">
+                                    <Sparkles className="w-5 h-5" />
+                                </div>
+                                <div className="text-[11px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest">Premium</div>
+                            </div>
+                            <div>
+                                <h3 className="text-4xl font-[950] text-gray-900 dark:text-white tracking-tight">{rebookingRate.toFixed(0)}%</h3>
+                                <p className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-2">Rebooking Rate</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* ROW 2: BOOKING TREND (Standardized Chart) - Fills whitespace functionally */}
-                <div className="bg-white dark:bg-card rounded-[24px] p-6 border border-gray-100 dark:border-white/5 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl">
+                {/* ROW 2: BOOKING TREND (Elite Chart) */}
+                <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-8 border border-gray-100/50 dark:border-white/5 shadow-sm relative overflow-hidden group">
+                    {/* Background Glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-primary-500/5 rounded-full blur-[120px] pointer-events-none" />
+
+                    <div className="flex items-center justify-between mb-10 relative z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-primary-600 shadow-lg shadow-primary-500/20 text-white rounded-2xl">
                                 <TrendingUp className="w-5 h-5" />
                             </div>
-                            <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">My Booking Trend</h3>
+                            <div>
+                                <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-[0.2em] text-[11px]">Appointment Velocity</h3>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-widest">Real-time engagement trend</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-white/5 rounded-full border border-gray-100 dark:border-white/5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] font-black text-gray-500 dark:text-gray-400 tracking-widest uppercase">Live Pulse</span>
                         </div>
                     </div>
-                    <div className="h-64 w-full">
+
+                    <div className="h-72 w-full relative z-10">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={bookingsGraphData}>
                                 <defs>
-                                    <linearGradient id="colorBookingsStaff" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="var(--primary-600)" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="var(--primary-600)" stopOpacity={0} />
+                                    <linearGradient id="colorBookingsElite" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="var(--primary-600)" stopOpacity={0.25} />
+                                        <stop offset="100%" stopColor="var(--primary-600)" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#374151' : '#E5E7EB'} />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF' }} />
-                                <Tooltip
-                                    cursor={{ stroke: 'var(--primary-600)', strokeWidth: 1 }}
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                <CartesianGrid strokeDasharray="4 4" vertical={false} stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fill: isDark ? '#6B7280' : '#9CA3AF', fontWeight: 'bold' }}
+                                    dy={10}
                                 />
-                                <Area type="monotone" dataKey="value" stroke="var(--primary-600)" strokeWidth={3} fill="url(#colorBookingsStaff)" />
+                                <YAxis hide />
+                                <Tooltip
+                                    cursor={{ stroke: 'var(--primary-600)', strokeWidth: 2, strokeDasharray: '4 4' }}
+                                    content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                            return (
+                                                <div className="bg-gray-950/90 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl">
+                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
+                                                    <p className="text-lg font-black text-white">{payload[0].value} <span className="text-xs text-gray-400 font-bold ml-1 uppercase">Bookings</span></p>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="var(--primary-600)"
+                                    strokeWidth={4}
+                                    fill="url(#colorBookingsElite)"
+                                    animationDuration={2000}
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* ROW 3: QUALITY SIGNALS */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     {/* Client Rebooking Rate */}
-                    <div className="bg-white dark:bg-white/5 rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex items-center justify-between">
+                    <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-8 border border-gray-100/50 dark:border-white/5 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all duration-500">
                         <div>
-                            <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Rebooking Rate</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-[200px]">Percentage of your clients who returned for another visit.</p>
-                            <div className="mt-4 flex items-center gap-2">
-                                <div className="px-2 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-md text-[10px] font-bold uppercase">Primary Quality Signal</div>
-                            </div>
+                            <div className="px-2.5 py-1 bg-primary-600/10 text-primary-600 dark:text-primary-400 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] mb-4 w-fit">Primary Quality Signal</div>
+                            <h4 className="text-2xl font-[950] text-gray-900 dark:text-white mb-2 tracking-tight">Retention Rate</h4>
+                            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 max-w-[200px] leading-relaxed uppercase tracking-widest">Growth through loyalty</p>
                         </div>
                         <div className="text-right">
-                            <div className="text-4xl font-black text-[#A855F7] dark:text-purple-400">{rebookingRate.toFixed(0)}%</div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Retention Strength</div>
+                            <div className="text-5xl font-[950] text-primary-600 dark:text-primary-400 tracking-tighter group-hover:scale-110 transition-transform duration-500">{rebookingRate.toFixed(0)}%</div>
+                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Active Recall</div>
                         </div>
                     </div>
 
                     {/* Daily Workload */}
-                    <div className="bg-white dark:bg-white/5 rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex items-center justify-between">
+                    <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-8 border border-gray-100/50 dark:border-white/5 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all duration-500">
                         <div>
-                            <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Daily Workload</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Average confirmed appointments per working day.</p>
-                            <div className="mt-4 flex items-center gap-2">
-                                <div className="px-2 py-1 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 rounded-md text-[10px] font-bold uppercase">Consistency Metric</div>
-                            </div>
+                            <div className="px-2.5 py-1 bg-gray-900/10 dark:bg-white/10 text-gray-900 dark:text-white rounded-lg text-[9px] font-black uppercase tracking-[0.15em] mb-4 w-fit">Operations Signal</div>
+                            <h4 className="text-2xl font-[950] text-gray-900 dark:text-white mb-2 tracking-tight">Workload Density</h4>
+                            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 max-w-[200px] leading-relaxed uppercase tracking-widest">Daily peak performance</p>
                         </div>
                         <div className="text-right">
-                            <div className="text-4xl font-black text-gray-900 dark:text-white">{avgAptsPerDay.toFixed(1)}</div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Appts / Day</div>
+                            <div className="text-5xl font-[950] text-gray-900 dark:text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{avgAptsPerDay.toFixed(1)}</div>
+                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Appts / Session</div>
                         </div>
                     </div>
                 </div>
@@ -465,94 +524,114 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
 
     const renderClients = () => {
         const clientInsightText = clientMetrics.totalActive > 5
-            ? `Your client book expanded by ${((clientMetrics.mix[1].value / (clientMetrics.totalActive || 1)) * 100).toFixed(0)}% new clients this period!`
+            ? `Your client book expanded by ${((clientMetrics.new / (clientMetrics.totalActive || 1)) * 100).toFixed(0)}% new clients this period!`
             : "Great work! Every client you serve helps grow your personal brand.";
 
         return (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
-                {/* Insight Banner */}
-                {/* Insight Banner - Galaxy Theme */}
-                <div className="bg-[#0A051C] dark:bg-black/40 relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
-                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,var(--primary-600),transparent)]" />
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
-                    <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
-                        <Sparkles className="w-4 h-4 text-accent-400 fill-accent-400" />
-                    </div>
-                    <p className="text-sm font-medium relative z-10">{clientInsightText}</p>
-                </div>
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24">
 
-                {/* ROW 1: METRICS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white dark:bg-white/5 rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                        <div className="flex justify-between items-start z-10 relative">
-                            <div>
-                                <h3 className="text-4xl font-black text-gray-900 dark:text-white">{clientMetrics.totalActive}</h3>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Active This Period</p>
-                            </div>
-                            <div className="p-2 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl"><Users2 className="w-5 h-5" /></div>
+                {/* Insight Banner - High Contrast Professional */}
+                <div className="group relative overflow-hidden rounded-[32px] p-6 bg-gray-950 shadow-2xl border border-white/10">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-primary-600/20 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none group-hover:bg-primary-500/30 transition-all duration-1000" />
+
+                    <div className="relative z-10 flex items-center gap-6">
+                        <div className="flex-shrink-0 w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+                            <Sparkles className="w-6 h-6 text-white" />
                         </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                    <div className="bg-white dark:bg-white/5 rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                        <div className="flex justify-between items-start z-10 relative">
-                            <div>
-                                <h3 className="text-4xl font-black text-gray-900 dark:text-white">{clientMetrics.returning}</h3>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Steady Base</p>
-                            </div>
-                            <div className="p-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl"><Sparkles className="w-5 h-5" /></div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-white/5 rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h3 className="text-4xl font-black text-gray-900 dark:text-white">{clientMetrics.new}</h3>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Acquisition</p>
-                            </div>
-                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl"><TrendingUp className="w-5 h-5" /></div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-white/5 rounded-[24px] p-6 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h3 className="text-4xl font-black text-gray-900 dark:text-white">{clientMetrics.atRisk}</h3>
-                                <p className="text-xs font-bold text-red-300 dark:text-red-400 uppercase tracking-widest mt-1">At Risk Clients</p>
-                            </div>
-                            <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl"><UserMinus className="w-5 h-5" /></div>
-                        </div>
-                        <p className="text-[10px] text-gray-400 font-bold mt-4">Haven't visited in 90+ days</p>
-                    </div>
-                </div>
-
-                {/* ROW 2: MINI CRM SECTION */}
-                <div className="min-h-[600px]">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
                         <div>
-                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-widest">My Client Portal</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">Manage your relationships ({Array.from(new Set(myAppointments.filter(a => a.status !== AppointmentStatus.BLOCKED && !a.clientEmail.toLowerCase().includes('internal') && !a.clientName.toLowerCase().includes('blocked time')).map(a => a.clientEmail))).length} total)</p>
+                            <h4 className="text-white font-black text-[13px] uppercase tracking-[0.2em] mb-1">Growth Opportunity identified</h4>
+                            <p className="text-gray-400 font-medium leading-relaxed">{clientInsightText}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ROW 1: CLIENT PERFORMANCE METRICS */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {/* Total Active Clients */}
+                    <div className="md:col-span-1 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-6 border border-gray-100/50 dark:border-white/5 shadow-sm group hover:translate-y-[-4px] transition-all duration-500">
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="p-3 bg-purple-600 shadow-lg shadow-purple-500/30 text-white rounded-2xl">
+                                <Users2 className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">Growth</span>
+                        </div>
+                        <div>
+                            <h3 className="text-4xl font-[950] text-gray-900 dark:text-white tracking-tight">{clientMetrics.totalActive}</h3>
+                            <p className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-2">Active CRM</p>
+                        </div>
+                    </div>
+
+                    {/* Returning Base */}
+                    <div className="md:col-span-1 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-6 border border-gray-100/50 dark:border-white/5 shadow-sm group hover:translate-y-[-4px] transition-all duration-500">
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="p-3 bg-emerald-600 shadow-lg shadow-emerald-500/30 text-white rounded-2xl">
+                                <RotateCcw className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Loyalty</span>
+                        </div>
+                        <div>
+                            <h3 className="text-4xl font-[950] text-gray-900 dark:text-white tracking-tight">{clientMetrics.returning}</h3>
+                            <p className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-2">Regulars</p>
+                        </div>
+                    </div>
+
+                    {/* New Acquisition */}
+                    <div className="md:col-span-1 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-6 border border-gray-100/50 dark:border-white/5 shadow-sm group hover:translate-y-[-4px] transition-all duration-500">
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="p-3 bg-blue-600 shadow-lg shadow-blue-500/30 text-white rounded-2xl">
+                                <Zap className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">New</span>
+                        </div>
+                        <div>
+                            <h3 className="text-4xl font-[950] text-gray-900 dark:text-white tracking-tight">{clientMetrics.new}</h3>
+                            <p className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-2">New Bookings</p>
+                        </div>
+                    </div>
+
+                    {/* At Risk */}
+                    <div className="md:col-span-1 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[32px] p-6 border border-gray-100/50 dark:border-white/5 shadow-sm group hover:translate-y-[-4px] transition-all duration-500">
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="p-3 bg-rose-600 shadow-lg shadow-rose-500/30 text-white rounded-2xl">
+                                <UserMinus className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest hover:animate-pulse">Alert</span>
+                        </div>
+                        <div>
+                            <h3 className="text-4xl font-[950] text-gray-900 dark:text-white tracking-tight">{clientMetrics.atRisk}</h3>
+                            <p className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-2">Retention Risk</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ROW 2: CRM EXPLORER */}
+                <div className="min-h-[600px] mt-12">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-10 pb-8 border-b border-gray-100/50 dark:border-white/5">
+                        <div>
+                            <h3 className="text-2xl font-[950] text-gray-900 dark:text-white tracking-tight">Personal Client Book</h3>
+                            <p className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-2 underline decoration-primary-500/30 decoration-2 underline-offset-4">
+                                Managing {Array.from(new Set(myAppointments.filter(a => a.status !== AppointmentStatus.BLOCKED && !a.clientEmail.toLowerCase().includes('internal') && !a.clientName.toLowerCase().includes('blocked time')).map(a => a.clientEmail))).length} Elite Relationships
+                            </p>
                         </div>
 
-                        <div className="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
                             <div className="relative w-full sm:w-80 group">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-all duration-300" />
                                 <input
                                     type="text"
-                                    placeholder="Search by name or email..."
+                                    placeholder="Search directory..."
                                     value={clientSearch}
                                     onChange={(e) => setClientSearch(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all dark:text-white dark:placeholder-gray-500"
+                                    className="w-full pl-12 pr-6 py-3.5 bg-white/50 dark:bg-white/5 backdrop-blur-md border border-gray-100 dark:border-white/10 rounded-[20px] text-sm font-black focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/50 transition-all dark:text-white dark:placeholder-gray-600 shadow-sm"
                                 />
                             </div>
 
-                            <div className="flex flex-wrap justify-center sm:flex-nowrap items-center gap-1 p-1 bg-gray-100/80 dark:bg-white/5 rounded-full w-full lg:w-auto">
+                            <div className="flex items-center gap-1.5 p-1.5 bg-gray-100/50 dark:bg-white/5 backdrop-blur-md rounded-[20px] w-full sm:w-auto border border-gray-100 dark:border-white/5">
                                 {(['ltv', 'visits', 'recent'] as const).map(s => (
                                     <button
                                         key={s}
                                         onClick={() => setClientSort(s)}
-                                        className={`flex-1 sm:flex-none px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${clientSort === s ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+                                        className={`flex-1 sm:flex-none px-5 py-2 rounded-xl text-[10px] font-[950] uppercase tracking-[0.15em] transition-all whitespace-nowrap ${clientSort === s ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                                     >
                                         {s}
                                     </button>
@@ -571,7 +650,6 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                             })
                             .map((client, index) => {
                                 const isTopClient = index === 0 && clientSearch === '';
-                                const avatarGradient = 'bg-gradient-to-br from-primary-500 to-primary-600 shadow-primary-500/20';
 
                                 const statusStyles = {
                                     'VIP': 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/50',
@@ -583,85 +661,75 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
                                 return (
                                     <div
                                         key={client.email}
-                                        className={`group p-6 rounded-[24px] border transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden ${isTopClient
-                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/50 shadow-lg shadow-emerald-100/50 dark:shadow-none scale-[1.02] z-10'
-                                            : 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 hover:border-primary-200 dark:hover:border-primary-700 hover:shadow-xl hover:shadow-primary-100/30'
+                                        className={`group p-6 rounded-[32px] border transition-all duration-500 flex flex-col justify-between h-full relative overflow-hidden ${isTopClient
+                                            ? 'bg-gradient-to-br from-gray-950 to-gray-900 dark:from-white/10 dark:to-transparent border-white/10 shadow-2xl scale-[1.02] z-10'
+                                            : 'bg-white/40 dark:bg-white/5 backdrop-blur-xl border-gray-100 dark:border-white/10 hover:border-primary-500/30 hover:shadow-2xl hover:translate-y-[-4px]'
                                             }`}
                                     >
                                         {/* Rank Badge */}
-                                        <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-[20px] font-black text-xs uppercase tracking-widest ${isTopClient ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500'
+                                        <div className={`absolute top-0 right-0 px-5 py-2 rounded-bl-[24px] font-[950] text-[10px] uppercase tracking-[0.2em] ${isTopClient ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400'
                                             }`}>
-                                            #{index + 1}
+                                            Elite #{index + 1}
                                         </div>
 
                                         <div className="relative z-10">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm transition-all group-hover:scale-110 ${isTopClient
-                                                    ? 'bg-emerald-600 text-white shadow-emerald-200'
-                                                    : `${avatarGradient} text-white shadow-md shadow-black/5`
+                                            <div className="flex items-center justify-between mb-8">
+                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-[950] text-xl transition-all group-hover:rotate-6 duration-500 ${isTopClient
+                                                    ? 'bg-white text-gray-950 shadow-xl'
+                                                    : `shadow-lg ${getClientGradient(client.name)} text-white`
                                                     }`}>
                                                     {client.name.charAt(0)}
                                                 </div>
-                                                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${isTopClient ? 'bg-white/20 text-emerald-100 border-white/20' : statusStyles[client.status]}`}>
+                                                <div className={`px-3 py-1.5 rounded-xl text-[9px] font-[950] uppercase tracking-[0.2em] border ${isTopClient ? 'bg-white/10 text-white border-white/20' : statusStyles[client.status]}`}>
                                                     {client.status}
-                                                </span>
-                                            </div>
-
-                                            <div className="mb-6">
-                                                <h4 className={`font-bold truncate transition-colors ${isTopClient ? 'text-emerald-900 dark:text-emerald-50' : 'text-gray-900 dark:text-white group-hover:text-primary-600'}`}>{client.name}</h4>
-                                                <p className={`text-[10px] font-bold uppercase tracking-wider truncate ${isTopClient ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`}>{client.email}</p>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4 mb-6">
-                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/10' : 'bg-transparent'}`}>
-                                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Total LTV</div>
-                                                    <div className={`text-lg font-black ${isTopClient ? 'text-white' : 'text-gray-900 dark:text-white'}`}>${client.totalLtv.toLocaleString()}</div>
-                                                </div>
-                                                <div className={`p-3 rounded-2xl ${isTopClient ? 'bg-white/10' : 'bg-transparent'}`}>
-                                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Visits</div>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className={`text-lg font-black ${isTopClient ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{client.visits}</div>
-                                                        <span className="text-[10px] text-gray-400 font-medium">total</span>
-                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div className={`p-3 rounded-xl border mb-6 ${isTopClient ? 'bg-white/10 border-white/10' : 'bg-gray-50 dark:bg-white/5 border-gray-100/50 dark:border-white/5'}`}>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <Clock className="w-3 h-3 text-gray-400" />
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Last Visit</span>
+                                            <div className="mb-8">
+                                                <h4 className={`text-xl font-[950] truncate tracking-tight transition-colors ${isTopClient ? 'text-white' : 'text-gray-900 dark:text-white group-hover:text-primary-600'}`}>{client.name}</h4>
+                                                <p className={`text-[10px] font-black uppercase tracking-[0.15em] truncate mt-1 ${isTopClient ? 'text-gray-400' : 'text-gray-400'}`}>{client.email}</p>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-3 mb-8">
+                                                <div className={`p-4 rounded-[20px] ${isTopClient ? 'bg-white/5 border border-white/5' : 'bg-gray-50/50 dark:bg-white/5 border border-transparent'}`}>
+                                                    <div className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em] mb-2">Portfolio</div>
+                                                    <div className={`text-xl font-[950] tracking-tight ${isTopClient ? 'text-white' : 'text-gray-900 dark:text-white'}`}>${client.totalLtv.toLocaleString()}</div>
                                                 </div>
-                                                <div className={`text-xs font-bold ${isTopClient ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`}>{format(client.lastVisitDate, 'MMM d, yyyy')}</div>
-                                                <div className={`text-[10px] font-medium mt-0.5 ${isTopClient ? 'text-emerald-100' : 'text-gray-500'}`}>{servicesMap.get(client.latestApt.serviceId)?.name || 'Service Unspecified'}</div>
+                                                <div className={`p-4 rounded-[20px] ${isTopClient ? 'bg-white/5 border border-white/5' : 'bg-gray-50/50 dark:bg-white/5 border border-transparent'}`}>
+                                                    <div className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em] mb-2">Visits</div>
+                                                    <div className={`text-xl font-[950] tracking-tight ${isTopClient ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{client.visits}</div>
+                                                </div>
+                                            </div>
+
+                                            <div className={`p-4 rounded-[20px] border mb-8 ${isTopClient ? 'bg-white/5 border-white/10' : 'bg-white/50 dark:bg-white/5 border-gray-100/50 dark:border-white/10'}`}>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                                    <span className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em]">Latest Session</span>
+                                                </div>
+                                                <div className={`text-[13px] font-[950] tracking-tight ${isTopClient ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{format(client.lastVisitDate, 'MMM d, yyyy')}</div>
+                                                <div className="text-[10px] font-bold text-primary-500/80 mt-1 uppercase tracking-widest truncate">{servicesMap.get(client.latestApt.serviceId)?.name || 'Premium Service'}</div>
                                             </div>
                                         </div>
 
-                                        <div className={`flex items-center gap-2 pt-4 border-t relative z-10 ${isTopClient ? 'border-white/10' : 'border-gray-50 dark:border-white/5'}`}>
+                                        <div className="flex items-center gap-2 relative z-10 pt-4">
                                             <button
                                                 onClick={() => setSelectedClientEmail(client.email)}
-                                                className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${isTopClient
-                                                    ? 'bg-white dark:bg-emerald-500 text-emerald-900 dark:text-white hover:bg-emerald-50 dark:hover:bg-emerald-400'
-                                                    : 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-600 hover:text-white'
+                                                className={`flex-1 py-3.5 rounded-[20px] text-[10px] font-[950] uppercase tracking-[0.2em] transition-all shadow-lg ${isTopClient
+                                                    ? 'bg-white text-gray-950 hover:bg-gray-100'
+                                                    : 'bg-gray-950 dark:bg-white border border-transparent dark:border-white text-white dark:text-gray-950 hover:scale-[1.02] active:scale-[0.98]'
                                                     }`}
                                             >
-                                                View History
+                                                History
                                             </button>
                                             <a
-                                                href={`mailto:${client.email}?subject=Just checking in!`}
-                                                className={`p-2 rounded-xl border border-transparent transition-all shadow-sm ${isTopClient
-                                                    ? 'bg-white/10 text-white hover:bg-white/20'
-                                                    : 'bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-white dark:hover:bg-white/10 hover:border-purple-100 dark:hover:border-purple-900/50'
+                                                href={`mailto:${client.email}`}
+                                                className={`p-3.5 rounded-[20px] border transition-all ${isTopClient
+                                                    ? 'bg-white/10 border-white/10 text-white hover:bg-white/20'
+                                                    : 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 text-gray-400 hover:text-primary-600 hover:border-primary-500/30'
                                                     }`}
-                                                title="Email Client"
                                             >
                                                 <Mail className="w-4 h-4" />
                                             </a>
-                                            <button className={`p-2 rounded-xl border border-transparent transition-all shadow-sm ${isTopClient
-                                                ? 'bg-white/10 text-white hover:bg-white/20'
-                                                : 'bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-white/10 hover:border-primary-100 dark:hover:border-primary-900/50'
-                                                }`}>
-                                                <Briefcase className="w-4 h-4" />
-                                            </button>
                                         </div>
                                     </div>
                                 );
@@ -673,29 +741,36 @@ export default function StaffStats({ appointments, services, currentStaffId }: S
     };
 
     return (
-        <div className="flex flex-col animate-in fade-in duration-500 w-full px-4 sm:px-6 lg:px-0">
-            {/* Header - Simplified to match Team Roster */}
-            <header className="pt-8 lg:pt-0 mb-8">
-                <div className="max-w-[1800px] mx-auto w-full flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-col animate-in fade-in duration-500 w-full">
+            {/* Header - Refined for Pro Parity */}
+            <header className="mb-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
-                        <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white leading-tight mb-2">
-                            Analytics
+                        <h1 className="text-[32px] font-black tracking-tight text-gray-900 dark:text-white leading-none mb-2">
+                            Performance & Insights
                         </h1>
-                        <p className="text-gray-500 dark:text-gray-400 font-medium mb-6">Track your personal performance and client growth.</p>
-                        <nav className="flex items-center gap-1 p-1 bg-gray-100/80 dark:bg-white/5 rounded-full w-fit">
+                        <p className="text-gray-500 dark:text-gray-400 font-medium mb-6">Track your professional growth and client engagement metrics.</p>
+
+                        <div className="flex items-center gap-1 p-1 bg-gray-100/80 dark:bg-white/5 rounded-2xl w-fit">
                             <button
                                 onClick={() => setActiveTab('my_stats')}
-                                className={`px-5 py-2.5 rounded-full transition-all capitalize text-sm font-bold ${activeTab === 'my_stats' ? 'bg-primary-600 text-white shadow-md shadow-primary-600/20' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/10'}`}
+                                className={`px-5 py-2.5 rounded-xl transition-all text-xs font-black uppercase tracking-widest ${activeTab === 'my_stats'
+                                    ? 'bg-white dark:bg-card text-primary-500 shadow-xl shadow-black/5 ring-1 ring-black/5'
+                                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                                    }`}
                             >
-                                My Stats
+                                Dashboard
                             </button>
                             <button
                                 onClick={() => setActiveTab('clients')}
-                                className={`px-5 py-2.5 rounded-full transition-all capitalize text-sm font-bold ${activeTab === 'clients' ? 'bg-primary-600 text-white shadow-md shadow-primary-600/20' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'}`}
+                                className={`px-5 py-2.5 rounded-xl transition-all text-xs font-black uppercase tracking-widest ${activeTab === 'clients'
+                                    ? 'bg-white dark:bg-card text-primary-500 shadow-xl shadow-black/5 ring-1 ring-black/5'
+                                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                                    }`}
                             >
-                                Clients
+                                Client CRM
                             </button>
-                        </nav>
+                        </div>
                     </div>
 
                     {/* Time Range Selector */}

@@ -138,6 +138,7 @@ export default function StaffPage() {
         <StaffDashboard
             appointments={appointments}
             currentUser={currentUser || { id: 'loading' }}
+            userProfile={userProfile}
             currentStaffId={displayStaffId}
             services={services}
             staff={staff}

@@ -36,6 +36,7 @@ import BrandingInjector from '../BrandingInjector';
 interface StaffDashboardProps {
     appointments: Appointment[];
     currentUser: User;
+    userProfile?: any; // Added userProfile
     currentStaffId?: string;
     services: Service[];
     staff?: Staff[];
@@ -51,6 +52,7 @@ interface StaffDashboardProps {
 export default function StaffDashboard({
     appointments,
     currentUser,
+    userProfile,
     currentStaffId,
     services,
     staff = [],
@@ -221,10 +223,13 @@ export default function StaffDashboard({
 
 
 
-    // Dynamic Branding Style
-    const brandingStyle = currentOrg?.primary_color ? {
-        '--brand-primary': currentOrg.primary_color,
-    } as React.CSSProperties : {};
+    // Dynamic Branding Style - Prioritize staff personal color
+    const displayColor = userProfile?.settings?.admin_color || currentOrg?.primary_color || '#a855f7';
+
+    const brandingStyle = {
+        '--brand-primary': displayColor,
+        '--primary-color': displayColor, // Added primary-color for consistency with admin
+    } as React.CSSProperties;
 
     const effectiveStaffId = currentStaffId || 'NOT_FOUND';
 
@@ -233,7 +238,7 @@ export default function StaffDashboard({
             className="min-h-screen bg-white dark:bg-black flex flex-col lg:block overflow-x-hidden relative"
             style={brandingStyle}
         >
-            <BrandingInjector primaryColor={currentOrg?.primary_color} />
+            <BrandingInjector primaryColor={displayColor} />
             {/* Desktop Sidebar (Fixed) */}
             <StaffSidebar
                 currentTab={activeTab}
@@ -243,10 +248,13 @@ export default function StaffDashboard({
             />
 
             {/* Main Content Area */}
-            <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'schedule' ? 'flex flex-col h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'block min-h-screen'}`} style={activeTab === 'schedule' ? { overscrollBehavior: 'none' } : {}}>
+            <main className={`lg:ml-72 min-h-screen ${activeTab === 'schedule' ? 'h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'pb-24'}`} style={activeTab === 'schedule' ? { overscrollBehavior: 'none' } : {}}>
 
-                {/* Content Container */}
-                <div className={` min-h-0 ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col p-0 min-h-0' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
+                {/* Global Brand Glow (Admin Style) */}
+                <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary-500/5 to-transparent pointer-events-none -z-10" />
+
+                {/* Content Container - Adjusted for missing header */}
+                <div className={`min-h-0 ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col p-0 h-full' : 'lg:px-10 px-4 py-8 lg:py-12 space-y-12'}`}>
 
 
                     {activeTab === 'schedule' && (
@@ -263,8 +271,11 @@ export default function StaffDashboard({
                                     onAppointmentClick={handleAppointmentClick}
                                     colorMode={currentOrg?.settings?.color_mode || 'staff'}
                                     showStaffFilter={true}
+
                                     currentStaffId={effectiveStaffId}
+                                    userThemeColor={displayColor} // Inject Personal Theme
                                 />
+
                             </div>
 
                             {/* Mobile FAB for new appointment */}
@@ -307,6 +318,8 @@ export default function StaffDashboard({
                         <div className="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto">
                             <StaffSettings
                                 currentUser={currentUser}
+                                onRefresh={onRefresh}
+                                initialSettings={userProfile?.settings}
                             />
                         </div>
                     )}
@@ -348,8 +361,8 @@ export default function StaffDashboard({
                     onClick={() => setActiveTab('settings')}
                     className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-primary-600 dark:text-primary-400 scale-110' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <UserIcon className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-primary-600/10' : ''}`} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
+                    <Settings className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-primary-600/10' : ''}`} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Settings</span>
                 </button>
             </div>
 
