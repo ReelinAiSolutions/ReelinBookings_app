@@ -99,10 +99,11 @@ function LoginForm() {
 
                 <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-[480px] animate-in zoom-in-95 duration-500 fade-in">
                     {/* Back to Landing Page */}
-                    <div className="absolute -top-24 left-0">
-                        <Link href="/" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors group">
+                    {/* Back to Landing Page (Fixed on Mobile) */}
+                    <div className="fixed top-6 left-6 z-50 lg:absolute lg:-top-24 lg:left-0 lg:z-auto">
+                        <Link href="/" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors group bg-white/50 backdrop-blur-sm p-2 rounded-lg lg:bg-transparent lg:p-0">
                             <span className="group-hover:-translate-x-1 transition-transform">←</span>
-                            Back to Home
+                            Back <span className="hidden sm:inline">to Home</span>
                         </Link>
                     </div>
 

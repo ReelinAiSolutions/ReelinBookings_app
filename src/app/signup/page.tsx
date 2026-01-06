@@ -143,10 +143,11 @@ export default function SignupPage() {
             <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-12 gap-10 items-center animate-in fade-in zoom-in-95 duration-500">
 
                 {/* BACK BUTTON (Absolute) */}
-                <div className="absolute -top-16 left-0 lg:left-4">
-                    <Link href="/" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors group">
+                {/* BACK BUTTON (Fixed on Mobile, Absolute on Desktop) */}
+                <div className="fixed top-6 left-6 z-50 lg:absolute lg:-top-16 lg:left-0 lg:z-auto">
+                    <Link href="/" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors group bg-white/50 backdrop-blur-sm p-2 rounded-lg lg:bg-transparent lg:p-0">
                         <span className="group-hover:-translate-x-1 transition-transform">←</span>
-                        Back to Home
+                        Back <span className="hidden sm:inline">to Home</span>
                     </Link>
                 </div>
 
