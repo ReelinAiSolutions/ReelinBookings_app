@@ -9,6 +9,7 @@ import {
 import { Organization } from '@/types';
 import SettingsManager from './SettingsManager';
 import ProfileManager from './ProfileManager';
+import { createClient } from '@/lib/supabase';
 
 interface UnifiedSettingsProps {
     org: Organization;
@@ -113,6 +114,24 @@ export default function UnifiedSettings({ org, user, profile, onUpdate }: Unifie
                                     }`} />
                             </button>
                         ))}
+
+                        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-white/5">
+                            <button
+                                onClick={async () => {
+                                    const supabase = createClient();
+                                    await supabase.auth.signOut();
+                                    window.location.href = '/login';
+                                }}
+                                className="w-full flex items-center justify-between p-4 rounded-2xl transition-all hover:bg-red-50 dark:hover:bg-red-900/10 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 group"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2 rounded-xl bg-gray-100 dark:bg-white/5 text-gray-400 group-hover:bg-red-100 group-hover:text-red-500 dark:group-hover:bg-red-500/20 transition-colors">
+                                        <LogOut className="w-5 h-5" />
+                                    </div>
+                                    <span className="font-bold text-sm text-left">Sign Out</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Mobile Only: Extra Menu Items (matches reference picture) */}
@@ -169,6 +188,6 @@ export default function UnifiedSettings({ org, user, profile, onUpdate }: Unifie
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

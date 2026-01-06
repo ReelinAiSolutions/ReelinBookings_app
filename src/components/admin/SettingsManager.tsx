@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase';
 import {
     Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock,
     CheckCircle2, Tag, ChevronRight, ChevronUp, ShieldAlert, CalendarDays,
-    Moon, Sun, LayoutDashboard, CalendarX, Plus, Trash2
+    Moon, Sun, LayoutDashboard, CalendarX, Plus, Trash2, LogOut
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -255,6 +255,23 @@ export default function SettingsManager({
                                 <ChevronRight className={`w-3.5 h-3.5 transition-transform ${activeTab === item.id ? 'text-primary-500' : 'text-gray-300'}`} />
                             </button>
                         ))}
+
+                        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-white/5">
+                            <button
+                                onClick={async () => {
+                                    await supabase.auth.signOut();
+                                    window.location.href = '/login';
+                                }}
+                                className="w-full flex items-center justify-between p-3.5 sm:p-4 rounded-xl sm:rounded-2xl transition-all hover:bg-red-50 dark:hover:bg-red-900/10 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 group"
+                            >
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-gray-100 dark:bg-white/5 text-gray-400 group-hover:bg-red-100 group-hover:text-red-500 dark:group-hover:bg-red-500/20 transition-colors">
+                                        <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    </div>
+                                    <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs text-left">Sign Out</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 )}
 
