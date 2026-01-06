@@ -168,45 +168,50 @@ function LoginForm() {
     }
 
     return (
-        <div className="min-h-screen bg-white flex flex-col justify-center py-12 px-6 lg:px-8 animate-in slide-in-from-right-8 duration-300">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="min-h-screen bg-white relative overflow-hidden flex items-center justify-center p-4">
+            {/* Background Ambient Glows */}
+            <div className="absolute top-0 -left-20 w-[600px] h-[600px] bg-purple-200/40 rounded-full blur-[120px] pointer-events-none opacity-50 mix-blend-multiply" />
+            <div className="absolute bottom-0 -right-20 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] pointer-events-none opacity-50 mix-blend-multiply" />
+
+            <div className="relative z-10 w-full max-w-md animate-in zoom-in-95 duration-500">
                 {/* Back Button */}
                 <button
                     onClick={() => setView('SELECTION')}
-                    className="mb-8 flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+                    className="mb-8 inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors group"
                 >
-                    ← Back
+                    <span className="group-hover:-translate-x-1 transition-transform">←</span>
+                    Back
                 </button>
 
-                <div className="mb-8">
-                    <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-                        {loginRole === 'ADMIN' ? 'Admin Access' : 'Team Portal'}
-                    </h2>
-                    <p className="mt-2 text-gray-500">
-                        Enter your credentials to access the
-                        {loginRole === 'ADMIN' ? ' management dashboard.' : ' staff schedule.'}
-                    </p>
-                </div>
+                <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-8 sm:p-10 shadow-2xl shadow-gray-200/50 border border-white/50 ring-1 ring-gray-100">
+                    <div className="mb-10">
+                        <h2 className="text-3xl font-[950] text-gray-900 tracking-tight leading-none mb-3">
+                            {loginRole === 'ADMIN' ? 'Admin Access' : 'Team Portal'}
+                        </h2>
+                        <p className="text-base text-gray-500 font-medium">
+                            Enter your credentials to access the
+                            {loginRole === 'ADMIN' ? ' management dashboard.' : ' staff schedule.'}
+                        </p>
+                    </div>
 
-                <div className="bg-white">
                     {isRedirect && (
-                        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start gap-3">
+                        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-2xl p-4 flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
                             <div>
-                                <h3 className="text-sm font-medium text-yellow-800">Authentication Required</h3>
-                                <p className="text-sm text-yellow-700 mt-1">Please sign in to access the Dashboard.</p>
+                                <h3 className="text-sm font-bold text-yellow-800">Authentication Required</h3>
+                                <p className="text-sm text-yellow-700 mt-1 font-medium">Please sign in to access the Dashboard.</p>
                             </div>
                         </div>
                     )}
 
                     <form className="space-y-6" onSubmit={handleLogin}>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-bold text-gray-900 mb-2">
+                            <label htmlFor="email" className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
                                 Email address
                             </label>
-                            <div className="relative">
+                            <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-gray-400" />
+                                    <Mail className="h-5 w-5 text-gray-300 group-focus-within:text-purple-500 transition-colors" />
                                 </div>
                                 <input
                                     id="email"
@@ -216,7 +221,7 @@ function LoginForm() {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="block w-full pl-11 pr-4 py-4 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all font-medium bg-gray-50 focus:bg-white"
+                                    className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:bg-white focus:border-purple-500 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all font-bold"
                                     placeholder="name@example.com"
                                 />
                             </div>
@@ -224,16 +229,16 @@ function LoginForm() {
 
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <label htmlFor="password" className="block text-sm font-bold text-gray-900">
+                                <label htmlFor="password" className="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">
                                     Password
                                 </label>
-                                <a href="#" className="text-xs font-bold text-primary-600 hover:text-primary-500">
+                                <a href="#" className="text-[11px] font-black text-purple-600 hover:text-purple-500 uppercase tracking-widest">
                                     Forgot?
                                 </a>
                             </div>
-                            <div className="relative">
+                            <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-gray-400" />
+                                    <Lock className="h-5 w-5 text-gray-300 group-focus-within:text-purple-500 transition-colors" />
                                 </div>
                                 <input
                                     id="password"
@@ -243,22 +248,22 @@ function LoginForm() {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="block w-full pl-11 pr-4 py-4 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all font-medium bg-gray-50 focus:bg-white"
+                                    className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:bg-white focus:border-purple-500 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all font-bold"
                                     placeholder="••••••••"
                                 />
                             </div>
                         </div>
 
                         {error && (
-                            <div className="rounded-xl bg-red-50 p-4 flex gap-3">
+                            <div className="rounded-xl bg-red-50 p-4 flex gap-3 animate-in slide-in-from-top-2">
                                 <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-                                <p className="text-sm font-medium text-red-800">{error}</p>
+                                <p className="text-sm font-bold text-red-800">{error}</p>
                             </div>
                         )}
 
                         <Button
                             type="submit"
-                            className="w-full flex justify-center py-4 text-base font-bold rounded-xl text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 shadow-xl shadow-gray-900/10 transition-all active:scale-[0.98]"
+                            className="w-full py-5 text-base font-black uppercase tracking-widest rounded-xl text-white bg-[#8B5CF6] hover:bg-[#7C3AED] shadow-xl shadow-purple-500/20 hover:shadow-2xl hover:-translate-y-0.5 transition-all active:translate-y-0 active:scale-[0.98]"
                             isLoading={isLoading}
                         >
                             Sign In
