@@ -1,73 +1,41 @@
 'use client';
 import { createClient } from '@/lib/supabase';
-
-import { Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock, CheckCircle2, Tag, ChevronDown, ChevronUp, ShieldAlert, CalendarDays, FileText, LogOut, Moon, Sun } from 'lucide-react';
+import {
+    Building2, Save, Upload, MapPin, Phone, Globe, Mail, Palette, Clock,
+    CheckCircle2, Tag, ChevronRight, ChevronUp, ShieldAlert, CalendarDays,
+    Moon, Sun, LayoutDashboard, CalendarX, Plus, Trash2
+} from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/context/ToastContext';
 import { Organization } from '@/types';
-import NotificationManager from './NotificationManager';
 import Image from 'next/image';
 
 interface SettingsManagerProps {
     org: Organization;
     onUpdate: (updatedOrg: Organization) => void;
+    activeTabOverride?: string;
+    hideHeader?: boolean;
+    hideSidebar?: boolean;
 }
 
-// Helper Interface for Accordion
-interface AccordionItemProps {
-    title: string;
-    subtitle: string;
-    icon: React.ElementType;
-    colorClass: string;
-    isOpen: boolean;
-    onToggle: () => void;
-    children: React.ReactNode;
-}
+export default function SettingsManager({
+    org,
+    onUpdate,
+    activeTabOverride,
+    hideHeader = false,
+    hideSidebar = false
+}: SettingsManagerProps) {
+    if (!org) return null;
 
-const AccordionItem = ({ title, subtitle, icon: Icon, colorClass, isOpen, onToggle, children }: AccordionItemProps) => (
-    <div className={`bg-white dark:bg-card rounded-[32px] shadow-sm border transition-all duration-300 overflow-hidden ${isOpen ? 'border-gray-200 dark:border-white/10 ring-4 ring-gray-50 dark:ring-white/5' : 'border-gray-100 dark:border-white/5'}`}>
-        <button
-            type="button"
-            onClick={onToggle}
-            className="w-full flex items-center justify-between p-8 text-left transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
-        >
-            <div className="flex items-center gap-4">
-                <div className={`p-3.5 rounded-2xl ${colorClass}`}>
-                    <Icon className="w-6 h-6" strokeWidth={2.5} />
-                </div>
-                <div>
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white leading-tight">{title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-bold mt-0.5">{subtitle}</p>
-                </div>
-            </div>
-            <div className={`p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-gray-100 dark:bg-white/10 rotate-180' : 'bg-transparent'}`}>
-                <ChevronDown className="w-6 h-6 text-gray-400" />
-            </div>
-        </button>
-        <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="p-8 pt-0 border-t border-gray-100/50 dark:border-white/5">
-                <div className="pt-8">
-                    {children}
-                </div>
-            </div>
-        </div>
-    </div>
-);
-
-export default function SettingsManager({ org, onUpdate }: SettingsManagerProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(org.logo_url || null);
     const { toast } = useToast();
 
-    // Accordion State
-    const [openSection, setOpenSection] = useState<string>('');
+    // Navigation State
+    const [activeTab, setActiveTab] = useState<string>('brand');
 
-    const toggleSection = (id: string) => {
-        setOpenSection(openSection === id ? '' : id);
-    };
 
     const [formData, setFormData] = useState({
         name: org.name,
@@ -100,30 +68,16 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
     });
 
     const [calendarColor, setCalendarColor] = useState<'staff' | 'service'>(org.settings?.color_mode || 'staff');
+    const [holidays, setHolidays] = useState<string[]>(org.settings?.scheduling?.holidays || []);
+    const [newHolidayDate, setNewHolidayDate] = useState('');
 
-    // Appearance State
-    const [isDark, setIsDark] = useState(false);
-
-    useEffect(() => {
-        // Check local storage or system preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            setIsDark(true);
-            document.documentElement.classList.add('dark');
-        }
-    }, []);
-
-    const toggleTheme = () => {
-        if (isDark) {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-            setIsDark(false);
-        } else {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-            setIsDark(true);
-        }
-    };
+    const [schedulingRules, setSchedulingRules] = useState({
+        minNoticeValue: org.settings?.scheduling?.min_notice_value ?? 4,
+        minNoticeUnit: org.settings?.scheduling?.min_notice_unit || 'hours',
+        maxAdvanceValue: org.settings?.scheduling?.max_advance_value ?? 60,
+        maxAdvanceUnit: org.settings?.scheduling?.max_advance_unit || 'days',
+        bufferMinutes: org.settings?.scheduling?.buffer_minutes ?? 0
+    });
 
     const supabase = createClient();
 
@@ -131,7 +85,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
         setFormData({
             name: org.name,
             slug: org.slug,
-            primary_color: org.primary_color || '#4F46E5',
+            primary_color: org.primary_color || '#a855f7',
             phone: org.phone || '',
             email: org.email || '',
             address: org.address || '',
@@ -156,8 +110,20 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
             policy_url: org.policy_url || ''
         });
         setCalendarColor(org.settings?.color_mode || 'staff');
+        setHolidays(org.settings?.scheduling?.holidays || []);
+        setSchedulingRules({
+            minNoticeValue: org.settings?.scheduling?.min_notice_value ?? 4,
+            minNoticeUnit: org.settings?.scheduling?.min_notice_unit || 'hours',
+            maxAdvanceValue: org.settings?.scheduling?.max_advance_value ?? 60,
+            maxAdvanceUnit: org.settings?.scheduling?.max_advance_unit || 'days',
+            bufferMinutes: org.settings?.scheduling?.buffer_minutes ?? 0
+        });
+
+        if (activeTabOverride) {
+            setActiveTab(activeTabOverride);
+        }
         setPreviewUrl(org.logo_url || null);
-    }, [org]);
+    }, [org, activeTabOverride]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -165,11 +131,6 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
             setLogoFile(file);
             setPreviewUrl(URL.createObjectURL(file));
         }
-    };
-
-    const handleSignOut = async () => {
-        await supabase.auth.signOut();
-        window.location.href = '/login';
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -200,6 +161,7 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                 .from('organizations')
                 .update({
                     name: formData.name,
+                    slug: formData.slug,
                     primary_color: formData.primary_color,
                     phone: formData.phone,
                     email: formData.email,
@@ -217,6 +179,15 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
                         notifications: {
                             ...org.settings?.notifications,
                             all_bookings: bookingSettings.notify_all_bookings
+                        },
+                        scheduling: {
+                            ...org.settings?.scheduling,
+                            holidays: holidays,
+                            min_notice_value: schedulingRules.minNoticeValue,
+                            min_notice_unit: schedulingRules.minNoticeUnit,
+                            max_advance_value: schedulingRules.maxAdvanceValue,
+                            max_advance_unit: schedulingRules.maxAdvanceUnit,
+                            buffer_minutes: schedulingRules.bufferMinutes
                         }
                     },
                     terms_url: legalSettings.terms_url,
@@ -229,7 +200,6 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
             if (error) throw error;
 
             toast('Your business settings have been updated successfully.', 'success');
-
             onUpdate(data);
 
         } catch (error: any) {
@@ -244,629 +214,595 @@ export default function SettingsManager({ org, onUpdate }: SettingsManagerProps)
         return (bookingSettings.business_hours as any)[day] || { open: '09:00', close: '17:00', isOpen: false };
     };
 
+    const menuItems = [
+        { id: 'brand', label: 'Brand & Logo', icon: Palette, color: 'bg-indigo-500' },
+        { id: 'details', label: 'Business Details', icon: Building2, color: 'bg-blue-500' },
+        { id: 'hours', label: 'Hours & Availability', icon: Clock, color: 'bg-amber-500' },
+        { id: 'rules', label: 'Scheduling Rules', icon: CalendarDays, color: 'bg-orange-500' },
+        { id: 'legal', label: 'Policies & Legal', icon: ShieldAlert, color: 'bg-red-500' },
+        { id: 'link', label: 'Booking Link', icon: Globe, color: 'bg-emerald-500' },
+    ];
+
     return (
-        <div className="space-y-8 pt-8 px-4 lg:px-0 lg:pt-0">
-            <header className="mb-8">
-                <h1 className="text-[32px] font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">Settings</h1>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">Manage your brand, business details, and preferences</p>
-            </header>
+        <div className="max-w-6xl mx-auto space-y-4 sm:space-y-8 p-2 sm:p-8">
+            {/* Header */}
+            {!hideHeader && (
+                <div>
+                    <h1 className="text-[32px] font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">Business Operations</h1>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">Manage your brand, details, and booking configurations.</p>
+                </div>
+            )}
 
-
-            <form onSubmit={handleSave} className="space-y-4">
-
-                {/* 0. Booking Link (NEW) */}
-                <AccordionItem
-                    title="Booking Link"
-                    subtitle="Share this link with your customers"
-                    icon={Globe}
-                    colorClass="bg-[#F3E8FF] text-[#d946ef]"
-                    isOpen={openSection === 'link'}
-                    onToggle={() => toggleSection('link')}
-                >
-                    <div className="bg-gray-50 dark:bg-white/5 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
-                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Your Public Booking URL</label>
-                        <div className="flex items-center gap-3">
-                            <div className="flex-1 relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Globe className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    type="text"
-                                    readOnly
-                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/${org.slug}`}
-                                    className="w-full pl-12 pr-4 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl font-bold text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20"
-                                />
-                            </div>
-                            <Button
-                                type="button"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(`${window.location.origin}/${org.slug}`);
-                                    toast('Link copied to clipboard!', 'success');
-                                }}
-                                className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-bold shadow-sm transition-all active:scale-95"
+            <div className={`${hideSidebar ? 'block' : 'grid grid-cols-1 lg:grid-cols-4 gap-8'}`}>
+                {/* Left: Navigation */}
+                {!hideSidebar && (
+                    <div className="space-y-2 lg:col-span-1">
+                        {menuItems.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id)}
+                                className={`w-full flex items-center justify-between p-3.5 sm:p-4 rounded-xl sm:rounded-2xl transition-all ${activeTab === item.id
+                                    ? 'bg-white dark:bg-card shadow-lg sm:shadow-xl border-gray-100 dark:border-white/10 ring-1 ring-black/5'
+                                    : 'hover:bg-white/50 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400'
+                                    }`}
                             >
-                                Copy Link
-                            </Button>
-                            <a
-                                href={`/${org.slug}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="bg-gradient-to-r from-[#A855F7] to-[#d946ef] hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-[#d946ef]/20 transition-all hover:-translate-y-0.5"
-                            >
-                                Open Page
-                            </a>
-                        </div>
-                        <p className="mt-3 text-xs text-gray-400 font-medium ml-1">
-                            This is the unique URL where your clients can book appointments.
-                        </p>
-                    </div>
-                </AccordionItem>
-
-                {/* 1. Brand Appearance */}
-                <AccordionItem
-                    title="Brand Appearance"
-                    subtitle="Customize your logo and primary colors"
-                    icon={Palette}
-                    colorClass="bg-[#F3E8FF] text-[#d946ef]"
-                    isOpen={openSection === 'brand'}
-                    onToggle={() => toggleSection('brand')}
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Company Logo</label>
-                            <div className="flex items-center gap-5">
-                                <div className="w-28 h-28 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden relative group">
-                                    {previewUrl ? (
-                                        <Image
-                                            src={previewUrl}
-                                            alt="Business Logo"
-                                            width={112}
-                                            height={112}
-                                            className="w-full h-full object-contain p-3"
-                                            unoptimized
-                                        />
-                                    ) : (
-                                        <Building2 className="w-8 h-8 text-gray-300" />
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <label className="cursor-pointer inline-flex items-center px-5 py-3 border-2 border-[#A855F7]/20 shadow-sm text-sm font-bold rounded-xl text-[#d946ef] bg-[#F3E8FF]/50 hover:bg-[#F3E8FF] transition-all duration-200">
-                                        <Upload className="w-4 h-4 mr-2" />
-                                        Upload New Logo
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                                    </label>
-                                    <p className="mt-2.5 text-xs text-gray-400 font-medium">Recommended: 500x500 PNG or SVG</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Primary Color</label>
-                            <div className="flex items-center gap-4">
-                                <input
-                                    type="color"
-                                    value={formData.primary_color}
-                                    onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                                    className="h-14 w-24 p-1.5 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:shadow-md transition-shadow bg-white"
-                                />
-                                <div className="flex-1">
-                                    <input
-                                        type="text"
-                                        value={formData.primary_color}
-                                        onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                                        className="block w-full px-5 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] text-base uppercase font-bold text-gray-900 dark:text-white transition-all duration-200"
-                                    />
-                                    <p className="mt-2.5 text-xs text-gray-400 font-medium">Used for buttons, highlights, and accents</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-5 h-5" />
-                                        Save Changes
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                </AccordionItem>
-
-                {/* 2. Business Details */}
-                <AccordionItem
-                    title="Business Details"
-                    subtitle="Public contact information and location"
-                    icon={Building2}
-                    colorClass="bg-gray-50 text-gray-600"
-                    isOpen={openSection === 'business'}
-                    onToggle={() => toggleSection('business')}
-                >
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Business Name</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                                    <Tag className="h-5 w-5 text-gray-300 group-focus-within:text-[#d946ef] transition-colors" />
-                                </div>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300 text-lg"
-                                    placeholder="Your Business Name"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Phone Number</label>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                                        <Phone className="h-5 w-5 text-gray-300 group-focus-within:text-[#d946ef] transition-colors" />
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-white ${item.color} shadow-md sm:shadow-lg`}>
+                                        <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
-                                    <input
-                                        type="tel"
-                                        value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
-                                        placeholder="(555) 123-4567"
-                                    />
+                                    <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs text-left">{item.label}</span>
                                 </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Email Address</label>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                                        <Mail className="h-5 w-5 text-gray-300 group-focus-within:text-[#d946ef] transition-colors" />
-                                    </div>
-                                    <input
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
-                                        placeholder="contact@business.com"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Office Address</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                                    <MapPin className="h-5 w-5 text-gray-300 group-focus-within:text-[#d946ef] transition-colors" />
-                                </div>
-                                <input
-                                    type="text"
-                                    value={formData.address}
-                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
-                                    placeholder="123 Main St, City, State 12345"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Business Website</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                                    <Globe className="h-5 w-5 text-gray-300 group-focus-within:text-[#d946ef] transition-colors" />
-                                </div>
-                                <input
-                                    type="url"
-                                    value={formData.website}
-                                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
-                                    placeholder="https://yourbusiness.com"
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-5 h-5" />
-                                        Save Changes
-                                    </>
-                                )}
-                            </Button>
-                        </div>
+                                <ChevronRight className={`w-3.5 h-3.5 transition-transform ${activeTab === item.id ? 'text-primary-500' : 'text-gray-300'}`} />
+                            </button>
+                        ))}
                     </div>
-                </AccordionItem>
+                )}
 
-                {/* 3. Hours & Availability */}
-                <AccordionItem
-                    title="Hours & Availability"
-                    subtitle="Configure opening hours and booking intervals"
-                    icon={Clock}
-                    colorClass="bg-[#F3E8FF] text-[#d946ef]"
-                    isOpen={openSection === 'hours'}
-                    onToggle={() => toggleSection('hours')}
-                >
-                    <div className="space-y-8">
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Booking Interval</label>
-                            <div className="relative group max-w-sm">
-                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                                    <Clock className="h-5 w-5 text-gray-300 group-focus-within:text-[#d946ef] transition-colors" />
-                                </div>
-                                <select
-                                    value={bookingSettings.slot_interval}
-                                    onChange={(e) => setBookingSettings({ ...bookingSettings, slot_interval: parseInt(e.target.value) })}
-                                    className="block w-full pl-14 pr-10 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white appearance-none text-base cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10"
-                                >
-                                    <option value={15}>Every 15 Minutes</option>
-                                    <option value={30}>Every 30 Minutes</option>
-                                    <option value={60}>Every Hour</option>
-                                </select>
-                                <div className="absolute inset-y-0 right-0 max-h-full flex items-center pr-4 pointer-events-none">
-                                    <ChevronUp className="w-4 h-4 text-gray-400" />
-                                </div>
-                            </div>
-                            <p className="text-xs text-gray-400 font-medium ml-2 mt-2">Determines start times (e.g. 9:00, 9:15)</p>
-                        </div>
-
-                        <div className="border-t border-gray-100 pt-8">
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6">Operating Hours</label>
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
-                                    const daySettings = getDaySettings(day);
-                                    return (
-                                        <div key={day} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-200 border-2 ${daySettings.isOpen ? 'bg-white dark:bg-white/5 border-[#A855F7]/20 hover:border-[#d946ef]/50 shadow-sm' : 'bg-gray-50 dark:bg-white/5 border-transparent opacity-80'}`}>
-                                            <div className="flex items-center gap-4">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={daySettings.isOpen}
-                                                    onChange={(e) => {
-                                                        const newHours = { ...bookingSettings.business_hours } as any;
-                                                        newHours[day] = { ...daySettings, isOpen: e.target.checked };
-                                                        setBookingSettings({ ...bookingSettings, business_hours: newHours });
-                                                    }}
-                                                    className="w-5 h-5 text-[#d946ef] focus:ring-[#d946ef] border-gray-300 rounded-lg cursor-pointer transition-all"
-                                                />
-                                                <span className={`text-sm font-bold capitalize w-24 ${daySettings.isOpen ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>{day}</span>
+                {/* Right: Content Area */}
+                <div className={`${hideSidebar ? 'w-full' : 'lg:col-span-3'} space-y-6`}>
+                    <form onSubmit={handleSave} className="space-y-8">
+                        {/* Booking Link */}
+                        {activeTab === 'link' && (
+                            <div className="bg-white dark:bg-card rounded-[1.25rem] sm:rounded-[2.5rem] p-4 sm:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Booking Link</h3>
+                                <div className="bg-gray-50 dark:bg-white/5 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
+                                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Your Public Booking URL</label>
+                                    <div className="flex flex-col md:flex-row items-center gap-3">
+                                        <div className="flex-1 w-full relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <Globe className="h-5 w-5 text-gray-400" />
                                             </div>
+                                            <input
+                                                type="text"
+                                                readOnly
+                                                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/${org.slug}`}
+                                                className="w-full pl-12 pr-4 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl font-bold text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2 w-full md:w-auto">
+                                            <Button
+                                                type="button"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(`${window.location.origin}/${org.slug}`);
+                                                    toast('Link copied to clipboard!', 'success');
+                                                }}
+                                                className="flex-1 md:flex-none bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10 px-6 py-3 rounded-xl font-bold shadow-sm transition-all active:scale-95"
+                                            >
+                                                Copy
+                                            </Button>
+                                            <a
+                                                href={`/${org.slug}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex-1 md:flex-none flex items-center justify-center bg-gray-900 hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all hover:-translate-y-0.5"
+                                            >
+                                                Open Page
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <p className="mt-3 text-xs text-gray-400 font-medium ml-1">
+                                        This is the unique URL where your clients can book appointments.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
-                                            {daySettings.isOpen ? (
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="time"
-                                                        value={daySettings.open}
-                                                        onChange={(e) => {
-                                                            const newHours = { ...bookingSettings.business_hours } as any;
-                                                            newHours[day] = { ...daySettings, open: e.target.value };
-                                                            setBookingSettings({ ...bookingSettings, business_hours: newHours });
-                                                        }}
-                                                        className="block w-28 px-3 py-2 bg-gray-50 dark:bg-black border border-transparent dark:border-white/10 rounded-xl text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-[#d946ef] focus:bg-white dark:focus:bg-black focus:border-[#d946ef] transition-all text-center"
+                        {/* Brand Appearance */}
+                        {activeTab === 'brand' && (
+                            <div className="bg-white dark:bg-card rounded-[1.25rem] sm:rounded-[2.5rem] p-4 sm:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Brand Appearance</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Company Logo</label>
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-28 h-28 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center bg-gray-50 dark:bg-white/5 overflow-hidden relative group">
+                                                {previewUrl ? (
+                                                    <Image
+                                                        src={previewUrl}
+                                                        alt="Business Logo"
+                                                        width={112}
+                                                        height={112}
+                                                        className="w-full h-full object-contain p-3"
+                                                        unoptimized
                                                     />
-                                                    <span className="text-gray-300 font-black text-xs">-</span>
+                                                ) : (
+                                                    <Building2 className="w-8 h-8 text-gray-300 dark:text-gray-600" />
+                                                )}
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="cursor-pointer inline-flex items-center px-5 py-3 border-2 border-primary-500/20 shadow-sm text-sm font-bold rounded-xl text-primary-600 bg-primary-50/50 hover:bg-primary-50 transition-all duration-200">
+                                                    <Upload className="w-4 h-4 mr-2" />
+                                                    Upload New Logo
+                                                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                                                </label>
+                                                <p className="mt-2.5 text-xs text-gray-400 font-medium">Recommended: 500x500 PNG or SVG</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Booking Interface Color</label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="color"
+                                                value={formData.primary_color}
+                                                onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
+                                                className="h-14 w-24 p-1.5 rounded-xl border border-gray-200 dark:border-white/10 cursor-pointer shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-card"
+                                            />
+                                            <div className="flex-1">
+                                                <input
+                                                    type="text"
+                                                    value={formData.primary_color}
+                                                    onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
+                                                    className="block w-full px-5 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 text-base uppercase font-bold text-gray-900 dark:text-white transition-all duration-200"
+                                                />
+                                                <p className="mt-2.5 text-xs text-gray-400 font-medium">Applied to your public booking page journey.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Business Details */}
+                        {activeTab === 'details' && (
+                            <div className="bg-white dark:bg-card rounded-[1.25rem] sm:rounded-[2.5rem] p-4 sm:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Business Details</h3>
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Business Name</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                                    <Tag className="h-5 w-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={formData.name}
+                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                                    placeholder="Your Business Name"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Public URL Slug</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                                    <Globe className="h-5 w-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={formData.slug}
+                                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-0-]/g, '') })}
+                                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                                    placeholder="your-business-slug"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Phone Number</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                                    <Phone className="h-5 w-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+                                                </div>
+                                                <input
+                                                    type="tel"
+                                                    value={formData.phone}
+                                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                                    placeholder="(555) 123-4567"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Email Address</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                                    <Mail className="h-5 w-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+                                                </div>
+                                                <input
+                                                    type="email"
+                                                    value={formData.email}
+                                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                    className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                                    placeholder="contact@business.com"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Office Address</label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                                <MapPin className="h-5 w-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={formData.address}
+                                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                                className="w-full pl-14 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                                placeholder="123 Main St, City, State 12345"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-gray-100 dark:border-white/10 pt-8 mt-4">
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Notification Preferences</label>
+                                        <div className="flex items-center justify-between p-5 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+                                                    <Mail className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-black text-gray-900 dark:text-white">Admin Booking Notifications</p>
+                                                    <p className="text-xs font-medium text-gray-400">Receive an email for every new booking Made.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setBookingSettings({ ...bookingSettings, notify_all_bookings: !bookingSettings.notify_all_bookings })}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${bookingSettings.notify_all_bookings ? 'bg-primary-600' : 'bg-gray-200 dark:bg-white/10'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${bookingSettings.notify_all_bookings ? 'translate-x-6' : 'translate-x-1'
+                                                        }`}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Hours & Availability */}
+                        {activeTab === 'hours' && (
+                            <div className="bg-white dark:bg-card rounded-[1.25rem] sm:rounded-[2.5rem] p-3 sm:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Hours & Availability</h3>
+                                <div className="space-y-8">
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Booking Interval</label>
+                                        <div className="relative group max-w-sm">
+                                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                                <Clock className="h-5 w-5 text-gray-300 group-focus-within:text-amber-500 transition-colors" />
+                                            </div>
+                                            <select
+                                                value={bookingSettings.slot_interval}
+                                                onChange={(e) => setBookingSettings({ ...bookingSettings, slot_interval: parseInt(e.target.value) })}
+                                                className="block w-full pl-14 pr-10 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-gray-900 dark:text-white appearance-none text-base cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10"
+                                            >
+                                                <option value={15}>Every 15 Minutes</option>
+                                                <option value={30}>Every 30 Minutes</option>
+                                                <option value={60}>Every Hour</option>
+                                            </select>
+                                            <div className="absolute inset-y-0 right-0 max-h-full flex items-center pr-4 pointer-events-none">
+                                                <ChevronUp className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-gray-400 font-medium ml-2 mt-2">Determines start times (e.g. 9:00, 9:15)</p>
+                                    </div>
+
+                                    <div className="border-t border-gray-100 dark:border-white/10 pt-8">
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6">Operating Hours</label>
+                                        <div className="grid grid-cols-1 gap-2.5">
+                                            {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+                                                const daySettings = getDaySettings(day);
+                                                return (
+                                                    <div key={day} className={`flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-5 rounded-xl sm:rounded-2xl transition-all duration-200 border ${daySettings.isOpen ? 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm' : 'bg-gray-50/50 dark:bg-white/5 border-transparent opacity-60'}`}>
+                                                        <div className="flex items-center gap-3 mb-3.5 sm:mb-0">
+                                                            <div className="relative flex items-center">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={daySettings.isOpen}
+                                                                    onChange={(e) => {
+                                                                        const newHours = { ...bookingSettings.business_hours } as any;
+                                                                        newHours[day] = { ...daySettings, isOpen: e.target.checked };
+                                                                        setBookingSettings({ ...bookingSettings, business_hours: newHours });
+                                                                    }}
+                                                                    className="peer w-5 h-5 text-amber-500 focus:ring-amber-500 border-gray-300 rounded-lg cursor-pointer transition-all z-10 opacity-0 absolute inset-0"
+                                                                />
+                                                                <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${daySettings.isOpen ? 'bg-amber-500 border-amber-500' : 'border-gray-300 bg-white dark:bg-white/10'}`}>
+                                                                    {daySettings.isOpen && <CheckCircle2 className="w-3.5 h-3.5 text-white" strokeWidth={4} />}
+                                                                </div>
+                                                            </div>
+                                                            <span className={`text-xs sm:text-sm font-black uppercase tracking-wider ${daySettings.isOpen ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>{day}</span>
+                                                        </div>
+
+                                                        {daySettings.isOpen ? (
+                                                            <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                                                                <div className="relative flex-1 sm:w-36 lg:w-44 group min-w-0">
+                                                                    <input
+                                                                        type="time"
+                                                                        value={daySettings.open}
+                                                                        onChange={(e) => {
+                                                                            const newHours = { ...bookingSettings.business_hours } as any;
+                                                                            newHours[day] = { ...daySettings, open: e.target.value };
+                                                                            setBookingSettings({ ...bookingSettings, business_hours: newHours });
+                                                                        }}
+                                                                        className="block w-full px-2 sm:px-3 py-2.5 sm:py-3.5 bg-gray-50 dark:bg-black border-2 border-transparent hover:border-gray-200 dark:hover:border-white/10 rounded-xl text-[12px] sm:text-sm font-bold text-gray-900 dark:text-white focus:ring-0 focus:border-amber-500 transition-all text-center"
+                                                                    />
+                                                                </div>
+                                                                <span className="text-gray-300 font-black text-[10px] opacity-40 shrink-0 text-center">-</span>
+                                                                <div className="relative flex-1 sm:w-36 lg:w-44 group min-w-0">
+                                                                    <input
+                                                                        type="time"
+                                                                        value={daySettings.close}
+                                                                        onChange={(e) => {
+                                                                            const newHours = { ...bookingSettings.business_hours } as any;
+                                                                            newHours[day] = { ...daySettings, close: e.target.value };
+                                                                            setBookingSettings({ ...bookingSettings, business_hours: newHours });
+                                                                        }}
+                                                                        className="block w-full px-2 sm:px-3 py-2.5 sm:py-3.5 bg-gray-50 dark:bg-black border-2 border-transparent hover:border-gray-200 dark:hover:border-white/10 rounded-xl text-[12px] sm:text-sm font-bold text-gray-900 dark:text-white focus:ring-0 focus:border-amber-500 transition-all text-center"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex-1 sm:text-right sm:pr-4">
+                                                                <span className="text-[10px] sm:text-xs font-black text-gray-300 dark:text-gray-600 uppercase tracking-widest bg-gray-100 dark:bg-white/5 px-2.5 py-1.5 rounded-lg">Closed</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Holidays & Closures Section */}
+                                    <div className="border-t border-gray-100 dark:border-white/10 pt-8">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <CalendarX className="w-5 h-5 text-red-500" />
+                                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest">Holidays & Closures</label>
+                                        </div>
+                                        <p className="text-xs text-gray-400 font-medium mb-6 ml-1">Add specific dates where your business will be closed (e.g. Christmas, New Year's Eve).</p>
+
+                                        <div className="space-y-4">
+                                            <div className="flex gap-3">
+                                                <div className="flex-1">
                                                     <input
-                                                        type="time"
-                                                        value={daySettings.close}
-                                                        onChange={(e) => {
-                                                            const newHours = { ...bookingSettings.business_hours } as any;
-                                                            newHours[day] = { ...daySettings, close: e.target.value };
-                                                            setBookingSettings({ ...bookingSettings, business_hours: newHours });
-                                                        }}
-                                                        className="block w-28 px-3 py-2 bg-gray-50 dark:bg-black border border-transparent dark:border-white/10 rounded-xl text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-[#d946ef] focus:bg-white dark:focus:bg-black focus:border-[#d946ef] transition-all text-center"
+                                                        type="date"
+                                                        value={newHolidayDate}
+                                                        onChange={(e) => setNewHolidayDate(e.target.value)}
+                                                        className="w-full px-5 py-3.5 bg-gray-50 dark:bg-black border-2 border-transparent hover:border-gray-200 dark:hover:border-white/10 rounded-2xl text-sm font-bold text-gray-900 dark:text-white focus:ring-0 focus:border-red-500 transition-all"
                                                     />
                                                 </div>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (!newHolidayDate) return;
+                                                        if (holidays.includes(newHolidayDate)) {
+                                                            toast('This date is already added.', 'error');
+                                                            return;
+                                                        }
+                                                        setHolidays([...holidays, newHolidayDate].sort());
+                                                        setNewHolidayDate('');
+                                                        toast('Holiday added. Don\'t forget to save!', 'success');
+                                                    }}
+                                                    className="bg-gray-900 dark:bg-white text-white dark:text-black hover:opacity-90 px-6 rounded-2xl font-bold flex items-center gap-2"
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                    Add Date
+                                                </Button>
+                                            </div>
+
+                                            {holidays.length > 0 ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                                                    {holidays.map((date) => (
+                                                        <div key={date} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 group animate-in fade-in zoom-in duration-300">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div>
+                                                                <span className="font-bold text-sm text-gray-900 dark:text-white">
+                                                                    {new Date(date + 'T00:00:00').toLocaleDateString(undefined, {
+                                                                        weekday: 'short',
+                                                                        year: 'numeric',
+                                                                        month: 'long',
+                                                                        day: 'numeric'
+                                                                    })}
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setHolidays(holidays.filter(h => h !== date));
+                                                                    toast('Holiday removed.', 'success');
+                                                                }}
+                                                                className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-gray-400 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             ) : (
-                                                <div className="flex-1 text-right pr-4">
-                                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Closed</span>
+                                                <div className="text-center py-10 bg-gray-50/50 dark:bg-white/5 rounded-[2rem] border-2 border-dashed border-gray-100 dark:border-white/5">
+                                                    <CalendarX className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+                                                    <p className="text-sm font-bold text-gray-400">No holidays added yet.</p>
                                                 </div>
                                             )}
                                         </div>
-                                    );
-                                })}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                    Saving...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="w-5 h-5" />
-                                    Save Changes
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </AccordionItem>
+                        )}
 
-                {/* 4. Scheduling Rules (NEW) */}
-                <AccordionItem
-                    title="Scheduling Rules"
-                    subtitle="Set buffers, notice periods, and limits"
-                    icon={CalendarDays}
-                    colorClass="bg-[#F3E8FF] text-[#d946ef]"
-                    isOpen={openSection === 'rules'}
-                    onToggle={() => toggleSection('rules')}
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Min Notice */}
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Min Scheduling Notice</label>
-                            <div className="relative group">
-                                <input
-                                    type="number"
-                                    min={0}
-                                    defaultValue={4}
-                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white text-lg"
-                                />
-                                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">Hours</span>
-                            </div>
-                            <p className="mt-2 text-xs text-gray-400 font-medium">Prevent last-minute bookings.</p>
-                        </div>
+                        {/* Scheduling Rules */}
+                        {activeTab === 'rules' && (
+                            <div className="bg-white dark:bg-card rounded-[1.25rem] sm:rounded-[2.5rem] p-4 sm:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Scheduling Rules</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Min Scheduling Notice</label>
+                                        <div className="flex bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[22px] focus-within:ring-4 focus-within:ring-orange-500/10 focus-within:border-orange-500 transition-all overflow-hidden group">
+                                            <select
+                                                value={schedulingRules.minNoticeUnit}
+                                                onChange={(e) => setSchedulingRules({ ...schedulingRules, minNoticeUnit: e.target.value as any })}
+                                                className="w-[100px] pl-4 pr-2 py-4 bg-transparent border-none font-black text-xs text-orange-500 uppercase tracking-widest cursor-pointer appearance-none focus:ring-0"
+                                            >
+                                                <option value="minutes">Mins</option>
+                                                <option value="hours">Hours</option>
+                                            </select>
+                                            <div className="w-[2px] h-6 bg-gray-200 dark:bg-white/10 self-center opacity-50" />
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                value={schedulingRules.minNoticeValue}
+                                                onChange={(e) => setSchedulingRules({ ...schedulingRules, minNoticeValue: parseInt(e.target.value) || 0 })}
+                                                className="flex-1 px-4 py-4 bg-transparent border-none focus:ring-0 font-bold text-gray-900 dark:text-white text-lg placeholder:text-gray-300"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <p className="mt-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider ml-1">Prevent last-minute bookings.</p>
+                                    </div>
 
-                        {/* Max Advance */}
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Max Advance Booking</label>
-                            <div className="relative group">
-                                <input
-                                    type="number"
-                                    min={1}
-                                    defaultValue={60}
-                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white text-lg"
-                                />
-                                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">Days</span>
-                            </div>
-                            <p className="mt-2 text-xs text-gray-400 font-medium">How far into the future clients can book.</p>
-                        </div>
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Max Advance Booking</label>
+                                        <div className="flex bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[22px] focus-within:ring-4 focus-within:ring-orange-500/10 focus-within:border-orange-500 transition-all overflow-hidden group">
+                                            <select
+                                                value={schedulingRules.maxAdvanceUnit}
+                                                onChange={(e) => setSchedulingRules({ ...schedulingRules, maxAdvanceUnit: e.target.value as any })}
+                                                className="w-[100px] pl-4 pr-2 py-4 bg-transparent border-none font-black text-xs text-orange-500 uppercase tracking-widest cursor-pointer appearance-none focus:ring-0"
+                                            >
+                                                <option value="days">Days</option>
+                                                <option value="weeks">Weeks</option>
+                                                <option value="months">Months</option>
+                                            </select>
+                                            <div className="w-[2px] h-6 bg-gray-200 dark:bg-white/10 self-center opacity-50" />
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={schedulingRules.maxAdvanceValue}
+                                                onChange={(e) => setSchedulingRules({ ...schedulingRules, maxAdvanceValue: parseInt(e.target.value) || 1 })}
+                                                className="flex-1 px-4 py-4 bg-transparent border-none focus:ring-0 font-bold text-gray-900 dark:text-white text-lg placeholder:text-gray-300"
+                                                placeholder="1"
+                                            />
+                                        </div>
+                                        <p className="mt-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider ml-1">How far into future clients book.</p>
+                                    </div>
 
-                        {/* Buffer Time */}
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Buffer Time</label>
-                            <div className="relative group">
-                                <input
-                                    type="number"
-                                    min={0}
-                                    step={5}
-                                    defaultValue={0}
-                                    className="w-full pl-5 pr-12 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-[#A855F7]/10 focus:border-[#d946ef] transition-all font-bold text-gray-900 dark:text-white text-lg"
-                                />
-                                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">Mins</span>
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Buffer Time</label>
+                                        <div className="flex bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[22px] focus-within:ring-4 focus-within:ring-orange-500/10 focus-within:border-orange-500 transition-all overflow-hidden group">
+                                            <div className="w-[100px] pl-4 pr-2 py-4 bg-transparent border-none font-black text-xs text-orange-500 uppercase tracking-widest flex items-center">
+                                                Mins
+                                            </div>
+                                            <div className="w-[2px] h-6 bg-gray-200 dark:bg-white/10 self-center opacity-50" />
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step={5}
+                                                value={schedulingRules.bufferMinutes}
+                                                onChange={(e) => setSchedulingRules({ ...schedulingRules, bufferMinutes: parseInt(e.target.value) || 0 })}
+                                                className="flex-1 px-4 py-4 bg-transparent border-none focus:ring-0 font-bold text-gray-900 dark:text-white text-lg placeholder:text-gray-300"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <p className="mt-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider ml-1">Gap after every appointment.</p>
+                                    </div>
+                                </div>
                             </div>
-                            <p className="mt-2 text-xs text-gray-400 font-medium">Gap after every appointment.</p>
-                        </div>
-                        <div className="col-span-1 md:col-span-3 flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
+                        )}
+
+                        {/* Legal & Policies */}
+                        {activeTab === 'legal' && (
+                            <div className="bg-white dark:bg-card rounded-[1.25rem] sm:rounded-[2.5rem] p-4 sm:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Policies & Legal</h3>
+                                <div className="space-y-8">
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Cancellation Policy</label>
+                                        <div className="relative group">
+                                            <textarea
+                                                rows={6}
+                                                value={legalSettings.cancellation_policy}
+                                                onChange={(e) => setLegalSettings({ ...legalSettings, cancellation_policy: e.target.value })}
+                                                className="w-full p-5 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300 min-h-[160px] resize-y"
+                                                placeholder="e.g. Please provide at least 24 hours notice for cancellations to avoid being charged a fee. Late cancellations will result in a 50% charge of the scheduled service."
+                                            />
+                                            <div className="absolute bottom-4 right-4 pointer-events-none">
+                                                <ShieldAlert className="w-5 h-5 text-gray-300 dark:text-gray-600" />
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-xs text-gray-400 font-medium ml-2">Displayed to clients before they confirm their booking.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Terms of Service URL</label>
+                                            <input
+                                                type="url"
+                                                value={legalSettings.terms_url}
+                                                onChange={(e) => setLegalSettings({ ...legalSettings, terms_url: e.target.value })}
+                                                className="w-full pl-5 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                                placeholder="https://..."
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Privacy Policy URL</label>
+                                            <input
+                                                type="url"
+                                                value={legalSettings.policy_url}
+                                                onChange={(e) => setLegalSettings({ ...legalSettings, policy_url: e.target.value })}
+                                                className="w-full pl-5 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
+                                                placeholder="https://..."
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+
+
+                        {/* Save Button (Global for all tabs) */}
+                        <div className="flex justify-end pt-4">
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                                className="w-full bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-gray-200 dark:shadow-none active:scale-95 flex items-center justify-center gap-2"
                             >
                                 {isLoading ? (
                                     <>
-                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                         Saving...
                                     </>
                                 ) : (
                                     <>
-                                        <Save className="w-5 h-5" />
-                                        Save Changes
+                                        <Save className="w-4 h-4" />
+                                        Save All Changes
                                     </>
                                 )}
                             </Button>
                         </div>
-                    </div>
-                </AccordionItem>
-
-                {/* 5. Policies & Legal (NEW) */}
-                <AccordionItem
-                    title="Policies & Legal"
-                    subtitle="Cancellation text and terms of service"
-                    icon={ShieldAlert}
-                    colorClass="bg-red-50 text-red-600"
-                    isOpen={openSection === 'policies'}
-                    onToggle={() => toggleSection('policies')}
-                >
-                    <div className="space-y-8">
-                        <div>
-                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Cancellation Policy</label>
-                            <div className="relative group">
-                                <textarea
-                                    rows={6}
-                                    value={legalSettings.cancellation_policy}
-                                    onChange={(e) => setLegalSettings({ ...legalSettings, cancellation_policy: e.target.value })}
-                                    className="w-full p-5 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300 min-h-[160px] resize-y"
-                                    placeholder="e.g. Please provide at least 24 hours notice for cancellations to avoid being charged a fee. Late cancellations will result in a 50% charge of the scheduled service."
-                                />
-                                <div className="absolute bottom-4 right-4 pointer-events-none">
-                                    <ShieldAlert className="w-5 h-5 text-gray-300 dark:text-gray-600" />
-                                </div>
-                            </div>
-                            <p className="mt-2 text-xs text-gray-400 font-medium ml-2">Displayed to clients before they confirm their booking.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                            <div>
-                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Terms of Service URL</label>
-                                <input
-                                    type="url"
-                                    value={legalSettings.terms_url}
-                                    onChange={(e) => setLegalSettings({ ...legalSettings, terms_url: e.target.value })}
-                                    className="w-full pl-5 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
-                                    placeholder="https://..."
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Privacy Policy URL</label>
-                                <input
-                                    type="url"
-                                    value={legalSettings.policy_url}
-                                    onChange={(e) => setLegalSettings({ ...legalSettings, policy_url: e.target.value })}
-                                    className="w-full pl-5 pr-5 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[20px] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-300"
-                                    placeholder="https://..."
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-5 h-5" />
-                                        Save Changes
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                </AccordionItem>
-
-                {/* 6. Calendar Appearance */}
-                <AccordionItem
-                    title="Calendar Appearance"
-                    subtitle="Customize how appointments are displayed"
-                    icon={Palette}
-                    colorClass="bg-[#F3E8FF] text-[#d946ef]"
-                    isOpen={openSection === 'calendar'}
-                    onToggle={() => toggleSection('calendar')}
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <button
-                            type="button"
-                            onClick={() => setCalendarColor('staff')}
-                            className={`group p-6 rounded-[24px] border-2 text-left transition-all duration-300 relative overflow-hidden ${calendarColor === 'staff'
-                                ? 'border-[#d946ef] bg-[#F3E8FF]/50 dark:bg-[#d946ef]/10 shadow-lg shadow-[#d946ef]/10'
-                                : 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-gray-300 hover:shadow-md'
-                                }`}
-                        >
-                            <div className="relative z-10 flex items-start justify-between">
-                                <div>
-                                    <div className={`font-black text-base mb-1 ${calendarColor === 'staff' ? 'text-[#A855F7]' : 'text-gray-900 dark:text-white'}`}>
-                                        By Staff Member
-                                    </div>
-                                    <div className={`text-xs font-medium ${calendarColor === 'staff' ? 'text-[#d946ef]' : 'text-gray-500'}`}>
-                                        Each staff member has a unique consistent color.
-                                    </div>
-                                </div>
-                                {calendarColor === 'staff' && (
-                                    <div className="w-6 h-6 rounded-full bg-[#d946ef] flex items-center justify-center">
-                                        <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={3} />
-                                    </div>
-                                )}
-                            </div>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setCalendarColor('service')}
-                            className={`group p-6 rounded-[24px] border-2 text-left transition-all duration-300 relative overflow-hidden ${calendarColor === 'service'
-                                ? 'border-[#d946ef] bg-[#F3E8FF]/50 dark:bg-[#d946ef]/10 shadow-lg shadow-[#d946ef]/10'
-                                : 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-gray-300 hover:shadow-md'
-                                }`}
-                        >
-                            <div className="relative z-10 flex items-start justify-between">
-                                <div>
-                                    <div className={`font-black text-base mb-1 ${calendarColor === 'service' ? 'text-[#A855F7]' : 'text-gray-900 dark:text-white'}`}>
-                                        By Service Type
-                                    </div>
-                                    <div className={`text-xs font-medium ${calendarColor === 'service' ? 'text-[#d946ef]' : 'text-gray-500'}`}>
-                                        Each service type has a unique color.
-                                    </div>
-                                </div>
-                                {calendarColor === 'service' && (
-                                    <div className="w-6 h-6 rounded-full bg-[#d946ef] flex items-center justify-center">
-                                        <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={3} />
-                                    </div>
-                                )}
-                            </div>
-                        </button>
-                    </div>
-                    <div className="flex justify-end pt-8 mt-4 border-t border-gray-100 dark:border-white/5">
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-200 px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                    Saving...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="w-5 h-5" />
-                                    Save Changes
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </AccordionItem>
-
-                {/* 7. App Appearance (NEW) */}
-                <AccordionItem
-                    title="Your View Preference"
-                    subtitle="Customize your personal app experience"
-                    icon={Palette}
-                    colorClass="bg-pink-50 text-pink-600"
-                    isOpen={openSection === 'appearance'}
-                    onToggle={() => toggleSection('appearance')}
-                >
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between p-6 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors ${isDark ? 'bg-gray-800 text-purple-400' : 'bg-white text-amber-500'}`}>
-                                    {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                                </div>
-                                <div className="text-left">
-                                    <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Dark Mode</div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{isDark ? 'Easy on the eyes' : 'Bright and clear'}</div>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={toggleTheme}
-                                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 ${isDark ? 'bg-purple-600' : 'bg-gray-200'}`}
-                            >
-                                <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-[26px]' : 'translate-x-0'}`} />
-                            </button>
-                        </div>
-                    </div>
-                </AccordionItem>
-
-            </form>
-
+                    </form>
+                </div >
+            </div >
         </div >
     );
 }

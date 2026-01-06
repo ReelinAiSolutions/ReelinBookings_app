@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Appointment, Service, User, Staff, Organization } from '@/types';
+import { Appointment, Service, User, Staff, Organization, Availability } from '@/types';
 import { format } from 'date-fns';
 import {
     Clock,
@@ -39,30 +39,14 @@ interface StaffDashboardProps {
     currentStaffId?: string;
     services: Service[];
     staff?: Staff[];
-    availability?: any[];
+    holidays?: string[];
+    availability?: Availability[];
     businessHours?: Organization['business_hours'];
     currentOrg?: Organization | null;
     onStatusUpdate: (appointmentId: string, status: string) => Promise<void>;
     onRefresh?: () => Promise<void>;
 }
 
-const AmbientBackground = () => (
-    <style dangerouslySetInnerHTML={{
-        __html: `
-        @keyframes mashDrift {
-            0% { background-position: 0% 50%; opacity: 0.7; }
-            50% { background-position: 100% 50%; opacity: 1; }
-            100% { background-position: 0% 50%; opacity: 0.7; }
-        }
-        .ambient-mesh {
-            background: radial-gradient(circle at 10% 20%, rgba(45, 22, 93, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 50% 50%, rgba(45, 22, 93, 0.05) 0%, transparent 100%);
-            background-size: 200% 200%;
-            animation: mashDrift 15s infinite ease-in-out;
-        }
-    `}} />
-);
 
 export default function StaffDashboard({
     appointments,
@@ -76,7 +60,7 @@ export default function StaffDashboard({
     onStatusUpdate,
     onRefresh
 }: StaffDashboardProps) {
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'performance' | 'settings' | 'team' | 'clients'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'performance' | 'settings' | 'team' | 'clients'>('schedule');
 
     // Deep Linking
     useEffect(() => {
@@ -144,18 +128,28 @@ export default function StaffDashboard({
         setSelectedAppointment(apt);
     };
 
-    const handleReschedule = async (
+    const onReschedule = async (
         id: string,
         date: string,
         time: string,
         staffId: string,
-        options: { notes?: string; durationMinutes?: number; bufferMinutes?: number }
+        options: {
+            notes?: string;
+            durationMinutes?: number;
+            bufferMinutes?: number;
+            clientName?: string;
+            clientEmail?: string;
+            clientPhone?: string;
+        }
     ) => {
         await updateAppointment(id, {
             date,
             timeSlot: time,
             staffId,
-            notes: options.notes
+            notes: options.notes,
+            clientName: options.clientName,
+            clientEmail: options.clientEmail,
+            clientPhone: options.clientPhone
         });
 
         // Notify Staff
@@ -236,24 +230,23 @@ export default function StaffDashboard({
 
     return (
         <div
-            className="min-h-screen bg-white flex flex-col lg:block overflow-x-hidden relative"
+            className="min-h-screen bg-white dark:bg-black flex flex-col lg:block overflow-x-hidden relative"
             style={brandingStyle}
         >
-            <AmbientBackground />
-            <div className="absolute inset-0 ambient-mesh pointer-events-none fixed z-0" />
             <BrandingInjector primaryColor={currentOrg?.primary_color} />
             {/* Desktop Sidebar (Fixed) */}
             <StaffSidebar
-                activeTab={activeTab}
+                currentTab={activeTab}
                 onTabChange={(tab) => setActiveTab(tab as any)}
-                currentOrg={currentOrg || null}
+                organization={currentOrg || null}
+                staff={currentUser}
             />
 
             {/* Main Content Area */}
             <main className={`lg:ml-64 lg:min-h-screen ${activeTab === 'schedule' ? 'flex flex-col h-[100dvh] overflow-hidden fixed inset-0 lg:relative' : 'block min-h-screen'}`} style={activeTab === 'schedule' ? { overscrollBehavior: 'none' } : {}}>
 
                 {/* Content Container */}
-                <div className={` min-h-0 bg-white ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col p-0 min-h-0' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
+                <div className={` min-h-0 ${activeTab === 'schedule' ? 'lg:flex-1 lg:flex lg:flex-col p-0 min-h-0' : 'lg:p-6 px-4 py-4 lg:py-6 pb-24 space-y-6'}`}>
 
 
                     {activeTab === 'schedule' && (
@@ -265,6 +258,7 @@ export default function StaffDashboard({
                                     services={services}
                                     availability={availability}
                                     businessHours={currentOrg?.business_hours}
+                                    holidays={currentOrg?.settings?.scheduling?.holidays}
                                     onSelectSlot={handleSelectSlot}
                                     onAppointmentClick={handleAppointmentClick}
                                     colorMode={currentOrg?.settings?.color_mode || 'staff'}
@@ -321,40 +315,40 @@ export default function StaffDashboard({
             </main>
 
             {/* Mobile Bottom Navigation */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-lg border-t border-gray-100 flex justify-around items-center z-50 px-6 pb-2 safe-area-pb">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/80 dark:bg-black backdrop-blur-lg border-t border-gray-100 dark:border-white/10 flex justify-around items-center z-50 px-6 pb-2 safe-area-pb">
                 <button
                     onClick={() => setActiveTab('schedule')}
-                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'schedule' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'schedule' ? 'text-primary-600 dark:text-primary-400 scale-110' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <CalendarIcon className={`w-6 h-6 ${activeTab === 'schedule' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <CalendarIcon className={`w-6 h-6 ${activeTab === 'schedule' ? 'fill-primary-600/10' : ''}`} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Schedule</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('performance')}
-                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'performance' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'performance' ? 'text-primary-600 dark:text-primary-400 scale-110' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <BarChart3 className={`w-6 h-6 ${activeTab === 'performance' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <BarChart3 className={`w-6 h-6 ${activeTab === 'performance' ? 'fill-primary-600/10' : ''}`} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Stats</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('team')}
-                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'team' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'team' ? 'text-primary-600 dark:text-primary-400 scale-110' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <Users className={`w-6 h-6 ${activeTab === 'team' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <Users className={`w-6 h-6 ${activeTab === 'team' ? 'fill-primary-600/10' : ''}`} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Team</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('clients')}
-                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'clients' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'clients' ? 'text-primary-600 dark:text-primary-400 scale-110' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <Contact className={`w-6 h-6 ${activeTab === 'clients' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <Contact className={`w-6 h-6 ${activeTab === 'clients' ? 'fill-primary-600/10' : ''}`} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Clients</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('settings')}
-                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-[#d946ef] scale-110' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-primary-600 dark:text-primary-400 scale-110' : 'text-gray-400 dark:text-gray-500'}`}
                 >
-                    <UserIcon className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-[#A855F7]/10' : ''}`} />
+                    <UserIcon className={`w-6 h-6 ${activeTab === 'settings' ? 'fill-primary-600/10' : ''}`} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
                 </button>
             </div>
@@ -363,7 +357,7 @@ export default function StaffDashboard({
                 isOpen={!!selectedAppointment}
                 appointment={selectedAppointment}
                 onClose={() => setSelectedAppointment(null)}
-                onReschedule={handleReschedule}
+                onReschedule={onReschedule}
                 onCancel={handleCancel}
                 onRestore={handleRestore}
                 onArchive={handleArchive}
@@ -371,6 +365,7 @@ export default function StaffDashboard({
                 staff={staff}
                 slotInterval={currentOrg?.slot_interval}
                 businessHours={currentOrg?.business_hours}
+                holidays={currentOrg?.settings?.scheduling?.holidays}
             />
 
             <CreateAppointmentModal
@@ -385,6 +380,7 @@ export default function StaffDashboard({
                 availability={availability}
                 slotInterval={currentOrg?.slot_interval}
                 businessHours={currentOrg?.business_hours}
+                holidays={currentOrg?.settings?.scheduling?.holidays}
             />
         </div>
     );

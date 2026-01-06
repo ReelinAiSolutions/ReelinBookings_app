@@ -131,7 +131,7 @@ export default function ConfirmationView({
                                     onClick={() => window.open(links.yahoo, '_blank')}
                                     className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm font-bold text-gray-700 flex items-center gap-3 transition-colors"
                                 >
-                                    <span className="w-2 h-2 rounded-full bg-purple-500"></span> Yahoo Calendar
+                                    <span className="w-2 h-2 rounded-full bg-primary-500"></span> Yahoo Calendar
                                 </button>
                             </div>
                         )}

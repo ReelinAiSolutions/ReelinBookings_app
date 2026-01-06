@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Appointment, Service, Organization, Staff } from '@/types';
+import { Appointment, Service, Organization, Staff, Availability } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { X, Calendar, Clock, Loader2, ChevronRight } from 'lucide-react';
+import { X, Calendar, Clock, Loader2, ChevronRight, MessageSquare, Info } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface RescheduleModalProps {
@@ -17,6 +17,9 @@ interface RescheduleModalProps {
             notes?: string;
             durationMinutes?: number;
             bufferMinutes?: number;
+            clientName?: string;
+            clientEmail?: string;
+            clientPhone?: string;
         }
     ) => Promise<void>;
     onCancel: (id: string) => Promise<void>;
@@ -26,6 +29,8 @@ interface RescheduleModalProps {
     staff: Staff[];
     slotInterval?: number;
     businessHours?: Organization['business_hours'];
+    holidays?: string[];
+    availability?: Availability[];
 }
 
 export default function RescheduleModal({
@@ -39,12 +44,16 @@ export default function RescheduleModal({
     services,
     slotInterval = 15,
     businessHours,
-    staff
+    staff,
+    holidays = []
 }: RescheduleModalProps) {
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [staffId, setStaffId] = useState('');
     const [notes, setNotes] = useState('');
+    const [clientName, setClientName] = useState('');
+    const [clientEmail, setClientEmail] = useState('');
+    const [clientPhone, setClientPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     // Initialize state when opening
@@ -54,6 +63,9 @@ export default function RescheduleModal({
             setTime(appointment.timeSlot);
             setStaffId(appointment.staffId);
             setNotes(appointment.notes || '');
+            setClientName(appointment.clientName || '');
+            setClientEmail(appointment.clientEmail || '');
+            setClientPhone(appointment.clientPhone || '');
         }
     }, [appointment]);
 
@@ -62,7 +74,15 @@ export default function RescheduleModal({
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            await onReschedule(appointment.id, date, time, staffId, { notes });
+            if (holidays.includes(date)) {
+                throw new Error(`Business is CLOSED for holiday on ${date}.`);
+            }
+            await onReschedule(appointment.id, date, time, staffId, {
+                notes,
+                clientName,
+                clientEmail,
+                clientPhone
+            });
             onClose();
         } catch (error) {
             alert('Failed to reschedule: ' + (error as Error).message);
@@ -158,10 +178,37 @@ export default function RescheduleModal({
 
                     {/* Client Header Card */}
                     <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 p-6 mb-4 flex items-center justify-between">
-                        <div>
-                            <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight mb-1">{appointment.clientName || 'Walk-in Client'}</h2>
-                            <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{appointment.clientEmail}</p>
-                            {appointment.clientPhone && <p className="text-sm font-bold text-gray-400">{appointment.clientPhone}</p>}
+                        <div className="flex-1 space-y-3">
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Client Name</p>
+                                <input
+                                    type="text"
+                                    value={clientName}
+                                    onChange={e => setClientName(e.target.value)}
+                                    className="w-full text-base font-black text-gray-900 dark:text-white tracking-tight bg-transparent outline-none border-b border-transparent focus:border-violet-500/30 transition-colors"
+                                    placeholder="Client Name"
+                                />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Contact Email</p>
+                                <input
+                                    type="email"
+                                    value={clientEmail}
+                                    onChange={e => setClientEmail(e.target.value)}
+                                    className="w-full text-sm font-bold text-gray-500 dark:text-gray-400 bg-transparent outline-none border-b border-transparent focus:border-violet-500/30 transition-colors"
+                                    placeholder="Email Address"
+                                />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
+                                <input
+                                    type="tel"
+                                    value={clientPhone}
+                                    onChange={e => setClientPhone(e.target.value)}
+                                    className="w-full text-sm font-bold text-gray-400 bg-transparent outline-none border-b border-transparent focus:border-violet-500/30 transition-colors"
+                                    placeholder="Phone Number"
+                                />
+                            </div>
                         </div>
                         <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${appointment.status === 'CONFIRMED' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}>
                             {appointment.status}
@@ -176,7 +223,8 @@ export default function RescheduleModal({
                         <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Service</p>
                             <p className="text-sm font-bold text-[#7C3AED] dark:text-violet-400">
-                                {services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
+                                {appointment.serviceName || services.find(s => s.id === appointment.serviceId)?.name || 'Unknown Service'}
+                                {appointment.price && <span className="text-gray-400 ml-2 font-medium">(${appointment.price})</span>}
                             </p>
                         </div>
                     </div>
@@ -231,8 +279,9 @@ export default function RescheduleModal({
                                         const localDate = new Date(y, m - 1, d);
                                         const dayName = format(localDate, 'EEEE').toLowerCase();
                                         const hours = businessHours?.[dayName];
+                                        const isHoliday = holidays.includes(date);
 
-                                        if (!hours || !hours.isOpen) return <option disabled className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">Closed</option>;
+                                        if (isHoliday || !hours || !hours.isOpen) return <option disabled className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">{isHoliday ? 'Holiday Closure' : 'Closed'}</option>;
 
                                         const start = parseInt(hours.open.split(':')[0]) * 60 + parseInt(hours.open.split(':')[1]);
                                         const end = parseInt(hours.close.split(':')[0]) * 60 + parseInt(hours.close.split(':')[1]);
@@ -259,15 +308,48 @@ export default function RescheduleModal({
                         </div>
                     </div>
 
-                    {/* Notes */}
+                    {/* Notes & Intake Section */}
                     <div className="bg-white dark:bg-white/5 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white dark:border-white/5 p-5 mb-4">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Customer Request / Notes</p>
-                        <textarea
-                            placeholder="Add notes or special requests..."
-                            value={notes}
-                            onChange={e => setNotes(e.target.value)}
-                            className="w-full h-24 text-sm font-bold text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 bg-gray-50/50 dark:bg-black/20 rounded-2xl p-4 outline-none resize-none border border-gray-100 dark:border-white/5"
-                        ></textarea>
+                        <div className="flex items-center gap-2 mb-3">
+                            <MessageSquare className="w-4 h-4 text-violet-500" />
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Intake Form & Notes</p>
+                        </div>
+
+                        {notes.includes(':') ? (
+                            <div className="space-y-3 mb-4">
+                                {notes.split('\n\nAdditional Notes:\n')[0].split('\n').map((line, idx) => {
+                                    const [label, ...val] = line.split(': ');
+                                    if (val.length === 0) return <p key={idx} className="text-sm font-bold text-gray-900 dark:text-white">{line}</p>;
+                                    return (
+                                        <div key={idx} className="bg-gray-50 dark:bg-black/20 rounded-xl p-3 border border-gray-100 dark:border-white/5">
+                                            <p className="text-[9px] font-black text-violet-500 uppercase tracking-tight mb-0.5">{label}</p>
+                                            <p className="text-sm font-bold text-gray-900 dark:text-white">{val.join(': ')}</p>
+                                        </div>
+                                    );
+                                })}
+                                {notes.includes('Additional Notes:\n') && (
+                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
+                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-tight mb-2">Additional Comments</p>
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 italic">
+                                            {notes.split('Additional Notes:\n')[1]}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <textarea
+                                placeholder="Add notes or special requests..."
+                                value={notes}
+                                onChange={e => setNotes(e.target.value)}
+                                className="w-full h-24 text-sm font-bold text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 bg-gray-50/50 dark:bg-black/20 rounded-2xl p-4 outline-none resize-none border border-gray-100 dark:border-white/5"
+                            ></textarea>
+                        )}
+
+                        {/* Admin Internal Notes (Optional placeholder for future) */}
+                        <div className="mt-4 flex items-center gap-2 px-1">
+                            <Info className="w-3 h-3 text-gray-400" />
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Staff Tip: Intake data is immutable.</span>
+                        </div>
                     </div>
 
                     {/* Helper Text */}

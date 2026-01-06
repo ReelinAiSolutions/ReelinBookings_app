@@ -24,6 +24,13 @@ export interface User {
     avatar?: string;
 }
 
+export interface IntakeQuestion {
+    id: string;
+    label: string;
+    type: 'text' | 'longtext' | 'checkbox';
+    required: boolean;
+}
+
 export interface Service {
     id: string;
     name: string;
@@ -40,6 +47,7 @@ export interface Service {
     cancellationHours?: number;
     maxCapacity?: number;
     displayOrder?: number;
+    intakeQuestions?: IntakeQuestion[];
 }
 
 export interface ServicePricingTier {
@@ -81,7 +89,10 @@ export interface Appointment {
     notes?: string;
     durationMinutes?: number;
     bufferMinutes?: number;
-    serviceName?: string;
+    serviceName?: string; // Snapshot
+    staffName?: string; // Snapshot
+    price?: number; // Snapshot
+    idempotencyKey?: string;
 }
 
 export interface TimeSlot {
@@ -115,9 +126,12 @@ export interface Organization {
     settings?: {
         color_mode?: 'staff' | 'service';
         scheduling?: {
-            min_notice_hours?: number;
-            max_advance_days?: number;
+            min_notice_value?: number;
+            min_notice_unit?: 'minutes' | 'hours';
+            max_advance_value?: number;
+            max_advance_unit?: 'days' | 'weeks' | 'months';
             buffer_minutes?: number;
+            holidays?: string[];
         };
         policies?: {
             cancellation_policy?: string;

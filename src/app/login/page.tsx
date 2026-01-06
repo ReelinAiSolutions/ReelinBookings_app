@@ -33,7 +33,7 @@ function LoginForm() {
 
     if (isInitialLoad) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-screen bg-white flex items-center justify-center pb-[10vh]">
                 <div className="flex flex-col items-center gap-6">
                     <div className="relative">
                         <div className="absolute inset-0 bg-primary-100 rounded-full blur-xl animate-pulse"></div>

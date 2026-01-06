@@ -28,7 +28,7 @@ export default function AppointmentList({ appointments }: AppointmentListProps) 
             <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 pointer-events-none"></div>
             <div className="px-6 py-5 border-b border-indigo-50/50 flex justify-between items-center relative z-10">
                 <h3 className="font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
                     Recent Appointments
                 </h3>
                 <Button size="sm" variant="outline" className="rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-bold text-xs uppercase tracking-wide">View All</Button>
@@ -52,9 +52,17 @@ export default function AppointmentList({ appointments }: AppointmentListProps) 
                                     <div className="text-xs text-gray-500">{apt.clientEmail}</div>
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-600">
-                                    {apt.serviceName || 'Service'}
+                                    <div className="font-bold">{apt.serviceName || 'Service'}</div>
+                                    {apt.notes && (
+                                        <div className="text-[10px] text-gray-400 mt-1 max-w-[200px] truncate italic">
+                                            {apt.notes}
+                                        </div>
+                                    )}
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-600">{apt.date} at {apt.timeSlot}</td>
+                                <td className="px-6 py-4 text-sm text-gray-600">
+                                    <div className="font-medium">{apt.date}</div>
+                                    <div className="text-xs text-gray-500">{apt.timeSlot}</div>
+                                </td>
                                 <td className="px-6 py-4">
                                     <StatusBadge status={apt.status} />
                                 </td>

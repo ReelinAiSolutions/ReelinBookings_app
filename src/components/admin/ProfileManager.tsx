@@ -1,71 +1,61 @@
 'use client';
 import { createClient } from '@/lib/supabase';
-
 import React, { useState, useEffect } from 'react';
-
 import NotificationManager from './NotificationManager';
 import { Button } from '@/components/ui/Button';
-import { User, Camera, Save, Lock, User as UserIcon, Building2, LogOut, Mail, ShieldCheck, Settings as SettingsIcon, Key, ChevronDown, Palette, Moon, Sun } from 'lucide-react';
+import {
+    User, Camera, Save, Lock, User as UserIcon, LogOut,
+    ShieldCheck, Key, ChevronRight, Palette, Moon, Sun,
+    Bell, LayoutDashboard, Briefcase, Users, CheckCircle2
+} from 'lucide-react';
 import { Organization } from '@/types';
+import { useToast } from '@/context/ToastContext';
 import Image from 'next/image';
 
 interface ProfileManagerProps {
     user: any;
     profile: any;
     onUpdate: () => void;
+    activeTabOverride?: string;
+    hideHeader?: boolean;
+    hideSidebar?: boolean;
 }
 
-// Helper Interface for Accordion
-interface AccordionItemProps {
-    title: string;
-    subtitle: string;
-    icon: React.ElementType;
-    colorClass: string;
-    isOpen: boolean;
-    onToggle: () => void;
-    children: React.ReactNode;
-}
+export default function ProfileManager({
+    user,
+    profile,
+    onUpdate,
+    activeTabOverride,
+    hideHeader = false,
+    hideSidebar = false
+}: ProfileManagerProps) {
+    if (!user || !profile) return null;
 
-const AccordionItem = ({ title, subtitle, icon: Icon, colorClass, isOpen, onToggle, children }: AccordionItemProps) => (
-    <div className={`bg-white dark:bg-card rounded-[32px] shadow-sm border transition-all duration-300 overflow-hidden ${isOpen ? 'border-gray-200 dark:border-white/10 ring-4 ring-gray-50 dark:ring-white/5' : 'border-gray-100 dark:border-white/5'}`}>
-        <button
-            type="button"
-            onClick={onToggle}
-            className="w-full flex items-center justify-between p-8 text-left transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
-        >
-            <div className="flex items-center gap-4">
-                <div className={`p-3.5 rounded-2xl ${colorClass}`}>
-                    <Icon className="w-6 h-6" strokeWidth={2.5} />
-                </div>
-                <div>
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white leading-tight">{title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-bold mt-0.5">{subtitle}</p>
-                </div>
-            </div>
-            <div className={`p-2 rounded-full transition-all duration-300 ${isOpen ? 'bg-gray-100 dark:bg-white/10 rotate-180' : 'bg-transparent'}`}>
-                <ChevronDown className="w-6 h-6 text-gray-400" />
-            </div>
-        </button>
-        <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="p-8 pt-0 border-t border-gray-100/50 dark:border-white/5">
-                <div className="pt-8">
-                    {children}
-                </div>
-            </div>
-        </div>
-    </div>
-);
-
-export default function ProfileManager({ user, profile, onUpdate }: ProfileManagerProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(profile?.avatar_url || null);
     const [showChangePassword, setShowChangePassword] = useState(false);
-    const [openSection, setOpenSection] = useState<string>('profile');
+    const [openSection, setOpenSection] = useState<string>(activeTabOverride || 'profile');
     const [isDark, setIsDark] = useState(false);
+    const [calendarColor, setCalendarColor] = useState<'staff' | 'service'>('staff');
+    const [adminColor, setAdminColor] = useState('#a855f7');
+    const [isSavingPref, setIsSavingPref] = useState(false);
+    const { toast } = useToast();
 
     useEffect(() => {
-        // Check local storage or system preference
+        if (activeTabOverride) {
+            setOpenSection(activeTabOverride);
+        }
+        // Load personal preferences from and org settings if available
+        if (profile?.settings?.calendar_color) {
+            setCalendarColor(profile.settings.calendar_color);
+        }
+        if (profile?.settings?.admin_color) {
+            setAdminColor(profile.settings.admin_color);
+        }
+    }, [activeTabOverride, profile]);
+
+    useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             setIsDark(true);
@@ -83,10 +73,6 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
             localStorage.setItem('theme', 'dark');
             setIsDark(true);
         }
-    };
-
-    const toggleSection = (id: string) => {
-        setOpenSection(openSection === id ? '' : id);
     };
 
     const [formData, setFormData] = useState({
@@ -154,7 +140,7 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
 
             if (updateError) throw updateError;
 
-            if (showChangePassword && formData.password) {
+            if (formData.password) {
                 if (formData.password !== formData.confirmPassword) {
                     throw new Error("Passwords do not match");
                 }
@@ -164,250 +150,374 @@ export default function ProfileManager({ user, profile, onUpdate }: ProfileManag
                 if (passwordError) throw passwordError;
             }
 
-            alert('Profile updated successfully!');
+            // Save preferences to profile settings
+            const { error: settingsError } = await supabase
+                .from('profiles')
+                .update({
+                    settings: {
+                        ...(profile.settings || {}),
+                        calendar_color: calendarColor,
+                        admin_color: adminColor
+                    }
+                })
+                .eq('id', user.id);
+
+            if (settingsError) throw settingsError;
+
+            toast('Profile updated successfully!', 'success');
             onUpdate();
             setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
             setShowChangePassword(false);
 
         } catch (error: any) {
             console.error('Error updating profile:', error);
-            alert(error.message || 'Failed to update profile');
+            toast(error.message || 'Failed to update profile', 'error');
         } finally {
             setIsLoading(false);
+            setIsSavingPref(false);
+        }
+    };
+
+    const handleQuickSavePref = async (updates: any) => {
+        setIsSavingPref(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    settings: {
+                        ...(profile.settings || {}),
+                        ...updates
+                    }
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+            onUpdate();
+            toast('Preference saved', 'success');
+        } catch (error: any) {
+            toast(error.message || 'Failed to save preference', 'error');
+        } finally {
+            setIsSavingPref(false);
         }
     };
 
     return (
-        <div className="space-y-8 pb-24 animate-in fade-in duration-500 pt-8 px-4 lg:px-0 lg:pt-0">
-            {/* Standard Header */}
-            <header className="mb-8">
-                <h1 className="text-[32px] font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">Profile Settings</h1>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">Manage your personal information and security details.</p>
-            </header>
+        <div className={`${hideSidebar ? 'max-w-none px-0 py-2' : 'max-w-4xl mx-auto p-8'} space-y-8`}>
+            {/* Header */}
+            {!hideHeader && (
+                <div>
+                    <h1 className="text-[32px] font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">Profile Settings</h1>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">Manage your personal information and security details.</p>
+                </div>
+            )}
 
-            <form onSubmit={handleSave} className="space-y-4">
-
-                {/* Public Profile Accordion */}
-                <AccordionItem
-                    title="Public Profile"
-                    subtitle="Update your photo and personal details"
-                    icon={UserIcon}
-                    colorClass="bg-blue-50 text-blue-600"
-                    isOpen={openSection === 'profile'}
-                    onToggle={() => toggleSection('profile')}
-                >
-                    <div className="space-y-8">
-                        {/* Avatar Uploader - Refined for Accordion */}
-                        <div className="flex flex-col md:flex-row items-center gap-8 p-6 bg-gray-50 dark:bg-white/5 rounded-[24px] border border-gray-100 dark:border-white/5">
-                            <div className="relative group/avatar shrink-0">
-                                <div className="w-24 h-24 rounded-full border-4 border-white dark:border-white/10 shadow-lg overflow-hidden relative z-10 bg-white dark:bg-card">
-                                    {previewUrl ? (
-                                        <Image src={previewUrl} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" unoptimized />
-                                    ) : (
-                                        <div className="w-full h-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-300 dark:text-blue-500">
-                                            <UserIcon className="w-10 h-10" />
-                                        </div>
-                                    )}
-                                </div>
-                                <label className="absolute bottom-0 right-0 p-2 bg-gray-900 text-white rounded-full cursor-pointer hover:bg-black transition-colors shadow-lg z-20">
-                                    <Camera className="w-4 h-4" />
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                                </label>
-                            </div>
-                            <div className="text-center md:text-left">
-                                <h4 className="font-black text-gray-900 dark:text-white text-lg">Profile Photo</h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">This will be displayed on your account.</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-2">
-                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <UserIcon className="h-5 w-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={formData.fullName}
-                                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                        className="block w-full pl-11 pr-4 py-4 bg-gray-50/50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[1.25rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-400"
-                                        placeholder="Admin Name"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
-                                <div className="relative opacity-60">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <Mail className="h-5 w-5 text-gray-300" />
-                                    </div>
-                                    <input
-                                        type="email"
-                                        value={formData.email}
-                                        disabled
-                                        className="block w-full pl-11 pr-4 py-4 bg-gray-100 dark:bg-white/10 border-2 border-transparent rounded-[1.25rem] cursor-not-allowed font-bold text-gray-500 dark:text-gray-400"
-                                    />
-                                </div>
-                                <p className="text-xs text-gray-400 font-medium ml-2 mt-1">Managed by organization settings</p>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end pt-4">
-                            <Button
-                                type="submit"
-                                className="bg-gray-900 hover:bg-black text-white rounded-[24px] px-8 py-6 font-black uppercase tracking-widest text-xs shadow-xl shadow-gray-200 hover:shadow-2xl transition-all active:scale-95"
-                                isLoading={isLoading}
-                            >
-                                <Save className="w-4 h-4 mr-2" />
-                                Save Changes
-                            </Button>
-                        </div>
-                    </div>
-                </AccordionItem>
-
-                {/* Security Accordion */}
-                <AccordionItem
-                    title="Security & Privacy"
-                    subtitle="Manage your password and account access"
-                    icon={ShieldCheck}
-                    colorClass="bg-purple-50 text-purple-600"
-                    isOpen={openSection === 'security'}
-                    onToggle={() => toggleSection('security')}
-                >
-                    <div className="space-y-6">
-                        {!showChangePassword ? (
+            <div className={`${hideSidebar ? 'block' : 'grid grid-cols-1 md:grid-cols-3 gap-8'}`}>
+                {/* Left: Navigation */}
+                {!hideSidebar && (
+                    <div className="space-y-2">
+                        {[
+                            { id: 'profile', label: 'My Profile', icon: UserIcon, color: 'bg-blue-500' },
+                            { id: 'security', label: 'Security', icon: ShieldCheck, color: 'bg-primary-500' },
+                            { id: 'notifications', label: 'Notifications', icon: Bell, color: 'bg-purple-500' },
+                            { id: 'appearance', label: 'Appearance', icon: Palette, color: 'bg-pink-500' },
+                            { id: 'calendar', label: 'Calendar View', icon: LayoutDashboard, color: 'bg-orange-500' },
+                        ].map((item) => (
                             <button
-                                type="button"
-                                onClick={() => setShowChangePassword(true)}
-                                className="w-full flex items-center justify-between p-6 bg-gray-50/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 rounded-2xl border border-gray-100 dark:border-white/5 transition-all group shadow-sm hover:shadow-md"
+                                key={item.id}
+                                onClick={() => setOpenSection(item.id)}
+                                className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${openSection === item.id
+                                    ? 'bg-white dark:bg-card shadow-xl border-gray-100 dark:border-white/10 ring-1 ring-black/5'
+                                    : 'hover:bg-white/50 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400'
+                                    }`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-white dark:bg-white/5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                                        <Lock className="w-5 h-5" />
+                                    <div className={`p-2 rounded-xl text-white ${item.color} shadow-lg`}>
+                                        <item.icon className="w-5 h-5" />
                                     </div>
-                                    <div className="text-left">
-                                        <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Update Password</div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Manage your login credentials</div>
-                                    </div>
+                                    <span className="font-black uppercase tracking-widest text-xs">{item.label}</span>
                                 </div>
-                                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center group-hover:bg-purple-50 dark:group-hover:bg-purple-500/20 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                                    <SettingsIcon className="w-4 h-4" />
-                                </div>
+                                <ChevronRight className={`w-4 h-4 transition-transform ${openSection === item.id ? 'rotate-90' : ''}`} />
                             </button>
-                        ) : (
-                            <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">New Password</label>
-                                        <div className="relative group">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <Key className="h-5 w-5 text-gray-300 group-focus-within:text-purple-500 transition-colors" />
+                        ))}
+
+                        <div className="pt-8 mt-8 border-t border-gray-100 dark:border-white/10">
+                            <button
+                                onClick={handleSignOut}
+                                className="w-full flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all font-black uppercase tracking-widest text-xs"
+                            >
+                                <LogOut className="w-5 h-5" />
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Right: Content Area */}
+                <div className={`${hideSidebar ? 'w-full' : 'md:col-span-2'} space-y-6`}>
+                    {/* Personal Profile */}
+                    {openSection === 'profile' && (
+                        <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Personal Profile</h3>
+
+                            <form onSubmit={handleSave} className="space-y-8">
+                                <div className="flex flex-col items-center gap-6 mb-12">
+                                    <div className="relative group">
+                                        <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 to-primary-600 rounded-[2.2rem] opacity-20 blur-sm group-hover:opacity-40 transition-opacity"></div>
+                                        {previewUrl ? (
+                                            <div className="relative w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl">
+                                                <Image src={previewUrl} alt="Preview" width={128} height={128} className="w-full h-full object-cover" unoptimized />
                                             </div>
+                                        ) : (
+                                            <div className="relative w-32 h-32 rounded-[2rem] bg-gray-50 dark:bg-white/5 flex items-center justify-center border-4 border-white dark:border-gray-800 shadow-lg">
+                                                <UserIcon className="w-12 h-12 text-gray-300 dark:text-gray-600" />
+                                            </div>
+                                        )}
+                                        <label className="absolute -bottom-2 -right-2 p-3 bg-blue-600 text-white rounded-2xl shadow-xl cursor-pointer hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all outline-none border-4 border-white dark:border-gray-800">
+                                            <Camera className="w-5 h-5" />
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                                        </label>
+                                    </div>
+                                    <div className="text-center">
+                                        <h4 className="font-black text-gray-900 dark:text-white uppercase tracking-tight text-lg">{formData.fullName || 'No Name Set'}</h4>
+                                        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Administrator</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Full Display Name</label>
+                                        <input
+                                            type="text"
+                                            value={formData.fullName}
+                                            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                            className="w-full px-6 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-white/10 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                                            placeholder="Enter your name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
+                                        <input
+                                            type="email"
+                                            value={formData.email}
+                                            readOnly
+                                            className="w-full px-6 py-4 bg-gray-100 dark:bg-white/10 border-2 border-transparent rounded-2xl outline-none font-bold text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-4">
+                                    <Button
+                                        type="submit"
+                                        isLoading={isLoading}
+                                        className="w-full py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-500/20 bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-100"
+                                    >
+                                        Save All Changes
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* Security */}
+                    {openSection === 'security' && (
+                        <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Security & Password</h3>
+                            <form onSubmit={handleSave} className="space-y-8">
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">New Password</label>
+                                        <div className="relative">
                                             <input
                                                 type="password"
                                                 value={formData.password}
-                                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[1.25rem] focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-400"
+                                                onChange={(e) => {
+                                                    setFormData({ ...formData, password: e.target.value });
+                                                    setShowChangePassword(true);
+                                                }}
+                                                className="w-full px-6 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-white/10 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white pl-12"
                                                 placeholder="••••••••"
                                             />
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Confirm Password</label>
-                                        <div className="relative group">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <Key className="h-5 w-5 text-gray-300 group-focus-within:text-purple-500 transition-colors" />
-                                            </div>
+                                    <div>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Confirm New Password</label>
+                                        <div className="relative">
                                             <input
                                                 type="password"
                                                 value={formData.confirmPassword}
                                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent dark:border-white/5 rounded-[1.25rem] focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all font-bold text-gray-900 dark:text-white placeholder:text-gray-400"
+                                                className="w-full px-6 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-white/10 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white pl-12"
                                                 placeholder="••••••••"
                                             />
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex gap-4">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setShowChangePassword(false);
-                                            setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
-                                        }}
-                                        className="flex-1 rounded-[24px] border-2 py-4 h-auto font-black uppercase tracking-widest text-xs"
-                                    >
-                                        Cancel
-                                    </Button>
+
+                                <div className="pt-4">
                                     <Button
                                         type="submit"
-                                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-[24px] py-4 h-auto font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-600/20"
                                         isLoading={isLoading}
+                                        disabled={!formData.password}
+                                        className="w-full py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-500/20 bg-primary-600 hover:bg-primary-700 text-white"
                                     >
                                         Update Password
                                     </Button>
                                 </div>
-                            </div>
-                        )}
-                    </div>
-                </AccordionItem>
-
-                {/* Appearance Accordion */}
-                <AccordionItem
-                    title="Appearance"
-                    subtitle="Customize your visual experience"
-                    icon={Palette}
-                    colorClass="bg-pink-50 text-pink-600"
-                    isOpen={openSection === 'appearance'}
-                    onToggle={() => toggleSection('appearance')}
-                >
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between p-6 bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors ${isDark ? 'bg-gray-800 text-purple-400' : 'bg-white text-amber-500'}`}>
-                                    {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                                </div>
-                                <div className="text-left">
-                                    <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Dark Mode</div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{isDark ? 'Easy on the eyes' : 'Bright and clear'}</div>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={toggleTheme}
-                                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 ${isDark ? 'bg-purple-600' : 'bg-gray-200'}`}
-                            >
-                                <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-[26px]' : 'translate-x-0'}`} />
-                            </button>
+                            </form>
                         </div>
-                    </div>
-                </AccordionItem>
-            </form>
+                    )}
 
-            <div className="max-w-3xl">
-                <NotificationManager />
-            </div>
+                    {/* Appearance */}
+                    {openSection === 'appearance' && (
+                        <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Appearance</h3>
+                            <div className="flex items-center justify-between p-6 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-3 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors ${isDark ? 'bg-gray-800 text-purple-400' : 'bg-white text-amber-500'}`}>
+                                        {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-xs">Dark Mode</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{isDark ? 'Easy on the eyes' : 'Bright and clear'}</div>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={toggleTheme}
+                                    className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 ${isDark ? 'bg-primary-600' : 'bg-gray-200'}`}
+                                >
+                                    <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-[26px]' : 'translate-x-0'}`} />
+                                </button>
+                            </div>
 
-            {/* Sign Out Section - At Bottom */}
-            <div className="max-w-3xl pt-8 border-t border-gray-100">
-                <div className="bg-rose-50/50 rounded-2xl p-6 border border-rose-100 flex items-center justify-between">
-                    <div>
-                        <h4 className="text-sm font-black text-rose-900">Sign Out</h4>
-                        <p className="text-xs text-rose-500/80 font-medium mt-0.5">End your current session safely</p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleSignOut}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-white text-rose-600 hover:bg-rose-50 border border-rose-100 hover:border-rose-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-md active:scale-95"
-                    >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                    </button>
+                            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/5">
+                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Personal Interface Color</label>
+                                <div className="bg-gray-50 dark:bg-white/5 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
+                                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                                        <div className="flex items-center gap-4 w-full sm:w-auto">
+                                            <input
+                                                type="color"
+                                                value={adminColor}
+                                                onChange={(e) => setAdminColor(e.target.value)}
+                                                className="h-14 w-20 p-1.5 rounded-xl border border-gray-200 dark:border-white/10 cursor-pointer shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-card"
+                                            />
+                                            <div className="flex-1">
+                                                <input
+                                                    type="text"
+                                                    value={adminColor}
+                                                    onChange={(e) => setAdminColor(e.target.value)}
+                                                    className="block w-full px-5 py-3.5 bg-white dark:bg-black/20 border-2 border-transparent focus:border-primary-500 rounded-xl text-sm font-bold text-gray-900 dark:text-white uppercase transition-all"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 text-center sm:text-left">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-3">This color will be applied to your sidebar, buttons, and highlights across the admin dashboard.</p>
+                                            <Button
+                                                onClick={() => handleQuickSavePref({ admin_color: adminColor })}
+                                                isLoading={isSavingPref}
+                                                size="sm"
+                                                className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6"
+                                            >
+                                                Apply Theme
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Notifications */}
+                    {openSection === 'notifications' && (
+                        <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Notification Preferences</h3>
+                            <NotificationManager />
+                        </div>
+                    )}
+
+                    {/* Calendar View */}
+                    {openSection === 'calendar' && (
+                        <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500 text-center">
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-4">Calendar Appearance</h3>
+                            <p className="text-gray-500 dark:text-gray-400 font-medium mb-12 max-w-md mx-auto">Choose how color-coding is applied to your personal calendar view.</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                                <button
+                                    type="button"
+                                    onClick={() => setCalendarColor('staff')}
+                                    className={`group p-8 rounded-[32px] border-2 text-left transition-all duration-300 relative overflow-hidden ${calendarColor === 'staff'
+                                        ? 'border-primary-500 bg-purple-50 dark:bg-primary-500/10 shadow-lg shadow-primary-500/10 scale-[1.02]'
+                                        : 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:shadow-md'
+                                        }`}
+                                >
+                                    <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className={`p-3 rounded-2xl ${calendarColor === 'staff' ? 'bg-primary-500 text-white' : 'bg-white dark:bg-white/10 text-gray-400'} shadow-lg transition-colors`}>
+                                                <Users className="w-6 h-6" />
+                                            </div>
+                                            {calendarColor === 'staff' && (
+                                                <div className="w-7 h-7 rounded-full bg-primary-500 flex items-center justify-center animate-in zoom-in duration-300">
+                                                    <CheckCircle2 className="w-5 h-5 text-white" strokeWidth={3} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div className={`font-black text-lg mb-1 ${calendarColor === 'staff' ? 'text-primary-600' : 'text-gray-900 dark:text-white'}`}>
+                                                By Staff Member
+                                            </div>
+                                            <div className={`text-sm font-medium leading-relaxed ${calendarColor === 'staff' ? 'text-primary-500/80' : 'text-gray-500'}`}>
+                                                Each team member has a consistent color across all their bookings.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setCalendarColor('service')}
+                                    className={`group p-8 rounded-[32px] border-2 text-left transition-all duration-300 relative overflow-hidden ${calendarColor === 'service'
+                                        ? 'border-primary-500 bg-purple-50 dark:bg-primary-500/10 shadow-lg shadow-primary-500/10 scale-[1.02]'
+                                        : 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:shadow-md'
+                                        }`}
+                                >
+                                    <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className={`p-3 rounded-2xl ${calendarColor === 'service' ? 'bg-primary-500 text-white' : 'bg-white dark:bg-white/10 text-gray-400'} shadow-lg transition-colors`}>
+                                                <Briefcase className="w-6 h-6" />
+                                            </div>
+                                            {calendarColor === 'service' && (
+                                                <div className="w-7 h-7 rounded-full bg-primary-500 flex items-center justify-center animate-in zoom-in duration-300">
+                                                    <CheckCircle2 className="w-5 h-5 text-white" strokeWidth={3} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div className={`font-black text-lg mb-1 ${calendarColor === 'service' ? 'text-primary-600' : 'text-gray-900 dark:text-white'}`}>
+                                                By Service Type
+                                            </div>
+                                            <div className={`text-sm font-medium leading-relaxed ${calendarColor === 'service' ? 'text-primary-500/80' : 'text-gray-500'}`}>
+                                                Color-code based on the service being performed.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <div className="mt-12 pt-8 border-t border-gray-100 dark:border-white/10">
+                                <Button
+                                    onClick={handleSave}
+                                    isLoading={isLoading}
+                                    className="px-12 py-6 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-purple-500/20 bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-gray-100"
+                                >
+                                    Update Calendar Preferences
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
-
         </div>
     );
 }

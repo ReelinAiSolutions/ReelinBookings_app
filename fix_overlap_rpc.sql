@@ -24,7 +24,33 @@ DECLARE
   v_new_start TIMESTAMP;
   v_new_end TIMESTAMP;
   v_conflict_id UUID;
+  v_min_notice_min INTEGER;
+  v_min_notice_unit TEXT;
+  v_notice_threshold TIMESTAMP;
 BEGIN
+  -- 0. VALIDATE MIN NOTICE PERIOD (Server-Side)
+  SELECT 
+    (settings->'scheduling'->>'min_notice_value')::INTEGER,
+    (settings->'scheduling'->>'min_notice_unit')
+  INTO v_min_notice_min, v_min_notice_unit
+  FROM public.organizations WHERE id = p_org_id;
+
+  -- Default to 4 hours if not set
+  v_min_notice_min := COALESCE(v_min_notice_min, 4);
+  v_min_notice_unit := COALESCE(v_min_notice_unit, 'hours');
+
+  IF v_min_notice_unit = 'hours' THEN
+    v_notice_threshold := NOW() + (v_min_notice_min || ' hours')::interval;
+  ELSIF v_min_notice_unit = 'days' THEN
+    v_notice_threshold := NOW() + (v_min_notice_min || ' days')::interval;
+  ELSE
+    v_notice_threshold := NOW() + (v_min_notice_min || ' minutes')::interval;
+  END IF;
+
+  IF (p_date + p_time_slot::time) < v_notice_threshold THEN
+    RAISE EXCEPTION 'This time slot is too close to now. Please choose a later time based on our booking policy.';
+  END IF;
+
   -- 1. Construct the exact Timestamp Range for the requested booking
   -- Combine Date + Time string into a Timestamp
   v_new_start := (p_date + p_time_slot::time);

@@ -24,7 +24,11 @@ function urlBase64ToUint8Array(base64String: string) {
     return outputArray;
 }
 
-export default function NotificationManager() {
+interface NotificationManagerProps {
+    orgId?: string;
+}
+
+export default function NotificationManager({ orgId }: NotificationManagerProps = {}) {
     const [isSupported, setIsSupported] = useState(false);
     const [permission, setPermission] = useState<NotificationPermission>('default');
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -192,7 +196,7 @@ export default function NotificationManager() {
     return (
         <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-100 dark:border-white/5 transition-all duration-300">
             <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${isSubscribed ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'}`}>
+                <div className={`p-3 rounded-xl ${isSubscribed ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'}`}>
                     {isSubscribed ? <Bell className="w-6 h-6" /> : <BellOff className="w-6 h-6" />}
                 </div>
                 <div className="flex-1">
@@ -227,7 +231,7 @@ export default function NotificationManager() {
                                 </div>
                                 <button
                                     onClick={toggleReceiveAll}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${profile.receive_all_notifications !== false ? 'bg-purple-600' : 'bg-gray-200'
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${profile.receive_all_notifications !== false ? 'bg-primary-600' : 'bg-gray-200'
                                         }`}
                                 >
                                     <span
@@ -295,7 +299,7 @@ export default function NotificationManager() {
                                 <button
                                     onClick={subscribe}
                                     disabled={loading}
-                                    className="flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-purple-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                    className="flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-primary-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                                 >
                                     <Smartphone className="w-4 h-4" />
                                     {loading ? 'Processing...' : 'Enable on this Device'}

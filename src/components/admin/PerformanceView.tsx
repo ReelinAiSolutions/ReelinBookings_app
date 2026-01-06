@@ -38,12 +38,13 @@ interface PerformanceViewProps {
     appointments: Appointment[];
     services: Service[];
     staff: Staff[];
+    primaryColor?: string;
 }
 
 type TabType = 'business' | 'staff' | 'clients';
 type TimeRange = 'week' | 'month' | 'year' | 'custom';
 
-export default function PerformanceView({ appointments, services, staff }: PerformanceViewProps) {
+export default function PerformanceView({ appointments, services, staff, primaryColor = '#a855f7' }: PerformanceViewProps) {
     const [activeTab, setActiveTab] = useState<TabType>('business');
     const [staffSort, setStaffSort] = useState<'bookings' | 'utilization' | 'revenue'>('revenue');
     const [clientSearch, setClientSearch] = useState('');
@@ -318,8 +319,8 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
             retUnique,
             atRisk: atRiskCount,
             mix: [
-                { name: 'Returning', value: retUnique, color: '#a855f7' },
-                { name: 'New', value: newUnique, color: '#7C3AED' }
+                { name: 'Returning', value: retUnique, color: primaryColor },
+                { name: 'New', value: newUnique, color: '#3b82f6' } // Blue as a secondary accent
             ]
         };
     }, [currentStats.valid, historicClientSet, allClients]);
@@ -526,8 +527,8 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 {/* Insight Banner */}
                 {/* Insight Banner - Galaxy Theme */}
                 <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
-                    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,var(--primary-600),transparent)]" />
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
+                    <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ background: `radial-gradient(circle at 50% -20%, ${primaryColor}, transparent)` }} />
+                    <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ background: `radial-gradient(circle at 0% 100%, ${primaryColor}, transparent)` }} />
                     <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
                         <Zap className="w-4 h-4 text-accent-400 fill-accent-400" />
                     </div>
@@ -572,12 +573,12 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                     {/* Projected Revenue */}
                     <div className="bg-white dark:bg-card rounded-[24px] p-5 border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between col-span-1">
                         <div className="flex justify-between items-start">
-                            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-xl"><TrendingUp className="w-5 h-5" /></div>
-                            <span className="text-[10px] font-bold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">Next 30d</span>
+                            <div className="p-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl"><TrendingUp className="w-5 h-5" /></div>
+                            <span className="text-[10px] font-bold bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full">Next 30d</span>
                         </div>
                         <div>
                             <h3 className="text-2xl font-black text-gray-900 dark:text-white">${forecast.revenue.toLocaleString()}</h3>
-                            <p className="text-xs font-bold text-purple-400 uppercase tracking-widest">Projected</p>
+                            <p className="text-xs font-bold text-primary-400 uppercase tracking-widest">Projected</p>
                         </div>
                     </div>
 
@@ -614,7 +615,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                             dataKey="value"
                                             stroke="none"
                                         >
-                                            <Cell fill="#a855f7" />
+                                            <Cell fill={primaryColor} />
                                             <Cell fill="#2c2c2e" className="dark:fill-white/10" />
                                         </Pie>
                                     </PieChart>
@@ -641,17 +642,17 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <AreaChart data={bookingsGraphData}>
                                     <defs>
                                         <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2} />
-                                            <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                                            <stop offset="5%" stopColor={primaryColor} stopOpacity={0.2} />
+                                            <stop offset="95%" stopColor={primaryColor} stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF' }} />
                                     <Tooltip
-                                        cursor={{ stroke: '#a855f7', strokeWidth: 1 }}
+                                        cursor={{ stroke: primaryColor, strokeWidth: 1 }}
                                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                                     />
-                                    <Area type="monotone" dataKey="value" stroke="#a855f7" strokeWidth={3} fill="url(#colorBookings)" />
+                                    <Area type="monotone" dataKey="value" stroke={primaryColor} strokeWidth={3} fill="url(#colorBookings)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -846,7 +847,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 {/* Team Insight Banner - Galaxy Theme */}
                 <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
                     <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,var(--primary-600),transparent)]" />
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,var(--primary-600),transparent)]" />
                     <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
                         <Zap className="w-4 h-4 text-accent-400 fill-accent-400" />
                     </div>
@@ -889,7 +890,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                                 <div className="flex items-center gap-4 mb-6 relative z-10">
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg transition-transform group-hover:scale-105 ${isTopPerformer
                                         ? 'bg-emerald-600 text-white shadow-emerald-200 dark:shadow-none'
-                                        : 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white shadow-[#d946ef]/20 dark:shadow-none'
+                                        : 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-primary-500/20 dark:shadow-none'
                                         }`}>
                                         {member.name.charAt(0)}
                                     </div>
@@ -936,7 +937,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                 {/* Insight Banner - Galaxy Theme */}
                 <div className="bg-[#0A051C] relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-primary-900/20 flex items-center gap-3 border border-white/5">
                     <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_-20%,var(--primary-600),transparent)]" />
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,#7C3AED,transparent)]" />
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0%_100%,var(--primary-600),transparent)]" />
                     <div className="p-2 bg-white/10 rounded-full backdrop-blur-sm relative z-10">
                         <Sparkles className="w-4 h-4 text-accent-400 fill-accent-400" />
                     </div>
@@ -959,7 +960,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                         <div className="absolute bottom-0 left-0 w-full h-12 opacity-10">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={[{ v: 10 }, { v: 20 }, { v: 15 }, { v: 25 }, { v: 30 }]}>
-                                    <Area type="monotone" dataKey="v" stroke="#a855f7" fill="#a855f7" strokeWidth={5} />
+                                    <Area type="monotone" dataKey="v" stroke={primaryColor} fill={primaryColor} strokeWidth={5} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -1055,7 +1056,7 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
                             })
                             .map((client, index) => {
                                 const isTopClient = index === 0 && (clientSearch === '' && clientStaffFilter === 'all');
-                                const avatarGradient = 'bg-gradient-to-br from-[#A855F7] to-[#d946ef] shadow-[#d946ef]/20';
+                                const avatarGradient = 'bg-gradient-to-br from-primary-500 to-primary-600 shadow-primary-500/20';
 
                                 const statusStyles = {
                                     'VIP': 'bg-amber-50 text-amber-700 border-amber-100',
@@ -1157,67 +1158,74 @@ export default function PerformanceView({ appointments, services, staff }: Perfo
     };
 
     return (
-        <div className="w-full h-full flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="pt-8 pb-4 shrink-0 px-4 sm:px-6 lg:px-0">
-                <div className="max-w-[1800px] mx-auto w-full flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white leading-tight mb-2">
-                            Analytics
-                        </h1>
-                        <nav className="flex items-center gap-1 p-1 bg-gray-100/80 dark:bg-white/10 rounded-full w-fit">
-                            {['business', 'staff', 'clients'].map(t => (
-                                <button
-                                    key={t}
-                                    onClick={() => setActiveTab(t as TabType)}
-                                    className={`px-5 py-2.5 rounded-full transition-all capitalize text-sm font-bold ${activeTab === t ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5'}`}
-                                >
-                                    {t}
-                                </button>
-                            ))}
-                        </nav>
-                    </div>
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0 overflow-hidden">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                        Analytics
+                    </h2>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                        <Activity className="w-4 h-4" />
+                        Performance Intelligence
+                    </p>
+                </div>
+            </div>
 
-                    {/* Time Range Selector */}
-                    <div className="flex items-center gap-2">
-                        {timeRange === 'custom' && (
-                            <div className="hidden md:flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-right-4">
-                                <input
-                                    type="date"
-                                    value={customDateRange.start}
-                                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                                    className="text-xs font-bold text-gray-900 bg-transparent border-none focus:ring-0 p-1"
-                                />
-                                <span className="text-gray-400">-</span>
-                                <input
-                                    type="date"
-                                    value={customDateRange.end}
-                                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                                    className="text-xs font-bold text-gray-900 bg-transparent border-none focus:ring-0 p-1"
-                                />
-                            </div>
-                        )}
+            {/* Filters Bar (Tabs & Time Range) */}
+            <div className="flex flex-col md:flex-row md:items-center gap-4 bg-gray-100/80 dark:bg-white/5 p-3 rounded-[24px] border border-transparent">
+                <div className="flex items-center gap-1 p-1 bg-white/50 dark:bg-white/5 rounded-xl w-fit">
+                    {['business', 'staff', 'clients'].map(t => (
+                        <button
+                            key={t}
+                            onClick={() => setActiveTab(t as TabType)}
+                            className={`px-4 py-2 rounded-lg transition-all capitalize text-[10px] font-black uppercase tracking-widest ${activeTab === t ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10'}`}
+                        >
+                            {t}
+                        </button>
+                    ))}
+                </div>
 
-                        <div className="bg-gray-100/80 dark:bg-white/10 p-1 rounded-2xl flex text-xs font-bold w-full md:w-auto">
-                            {(['week', 'month', 'year', 'custom'] as TimeRange[]).map(r => (
-                                <button
-                                    key={r}
-                                    onClick={() => {
-                                        setTimeRange(r);
-                                        if (r === 'custom') setIsCustomDateModalOpen(true);
-                                    }}
-                                    className={`flex-1 md:flex-none px-4 py-2.5 rounded-xl transition-all capitalize ${timeRange === r ? 'bg-white dark:bg-card text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5'}`}
-                                >
-                                    {r === 'custom' ? 'Custom' : `This ${r}`}
-                                </button>
-                            ))}
+                <div className="flex-1" />
+
+                <div className="flex items-center gap-2">
+                    {timeRange === 'custom' && (
+                        <div className="hidden md:flex items-center gap-2 bg-white dark:bg-white/5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm animate-in fade-in slide-in-from-right-4">
+                            <input
+                                type="date"
+                                value={customDateRange.start}
+                                onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                className="text-[10px] font-black text-gray-900 dark:text-white bg-transparent border-none focus:ring-0 p-0 w-24"
+                            />
+                            <span className="text-gray-400">-</span>
+                            <input
+                                type="date"
+                                value={customDateRange.end}
+                                onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                className="text-[10px] font-black text-gray-900 dark:text-white bg-transparent border-none focus:ring-0 p-0 w-24"
+                            />
                         </div>
+                    )}
+
+                    <div className="bg-white/50 dark:bg-white/5 p-1 rounded-xl flex text-[10px] font-black uppercase tracking-widest w-full md:w-auto border border-gray-100 dark:border-white/5">
+                        {(['week', 'month', 'year', 'custom'] as TimeRange[]).map(r => (
+                            <button
+                                key={r}
+                                onClick={() => {
+                                    setTimeRange(r);
+                                    if (r === 'custom') setIsCustomDateModalOpen(true);
+                                }}
+                                className={`flex-1 md:flex-none px-4 py-2 rounded-lg transition-all capitalize ${timeRange === r ? 'bg-white dark:bg-card text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10'}`}
+                            >
+                                {r === 'custom' ? 'Custom' : `${r}`}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <main className="flex-1 pt-8 pb-32 overflow-y-auto w-full scroll-smooth px-4 sm:px-6 lg:px-0">
+            <main className="flex-1 pb-32 overflow-y-auto w-full scroll-smooth">
                 <div className="max-w-[1800px] mx-auto w-full">
                     {activeTab === 'business' && renderBusinessTab()}
                     {activeTab === 'staff' && renderStaffTab()}

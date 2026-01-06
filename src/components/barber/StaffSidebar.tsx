@@ -1,151 +1,107 @@
-'use client';
-import React from 'react';
-import {
-    LayoutDashboard, Calendar, Scissors, Settings, LogOut,
-    Bell, ChevronRight, UserCircle, Sparkles, Building2,
-    Users, Briefcase, Clock, Shield
-} from 'lucide-react';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { createClient } from '@/lib/supabase';
+import { Calendar, Users, BarChart3, Settings, User, Contact } from 'lucide-react';
 import { Organization } from '@/types';
+import Image from 'next/image';
+import DarkModeToggle from '@/components/DarkModeToggle';
 
 interface StaffSidebarProps {
-    staff: any;
+    currentTab: 'dashboard' | 'schedule' | 'performance' | 'settings' | 'team' | 'clients';
+    onTabChange: (tab: 'dashboard' | 'schedule' | 'performance' | 'settings' | 'team' | 'clients') => void;
     organization: Organization | null;
-    currentTab: string;
-    onTabChange: (tab: string) => void;
+    staff?: any;
 }
 
-export default function StaffSidebar({ staff, organization, currentTab, onTabChange }: StaffSidebarProps) {
-    const supabase = createClient();
+export default function StaffSidebar({ currentTab, onTabChange, organization }: StaffSidebarProps) {
+    const workspaceItems = [
+        { id: 'schedule', label: 'Calendar', icon: Calendar },
+        { id: 'performance', label: 'Performance', icon: BarChart3 },
+    ] as const;
 
-    const handleSignOut = async () => {
-        await supabase.auth.signOut();
-        window.location.href = '/login';
-    };
-
-    const menuItems = [
-        { id: 'dashboard', label: 'My Dashboard', icon: LayoutDashboard },
-        { id: 'schedule', label: 'My Schedule', icon: Calendar },
-        { id: 'performance', label: 'Performance', icon: Sparkles },
-        { id: 'settings', label: 'My Settings', icon: Settings }
-    ];
+    const managementItems = [
+        { id: 'team', label: 'Team Members', icon: Users },
+        { id: 'clients', label: 'Clients', icon: Contact },
+        { id: 'settings', label: 'Profile Settings', icon: User },
+    ] as const;
 
     return (
-        <div className="hidden lg:flex w-80 bg-white border-r border-gray-100 flex-col h-screen sticky top-0 z-50">
-            {/* Header / Org Info */}
-            <div className="p-8">
-                <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-[2rem] border border-gray-100 group transition-all hover:shadow-lg">
-                    {organization?.logo_url ? (
-                        <div className="relative w-12 h-12 bg-white rounded-2xl p-1 shadow-sm overflow-hidden">
-                            <Image
-                                src={organization.logo_url}
-                                alt={organization.name}
-                                fill
-                                className="object-contain p-1"
-                                unoptimized
-                            />
-                        </div>
+        <aside className="hidden lg:flex flex-col w-64 h-screen bg-white dark:bg-sidebar border-r border-gray-100 dark:border-sidebar-border fixed left-0 top-0 z-50 transition-all duration-300">
+            {/* Logo Area */}
+            <div className="h-20 flex items-center px-6 border-b border-gray-100/20 dark:border-gray-800">
+                <div className="flex items-center gap-3 group cursor-pointer" onClick={() => onTabChange('schedule')}>
+                    {organization ? (
+                        <>
+                            {organization.logo_url ? (
+                                <Image src={organization.logo_url} alt="Logo" width={40} height={40} className="rounded-2xl object-contain bg-white shadow-sm p-1" unoptimized />
+                            ) : (
+                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 text-white flex items-center justify-center shadow-lg group-hover:rotate-6 transition-all">
+                                    <span className="text-sm font-bold">{organization.name?.substring(0, 2).toUpperCase()}</span>
+                                </div>
+                            )}
+                            <div className="flex flex-col min-w-0 justify-center">
+
+                                <h1 className="text-sm font-[950] text-[#111827] dark:text-white tracking-tight truncate leading-tight">
+                                    {organization.name}
+                                </h1>
+                            </div>
+                        </>
                     ) : (
-                        <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center text-white shadow-xl shadow-black/20">
-                            <Building2 className="w-6 h-6" />
-                        </div>
+                        // Skeleton Loader
+                        <>
+                            <div className="w-10 h-10 rounded-2xl bg-gray-100 animate-pulse" />
+                            <div className="flex flex-col gap-1.5 min-w-0 justify-center">
+                                <div className="h-2 w-16 bg-gray-100 rounded-full animate-pulse" />
+                                <div className="h-4 w-24 bg-gray-100 rounded-full animate-pulse" />
+                            </div>
+                        </>
                     )}
-                    <div className="flex-1 min-w-0">
-                        <h3 className="font-black text-sm uppercase tracking-tight truncate text-gray-900">{organization?.name || 'My Business'}</h3>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Portal Active</span>
-                        </div>
-                    </div>
+                </div>
+                <div className="ml-auto">
+                    <DarkModeToggle />
                 </div>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-4 space-y-2 overflow-y-auto scrollbar-hide">
-                <div className="px-6 mb-4">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Main Menu</span>
+            <nav className="flex-1 p-5 space-y-9 overflow-y-auto mt-4 px-3">
+                {/* Workspace Group */}
+                <div className="space-y-1">
+                    <p className="px-4 text-[11px] font-[950] text-gray-400 uppercase tracking-[0.2em] mb-4">Workspace</p>
+                    {workspaceItems.map((item) => {
+                        const isActive = currentTab === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => onTabChange(item.id as any)}
+                                className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-[800] transition-all group ${isActive
+                                    ? 'bg-primary-600 shadow-lg shadow-primary-600/20 text-white'
+                                    : 'text-gray-400 hover:bg-primary-50 hover:text-primary-900'
+                                    }`}
+                            >
+                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-primary-600'}`} strokeWidth={isActive ? 2.5 : 2} />
+                                {item.label}
+                            </button>
+                        );
+                    })}
                 </div>
-                {menuItems.map((item) => (
-                    <button
-                        key={item.id}
-                        onClick={() => onTabChange(item.id)}
-                        className={`w-full flex items-center justify-between group px-6 py-4 rounded-2xl transition-all duration-300 ${currentTab === item.id
-                            ? 'bg-black text-white shadow-2xl shadow-black/20 scale-[1.02]'
-                            : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'
-                            }`}
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className={`transition-transform duration-300 ${currentTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`}>
-                                <item.icon className="w-5 h-5 font-black uppercase tracking-widest text-[10px]" />
-                            </div>
-                            <span className="font-black uppercase tracking-widest text-[10px]">{item.label}</span>
-                        </div>
-                        {currentTab === item.id && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_10px_white]" />
-                        )}
-                        {currentTab !== item.id && (
-                            <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all font-black uppercase tracking-widest text-[10px]" />
-                        )}
-                    </button>
-                ))}
+
+                <div className="space-y-1">
+                    <p className="px-4 text-[11px] font-[950] text-gray-400 uppercase tracking-[0.2em] mb-4 mt-6">Management</p>
+                    {managementItems.map((item) => {
+                        const isActive = currentTab === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => onTabChange(item.id as any)}
+                                className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-[800] transition-all group ${isActive
+                                    ? 'bg-white dark:bg-white/5 shadow-[0_8px_20px_rgba(0,0,0,0.04)] text-[#111827] dark:text-white border border-gray-100 dark:border-white/10'
+                                    : 'text-gray-400 hover:bg-white/60 dark:hover:bg-white/5 hover:text-[#111827] dark:hover:text-white'
+                                    }`}
+                            >
+                                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-primary-600 dark:text-white' : 'text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'}`} strokeWidth={isActive ? 2.5 : 2} />
+                                {item.label}
+                            </button>
+                        );
+                    })}
+                </div>
             </nav>
-
-            {/* User Profile / Status */}
-            <div className="p-6">
-                <div className="bg-gray-50 rounded-[2.5rem] p-6 border border-gray-100 overflow-hidden relative group transition-all hover:shadow-xl">
-                    <div className="absolute top-0 right-0 p-3">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                    </div>
-
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="relative">
-                            <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl opacity-20 blur-sm group-hover:opacity-40 transition-opacity"></div>
-                            {staff?.avatar_url ? (
-                                <Image
-                                    src={staff.avatar_url}
-                                    alt={staff.full_name}
-                                    width={48}
-                                    height={48}
-                                    className="relative w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm"
-                                    unoptimized
-                                />
-                            ) : (
-                                <div className="relative w-12 h-12 bg-white rounded-2xl flex items-center justify-center border-2 border-white shadow-sm">
-                                    <UserCircle className="w-8 h-8 text-gray-300" />
-                                </div>
-                            )}
-                        </div>
-                        <div className="min-w-0">
-                            <p className="font-black text-sm uppercase tracking-tight truncate text-gray-900">{staff?.full_name}</p>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none flex items-center gap-1">
-                                <Shield className="w-3 h-3" />
-                                {staff?.role || 'Staff'}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 mb-6">
-                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Today</p>
-                            <p className="text-sm font-black text-gray-900 tracking-tight tracking-widest text-xs uppercase">82%</p>
-                        </div>
-                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Goal</p>
-                            <p className="text-sm font-black text-gray-900 tracking-tight tracking-widest text-xs uppercase">95%</p>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-2xl transition-all duration-300 group/logout border border-gray-100 hover:border-red-100"
-                    >
-                        <LogOut className="w-4 h-4 transition-transform group-hover/logout:-translate-x-1" />
-                        <span className="font-black uppercase tracking-widest text-[10px]">Secure Exit</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+        </aside>
     );
 }

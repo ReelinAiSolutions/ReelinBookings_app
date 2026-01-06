@@ -277,82 +277,77 @@ export default function StaffManager({ staff, services, orgId = '', onRefresh = 
     return (
         <div className="flex flex-col h-full space-y-8 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
+                    <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
                         Team Roster
-                    </h1>
-                    <p className="text-gray-500 font-medium">Manage your staff, roles, and schedules.</p>
+                    </h2>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                        <Users2 className="w-4 h-4" />
+                        {staff.length} Team Members
+                    </p>
                 </div>
 
                 {/* Actions & Filters */}
-                <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full xl:w-auto">
+                <div className="flex flex-wrap items-center gap-4">
                     {/* Search */}
-                    <div className="relative group flex-1 min-w-[200px] xl:w-80">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                    <div className="relative group w-full md:w-96">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search staff..."
-                            className="w-full pl-12 pr-6 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all outline-none shadow-sm dark:text-white"
-                            style={{ backgroundColor: '#ffffff' }}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-white dark:bg-white/5 dark:text-white"
                         />
                     </div>
-
-                    {/* Filter: Role */}
-                    <div className="relative">
-                        <select
-                            value={roleFilter}
-                            onChange={(e) => setRoleFilter(e.target.value)}
-                            className="appearance-none w-full sm:w-auto pl-4 pr-10 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none cursor-pointer"
-                            style={{ backgroundColor: '#ffffff' }}
-                        >
-                            <option value="all">All Roles</option>
-                            {availableRoles.map(role => (
-                                <option key={role} value={role}>{role}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
-
-                    {/* Filter: Service */}
-                    <div className="relative">
-                        <select
-                            value={serviceFilter}
-                            onChange={(e) => setServiceFilter(e.target.value)}
-                            className="appearance-none w-full sm:w-auto pl-4 pr-10 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none cursor-pointer"
-                            style={{ backgroundColor: '#ffffff' }}
-                        >
-                            <option value="all">All Services</option>
-                            {services.map(service => (
-                                <option key={service.id} value={service.id}>{service.name}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
-
-                    {/* Sort */}
-                    <button
-                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                        className="flex items-center justify-center gap-2 px-4 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm"
-                        title="Toggle Sort Order"
-                        style={{ backgroundColor: '#ffffff' }}
-                    >
-                        <ArrowUpDown className="w-4 h-4" />
-                        <span className="hidden sm:inline">{sortOrder === 'asc' ? 'A-Z' : 'Z-A'}</span>
-                    </button>
 
                     {!readOnly && (
                         <button
                             onClick={handleAddNew}
-                            className="bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-200 text-white dark:text-black rounded-2xl px-6 py-3.5 font-black text-xs uppercase tracking-widest shadow-xl shadow-gray-200/50 dark:shadow-none transition-all active:scale-95 flex items-center justify-center gap-2 group whitespace-nowrap"
+                            className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-500/20 active:scale-95 text-sm border-transparent"
                         >
                             <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
-                            <span>Add Member</span>
+                            Add Member
                         </button>
                     )}
                 </div>
+            </div>
+
+            {/* Filters Bar */}
+            <div className="flex flex-col md:flex-row md:items-center gap-4 bg-gray-100/80 dark:bg-white/5 p-3 rounded-[24px] border border-transparent">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 px-1">
+                    <button
+                        onClick={() => setRoleFilter('all')}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border whitespace-nowrap ${roleFilter === 'all'
+                            ? 'bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 border-primary-500/20 dark:border-primary-500/30'
+                            : 'bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10'
+                            }`}
+                    >
+                        All Roles
+                    </button>
+                    {availableRoles.map(role => (
+                        <button
+                            key={role}
+                            onClick={() => setRoleFilter(role)}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border whitespace-nowrap ${roleFilter === role
+                                ? 'bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 border-primary-500/20 dark:border-primary-500/30'
+                                : 'bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10'
+                                }`}
+                        >
+                            {role}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Sort Toggle */}
+                <button
+                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm"
+                >
+                    <ArrowUpDown className="w-3.5 h-3.5" />
+                    {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
+                </button>
             </div>
 
             {/* Team Grid */}

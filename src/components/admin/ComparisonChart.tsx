@@ -20,8 +20,8 @@ export default function ComparisonChart({
     dataKey,
     periodALabel = 'Period A',
     periodBLabel = 'Period B',
-    periodAColor = '#a855f7', // Deep Sapphire (Brand Primary)
-    periodBColor = '#7C3AED', // Vibrant Lavender (Brand Accent)
+    periodAColor = 'var(--primary-600)', // Brand Primary
+    periodBColor = '#10B981', // Emerald (Contrast)
     formatValue = (val) => val.toString()
 }: ComparisonChartProps) {
     // Merge data for side-by-side comparison
@@ -68,7 +68,7 @@ export default function ComparisonChart({
                             tickFormatter={formatValue}
                         />
                         <Tooltip
-                            cursor={{ stroke: '#a855f7', strokeWidth: 1 }}
+                            cursor={{ stroke: 'var(--primary-600)', strokeWidth: 1 }}
                             contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                             formatter={(val: number | undefined) => [val !== undefined ? `$${val.toLocaleString()}` : '$0', 'Revenue']}
                         />

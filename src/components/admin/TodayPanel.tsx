@@ -197,7 +197,7 @@ export default function TodayPanel({ appointments, staff, services, availability
                                                             </div>
                                                             {durationMins >= 45 && (
                                                                 <div className={`text-[9px] font-medium truncate opacity-80 mt-0.5 ${apt.status === 'CONFIRMED' ? staffColor.sub : 'text-gray-500'}`}>
-                                                                    {apt.timeSlot} • {service?.name}
+                                                                    {apt.timeSlot} • {apt.serviceName || service?.name}
                                                                 </div>
                                                             )}
                                                         </div>

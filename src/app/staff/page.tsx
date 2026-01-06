@@ -48,7 +48,7 @@ export default function StaffPage() {
                 getUserProfile()
             ]);
 
-            console.log('[StaffPage] Data Loaded:', {
+            console.log('[StaffPage] Data Loaded (V3_Mobile_Nav_Fix):', {
                 appointmentsCount: fetchedApts?.length,
                 staffCount: fetchedStaff?.length,
                 email: fetchedProfile?.user?.email
@@ -121,7 +121,7 @@ export default function StaffPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-screen bg-white flex items-center justify-center pb-[10vh]">
                 <div className="flex flex-col items-center gap-4">
                     <Image src="/icon-180.png" alt="Reelin Bookings" width={80} height={80} className="animate-pulse" />
                     <h2 className="text-xl font-bold text-gray-900">Loading Team Portal...</h2>

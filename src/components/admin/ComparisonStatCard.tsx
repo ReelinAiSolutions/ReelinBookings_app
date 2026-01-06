@@ -19,12 +19,12 @@ const colorMap = {
         fallback: 'bg-[#22c55e]'
     },
     blue: {
-        gradientStyle: { background: 'linear-gradient(135deg, #a855f7 0%, #7C3AED 100%)' },
-        glowVal: '168, 85, 247', // #a855f7
+        gradientStyle: { background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%)' },
+        glowVal: 'var(--primary-glow)', // use a variable if defined or hex of primary
         fallback: 'bg-primary-600'
     },
     purple: {
-        gradientStyle: { background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' },
+        gradientStyle: { background: 'linear-gradient(135deg, var(--primary-700) 0%, var(--primary-600) 100%)' },
         glowVal: '124, 58, 237', // #7C3AED
         fallback: 'bg-primary-500'
     },
@@ -136,7 +136,7 @@ export default function ComparisonStatCard({
 
                     {/* Period B */}
                     <div className="space-y-1">
-                        <div className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-md inline-block">
+                        <div className="text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-1 rounded-md inline-block">
                             Period B
                         </div>
                         <h3 className="text-2xl font-black text-gray-900 tracking-tight">

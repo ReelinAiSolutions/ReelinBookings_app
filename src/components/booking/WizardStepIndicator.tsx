@@ -15,25 +15,25 @@ interface WizardStepIndicatorProps {
 export default function WizardStepIndicator({ currentStep, steps }: WizardStepIndicatorProps) {
     return (
         <>
-            {/* Progress Sidebar (Desktop) */}
-            <div className="hidden lg:block w-72 shrink-0 sticky top-32 animate-in fade-in slide-in-from-left-4 duration-700 delay-100 px-6">
-                <h3 className="font-black text-gray-300 mb-8 text-sm uppercase tracking-widest pl-2">Your Journey</h3>
+            {/* Progress Sidebar (Desktop) - Simplified to content only */}
+            <div className="hidden lg:block animate-in fade-in slide-in-from-left-4 duration-700 delay-100">
+                <h3 className="font-black text-gray-400 mb-2 text-[9px] uppercase tracking-[0.2em] pl-1">Your Journey</h3>
 
-                <div className="relative pl-4 border-l-2 border-gray-100 space-y-8">
+                <div className="relative pl-3 border-l-[1.5px] border-gray-100 space-y-2">
                     {steps.map((step, idx) => (
-                        <div key={step.id} className="relative pl-8 group">
+                        <div key={step.id} className="relative pl-6 group">
                             {/* Dot */}
-                            <div className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-4 transition-all duration-500 ${idx <= currentStep
-                                    ? 'bg-white border-primary-600 shadow-lg shadow-primary-500/30 scale-110'
-                                    : 'bg-gray-100 border-white ring-1 ring-gray-100'
+                            <div className={`absolute -left-[7.5px] top-1 w-3 h-3 rounded-full border-[3px] transition-all duration-500 ${idx <= currentStep
+                                ? 'bg-white border-primary-600 shadow-lg shadow-primary-500/20 scale-110'
+                                : 'bg-gray-100 border-white ring-1 ring-gray-100/50'
                                 }`}></div>
 
-                            <div className={`transition-all duration-500 ${idx === currentStep ? 'translate-x-2' : ''}`}>
-                                <p className={`text-xl font-black transition-colors duration-300 leading-none ${idx <= currentStep ? 'text-gray-900' : 'text-gray-300'}`}>
+                            <div className={`transition-all duration-500 ${idx === currentStep ? 'translate-x-1' : ''}`}>
+                                <p className={`text-sm font-black transition-colors duration-300 leading-none ${idx <= currentStep ? 'text-gray-900' : 'text-gray-300'}`}>
                                     {step.label}
                                 </p>
                                 {idx === currentStep && (
-                                    <p className="text-sm font-bold text-primary-600 mt-2 animate-in fade-in slide-in-from-left-2">
+                                    <p className="text-[9px] font-bold text-primary-600 mt-1 animate-in fade-in slide-in-from-left-1">
                                         {step.desc}
                                     </p>
                                 )}
@@ -45,10 +45,10 @@ export default function WizardStepIndicator({ currentStep, steps }: WizardStepIn
 
             {/* Mobile Progress (Horizontal) - Simplified & Cleaner */}
             <div className="lg:hidden w-full bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 transition-all duration-500 supports-[backdrop-filter]:bg-white/80">
-                <div className="px-6 py-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Step {currentStep + 1} of {steps.length}</span>
-                        <span className="text-xs font-bold text-primary-600">{steps[currentStep].label}</span>
+                <div className="px-6 pt-3 pb-1">
+                    <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Step {currentStep + 1} of {steps.length}</span>
+                        <span className="text-[10px] font-bold text-primary-600">{steps[currentStep].label}</span>
                     </div>
                     {/* Minimal Progress Bar */}
                     <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">

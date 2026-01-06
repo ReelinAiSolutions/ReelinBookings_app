@@ -26,6 +26,7 @@ interface CreateAppointmentModalProps {
     availability?: Availability[];
     preselectedStaffId?: string;
     slotInterval?: number;
+    holidays?: string[];
 }
 
 type Mode = 'booking' | 'blocking';
@@ -42,7 +43,8 @@ export default function CreateAppointmentModal({
     availability = [],
     preselectedStaffId,
     slotInterval = 60,
-    businessHours
+    businessHours,
+    holidays = []
 }: CreateAppointmentModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<Mode>('booking');
@@ -94,7 +96,8 @@ export default function CreateAppointmentModal({
         const dayName = localDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
         const hours = businessHours?.[dayName];
-        if (!hours || !hours.isOpen) return [];
+        const isHoliday = holidays.includes(date);
+        if (isHoliday || !hours || !hours.isOpen) return [];
 
         const toMinutes = (t: string) => {
             const [hh, mm] = t.split(':').map(Number);
@@ -183,6 +186,11 @@ export default function CreateAppointmentModal({
 
         const newStart = parseTime(time);
         const newEnd = newStart + checkDuration + checkBuffer;
+
+        if (holidays.includes(date)) {
+            setError(`Business is CLOSED for holiday on ${date}.`);
+            return;
+        }
 
         if (availability && availability.length > 0) {
             const [y, m, d] = date.split('-').map(Number);
@@ -295,7 +303,7 @@ export default function CreateAppointmentModal({
                                             placeholder="E.g. John Doe"
                                             value={clientName}
                                             onChange={e => setClientName(e.target.value)}
-                                            className="w-full text-lg font-bold placeholder-gray-300 dark:placeholder-gray-600 bg-transparent outline-none text-gray-900 dark:text-white"
+                                            className="w-full text-base font-bold placeholder-gray-300 dark:placeholder-gray-600 bg-transparent outline-none text-gray-900 dark:text-white"
                                         />
                                     </div>
                                     <div className="px-5 py-4 flex-1">
@@ -305,7 +313,7 @@ export default function CreateAppointmentModal({
                                             placeholder="jane@example.com"
                                             value={clientEmail}
                                             onChange={e => setClientEmail(e.target.value)}
-                                            className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                            className="w-full text-base font-bold placeholder-gray-300 dark:placeholder-gray-600 bg-transparent outline-none text-gray-900 dark:text-white"
                                         />
                                     </div>
                                     <div className="px-5 py-4 flex-1">
@@ -315,7 +323,7 @@ export default function CreateAppointmentModal({
                                             placeholder="+1 (555) 000-0000"
                                             value={clientPhone}
                                             onChange={e => setClientPhone(e.target.value)}
-                                            className="w-full text-base font-bold placeholder-gray-300 bg-transparent outline-none text-gray-900"
+                                            className="w-full text-base font-bold placeholder-gray-300 dark:placeholder-gray-600 bg-transparent outline-none text-gray-900 dark:text-white"
                                         />
                                     </div>
                                 </div>

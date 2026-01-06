@@ -57,6 +57,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
 
     const [isBooking, setIsBooking] = useState(false);
     const [bookingComplete, setBookingComplete] = useState(false);
+    const [idempotencyKey, setIdempotencyKey] = useState<string>('');
 
     const searchParams = useSearchParams();
     const isEmbed = searchParams.get('mode') === 'embed';
@@ -153,7 +154,8 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                                     staff.id,
                                     selectedDate,
                                     selectedService.durationMinutes,
-                                    org.id
+                                    org.id,
+                                    selectedService.bufferTimeMinutes || 0
                                 );
                                 return { staffId: staff.id, slots };
                             } catch (e) {
@@ -194,7 +196,8 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                         selectedStaff.id,
                         selectedDate,
                         selectedService.durationMinutes,
-                        org.id
+                        org.id,
+                        selectedService.bufferTimeMinutes || 0
                     );
                     setRealTimeSlots(slots);
                 }
@@ -255,6 +258,11 @@ export default function BookingPageContent({ slug }: { slug: string }) {
         } else {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        // Generate a new idempotency key when the user enters the summary step
+        if (currentStep === BookingStep.SUMMARY) {
+            setIdempotencyKey(crypto.randomUUID());
+        }
     }, [currentStep]);
 
     const handleBook = async (formData: any) => {
@@ -265,41 +273,24 @@ export default function BookingPageContent({ slug }: { slug: string }) {
             // FIX: Use format(date, 'yyyy-MM-dd') to strictly preserve the selected usage date
             const dateString = format(selectedDate, 'yyyy-MM-dd');
 
-            // Determine final staff ID
-            let finalStaffId = selectedStaff.id;
-            let finalStaffName = selectedStaff.name;
-
-            // If "Any" was selected, pick an available staff member for this slot
-            if (selectedStaff.id === 'any') {
-                const possibleStaffIds = slotsStaffMap[selectedTime] || [];
-                if (possibleStaffIds.length === 0) {
-                    throw new Error("No staff available for this time slot.");
-                }
-                // Naive assignment: Randomly pick one to distribute load (or pick first)
-                const randomIndex = Math.floor(Math.random() * possibleStaffIds.length);
-                finalStaffId = possibleStaffIds[randomIndex];
-
-                // Find name for email/confirmation
-                const allocatedStaff = staffMembers.find(s => s.id === finalStaffId);
-                if (allocatedStaff) {
-                    finalStaffName = allocatedStaff.name;
-                }
-            }
-
-            const created = await createAppointment({
+            const bookingResult = await createAppointment({
                 serviceId: selectedService.id,
-                staffId: finalStaffId,
+                staffId: selectedStaff.id === 'any' ? null : selectedStaff.id,
                 clientId: 'c_temp_user',
                 clientName: formData.name,
                 clientEmail: formData.email,
-                clientPhone: formData.phone, // Pass phone number
+                clientPhone: formData.phone,
                 notes: formData.notes,
                 date: dateString,
                 timeSlot: selectedTime,
                 durationMinutes: selectedService.durationMinutes,
                 bufferMinutes: selectedService.bufferTimeMinutes || 0,
-                status: 'CONFIRMED'
+                status: 'CONFIRMED',
+                idempotencyKey: idempotencyKey
             } as any, org.id);
+
+            const finalStaffName = bookingResult.staff_name;
+            const finalStaffId = bookingResult.staff_id;
 
             // Save Smart Guest Info
             localStorage.setItem('reelin_guest_info', JSON.stringify({
@@ -366,7 +357,7 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                         userId: recipientId,
                         title: 'New Booking! 📅',
                         body: `${formData.name} booked ${selectedService.name} for ${selectedTime}`,
-                        url: `/staff?tab=schedule&appointmentId=${created.id}`,
+                        url: `/staff?tab=schedule&appointmentId=${bookingResult.appointment_id}`,
                         type: 'new_booking'
                     })
                 });
@@ -482,61 +473,58 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-[100px] mix-blend-multiply opacity-50"></div>
             </div>
 
-            <div className="mx-auto py-12 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
-                {/* Hero Header */}
-                <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="mx-auto py-2 sm:py-4 px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
+                {/* Hero Header - Ultra Compacted */}
+                <div className="text-center mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     {org.logo_url && (
-                        <div className="relative w-24 h-24 md:w-28 md:h-28 mx-auto mb-8">
+                        <div className="relative w-10 h-10 md:w-12 md:h-12 mx-auto mb-3">
                             <Image
                                 src={org.logo_url}
                                 alt={org.name + ' Logo'}
-                                width={112}
-                                height={112}
-                                className="relative h-full w-full object-contain drop-shadow-xl"
+                                width={96}
+                                height={96}
+                                className="relative h-full w-full object-contain drop-shadow-lg"
                                 unoptimized
                             />
                         </div>
                     )}
-                    <h1 className={`text-4xl md:text-7xl font-black mb-6 tracking-tight ${isDarkTheme ? 'text-white' : 'text-gray-900'
+                    <h1 className={`text-2xl md:text-4xl font-black mb-1.5 tracking-tight ${isDarkTheme ? 'text-white' : 'text-gray-900'
                         }`}>
                         {org.name}
                     </h1>
-                    <p className={`text-lg md:text-2xl max-w-2xl mx-auto font-medium leading-relaxed ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'
-                        }`}>
-                        Book your next premium experience.
-                    </p>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                        <p className={`text-sm md:text-base font-medium leading-relaxed ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'
+                            }`}>
+                            Book your next premium experience.
+                        </p>
+                        <span className="px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                            Local Time
+                        </span>
+                    </div>
                 </div>
 
-                <div id="booking-scroll-anchor" className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start scroll-mt-6">
+                <div id="booking-scroll-anchor" className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-start scroll-mt-6">
                     {/* Desktop Sidebar / Steps */}
-                    <div className="hidden lg:block w-72 flex-shrink-0 sticky top-8">
+                    <div className="hidden lg:block w-70 flex-shrink-0 sticky top-4 px-4 pt-1">
                         <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
 
-                        {/* Contact Info in Sidebar */}
+                        {/* Contact Info in Sidebar - Highly Compact */}
                         {!isEmbed && (org.phone || org.email || org.address || org.website) && (
-                            <div className="mt-12 pt-8 border-t border-gray-200/50 space-y-4">
+                            <div className="mt-8 pt-6 border-t border-gray-200/50 space-y-3">
                                 {org.phone && (
-                                    <div className="flex items-center gap-3 text-sm text-gray-500 font-medium hover:text-gray-900 transition-colors">
-                                        <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm">
-                                            <Phone className="w-4 h-4 text-primary-600" />
+                                    <div className="flex items-center gap-2.5 text-[11px] text-gray-500 font-bold hover:text-gray-900 transition-colors">
+                                        <div className="w-6 h-6 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-xs">
+                                            <Phone className="w-3 h-3 text-primary-600" />
                                         </div>
                                         <span>{org.phone}</span>
                                     </div>
                                 )}
                                 {org.email && (
-                                    <div className="flex items-center gap-3 text-sm text-gray-500 font-medium hover:text-gray-900 transition-colors">
-                                        <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm">
-                                            <Mail className="w-4 h-4 text-primary-600" />
+                                    <div className="flex items-center gap-2.5 text-[11px] text-gray-500 font-bold hover:text-gray-900 transition-colors">
+                                        <div className="w-6 h-6 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-xs">
+                                            <Mail className="w-3 h-3 text-primary-600" />
                                         </div>
                                         <span>{org.email}</span>
-                                    </div>
-                                )}
-                                {org.address && (
-                                    <div className="flex items-center gap-3 text-sm text-gray-500 font-medium hover:text-gray-900 transition-colors">
-                                        <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm">
-                                            <MapPin className="w-4 h-4 text-primary-600" />
-                                        </div>
-                                        <span>{org.address}</span>
                                     </div>
                                 )}
                             </div>
@@ -545,8 +533,8 @@ export default function BookingPageContent({ slug }: { slug: string }) {
 
                     <div className="flex-1 w-full" style={{ '--primary-color': org.primary_color || '#4F46E5' } as React.CSSProperties}>
 
-                        {/* Mobile Header Steps */}
-                        <div className="lg:hidden mb-8">
+                        {/* Mobile Header Steps - Minimized Margin */}
+                        <div className="lg:hidden mb-1">
                             <WizardStepIndicator currentStep={currentStep} steps={STEPS} />
                         </div>
 
@@ -590,6 +578,8 @@ export default function BookingPageContent({ slug }: { slug: string }) {
                                             onBack={() => setCurrentStep(BookingStep.STAFF)}
                                             onNext={() => setCurrentStep(BookingStep.SUMMARY)}
                                             isLoading={isLoadingSlots}
+                                            holidays={org?.settings?.scheduling?.holidays}
+                                            schedulingSettings={org?.settings?.scheduling}
                                         />
                                     )}
 

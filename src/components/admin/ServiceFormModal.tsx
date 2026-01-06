@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase';
 import React, { useState, useEffect } from 'react';
 import { Service } from '@/types';
-import { X, Upload, Image as ImageIcon, DollarSign, Clock, Tag, Eye, EyeOff } from 'lucide-react';
+import { X, Upload, Image as ImageIcon, DollarSign, Clock, Tag, Eye, EyeOff, Plus, Trash2, ListPlus, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 
@@ -24,17 +24,15 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
     const [formData, setFormData] = useState({
         name: '',
         price: '',
-        durationMinutes: '',
+        durationMinutes: '30',
         description: '',
         category: '',
         categoryColor: '#3B82F6',
         imageUrl: '',
         isVisible: true,
         bufferTimeMinutes: '0',
-        depositRequired: false,
-        depositAmount: '0',
-        cancellationHours: '24',
         maxCapacity: '1',
+        intakeQuestions: [] as any[]
     });
 
     useEffect(() => {
@@ -47,29 +45,25 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                 category: editingService.category || '',
                 categoryColor: editingService.categoryColor || '#3B82F6',
                 imageUrl: editingService.imageUrl || '',
-                isVisible: editingService.isVisible !== false,
+                isVisible: editingService.isVisible ?? true,
                 bufferTimeMinutes: (editingService.bufferTimeMinutes || 0).toString(),
-                depositRequired: editingService.depositRequired || false,
-                depositAmount: (editingService.depositAmount || 0).toString(),
-                cancellationHours: (editingService.cancellationHours || 24).toString(),
                 maxCapacity: (editingService.maxCapacity || 1).toString(),
+                intakeQuestions: Array.isArray(editingService.intakeQuestions) ? editingService.intakeQuestions : []
             });
             setImagePreview(editingService.imageUrl || '');
         } else {
             setFormData({
                 name: '',
                 price: '',
-                durationMinutes: '',
+                durationMinutes: '30',
                 description: '',
                 category: '',
                 categoryColor: '#3B82F6',
                 imageUrl: '',
                 isVisible: true,
                 bufferTimeMinutes: '0',
-                depositRequired: false,
-                depositAmount: '0',
-                cancellationHours: '24',
                 maxCapacity: '1',
+                intakeQuestions: []
             });
             setImagePreview('');
         }
@@ -86,6 +80,33 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
             // Clean up memory
             return () => URL.revokeObjectURL(objectUrl);
         }
+    };
+
+    const addQuestion = () => {
+        const newQuestion = {
+            id: Math.random().toString(36).substr(2, 9),
+            label: '',
+            type: 'text' as const,
+            required: false
+        };
+        setFormData({
+            ...formData,
+            intakeQuestions: [...formData.intakeQuestions, newQuestion]
+        });
+    };
+
+    const removeQuestion = (id: string) => {
+        setFormData({
+            ...formData,
+            intakeQuestions: formData.intakeQuestions.filter(q => q.id !== id)
+        });
+    };
+
+    const updateQuestion = (id: string, updates: any) => {
+        setFormData({
+            ...formData,
+            intakeQuestions: formData.intakeQuestions.map(q => q.id === id ? { ...q, ...updates } : q)
+        });
     };
 
     const handleSubmit = async () => {
@@ -120,11 +141,9 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                 categoryColor: formData.categoryColor,
                 imageUrl: finalImageUrl,
                 isVisible: formData.isVisible,
-                bufferTimeMinutes: parseInt(formData.bufferTimeMinutes),
-                depositRequired: formData.depositRequired,
-                depositAmount: parseFloat(formData.depositAmount),
-                cancellationHours: parseInt(formData.cancellationHours),
-                maxCapacity: parseInt(formData.maxCapacity),
+                bufferTimeMinutes: parseInt(formData.bufferTimeMinutes.toString()),
+                maxCapacity: parseInt(formData.maxCapacity.toString()),
+                intakeQuestions: formData.intakeQuestions.filter(q => q.label.trim())
             });
             onClose();
         } catch (error) {
@@ -182,9 +201,9 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     </div>
                                 </div>
                             ) : (
-                                <label className="flex flex-col items-center justify-center h-48 bg-gray-50/50 dark:bg-white/5 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-[24px] cursor-pointer hover:border-[#A855F7] dark:hover:border-[#A855F7] hover:bg-[#A855F7]/10 dark:hover:bg-[#A855F7]/10 transition-all group">
+                                <label className="flex flex-col items-center justify-center h-48 bg-gray-50/50 dark:bg-white/5 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-[24px] cursor-pointer hover:border-[var(--primary-600)] dark:hover:border-[var(--primary-600)] hover:bg-[var(--primary-600)]/10 dark:hover:bg-[var(--primary-600)]/10 transition-all group">
                                     <div className="p-4 bg-white dark:bg-white/10 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 group-hover:scale-110 transition-transform duration-300">
-                                        <ImageIcon className="w-8 h-8 text-gray-400 dark:text-white group-hover:text-[#A855F7] transition-colors" />
+                                        <ImageIcon className="w-8 h-8 text-gray-400 dark:text-white group-hover:text-[var(--primary-600)] transition-colors" />
                                     </div>
                                     <span className="text-sm font-black text-gray-900 dark:text-white mt-4">Upload Display Photo</span>
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">PNG, JPG • Max 5MB</span>
@@ -210,7 +229,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="e.g., Signature Sculpt Cut"
-                                className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none dark:text-white"
+                                className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[var(--primary-600)]/10 focus:border-[var(--primary-600)] transition-all outline-none dark:text-white"
                             />
                         </div>
 
@@ -227,7 +246,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     placeholder="0.00"
                                     min="0"
                                     step="0.01"
-                                    className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none dark:text-white"
+                                    className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[var(--primary-600)]/10 focus:border-[var(--primary-600)] transition-all outline-none dark:text-white"
                                 />
                             </div>
                             <div>
@@ -241,11 +260,12 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     onChange={(e) => setFormData({ ...formData, durationMinutes: e.target.value })}
                                     placeholder="30"
                                     min="1"
-                                    className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none dark:text-white"
+                                    className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[var(--primary-600)]/10 focus:border-[var(--primary-600)] transition-all outline-none dark:text-white"
                                 />
                             </div>
                         </div>
 
+                        {/* Description */}
                         <div>
                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
                                 Detailed Description
@@ -253,10 +273,90 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="Explain what makes this service unique..."
+                                placeholder="What's included in this service?"
                                 rows={3}
-                                className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none resize-none dark:text-white"
+                                className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[var(--primary-600)]/10 focus:border-[var(--primary-600)] transition-all outline-none resize-none dark:text-white"
                             />
+                        </div>
+                    </div>
+
+                    {/* Intake Questions Editor (Moved up for better visibility) */}
+                    <div className="pt-8 border-t border-gray-100 dark:border-white/10 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-primary-900/20 flex items-center justify-center">
+                                    <HelpCircle className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Intake Questionnaire</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Structured data for this service</p>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={addQuestion}
+                                type="button"
+                                className="bg-purple-50 dark:bg-primary-900/20 text-[var(--primary-600)] dark:text-primary-400 hover:bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 border-none shadow-none text-[10px] font-black h-8 px-3 rounded-lg flex items-center gap-1"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                Add Question
+                            </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {formData.intakeQuestions.length === 0 ? (
+                                <div className="p-8 border-2 border-dashed border-gray-100 dark:border-white/5 rounded-[24px] text-center">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No custom intake questions</p>
+                                    <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest mt-1">Clients will see the standard 'Special Notes' field by default.</p>
+                                </div>
+                            ) : (
+                                formData.intakeQuestions.map((q: any) => (
+                                    <div key={q.id} className="p-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl animate-in slide-in-from-top-2 duration-200">
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex-1 space-y-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Question Label</label>
+                                                        <input
+                                                            type="text"
+                                                            value={q.label}
+                                                            onChange={(e) => updateQuestion(q.id, { label: e.target.value })}
+                                                            placeholder="e.g. Skin Allergies?"
+                                                            className="w-full px-3 py-2 bg-white dark:bg-black border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[var(--primary-600)]/10 outline-none dark:text-white"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Input Type</label>
+                                                        <select
+                                                            value={q.type}
+                                                            onChange={(e) => updateQuestion(q.id, { type: e.target.value })}
+                                                            className="w-full px-3 py-2 bg-white dark:bg-black border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[var(--primary-600)]/10 outline-none dark:text-white"
+                                                        >
+                                                            <option value="text">Short Answer</option>
+                                                            <option value="longtext">Long Answer</option>
+                                                            <option value="checkbox">Checkbox (Yes/No)</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <label className="flex items-center gap-2 cursor-pointer group w-fit">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={q.required}
+                                                        onChange={(e) => updateQuestion(q.id, { required: e.target.checked })}
+                                                        className="w-4 h-4 text-[var(--primary-600)] rounded focus:ring-[var(--primary-600)]/20 border-gray-300"
+                                                    />
+                                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest group-hover:text-gray-700 transition-colors">Required Field</span>
+                                                </label>
+                                            </div>
+                                            <button
+                                                onClick={() => removeQuestion(q.id)}
+                                                className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
 
@@ -283,7 +383,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                 setFormData({ ...formData, category: newCategory, categoryColor: color });
                             }}
                             placeholder="e.g. Consultations, Classes, VIP..."
-                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none mb-4 dark:text-white"
+                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[var(--primary-600)]/10 focus:border-[var(--primary-600)] transition-all outline-none mb-4 dark:text-white"
                         />
 
                         {/* Quick Select Chips */}
@@ -303,7 +403,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                             setFormData({ ...formData, category: cat, categoryColor: color });
                                         }}
                                         className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${formData.category === cat
-                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-[#A855F7] dark:text-primary-400 border-primary-200 dark:border-primary-500/20'
+                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-[var(--primary-600)] dark:text-primary-400 border-primary-200 dark:border-primary-500/20'
                                             : 'bg-white dark:bg-white/5 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/20 hover:text-gray-600 dark:hover:text-gray-300'
                                             }`}
                                     >
@@ -312,17 +412,10 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                 ))}
                             </div>
                         )}
-                        <input
-                            type="text"
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            placeholder="Enter custom category label..."
-                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none dark:text-white"
-                        />
                     </div>
 
-                    {/* Advanced Settings */}
-                    <div className="space-y-6 pt-8 border-t border-gray-100">
+                    {/* Protocol & Controls */}
+                    <div className="pt-8 border-t border-gray-100 dark:border-white/10 space-y-6">
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
                                 <Tag className="w-4 h-4 text-gray-400" />
@@ -337,7 +430,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                             </div>
                             <button
                                 onClick={() => setFormData({ ...formData, isVisible: !formData.isVisible })}
-                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20 ${formData.isVisible ? 'bg-[#A855F7]' : 'bg-gray-200'
+                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary-600)]/20 ${formData.isVisible ? 'bg-[var(--primary-600)]' : 'bg-gray-200'
                                     }`}
                             >
                                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-all duration-200 ${formData.isVisible ? 'translate-x-6' : 'translate-x-1'
@@ -355,7 +448,7 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     value={formData.bufferTimeMinutes}
                                     onChange={(e) => setFormData({ ...formData, bufferTimeMinutes: e.target.value })}
                                     min="0"
-                                    className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none dark:text-white"
+                                    className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[var(--primary-600)]/10 focus:border-[var(--primary-600)] transition-all outline-none dark:text-white"
                                 />
                             </div>
                             <div>
@@ -367,40 +460,9 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
                                     value={formData.maxCapacity}
                                     onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
                                     min="1"
-                                    className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none dark:text-white"
+                                    className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[var(--primary-600)]/10 focus:border-[var(--primary-600)] transition-all outline-none dark:text-white"
                                 />
                             </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <label className="flex items-center gap-3 p-4 bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl cursor-pointer group">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.depositRequired}
-                                    onChange={(e) => setFormData({ ...formData, depositRequired: e.target.checked })}
-                                    className="w-5 h-5 text-[#A855F7] rounded-lg focus:ring-[#A855F7]/20 border-gray-300 transition-all"
-                                />
-                                <div className="flex-1">
-                                    <span className="text-sm font-black text-gray-900 dark:text-white block group-hover:text-[#A855F7] transition-colors">Require Upfront Deposit</span>
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Secure bookings with pre-payment</span>
-                                </div>
-                            </label>
-
-                            {formData.depositRequired && (
-                                <div className="animate-in slide-in-from-top-2 duration-200">
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-                                        Required Deposit ($)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={formData.depositAmount}
-                                        onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })}
-                                        min="0"
-                                        step="0.01"
-                                        className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-[#A855F7]/10 focus:border-[#A855F7] transition-all outline-none dark:text-white"
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

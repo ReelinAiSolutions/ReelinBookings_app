@@ -37,7 +37,8 @@ export default function BookingSummary({
         name: initialGuestData?.name || '',
         email: initialGuestData?.email || '',
         phone: initialGuestData?.phone || '',
-        notes: ''
+        notes: '',
+        intakeAnswers: {} as Record<string, string>
     });
 
     // If no terms exist, auto-agree (checkbox hidden)
@@ -51,20 +52,48 @@ export default function BookingSummary({
             alert('Please enter your name, email, and phone number to continue.');
             return;
         }
-        onConfirm(formData);
+
+        // Validate required intake questions
+        const missingRequired = selectedService?.intakeQuestions?.find(
+            q => q.required && !formData.intakeAnswers[q.id]
+        );
+
+        if (missingRequired) {
+            alert(`Please answer the required question: ${missingRequired.label}`);
+            return;
+        }
+
+        // Merge intake answers into notes for the staff
+        let finalNotes = formData.notes;
+        if (selectedService?.intakeQuestions && selectedService.intakeQuestions.length > 0) {
+            const intakeLines = selectedService.intakeQuestions
+                .map(q => {
+                    const answer = formData.intakeAnswers[q.id] || (q.type === 'checkbox' ? 'No' : 'N/A');
+                    const displayAnswer = q.type === 'checkbox' ? (answer === 'true' ? 'Yes' : 'No') : answer;
+                    return `${q.label}: ${displayAnswer}`;
+                })
+                .join('\n');
+
+            finalNotes = intakeLines + (formData.notes ? `\n\nAdditional Notes:\n${formData.notes}` : '');
+        }
+
+        onConfirm({
+            ...formData,
+            notes: finalNotes
+        });
     };
 
     return (
-        <div className="p-4 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 md:pb-10">
-            <div className="flex items-center gap-3 mb-8">
-                <button onClick={onBack} className="p-3 -ml-3 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900 active:scale-95">
-                    <ArrowLeft className="w-6 h-6" />
+        <div className="p-4 md:pt-0 md:px-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-6">
+            <div className="flex items-center gap-3 mb-6">
+                <button onClick={onBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900 active:scale-95">
+                    <ArrowLeft className="w-5 h-5" />
                 </button>
-                <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Review Booking</h2>
+                <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Review Booking</h2>
             </div>
 
             {isAutoFilled && (
-                <div className="mb-6 p-4 bg-primary-50 border border-primary-100 rounded-2xl flex items-center justify-between">
+                <div className="mb-4 p-3 bg-primary-50 border border-primary-100 rounded-xl flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center shrink-0">
                             <UserIcon className="w-5 h-5 text-primary-600" />
@@ -72,7 +101,7 @@ export default function BookingSummary({
                         <p className="text-sm text-primary-900 font-bold">Welcome back, {initialGuestData.name.split(' ')[0]}!</p>
                     </div>
                     <button
-                        onClick={() => setFormData({ name: '', email: '', phone: '', notes: '' })}
+                        onClick={() => setFormData({ name: '', email: '', phone: '', notes: '', intakeAnswers: {} })}
                         className="text-xs text-primary-600 hover:text-primary-700 font-bold hover:underline px-2 py-1"
                     >
                         Not you?
@@ -80,9 +109,9 @@ export default function BookingSummary({
                 </div>
             )}
 
-            <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-8">
-                <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
-                    <div className="bg-gray-50 rounded-3xl p-5 md:p-8 border border-gray-100">
+            <div className="flex flex-col lg:grid lg:grid-cols-5 gap-4 lg:gap-8">
+                <div className="lg:col-span-3 space-y-6 order-2 lg:order-1">
+                    <div className="bg-gray-50 rounded-3xl p-4 md:p-6 border border-gray-100">
                         <div className="flex items-center gap-2 mb-4">
                             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Your Information</h3>
                             <div className="h-px bg-gray-200 flex-1"></div>
@@ -127,15 +156,73 @@ export default function BookingSummary({
                                     value={formData.notes}
                                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                     className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-primary-500 rounded-xl outline-none transition-all font-medium text-gray-900 shadow-sm placeholder:text-gray-300 min-h-[100px] resize-none"
-                                    placeholder="Anything we should know? (Gate code, allergies, preferences...)"
+                                    placeholder="Anything we should know? (Gate code, preferences...)"
                                 />
                             </div>
+
+                            {/* Dynamic Intake Questions */}
+                            {selectedService?.intakeQuestions && selectedService.intakeQuestions.length > 0 && (
+                                <div className="pt-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="h-px bg-gray-200 flex-1"></div>
+                                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Service-Specific Questions</h3>
+                                        <div className="h-px bg-gray-200 flex-1"></div>
+                                    </div>
+
+                                    {selectedService.intakeQuestions.map((q) => (
+                                        <div key={q.id}>
+                                            <label className="block text-xs font-bold text-gray-500 mb-1.5 ml-1 uppercase tracking-wide">
+                                                {q.label} {q.required && <span className="text-red-500">*</span>}
+                                            </label>
+
+                                            {q.type === 'checkbox' ? (
+                                                <label className="flex items-center gap-3 p-4 bg-white border-2 border-transparent hover:border-primary-100 rounded-xl cursor-pointer transition-all shadow-sm group">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.intakeAnswers[q.id] === 'true'}
+                                                        onChange={(e) => setFormData({
+                                                            ...formData,
+                                                            intakeAnswers: { ...formData.intakeAnswers, [q.id]: e.target.checked.toString() }
+                                                        })}
+                                                        className="w-5 h-5 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                                                    />
+                                                    <span className="text-sm font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Yes, I confirm</span>
+                                                </label>
+                                            ) : q.type === 'longtext' ? (
+                                                <textarea
+                                                    value={formData.intakeAnswers[q.id] || ''}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        intakeAnswers: { ...formData.intakeAnswers, [q.id]: e.target.value }
+                                                    })}
+                                                    required={q.required}
+                                                    className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-primary-500 rounded-xl outline-none transition-all font-medium text-gray-900 shadow-sm placeholder:text-gray-300 min-h-[80px] resize-none"
+                                                    placeholder="Enter your answer..."
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    value={formData.intakeAnswers[q.id] || ''}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        intakeAnswers: { ...formData.intakeAnswers, [q.id]: e.target.value }
+                                                    })}
+                                                    required={q.required}
+                                                    className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-primary-500 rounded-xl outline-none transition-all font-bold text-gray-900 shadow-sm placeholder:text-gray-300"
+                                                    placeholder="Enter your answer..."
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
 
                         </div>
                     </div>
                 </div>
 
-                <div className="lg:col-span-1 order-1 lg:order-2">
+                <div className="lg:col-span-2 order-1 lg:order-2">
                     <div className="bg-white border border-gray-100 rounded-3xl p-5 md:p-8 shadow-xl shadow-gray-200/50 relative overflow-hidden">
 
 
@@ -177,7 +264,7 @@ export default function BookingSummary({
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-bold text-gray-400 uppercase">Time</span>
-                                        <span className="text-sm font-bold text-gray-900">{formatTime12Hour(selectedTime)}</span>
+                                        <span className="text-sm font-bold text-gray-900">{formatTime12Hour(selectedTime) || 'Loading...'}</span>
                                     </div>
                                 </div>
 
@@ -195,9 +282,11 @@ export default function BookingSummary({
                                     <div className="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
                                         <MapPin className="w-4 h-4 text-primary-600" />
                                     </div>
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col min-w-0">
                                         <span className="text-[10px] font-bold text-gray-400 uppercase">Location</span>
-                                        <span className="text-sm font-bold text-gray-900 truncate max-w-[100px]">{orgAddress ? 'Studio' : 'TBD'}</span>
+                                        <span className="text-sm font-bold text-gray-900 truncate" title={orgAddress || 'TBD'}>
+                                            {orgAddress || 'TBD'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

@@ -166,47 +166,49 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     };
 
     return (
-        <div className="flex flex-col h-full pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
+        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500 pt-8 px-4 sm:px-6 lg:px-0 lg:pt-0">
             {/* Header Section */}
-            <div className="flex flex-col gap-4 max-w-3xl mx-auto w-full mb-6">
-                {/* Title Row */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight mb-2">
-                            {isStaffView ? 'My Clients' : 'Client Intelligence'}
-                        </h1>
-                        <p className="text-gray-500 dark:text-gray-400 font-medium text-sm flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5" />
-                            {clients.length} Registered Profiles
-                        </p>
-                    </div>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                        {isStaffView ? 'My Clients' : 'Client Intelligence'}
+                    </h2>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        {clients.length} Registered Profiles
+                    </p>
                 </div>
 
-                {/* Controls Row */}
-                <div className="flex items-center gap-3">
-                    <div className="flex-1 relative group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                <div className="flex flex-wrap items-center gap-4">
+                    {/* Search */}
+                    <div className="relative group w-full md:w-96">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search clients..."
-                            className="w-full pl-12 pr-6 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none shadow-sm dark:text-white"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-white dark:bg-white/5 dark:text-white"
                         />
                     </div>
-                    <div className="relative">
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value as any)}
-                            className="appearance-none pl-4 pr-10 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none shadow-sm cursor-pointer"
+                </div>
+            </div>
+
+            {/* Filters Bar */}
+            <div className="flex flex-col md:flex-row md:items-center gap-4 bg-gray-100/80 dark:bg-white/5 p-3 rounded-[24px] border border-transparent">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 px-1">
+                    {(['ALL', 'NEW', 'STEADY', 'INACTIVE'] as const).map((status) => (
+                        <button
+                            key={status}
+                            onClick={() => setStatusFilter(status)}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${statusFilter === status
+                                ? 'bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 border-primary-500/20 dark:border-primary-500/30'
+                                : 'bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10'
+                                }`}
                         >
-                            <option value="ALL">All Statuses</option>
-                            <option value="NEW">New</option>
-                            <option value="STEADY">Steady</option>
-                            <option value="INACTIVE">Inactive</option>
-                        </select>
-                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
+                            {status.charAt(0) + status.slice(1).toLowerCase()}
+                        </button>
+                    ))}
                 </div>
             </div>
 

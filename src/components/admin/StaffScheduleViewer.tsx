@@ -52,7 +52,7 @@ export default function StaffScheduleViewer({ isOpen, onClose, staff, availabili
                     <div className="p-8 pb-6 border-b border-gray-100 dark:border-white/10 flex justify-between items-start">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl">
+                                <div className="p-2.5 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl">
                                     <Calendar className="w-5 h-5" />
                                 </div>
                                 <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
@@ -81,14 +81,14 @@ export default function StaffScheduleViewer({ isOpen, onClose, staff, availabili
                                 <div
                                     key={day}
                                     className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isWorking
-                                            ? 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/10'
-                                            : 'bg-gray-50 dark:bg-white/5 border-transparent opacity-60'
+                                        ? 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/10'
+                                        : 'bg-gray-50 dark:bg-white/5 border-transparent opacity-60'
                                         }`}
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs ${isWorking
-                                                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
-                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                                            : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                                             }`}>
                                             {day.substring(0, 3)}
                                         </div>

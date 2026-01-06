@@ -41,8 +41,8 @@ export default function DashboardCharts({ data }: DashboardChartsProps) {
                     <AreaChart data={data}>
                         <defs>
                             <linearGradient id="colorRevenueMain" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#a855f7" stopOpacity={0.15} />
-                                <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                                <stop offset="5%" stopColor="var(--primary-600)" stopOpacity={0.15} />
+                                <stop offset="95%" stopColor="var(--primary-600)" stopOpacity={0} />
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
@@ -52,7 +52,7 @@ export default function DashboardCharts({ data }: DashboardChartsProps) {
                             cursor={{ stroke: '#a855f7', strokeWidth: 1 }}
                             contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                         />
-                        <Area type="monotone" dataKey="revenue" stroke="#a855f7" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenueMain)" />
+                        <Area type="monotone" dataKey="revenue" stroke="var(--primary-600)" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenueMain)" />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>

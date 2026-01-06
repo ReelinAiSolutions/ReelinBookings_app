@@ -130,18 +130,18 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Search */}
                     <div className="relative group w-full md:w-96">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#d946ef] transition-colors" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A855F7]/20 focus:border-[#d946ef] transition-all bg-white dark:bg-white/5 dark:text-white"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-white dark:bg-white/5 dark:text-white"
                         />
                     </div>
 
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="bg-gradient-to-r from-[#A855F7] to-[#d946ef] hover:opacity-90 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-[#d946ef]/20 active:scale-95 text-sm"
+                        className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-500/20 active:scale-95 text-sm border-transparent"
                     >
                         <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
                         New Service
@@ -156,7 +156,7 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
                         key={category}
                         onClick={() => setSelectedCategory(category || 'All')}
                         className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${selectedCategory === category
-                            ? 'bg-[#F3E8FF] dark:bg-primary-900/20 text-[#A855F7] dark:text-primary-400 border-[#A855F7]/20 dark:border-primary-500/20'
+                            ? 'bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 border-primary-500/20 dark:border-primary-500/30'
                             : 'bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10'
                             }`}
                     >
@@ -184,14 +184,14 @@ export default function ServiceManager({ services, orgId, onRefresh }: ServiceMa
             {/* Services Grid/List */}
             <div className="flex-1">
                 {filteredServices.length === 0 ? (
-                    <div className="h-96 flex flex-col items-center justify-center text-center bg-white rounded-[32px] border border-gray-100 border-dashed">
-                        <div className="w-16 h-16 mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                            <Plus className="w-8 h-8 text-gray-300" />
+                    <div className="h-96 flex flex-col items-center justify-center text-center bg-white dark:bg-card rounded-[32px] border border-gray-100 dark:border-white/5 border-dashed">
+                        <div className="w-16 h-16 mb-4 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center">
+                            <Plus className="w-8 h-8 text-gray-300 dark:text-gray-600" />
                         </div>
-                        <h3 className="text-lg font-[900] text-gray-900 mb-1">
+                        <h3 className="text-lg font-[900] text-gray-900 dark:text-white mb-1">
                             {searchQuery || selectedCategory !== 'All' ? 'No results found' : 'No services yet'}
                         </h3>
-                        <p className="text-gray-500 mb-6 text-sm max-w-xs mx-auto">
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm max-w-xs mx-auto">
                             {searchQuery || selectedCategory !== 'All'
                                 ? 'Try adjusting your search or filters'
                                 : 'Get started by adding your first service to the roster'}

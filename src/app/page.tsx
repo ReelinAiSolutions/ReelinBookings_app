@@ -42,7 +42,7 @@ export default function LandingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center pb-[10vh]">
         <div className="flex flex-col items-center gap-4">
           <Image src="/icon-180.png" alt="Reelin Bookings" width={80} height={80} className="animate-pulse" />
           <h2 className="text-xl font-bold text-gray-900">Reelin Bookings</h2>

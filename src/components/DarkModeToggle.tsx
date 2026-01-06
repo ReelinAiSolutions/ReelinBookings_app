@@ -16,16 +16,29 @@ export default function DarkModeToggle() {
     }, []);
 
     const toggleDark = () => {
-        if (isDark) {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-            setIsDark(false);
-        } else {
+        const newDark = !isDark;
+        if (newDark) {
             document.documentElement.classList.add('dark');
             localStorage.setItem('theme', 'dark');
-            setIsDark(true);
+            // Update theme-color meta tag dynamically
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#000000');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            // Update theme-color meta tag dynamically
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#ffffff');
         }
+        setIsDark(newDark);
     };
+
+    // Also update on initial mount
+    useEffect(() => {
+        if (isDark) {
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#000000');
+        } else {
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#ffffff');
+        }
+    }, [isDark]);
 
     return (
         <button

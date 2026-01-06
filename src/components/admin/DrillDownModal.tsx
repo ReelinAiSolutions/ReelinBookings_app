@@ -27,9 +27,9 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                            <Bar dataKey="revenue" fill="#10B981" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                            <Bar dataKey="revenue" fill="var(--primary-600)" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                 {data.topStaff.map((_: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={['#10B981', 'var(--primary-600)', '#7C3AED', '#F59E0B'][index % 4]} />
+                                    <Cell key={`cell-${index}`} fill={['var(--primary-600)', '#10B981', 'var(--primary-400)', '#F59E0B'][index % 4]} />
                                 ))}
                             </Bar>
                         </BarChart>
@@ -47,7 +47,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} angle={-45} textAnchor="end" height={80} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} tickFormatter={(val) => `$${val}`} />
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                            <Bar dataKey="revenue" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50} />
+                            <Bar dataKey="revenue" fill="var(--primary-600)" radius={[8, 8, 0, 0]} maxBarSize={50} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -81,9 +81,9 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} tickFormatter={(val) => `${val}%`} />
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                            <Bar dataKey="utilization" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50}>
+                            <Bar dataKey="utilization" fill="var(--primary-600)" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                 {data.topStaff.map((_: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={['var(--primary-600)', '#10B981', '#F59E0B', '#8B5CF6'][index % 4]} />
+                                    <Cell key={`cell-${index}`} fill={['var(--primary-600)', '#10B981', '#F59E0B', 'var(--primary-400)'][index % 4]} />
                                 ))}
                             </Bar>
                         </BarChart>
@@ -101,7 +101,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                            <Bar dataKey="hours" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50} />
+                            <Bar dataKey="hours" fill="var(--primary-600)" radius={[8, 8, 0, 0]} maxBarSize={50} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -116,7 +116,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <div className="w-20 text-sm font-bold text-gray-600">{item.hour}</div>
                             <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
                                 <div
-                                    className="bg-gradient-to-r from-primary-500 to-purple-400 h-full rounded-full transition-all duration-500"
+                                    className="bg-gradient-to-r from-primary-500 to-primary-300 h-full rounded-full transition-all duration-500"
                                     style={{
                                         width: `${(item.count / (data.heatmap[0]?.count || 1)) * 100}%`,
                                         animationDelay: `${index * 50}ms`
@@ -159,7 +159,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
             </div>
 
             {/* Client Metrics */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
+            <div className="bg-gradient-to-br from-primary-50 to-emerald-50 p-6 rounded-2xl border border-primary-100">
                 <h4 className="font-bold text-gray-900 mb-2">Return Rate</h4>
                 <p className="text-4xl font-black text-gray-900">{data.clients.returnRate}</p>
                 <p className="text-sm text-gray-600 mt-2">Clients coming back</p>
@@ -205,7 +205,7 @@ export default function DrillDownModal({ isOpen, onClose, title, metric, data, c
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} angle={-45} textAnchor="end" height={80} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
                             <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                            <Bar dataKey="count" fill="#8B5CF6" radius={[8, 8, 0, 0]} maxBarSize={50} />
+                            <Bar dataKey="count" fill="var(--primary-600)" radius={[8, 8, 0, 0]} maxBarSize={50} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

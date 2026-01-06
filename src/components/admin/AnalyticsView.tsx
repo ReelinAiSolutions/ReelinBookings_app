@@ -233,7 +233,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                 </div>
                                 {/* Period B */}
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black text-purple-600 bg-purple-50 px-2.5 py-1.5 rounded-lg whitespace-nowrap uppercase tracking-widest border border-purple-100">
+                                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-lg whitespace-nowrap uppercase tracking-widest border border-emerald-100">
                                         Period B
                                     </span>
                                     <AnalyticsDatePicker
@@ -299,7 +299,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         periodAValue={metrics.totalBookings.value}
                                         periodBValue={comparisonMetrics.totalBookings.value}
                                         icon={Calendar}
-                                        color="indigo"
+                                        color="teal"
                                         delay={200}
                                     />
                                     <ComparisonStatCard
@@ -307,7 +307,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         periodAValue={`$${metrics.revenue.average.toFixed(0)}`}
                                         periodBValue={`$${comparisonMetrics.revenue.average.toFixed(0)}`}
                                         icon={TrendingUp}
-                                        color="purple"
+                                        color="emerald"
                                         delay={300}
                                     />
                                     <ComparisonStatCard
@@ -337,7 +337,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         growth={metrics.totalBookings.growth}
                                         trend={metrics.totalBookings.trend}
                                         icon={Calendar}
-                                        color="indigo"
+                                        color="teal"
                                         delay={200}
                                         onClick={() => setDrillDownMetric('appointments')}
                                     />
@@ -347,7 +347,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                         growth={metrics.revenue.total.growth}
                                         trend={metrics.revenue.total.trend}
                                         icon={TrendingUp}
-                                        color="purple"
+                                        color="emerald"
                                         delay={300}
                                         onClick={() => setDrillDownMetric('revenue')}
                                     />
@@ -405,7 +405,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                     {/* Period B Peak Times */}
                                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group">
                                         <div className="flex items-center gap-4 mb-4 relative z-10">
-                                            <div className="text-xs font-black text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 uppercase tracking-widest">
+                                            <div className="text-xs font-black text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 uppercase tracking-widest">
                                                 Period B
                                             </div>
                                             <div className="relative group/icon flex-shrink-0">
@@ -656,7 +656,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                     </td>
                                                     <td className="px-1 md:px-6 py-4 whitespace-nowrap max-w-[80px] md:max-w-none">
                                                         <div className="flex items-center">
-                                                            <div className="h-5 w-5 md:h-8 md:w-8 rounded-full bg-gradient-to-br from-[#A855F7] to-[#d946ef] flex items-center justify-center text-white font-bold mr-1.5 md:mr-3 text-[10px] md:text-sm shrink-0 shadow-sm shadow-[#d946ef]/20">
+                                                            <div className="h-5 w-5 md:h-8 md:w-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold mr-1.5 md:mr-3 text-[10px] md:text-sm shrink-0 shadow-sm shadow-primary-500/20">
                                                                 {staff.name.charAt(0)}
                                                             </div>
                                                             <div className="text-[10px] md:text-sm font-bold text-gray-900 truncate">{staff.name}</div>
@@ -790,7 +790,7 @@ export default function AnalyticsView({ appointments, services, staff }: Analyti
                                                             />
                                                             <Bar dataKey="revenue" fill="var(--primary-600)" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                                 {teamRevenueData.map((entry, index) => (
-                                                                    <Cell key={`cell-${index}`} fill={['var(--primary-600)', '#7C3AED', '#6D28D9', '#8B5CF6'][index % 4]} />
+                                                                    <Cell key={`cell-${index}`} fill={['var(--primary-600)', '#10B981', '#059669', 'var(--primary-400)'][index % 4]} />
                                                                 ))}
                                                             </Bar>
                                                         </BarChart>

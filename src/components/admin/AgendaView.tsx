@@ -109,23 +109,23 @@ export default function AgendaView({
                                 </div>
 
                                 <p className="text-sm font-bold text-[#7C3AED] mb-2 truncate">
-                                    {service?.name || 'Unknown Service'}
+                                    {apt.serviceName || service?.name || 'Unknown Service'}
                                 </p>
 
                                 <div className="flex items-center gap-3">
                                     {/* Staff Badge */}
-                                    {staffMember && (
-                                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-lg">
-                                            {staffMember.avatar ? (
-                                                <Image src={staffMember.avatar} width={16} height={16} className="rounded-full object-cover" alt="" unoptimized />
-                                            ) : (
-                                                <div className="w-4 h-4 rounded-full bg-gray-300"></div>
-                                            )}
-                                            <span className="text-[10px] font-bold text-gray-500 truncate max-w-[80px]">
-                                                {staffMember.name}
-                                            </span>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-lg">
+                                        {staffMember?.avatar ? (
+                                            <Image src={staffMember.avatar} width={16} height={16} className="rounded-full object-cover" alt="" unoptimized />
+                                        ) : (
+                                            <div className="w-4 h-4 rounded-full bg-gray-300 flex items-center justify-center text-[8px] font-bold text-white">
+                                                {(apt.staffName || staffMember?.name || '?').charAt(0)}
+                                            </div>
+                                        )}
+                                        <span className="text-[10px] font-bold text-gray-500 truncate max-w-[80px]">
+                                            {apt.staffName || staffMember?.name || 'Unknown'}
+                                        </span>
+                                    </div>
 
                                     {/* Duration Badge */}
                                     <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-lg">
