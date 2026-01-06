@@ -50,7 +50,7 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
             );
         } else if (role.includes('manager')) {
             return (
-                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest border border-indigo-200 dark:border-indigo-700/50">
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest border border-primary-200 dark:border-primary-700/50">
                     <Shield className="w-3 h-3" strokeWidth={3} />
                     Manager
                 </span>
@@ -106,11 +106,11 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
     };
 
     return (
-        <div className="group bg-white !bg-white dark:bg-card rounded-[24px] shadow-sm border border-gray-100 dark:border-white/5 p-5 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-[#d946ef]/30 transition-all duration-300 relative overflow-visible" style={{ backgroundColor: '#ffffff' }}>
+        <div className="group bg-white dark:bg-card rounded-[24px] shadow-sm border border-gray-100 dark:border-white/5 p-5 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-primary-500/30 transition-all duration-300 relative overflow-visible">
 
             {/* Header */}
             <div className="flex justify-between items-start mb-4">
-                <div className={`w-16 h-16 rounded-[1.2rem] bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-purple-500/20 overflow-hidden`}>
+                <div className={`w-16 h-16 rounded-[1.2rem] bg-gradient-to-br from-primary-600 to-primary-500 text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-primary-500/20 overflow-hidden`}>
                     {hasAvatar ? (
                         <Image src={staff.avatar!} alt={staff.name} width={64} height={64} className="w-full h-full object-cover" unoptimized />
                     ) : (
@@ -141,12 +141,12 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                     {specialtyServices.length > 0 ? (
                         <>
                             {specialtyServices.slice(0, 3).map(service => (
-                                <span key={service.id} className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 truncate max-w-[150px] shadow-sm" style={{ backgroundColor: '#ffffff' }}>
+                                <span key={service.id} className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 truncate max-w-[150px] shadow-sm">
                                     {service.name}
                                 </span>
                             ))}
                             {specialtyServices.length > 3 && (
-                                <span className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-400 dark:text-gray-500 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 shadow-sm" style={{ backgroundColor: '#ffffff' }}>
+                                <span className="px-3 py-1.5 bg-white dark:bg-white/5 text-gray-400 dark:text-gray-500 text-[10px] font-bold rounded-lg border border-gray-100 dark:border-white/5 shadow-sm">
                                     +{specialtyServices.length - 3} more
                                 </span>
                             )}
@@ -158,40 +158,38 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
             </div>
 
             {/* Actions */}
-            <div className="mt-auto grid grid-cols-[1fr,auto,auto] gap-2 items-center">
-                {onSchedule ? (
+            <div className="mt-auto flex flex-col gap-2">
+                {onSchedule && (
                     <button
                         onClick={() => onSchedule(staff)}
-                        className="w-full bg-[#A855F7] hover:bg-[#9333ea] text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-purple-500/20 active:scale-95 transition-all text-center"
+                        className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-primary-500/20 active:scale-95 transition-all text-center"
                     >
                         View Schedule
                     </button>
-                ) : (
-                    <div className="w-full" />
                 )}
 
                 {onEdit && (
                     <button
                         onClick={() => onEdit(staff)}
-                        className="h-[42px] px-4 rounded-xl border-2 border-gray-100 dark:border-white/10 text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2 active:scale-95 transition-all"
+                        className="w-full h-[52px] px-6 rounded-2xl border border-gray-100 dark:border-white/10 text-gray-900 dark:text-gray-100 font-bold hover:bg-gray-50 dark:hover:bg-white/5 flex items-center justify-center gap-3 active:scale-95 transition-all shadow-sm"
                     >
-                        <Edit2 className="w-4 h-4" />
-                        <span className="hidden sm:inline text-xs">Edit</span>
+                        <Edit2 className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm">Edit</span>
                     </button>
                 )}
 
                 {(onDelete) && (
-                    <div className="relative" ref={menuRef}>
+                    <div className="relative flex justify-start pt-1" ref={menuRef}>
                         <button
                             onClick={() => setShowMenu(!showMenu)}
-                            className="h-[42px] w-[42px] flex items-center justify-center rounded-xl border border-transparent hover:bg-gray-50 dark:hover:bg-white/5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                            className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                         >
                             <MoreHorizontal className="w-5 h-5" />
                         </button>
 
                         {/* Overflow Menu */}
                         {showMenu && (
-                            <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-[#1a1b1e] rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#1a1b1e] rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setShowMenu(false); onDelete?.(staff); }}
                                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-bold transition-colors"

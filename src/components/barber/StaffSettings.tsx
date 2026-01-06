@@ -10,6 +10,7 @@ import {
 import Image from 'next/image';
 import { Organization, Staff } from '@/types';
 import { useToast } from '@/context/ToastContext';
+import { updateUserProfile } from '@/services/dataService';
 import NotificationManager from '../admin/NotificationManager';
 
 const supabase = createClient();
@@ -117,29 +118,25 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
 
             if (avatarFile) {
                 const fileExt = avatarFile.name.split('.').pop();
-                const fileName = `${currentUser.id}-${Math.random()}.${fileExt}`;
+                const fileName = `${currentUser.id}/avatar-${Math.random()}.${fileExt}`;
                 const { error: uploadError } = await supabase.storage
-                    .from('avatars')
-                    .upload(fileName, avatarFile);
+                    .from('profile-assets')
+                    .upload(fileName, avatarFile, { upsert: true });
 
                 if (uploadError) throw uploadError;
 
                 const { data: { publicUrl } } = supabase.storage
-                    .from('avatars')
+                    .from('profile-assets')
                     .getPublicUrl(fileName);
 
                 avatarUrl = publicUrl;
             }
 
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({
-                    full_name: formData.fullName,
-                    avatar_url: avatarUrl
-                })
-                .eq('id', currentUser.id);
-
-            if (updateError) throw updateError;
+            // Update profile and linked staff record
+            await updateUserProfile(currentUser.id, currentUser.organization_id, {
+                fullName: formData.fullName,
+                avatarUrl: avatarUrl || undefined
+            });
 
             if (formData.newPassword) {
                 if (formData.newPassword !== formData.confirmPassword) {
@@ -151,28 +148,20 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                 if (passwordError) throw passwordError;
             }
 
-            toast({
-                title: 'Success',
-                description: 'Profile updated successfully',
-                variant: 'default'
-            });
+            toast('Profile updated successfully', 'success');
         } catch (error: any) {
-            toast({
-                title: 'Error',
-                description: error.message,
-                variant: 'destructive'
-            });
+            toast(error.message || 'Failed to update profile', 'error');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 p-8">
+        <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 lg:px-0 pt-8 lg:pt-0">
             {/* Header */}
             <div>
-                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Staff Settings</h2>
-                <p className="text-gray-500 font-medium">Manage your profile, security, and notifications.</p>
+                <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight mb-2">Staff Settings</h1>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">Manage your profile, security, and notifications.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -180,17 +169,16 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                 <div className="space-y-2">
                     {[
                         { id: 'profile', label: 'My Profile', icon: User, color: 'bg-blue-500' },
-                        { id: 'security', label: 'Security', icon: Shield, color: 'bg-indigo-500' },
+                        { id: 'security', label: 'Security', icon: Shield, color: 'bg-primary-500' },
                         { id: 'appearance', label: 'Appearance', icon: Palette, color: 'bg-pink-500' },
-                        { id: 'notifications', label: 'Notifications', icon: Bell, color: 'bg-purple-500' },
-                        { id: 'organization', label: 'Workplace', icon: Building2, color: 'bg-amber-500' }
+                        { id: 'notifications', label: 'Notifications', icon: Bell, color: 'bg-emerald-500' }
                     ].map((item) => (
                         <button
                             key={item.id}
                             onClick={() => setOpenSection(item.id)}
                             className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${openSection === item.id
-                                ? 'bg-white shadow-xl border-gray-100 ring-1 ring-black/5'
-                                : 'hover:bg-white/50 text-gray-500'
+                                ? 'bg-white dark:bg-white/5 shadow-xl dark:shadow-none border-gray-100 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/10'
+                                : 'hover:bg-white/50 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400'
                                 }`}
                         >
                             <div className="flex items-center gap-4">
@@ -207,28 +195,28 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                 {/* Right: Content Area */}
                 <div className="md:col-span-2 space-y-6">
                     {(!openSection || openSection === 'profile') && (
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Personal Profile</h3>
+                        <div className="bg-white dark:bg-white/5 rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/10 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Personal Profile</h3>
 
                             <div className="flex flex-col items-center gap-6 mb-12">
                                 <div className="relative group">
-                                    <div className="absolute -inset-1 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[2.2rem] opacity-20 blur-sm group-hover:opacity-40 transition-opacity"></div>
+                                    <div className="absolute -inset-1 bg-gradient-to-br from-primary-500 to-primary-700 rounded-[2.2rem] opacity-20 blur-sm group-hover:opacity-40 transition-opacity"></div>
                                     {previewUrl ? (
-                                        <div className="relative w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-white shadow-xl">
+                                        <div className="relative w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-white dark:border-white/10 shadow-xl">
                                             <Image src={previewUrl} alt="Preview" width={128} height={128} className="w-full h-full object-cover" unoptimized />
                                         </div>
                                     ) : (
-                                        <div className="relative w-32 h-32 rounded-[2rem] bg-gray-50 flex items-center justify-center border-4 border-white shadow-lg">
-                                            <UserCircle className="w-12 h-12 text-gray-300" />
+                                        <div className="relative w-32 h-32 rounded-[2rem] bg-gray-50 dark:bg-white/5 flex items-center justify-center border-4 border-white dark:border-white/10 shadow-lg">
+                                            <UserCircle className="w-12 h-12 text-gray-300 dark:text-gray-600" />
                                         </div>
                                     )}
-                                    <label className="absolute -bottom-2 -right-2 p-3 bg-primary-600 text-white rounded-2xl shadow-xl cursor-pointer hover:bg-primary-700 hover:scale-110 active:scale-95 transition-all outline-none border-4 border-white">
+                                    <label className="absolute -bottom-2 -right-2 p-3 bg-primary-600 text-white rounded-2xl shadow-xl cursor-pointer hover:bg-primary-700 hover:scale-110 active:scale-95 transition-all outline-none border-4 border-white dark:border-[#1a1b1e]">
                                         <Camera className="w-5 h-5" />
                                         <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
                                     </label>
                                 </div>
                                 <div className="text-center">
-                                    <h4 className="font-black text-gray-900 uppercase tracking-tight">{formData.fullName || 'No Name Set'}</h4>
+                                    <h4 className="font-black text-gray-900 dark:text-white uppercase tracking-tight">{formData.fullName || 'No Name Set'}</h4>
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">{formData.role || 'Staff Member'}</p>
                                 </div>
                             </div>
@@ -240,7 +228,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                         type="text"
                                         value={formData.fullName}
                                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                        className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-900"
+                                        className="w-full px-6 py-4 bg-gray-50 dark:bg-black/20 border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-black/40 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                                         placeholder="Enter your name"
                                     />
                                 </div>
@@ -250,7 +238,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                         type="email"
                                         value={formData.email}
                                         readOnly
-                                        className="w-full px-6 py-4 bg-gray-100 border-2 border-transparent rounded-2xl outline-none font-bold text-gray-500 cursor-not-allowed"
+                                        className="w-full px-6 py-4 bg-gray-100 dark:bg-white/5 border-2 border-transparent rounded-2xl outline-none font-bold text-gray-500 cursor-not-allowed"
                                     />
                                 </div>
                             </div>
@@ -258,8 +246,8 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                     )}
 
                     {openSection === 'security' && (
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Security & Password</h3>
+                        <div className="bg-white dark:bg-white/5 rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/10 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Security & Password</h3>
                             <div className="grid grid-cols-1 gap-6">
                                 <div>
                                     <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">New Password</label>
@@ -267,7 +255,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                         type="password"
                                         value={formData.newPassword}
                                         onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                                        className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-900"
+                                        className="w-full px-6 py-4 bg-gray-50 dark:bg-black/20 border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-black/40 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                                         placeholder="••••••••"
                                     />
                                 </div>
@@ -277,7 +265,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                         type="password"
                                         value={formData.confirmPassword}
                                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                        className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-900"
+                                        className="w-full px-6 py-4 bg-gray-50 dark:bg-black/20 border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-black/40 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                                         placeholder="••••••••"
                                     />
                                 </div>
@@ -286,12 +274,12 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                     )}
 
                     {openSection === 'appearance' && (
-                        <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-right-4 duration-500">
+                        <div className="bg-white dark:bg-white/5 rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/10 animate-in fade-in slide-in-from-right-4 duration-500">
                             <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Appearance</h3>
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between p-6 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
                                     <div className="flex items-center gap-4">
-                                        <div className={`p-3 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors ${isDark ? 'bg-gray-800 text-purple-400' : 'bg-white text-amber-500'}`}>
+                                        <div className={`p-3 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors ${isDark ? 'bg-gray-800 text-primary-400' : 'bg-white text-amber-500'}`}>
                                             {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                                         </div>
                                         <div className="text-left">
@@ -302,7 +290,7 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                                     <button
                                         type="button"
                                         onClick={toggleTheme}
-                                        className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 ${isDark ? 'bg-purple-600' : 'bg-gray-200'}`}
+                                        className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 ${isDark ? 'bg-primary-600' : 'bg-gray-200'}`}
                                     >
                                         <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-[26px]' : 'translate-x-0'}`} />
                                     </button>
@@ -312,33 +300,13 @@ export default function StaffSettings({ currentUser }: StaffSettingsProps) {
                     )}
 
                     {openSection === 'notifications' && (
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Notification Settings</h3>
+                        <div className="bg-white dark:bg-white/5 rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/10 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-8">Notification Settings</h3>
                             <NotificationManager orgId={currentUser?.organization_id} />
                         </div>
                     )}
 
-                    {openSection === 'organization' && currentOrg && (
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Workplace</h3>
-                            <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                {currentOrg.logo_url && (
-                                    <Image
-                                        src={currentOrg.logo_url}
-                                        alt="Company Logo"
-                                        width={80}
-                                        height={80}
-                                        className="w-20 h-20 object-contain rounded-2xl bg-white p-2 shadow-sm"
-                                        unoptimized
-                                    />
-                                )}
-                                <div>
-                                    <h4 className="text-lg font-black text-gray-900 uppercase tracking-tight">{currentOrg.name}</h4>
-                                    <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">{currentOrg.address || 'Global HQ'}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
 
                     {/* Global Save Button */}
                     <div className="pt-4">

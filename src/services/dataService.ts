@@ -63,6 +63,35 @@ export const getUserProfile = async () => {
     return { user, profile };
 };
 
+export const updateUserProfile = async (userId: string, orgId: string, updates: { fullName?: string; avatarUrl?: string }) => {
+    const profilePayload: any = {};
+    if (updates.fullName) profilePayload.full_name = updates.fullName;
+    if (updates.avatarUrl) profilePayload.avatar_url = updates.avatarUrl;
+
+    // 1. Update Profile
+    const { error: profileError } = await supabase
+        .from('profiles')
+        .update(profilePayload)
+        .eq('id', userId);
+
+    if (profileError) throw profileError;
+
+    // 2. Update Staff (if linked)
+    const staffPayload: any = {};
+    if (updates.fullName) staffPayload.name = updates.fullName;
+    if (updates.avatarUrl) staffPayload.avatar_url = updates.avatarUrl;
+
+    const { error: staffError } = await supabase
+        .from('staff')
+        .update(staffPayload)
+        .eq('user_id', userId)
+        .eq('org_id', orgId);
+
+    if (staffError) {
+        console.warn('[updateUserProfile] Staff update failed (might not be a staff member):', staffError.message);
+    }
+};
+
 // --- ORGANIZATIONS ---
 
 export const getOrganizationBySlug = async (slug: string) => {
@@ -92,7 +121,8 @@ export const getOrganizationById = async (id: string) => {
             terms_url,
             policy_url,
             slot_interval,
-            business_hours
+            business_hours,
+            settings
         `)
         .eq('id', id)
         .single();
@@ -117,7 +147,8 @@ export const getServices = async (orgId: string): Promise<Service[]> => {
     return data.map((item: any) => ({
         ...item,
         durationMinutes: item.duration_minutes,
-        imageUrl: item.image_url
+        imageUrl: item.image_url,
+        intakeQuestions: item.intake_questions
     }));
 };
 
@@ -131,6 +162,7 @@ export const createService = async (service: Omit<Service, 'id'>, orgId: string)
                 price: service.price,
                 duration_minutes: service.durationMinutes,
                 image_url: service.imageUrl,
+                intake_questions: service.intakeQuestions || [],
                 org_id: orgId
             }
         ])
@@ -141,7 +173,8 @@ export const createService = async (service: Omit<Service, 'id'>, orgId: string)
     return {
         ...data,
         durationMinutes: data.duration_minutes,
-        imageUrl: data.image_url
+        imageUrl: data.image_url,
+        intakeQuestions: data.intake_questions
     };
 };
 
@@ -152,6 +185,7 @@ export const updateService = async (id: string, updates: Partial<Omit<Service, '
     if (updates.price) payload.price = updates.price;
     if (updates.durationMinutes) payload.duration_minutes = updates.durationMinutes;
     if (updates.imageUrl) payload.image_url = updates.imageUrl;
+    if (updates.intakeQuestions) payload.intake_questions = updates.intakeQuestions;
 
     const { error } = await supabase
         .from('services')
@@ -268,13 +302,9 @@ export const getAppointments = async (orgId: string, startDate?: string, endDate
         .from('appointments')
         .select(`
             *,
-            duration_minutes,
-            buffer_minutes,
-            services (
-                name,
-                duration_minutes,
-                buffer_time_minutes
-            )
+            service_name,
+            service_price,
+            staff_name
         `)
         .eq('org_id', orgId);
 
@@ -296,8 +326,10 @@ export const getAppointments = async (orgId: string, startDate?: string, endDate
         return {
             id: item.id,
             serviceId: item.service_id,
-            serviceName: service?.name || 'Unknown Service',
+            serviceName: item.service_name || service?.name || 'Unknown Service',
             staffId: item.staff_id,
+            staffName: item.staff_name || 'Staff',
+            price: item.service_price || service?.price || 0,
             clientId: '',
             clientName: item.client_name || 'Unknown',
             clientEmail: item.client_email || '',
@@ -324,10 +356,13 @@ export const getAppointmentsByEmail = async (email: string): Promise<Appointment
 };
 
 export const createAppointment = async (appointment: Partial<Appointment>, orgId: string) => {
-    const { data, error } = await supabase.rpc('create_appointment_v2', {
+    // NEW: Generate a unique ID for this request if not provided
+    const idempotencyKey = appointment.idempotencyKey || crypto.randomUUID();
+
+    const { data, error } = await supabase.rpc('create_appointment_v3', {
         p_org_id: orgId,
         p_service_id: appointment.serviceId,
-        p_staff_id: appointment.staffId,
+        p_staff_id: appointment.staffId === 'any' ? null : appointment.staffId,
         p_client_name: appointment.clientName,
         p_client_email: appointment.clientEmail,
         p_client_phone: appointment.clientPhone || null,
@@ -335,12 +370,12 @@ export const createAppointment = async (appointment: Partial<Appointment>, orgId
         p_time_slot: appointment.timeSlot,
         p_notes: appointment.notes,
         p_duration_minutes: appointment.durationMinutes,
-        p_buffer_minutes: appointment.bufferMinutes
+        p_buffer_minutes: appointment.bufferMinutes,
+        p_idempotency_key: idempotencyKey
     });
 
     if (error) throw error;
-
-    return { id: data };
+    return data; // Return full JSON object { appointment_id, staff_id, staff_name }
 };
 
 export const updateAppointment = async (id: string, updates: Partial<Appointment>) => {
@@ -351,6 +386,9 @@ export const updateAppointment = async (id: string, updates: Partial<Appointment
     if (updates.status) payload.status = updates.status;
     if (updates.durationMinutes) payload.duration_minutes = updates.durationMinutes;
     if (updates.notes !== undefined) payload.notes = updates.notes;
+    if (updates.clientEmail) payload.client_email = updates.clientEmail;
+    if (updates.clientPhone !== undefined) payload.client_phone = updates.clientPhone;
+    if (updates.clientName) payload.client_name = updates.clientName;
 
     const { error } = await supabase
         .from('appointments')
@@ -456,17 +494,23 @@ export const upsertAvailability = async (schedule: any[], staffId: string, orgId
 
 // --- TIME SLOTS LOGIC ---
 
-export const getTimeSlots = async (staffId: string, date: Date, duration: number, orgId: string): Promise<TimeSlot[]> => {
+export const getTimeSlots = async (staffId: string, date: Date, duration: number, orgId: string, bufferMinutes: number = 0): Promise<TimeSlot[]> => {
     const dateStr = format(date, 'yyyy-MM-dd');
     const dayOfWeek = date.getDay();
 
     const { data: org } = await supabase
         .from('organizations')
-        .select('slot_interval, business_hours')
+        .select('slot_interval, business_hours, settings')
         .eq('id', orgId)
         .single();
 
     const interval = org?.slot_interval || 30;
+
+    // Check for Holidays/Closures
+    const holidays = org?.settings?.scheduling?.holidays || [];
+    if (holidays.includes(dateStr)) {
+        return [];
+    }
 
     const { data: availability } = await supabase
         .from('availability')
@@ -493,7 +537,7 @@ export const getTimeSlots = async (staffId: string, date: Date, duration: number
         const timeStr = format(current, 'HH:mm');
 
         const slotStart = new Date(`${dateStr}T${timeStr}`);
-        const slotEnd = new Date(slotStart.getTime() + duration * 60000);
+        const slotEnd = new Date(slotStart.getTime() + (duration + bufferMinutes) * 60000);
         const overflowsBusinessHours = slotEnd > end;
 
         const isBusy = (appointments || []).some(apt => {
@@ -504,9 +548,19 @@ export const getTimeSlots = async (staffId: string, date: Date, duration: number
             return (slotStart < aptEnd && slotEnd > aptStart);
         });
 
+        // Min Notice Check
+        const minNoticeValue = org?.settings?.scheduling?.min_notice_value ?? 4;
+        const minNoticeUnit = org?.settings?.scheduling?.min_notice_unit || 'hours';
+        let minNoticeMinutes = minNoticeValue;
+        if (minNoticeUnit === 'hours') minNoticeMinutes = minNoticeValue * 60;
+        if (minNoticeUnit === 'days') minNoticeMinutes = minNoticeValue * 1440;
+        const now = new Date();
+        const noticeThreshold = new Date(now.getTime() + minNoticeMinutes * 60000);
+        const satisfiesNotice = slotStart >= noticeThreshold;
+
         slots.push({
             time: timeStr,
-            available: !isBusy && !overflowsBusinessHours
+            available: !isBusy && !overflowsBusinessHours && satisfiesNotice
         });
 
         current = new Date(current.getTime() + interval * 60000);

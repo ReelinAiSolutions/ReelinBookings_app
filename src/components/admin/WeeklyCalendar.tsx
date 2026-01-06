@@ -4,6 +4,7 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MoreHorizon
 import { Appointment, Service, Staff, Organization, AppointmentStatus } from '@/types';
 import { addDays, format, startOfWeek, isSameDay, getDay, getDaysInMonth, startOfMonth, startOfYear, addMonths, addYears, getYear, setYear, setMonth, subMonths, subYears, eachMonthOfInterval, endOfYear, isBefore, isAfter } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 // -- EMPTY STATE COMPONENT --
 const EmptyState = ({ onAction, mode = 'day' }: { onAction: () => void, mode?: 'day' | 'team' }) => (
@@ -71,6 +72,7 @@ interface WeeklyCalendarProps {
     colorMode?: 'staff' | 'service';
     showStaffFilter?: boolean;
     currentStaffId?: string;
+    holidays?: string[];
 }
 
 interface DragState {
@@ -83,6 +85,7 @@ interface DragState {
     currentStaffId: string;
     currentTimeSlot: string; // Dynamic Time HH:mm
     deltaX: number;
+    deltaY: number;
     hasConflict: boolean;
 }
 
@@ -97,7 +100,8 @@ export default function WeeklyCalendar({
     onAppointmentUpdate,
     colorMode,
     showStaffFilter = true,
-    currentStaffId
+    currentStaffId,
+    holidays = []
 }: WeeklyCalendarProps) {
     // -- BUSINESS HOURS CALCULATION --
     const { minHour, maxHour, calendarHours } = React.useMemo(() => {
@@ -479,6 +483,7 @@ export default function WeeklyCalendar({
             currentStaffId: apt.staffId,
             currentTimeSlot: apt.timeSlot,
             deltaX: 0,
+            deltaY: 0,
             hasConflict: false
         });
     };
@@ -894,7 +899,14 @@ export default function WeeklyCalendar({
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                         const dayNum = i + 1;
                         const cellDate = new Date(year, date.getMonth(), dayNum);
-                        const eventCount = getAppointmentsForDate(cellDate).length;
+                        const dayAppointments = getAppointmentsForDate(cellDate);
+                        const eventCount = dayAppointments.filter(apt => {
+                            const isBlocked = apt.status === 'BLOCKED' ||
+                                (apt as any).isBlocked ||
+                                apt.clientName?.toLowerCase().startsWith('blocked') ||
+                                apt.clientId === 'blocked@internal.system';
+                            return !isBlocked;
+                        }).length;
                         const isSelectedDay = isSameDay(cellDate, selectedDate);
                         const isTodayDay = isSameDay(cellDate, new Date());
 
@@ -975,346 +987,180 @@ export default function WeeklyCalendar({
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
             >
-                {viewMode === 'team' && (
-                    <div className="flex w-full sticky top-0 z-[45] bg-white dark:bg-sidebar border-b border-gray-300 dark:border-sidebar-border shadow-sm">
-                        <div className="w-12 lg:w-20 shrink-0 sticky left-0 z-50 bg-white dark:bg-sidebar border-r border-gray-300 dark:border-sidebar-border"></div>
-                        {staff.map((member, idx) => {
-                            const colorScheme = getColor(member.id);
-                            return (
-                                <div key={member.id} className="flex-1 min-w-[120px] text-center border-l border-gray-300 dark:border-sidebar-border first:border-l-0 py-3 bg-white dark:bg-sidebar sticky top-0 z-40">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${colorScheme.dot}`}></div>
-                                        <div className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider truncate px-1">{member.name}</div>
+                <div className="min-w-full w-fit flex flex-col relative">
+                    {viewMode === 'team' && (
+                        <div className="sticky top-0 z-[45] bg-white dark:bg-sidebar border-b border-gray-300 dark:border-sidebar-border shadow-sm flex h-14">
+                            <div className="w-[48px] lg:w-[80px] shrink-0 sticky left-0 z-50 bg-white dark:bg-sidebar h-full"></div>
+                            <div className="flex-1 flex min-w-0 h-full">
+                                {staff.map((member) => {
+                                    const colorScheme = getColor(member.id);
+                                    return (
+                                        <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 dark:border-sidebar-border bg-white dark:bg-sidebar relative group h-full flex items-center`}>
+                                            <div className="flex items-center gap-3 px-4 w-full">
+                                                {member.avatar ? (
+                                                    <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-white/10 shrink-0">
+                                                        <Image src={member.avatar} alt={member.name} fill className="object-cover" unoptimized />
+                                                    </div>
+                                                ) : (
+                                                    <div className={`w-8 h-8 shrink-0 rounded-full ${colorScheme.dot} opacity-20 flex items-center justify-center text-[10px] font-black`}>
+                                                        {member.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                )}
+                                                <div className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider truncate">{member.name}</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Grid Row */}
+                    <div className="relative flex" style={{ height: `${hours.length * 120}px` }}>
+                        {/* Time labels rail */}
+                        <div className="w-[48px] lg:w-[80px] shrink-0 bg-white dark:bg-black z-[40] sticky left-0 h-full select-none">
+                            {hours.map((h, i) => (
+                                <React.Fragment key={h}>
+                                    <div className="absolute w-[48px] lg:w-[80px] text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
+                                        <span className="text-[10px] font-black text-gray-900 dark:text-gray-400 relative -top-2">
+                                            {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
+                                        </span>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+                                    {h < maxHour && (
+                                        <>
+                                            <div className="absolute w-[48px] lg:w-[80px] text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 30}px` }}>
+                                                <span className="text-[8px] font-medium text-gray-400 dark:text-gray-600 opacity-50 relative -top-1.5">:15</span>
+                                            </div>
+                                            <div className="absolute w-[48px] lg:w-[80px] text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 60}px` }}>
+                                                <span className="text-[8px] font-bold text-gray-400 dark:text-gray-600 opacity-80 relative -top-1.5">:30</span>
+                                            </div>
+                                            <div className="absolute w-[48px] lg:w-[80px] text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 90}px` }}>
+                                                <span className="text-[8px] font-medium text-gray-400 dark:text-gray-600 opacity-50 relative -top-1.5">:45</span>
+                                            </div>
+                                        </>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </div>
 
-                <div className="relative w-full flex" style={{ height: `${hours.length * 120}px` }}>
-                    <div className="w-12 lg:w-20 shrink-0 border-r border-gray-300 dark:border-sidebar-border bg-white dark:bg-black z-[45] sticky left-0 h-[calc(100%+96px)] select-none">
-                        {hours.map((h, i) => (
-                            <React.Fragment key={h}>
-                                <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120}px` }}>
-                                    <span className="text-[10px] font-black text-gray-900 dark:text-gray-400 relative -top-2">
-                                        {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? 'Noon' : `${h - 12} PM`}
-                                    </span>
-                                </div>
-                                {h < maxHour && (
-                                    <>
-                                        <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 30}px` }}>
-                                            <span className="text-[8px] font-medium text-gray-400 dark:text-gray-600 opacity-50 relative -top-1.5">:15</span>
-                                        </div>
-                                        <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 60}px` }}>
-                                            <span className="text-[8px] font-bold text-gray-400 dark:text-gray-600 opacity-80 relative -top-1.5">:30</span>
-                                        </div>
-                                        <div className="absolute w-12 lg:w-20 text-right pr-2 lg:pr-4" style={{ top: `${i * 120 + 90}px` }}>
-                                            <span className="text-[8px] font-medium text-gray-400 dark:text-gray-600 opacity-50 relative -top-1.5">:45</span>
-                                        </div>
-                                    </>
-                                )}
-                            </React.Fragment>
-                        ))}
-                    </div>
-
-                    <div className="flex-1 relative items-start min-w-0">
-                        {/* Current Time Indicator (Shared for both views) */}
-
+                        {/* Shared Current Time Indicator (Absolute positioned relative to parent) */}
+                        {currentTimeTopPx !== -1 && (
+                            <div className="absolute left-0 right-0 z-[38] pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
+                                <div className="w-full h-[1.5px] bg-primary-600 shadow-[0_0_8px_var(--primary-600)]"></div>
+                                <div className="absolute -left-1 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-primary-600 live-pulse border-2 border-white shadow-sm"></div>
+                            </div>
+                        )}
 
                         {viewMode === 'personal' ? (
-                            <div
-                                key={selectedDate.toISOString()}
-                                className={`w-full relative h-[calc(100%+96px)] ${slideDirection === 'left' ? 'animate-in slide-in-from-right duration-300' : slideDirection === 'right' ? 'animate-in slide-in-from-left duration-300' : ''}`}
-                            >
+                            <div className="flex-1 min-w-0 relative h-[calc(100%+96px)] border-l border-gray-300 dark:border-white/5">
                                 {isDayEmpty && <EmptyState onAction={() => onSelectSlot(selectedDate, `${minHour.toString().padStart(2, '0')}:00`)} />}
                                 {hours.map((h, i) => (
                                     <div key={h} className="absolute w-full border-t border-gray-300 dark:border-white/5 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h)}></div>
                                 ))}
 
-                                {/* Current Time Indicator (Personal View) */}
-                                {currentTimeTopPx !== -1 && (
-                                    <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                        <div className="w-full h-[1px] bg-primary-600! shadow-[0_0_8px_rgba(124,58,237,0.4)]"></div>
-                                        <div className="absolute -left-1 -translate-y-1/2 w-3 h-3 rounded-full bg-primary-600! live-pulse border-2 border-white shadow-sm"></div>
-                                    </div>
-                                )}
-
                                 {dailyLayoutData.map(({ apt, widthPct, leftPct }) => {
-                                    // Calculate Dynamic Props (Top, Time, Colors) in Render
                                     const service = services.find(s => s.id === apt.serviceId);
                                     const duration = apt.durationMinutes || service?.durationMinutes || 60;
-
                                     const [h, m] = apt.timeSlot.split(':').map(Number);
-                                    const totalMins = (h * 60) + m;
-                                    const topPx = (totalMins - (minHour * 60)) * 2;
-                                    const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
-                                    const isPast = aptDate < now;
-
+                                    const topPx = ((h * 60) + m - (minHour * 60)) * 2;
+                                    const isPast = new Date(`${apt.date}T${apt.timeSlot}`) < now;
                                     const isDragging = dragState?.id === apt.id;
                                     const displayTop = isDragging ? dragState.currentTop : topPx;
                                     const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot;
-                                    const isBlocked = apt.status === AppointmentStatus.BLOCKED ||
-                                        apt.clientName?.toLowerCase().startsWith('blocked') ||
-                                        apt.clientId === 'blocked@internal.system' ||
-                                        (apt as any).isBlocked;
-
-                                    const isHighlighted = highlightedAptId === apt.id;
-
-                                    // Dynamic Color Logic
+                                    const isBlocked = apt.clientName?.toLowerCase().startsWith('blocked') || apt.clientId === 'blocked@internal.system';
                                     const colorKey = colorMode === 'service' ? apt.serviceId : apt.staffId;
                                     const colorScheme = getColor(colorKey);
 
                                     return (
                                         <React.Fragment key={apt.id}>
-                                            {/* GHOST / PHANTOM CARD */}
-                                            {isDragging && (
-                                                <div
-                                                    className={`absolute rounded-[12px] ${isBlocked ? 'bg-slate-50 border-slate-200 text-slate-300 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} ${colorScheme.text} border-l-[4px]`} py-1 px-2 opacity-30 z-10 pointer-events-none`}
-                                                    style={{
-                                                        top: `${topPx}px`,
-                                                        height: `${Math.max(24, duration * 2)}px`,
-                                                        left: `calc(${leftPct}% + 1px)`,
-                                                        width: `calc(${widthPct}% - 2px)`
-                                                    }}
-                                                >
-                                                    <div className="text-[10px] font-bold opacity-50 uppercase tracking-tighter truncate">Original</div>
-                                                </div>
-                                            )}
-
                                             <div
                                                 onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
                                                 onPointerMove={handlePointerMove}
                                                 onPointerUp={handlePointerUp}
                                                 onClick={(e) => {
-                                                    // Prevent click if just dragged
-                                                    if (isDraggingRef.current) {
-                                                        e.stopPropagation();
-                                                        return;
-                                                    }
-                                                    if (!isDragging) {
-                                                        e.stopPropagation();
-                                                        onAppointmentClick(apt);
-                                                    }
+                                                    if (isDraggingRef.current) { e.stopPropagation(); return; }
+                                                    if (!isDragging) { e.stopPropagation(); onAppointmentClick(apt); }
                                                 }}
-                                                className={`absolute rounded-[12px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} ${colorScheme.text} border-l-[4px]`} py-1 px-2 overflow-hidden cursor-pointer z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 duration-200 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : `hover:ring-${colorScheme.text.split('-')[1]}-400`} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : `ring-4 ring-${colorScheme.text.split('-')[1]}-300 opacity-90`} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
+                                                className={`absolute rounded-[12px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} ${colorScheme.text} border-l-[4px]`} py-1 px-2 z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-primary-300 opacity-90 cursor-grabbing' : ''}`}
                                                 style={{
                                                     top: `${displayTop}px`,
                                                     height: `${Math.max(24, duration * 2)}px`,
                                                     left: `calc(${leftPct}% + 1px)`,
                                                     width: `calc(${widthPct}% - 2px)`,
-                                                    transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
                                                     transition: isDragging ? 'none' : 'all 0.2s ease-out'
                                                 }}
                                             >
-                                                {duration >= 25 ? (
-                                                    <div className="flex flex-col h-full gap-0">
-                                                        <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : 'opacity-70'}`}>
-                                                            {isBlocked ? 'Blocked Time' : (services.find(s => s.id === apt.serviceId)?.name || 'Service')}
-                                                        </div>
-                                                        <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : (isDragging && dragState.hasConflict ? 'text-red-900' : 'opacity-100')} truncate`}>
-                                                            {isDragging && dragState.hasConflict && <span className="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-red-500 text-white font-black animate-pulse">CONFLICT</span>}
-                                                            {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
-                                                        </div>
-                                                        <div className="flex items-center justify-between mt-auto pb-0.5">
-                                                            <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : 'opacity-90'} truncate`}>
-                                                                {isBlocked ? (staff.find(s => s.id === apt.staffId)?.name || 'All Staff') : (staff.find(s => s.id === apt.staffId)?.name || 'Staff')}
-                                                            </div>
-                                                            <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : 'opacity-100'}`}>
-                                                                {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
-                                                            </div>
-                                                        </div>
+                                                <div className="flex flex-col h-full overflow-hidden">
+                                                    <div className="text-[10px] font-black opacity-70 uppercase tracking-tighter truncate">
+                                                        {isBlocked ? 'Blocked' : (service?.name || 'Service')}
                                                     </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2 overflow-hidden h-full">
-                                                        {duration >= 15 && (
-                                                            <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : 'text-primary-800'} truncate shrink-0`}>
-                                                                {isBlocked ? 'BLOCKED' : apt.clientName}
-                                                            </div>
-                                                        )}
-                                                        <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : 'text-primary-400/90'} truncate`}>
-                                                            {formatTo12Hour(displayTime)} ({duration}m)
-                                                        </div>
+                                                    <div className="text-[12px] font-black leading-tight truncate">
+                                                        {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'Reason') : apt.clientName}
                                                     </div>
-                                                )}
+                                                    <div className="mt-auto flex items-center justify-between text-[10px] font-bold">
+                                                        <span>{formatTo12Hour(displayTime)}</span>
+                                                        <span className="opacity-50">{duration}m</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            {/* BUFFFER VISUALIZATION */}
-                                            {(apt.bufferMinutes || 0) > 0 && (
-                                                <div
-                                                    className="absolute z-20 opacity-30 pointer-events-none transition-all"
-                                                    style={{
-                                                        top: `${displayTop + (duration * 2)}px`,
-                                                        height: `${(apt.bufferMinutes || 0) * 2}px`,
-                                                        left: `calc(${leftPct}% + 4px)`,
-                                                        width: `calc(${widthPct}% - 8px)`,
-                                                        transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
-                                                        background: isDragging && dragState.hasConflict
-                                                            ? 'repeating-linear-gradient(45deg, #ef4444, #ef4444 4px, transparent 4px, transparent 8px)'
-                                                            : 'repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 4px, transparent 4px, transparent 8px)',
-                                                        borderRadius: '0 0 4px 4px',
-                                                        transition: isDragging ? 'none' : 'all 0.2s ease-out'
-                                                    }}
-                                                />
-                                            )}
                                         </React.Fragment>
                                     );
-
                                 })}
                             </div>
                         ) : (
-                            <div className="flex w-full h-full relative">
-                                {/* Current Time Indicator (Team View) */}
-                                {currentTimeTopPx !== -1 && (
-                                    <div className="absolute w-full z-30 pointer-events-none" style={{ top: `${currentTimeTopPx}px` }}>
-                                        <div className="w-full h-[1.5px] bg-primary-600 shadow-[0_0_8px_rgba(168,85,247,0.4)]"></div>
-                                        <div className="absolute -left-1 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-primary-600 live-pulse border-2 border-white shadow-sm"></div>
-                                    </div>
-                                )}
-                                {staff.map((member, idx) => {
-                                    const colorScheme = getColor(member.id);
+                            <div className="flex-1 flex min-w-0">
+                                {staff.map((member) => {
                                     const memberAppointments = dayAppointments.filter(apt => apt.staffId === member.id);
-
                                     return (
-                                        <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 dark:border-sidebar-border relative first:border-l-0 group h-[calc(100%+96px)] transition-all duration-300`}>
+                                        <div key={member.id} className={`flex-1 ${staff.length > 4 ? 'min-w-[120px]' : 'min-w-[160px]'} border-l border-gray-300 dark:border-sidebar-border relative h-full transition-shadow`}>
                                             {hours.map((h, i) => (
                                                 <div key={h} className="absolute w-full border-t border-gray-300 dark:border-white/5 h-px z-0" style={{ top: `${i * 120}px` }} onClick={() => handleGridClick(h, member.id)}></div>
                                             ))}
 
                                             {memberAppointments.map(apt => {
-                                                const [h, m] = apt.timeSlot.split(':').map(Number);
                                                 const service = services.find(s => s.id === apt.serviceId);
                                                 const duration = apt.durationMinutes || service?.durationMinutes || 60;
+                                                const [h, m] = apt.timeSlot.split(':').map(Number);
                                                 const topPx = ((h * 60) + m - (minHour * 60)) * 2;
-                                                const aptDate = new Date(`${apt.date}T${apt.timeSlot}`);
-                                                const isPast = aptDate < now;
-
+                                                const isPast = new Date(`${apt.date}T${apt.timeSlot}`) < now;
                                                 const isDragging = dragState?.id === apt.id;
                                                 const displayTop = isDragging ? dragState.currentTop : topPx;
-                                                const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot; // Use displayTime
-
+                                                const displayTime = isDragging ? dragState.currentTimeSlot : apt.timeSlot;
                                                 const isBlocked = apt.clientName?.toLowerCase().startsWith('blocked') || apt.clientId === 'blocked@internal.system';
-
-                                                const isHighlighted = highlightedAptId === apt.id;
-
-                                                // Dynamic Color Logic (Override column color if needed)
-                                                const cardColorKey = colorMode === 'service' ? apt.serviceId : apt.staffId;
-                                                const cardColorScheme = getColor(cardColorKey);
+                                                const colorKey = colorMode === 'service' ? apt.serviceId : apt.staffId;
+                                                const colorScheme = getColor(colorKey);
 
                                                 return (
                                                     <React.Fragment key={apt.id}>
-                                                        {/* PHANTOM / GHOST CARD (Original Position) */}
-                                                        {isDragging && (
-                                                            <div
-                                                                className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-50 border-slate-200 text-slate-300 border-l-[3px]' : `${cardColorScheme.bg} ${cardColorScheme.border} border-l-[4px]`} py-1 px-2 opacity-30 z-10 pointer-events-none`}
-                                                                style={{
-                                                                    top: `${topPx}px`,
-                                                                    height: `${Math.max(24, duration * 2)}px`
-                                                                }}
-                                                            >
-                                                                <div className="text-[10px] font-bold opacity-50 uppercase tracking-tighter truncate">Original</div>
-                                                            </div>
-                                                        )}
-
                                                         <div
                                                             onPointerDown={(e) => handlePointerDown(e, apt, topPx)}
                                                             onPointerMove={handlePointerMove}
                                                             onPointerUp={handlePointerUp}
                                                             onClick={(e) => {
-                                                                // Prevent click if just dragged
-                                                                if (isDraggingRef.current) {
-                                                                    e.stopPropagation();
-                                                                    return;
-                                                                }
-                                                                if (!isDragging) {
-                                                                    e.stopPropagation();
-                                                                    onAppointmentClick(apt);
-                                                                }
+                                                                if (isDraggingRef.current) { e.stopPropagation(); return; }
+                                                                if (!isDragging) { e.stopPropagation(); onAppointmentClick(apt); }
                                                             }}
-                                                            className={`absolute left-0.5 right-0.5 rounded-[6px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${cardColorScheme.bg} ${cardColorScheme.border} border-l-[4px]`} py-1 px-2 overflow-hidden z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl hover:ring-2 ${isBlocked ? 'hover:ring-slate-400' : `hover:ring-${cardColorScheme.text.split('-')[1]}-400`} ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? `z-[100] scale-105 shadow-2xl ${dragState.hasConflict ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : `ring-4 ring-${cardColorScheme.text.split('-')[1]}-400 opacity-90`} cursor-grabbing` : ''} ${isHighlighted ? 'pulse-highlight' : ''}`}
+                                                            className={`absolute left-0.5 right-0.5 rounded-[8px] ${isBlocked ? 'bg-slate-100 border-slate-400 text-slate-900 border-l-[3px]' : `${colorScheme.bg} ${colorScheme.border} ${colorScheme.text} border-l-[4px]`} py-1 px-2 z-[35] shadow-md ring-1 ring-white/70 animate-in zoom-in-95 appointment-card transition-all flex flex-col justify-start hover:z-[60] hover:scale-[1.05] hover:shadow-xl ${isPast ? 'opacity-60 grayscale-[0.5]' : ''} ${isDragging ? 'z-[100] scale-105 shadow-2xl ring-4 ring-primary-300 opacity-90 cursor-grabbing' : ''}`}
                                                             style={{
                                                                 top: `${displayTop}px`,
                                                                 height: `${Math.max(24, duration * 2)}px`,
-                                                                transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
                                                                 transition: isDragging ? 'none' : 'all 0.2s ease-out'
                                                             }}
                                                         >
-                                                            {duration >= 25 ? (
-                                                                <div className="flex flex-col h-full gap-0">
-                                                                    <div className={`text-[10px] font-[900] uppercase tracking-wider mb-0.5 ${isBlocked ? 'text-slate-500' : cardColorScheme.text} opacity-75`}>
-                                                                        {isBlocked ? 'Blocked Time' : (service?.name || 'Service')}
-                                                                    </div>
-                                                                    <div className={`text-sm font-[800] leading-tight ${isBlocked ? 'text-slate-800' : cardColorScheme.text} truncate`}>
-                                                                        {isDragging && dragState.hasConflict && <span className="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-red-500 text-white font-black animate-pulse">CONFLICT</span>}
-                                                                        {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'No Reason') : apt.clientName}
-                                                                    </div>
-                                                                    <div className="flex items-center justify-between mt-auto pb-0.5">
-                                                                        <div className={`text-[10px] font-bold ${isBlocked ? 'text-slate-500' : cardColorScheme.text} opacity-90 truncate`}>
-                                                                            {isBlocked ? (member.name || 'All Staff') : member.name}
-                                                                        </div>
-                                                                        <div className={`text-[10px] font-black shrink-0 ml-2 ${isBlocked ? 'text-slate-700' : cardColorScheme.text} opacity-80`}>
-                                                                            {formatTo12Hour(displayTime)} <span className="opacity-50 font-medium">({duration}m)</span>
-                                                                        </div>
-                                                                    </div>
+                                                            <div className="flex flex-col h-full overflow-hidden">
+                                                                <div className="text-[9px] font-black opacity-70 uppercase tracking-tighter truncate">
+                                                                    {isBlocked ? 'Blocked' : (apt.serviceName || service?.name || 'Service')}
                                                                 </div>
-                                                            ) : (
-                                                                <div className="flex items-center gap-2 overflow-hidden h-full">
-                                                                    {duration >= 15 && (
-                                                                        <div className={`text-[10px] font-black leading-tight ${isBlocked ? 'text-slate-800' : cardColorScheme.text} truncate shrink-0`}>
-                                                                            {isBlocked ? 'BLOCKED' : apt.clientName}
-                                                                        </div>
-                                                                    )}
-                                                                    <div className={`text-[9px] font-bold leading-tight ${isBlocked ? 'text-slate-500' : cardColorScheme.text} opacity-75 truncate`}>
-                                                                        {formatTo12Hour(displayTime)} ({duration}m)
+                                                                <div className="text-[11px] font-black leading-tight truncate">
+                                                                    {isBlocked ? (apt.clientName?.replace(/^Blocked - /, '') || 'Reason') : apt.clientName}
+                                                                </div>
+                                                                {duration >= 30 && (
+                                                                    <div className="mt-auto text-[9px] font-bold flex justify-between">
+                                                                        <span>{formatTo12Hour(displayTime)}</span>
                                                                     </div>
-                                                                </div>
-                                                            )}
-
-                                                            {/* RESIZE HANDLE */}
-                                                            {!isPast && (
-                                                                <div
-                                                                    className="absolute bottom-0 left-0 w-full h-3 cursor-ns-resize z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                                                                    onPointerDown={(e) => {
-                                                                        e.stopPropagation();
-                                                                        e.preventDefault();
-                                                                        const card = e.currentTarget.parentElement as HTMLDivElement;
-                                                                        card.setPointerCapture(e.pointerId);
-
-                                                                        const initialHeight = duration * 2;
-
-                                                                        setResizeState({
-                                                                            id: apt.id,
-                                                                            initialHeight,
-                                                                            startY: e.clientY,
-                                                                            currentHeight: initialHeight
-                                                                        });
-                                                                    }}
-                                                                    onPointerUp={(e) => {
-                                                                        e.stopPropagation();
-                                                                        const card = e.currentTarget.parentElement as HTMLDivElement;
-                                                                        try { card.releasePointerCapture(e.pointerId); } catch (err) { }
-                                                                        handleResizeEnd(e);
-                                                                    }}
-                                                                >
-                                                                    <div className={`w-8 h-1 rounded-full ${colorScheme.bg.replace('bg-', 'bg-').replace('50', '400/50')}`}></div>
-                                                                </div>
-                                                            )}
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        {/* BUFFER VISUALIZATION */}
-                                                        {(apt.bufferMinutes || 0) > 0 && (
-                                                            <div
-                                                                className="absolute left-1 right-1 opacity-30 z-20 pointer-events-none transition-all"
-                                                                style={{
-                                                                    top: `${displayTop + (duration * 2)}px`,
-                                                                    height: `${(apt.bufferMinutes || 0) * 2}px`,
-                                                                    transform: isDragging ? `translateX(${dragState.deltaX}px)` : 'none',
-                                                                    background: isDragging && dragState.hasConflict
-                                                                        ? 'repeating-linear-gradient(45deg, #ef4444, #ef4444 4px, transparent 4px, transparent 8px)'
-                                                                        : 'repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 4px, transparent 4px, transparent 8px)',
-                                                                    borderRadius: '0 0 4px 4px',
-                                                                    transition: isDragging ? 'none' : 'all 0.2s ease-out'
-                                                                }}
-                                                            />
-                                                        )}
                                                     </React.Fragment>
                                                 );
                                             })}
@@ -1419,10 +1265,19 @@ export default function WeeklyCalendar({
                                                 {staff.map(s => (
                                                     <div
                                                         key={s.id}
-                                                        className={`px-4 py-3 text-sm font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors ${filterStaffId === s.id ? 'text-primary-600 bg-primary-50/50 dark:bg-primary-900/10' : 'text-gray-700 dark:text-gray-200'}`}
+                                                        className={`px-4 py-2.5 flex items-center gap-3 text-sm font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors ${filterStaffId === s.id ? 'text-primary-600 bg-primary-50/50 dark:bg-primary-900/10' : 'text-gray-700 dark:text-gray-200'}`}
                                                         onClick={() => { setFilterStaffId(s.id); setIsFilterOpen(false); }}
                                                     >
-                                                        {s.name}
+                                                        {s.avatar ? (
+                                                            <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-200 dark:border-white/10 shrink-0">
+                                                                <Image src={s.avatar} alt={s.name} width={24} height={24} className="object-cover" unoptimized />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] shrink-0">
+                                                                <User className="w-3.5 h-3.5 text-gray-400" />
+                                                            </div>
+                                                        )}
+                                                        <span>{s.name}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1560,15 +1415,26 @@ export default function WeeklyCalendar({
                                             className="w-10 flex flex-col items-center justify-center cursor-pointer"
                                             onClick={() => setSelectedDate(date)}
                                         >
-                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
-                                                ? 'bg-primary-600 text-white shadow-sm'
-                                                : isToday
-                                                    ? 'text-primary-600 dark:text-primary-400'
-                                                    : 'text-gray-900 dark:text-gray-200 bg-transparent'
-                                                }`}>
-                                                {format(date, 'd')}
-                                            </div>
-                                            {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-primary-600 dark:bg-primary-400 mt-0.5"></div>}
+                                            {holidays.includes(format(date, 'yyyy-MM-dd')) ? (
+                                                <div className="flex flex-col items-center gap-1.5 animate-in slide-in-from-top-2 duration-700">
+                                                    <div className="w-10 h-10 bg-red-50 dark:bg-black rounded-2xl flex items-center justify-center border-2 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                                                        <CalendarX className="w-5 h-5 text-red-600 dark:text-red-500" />
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-red-600 dark:text-red-500 uppercase tracking-[0.2em]">Closed</span>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold transition-all ${isSelected
+                                                        ? 'bg-primary-600 text-white shadow-sm'
+                                                        : isToday
+                                                            ? 'text-primary-600 dark:text-primary-400'
+                                                            : 'text-gray-900 dark:text-gray-200 bg-transparent'
+                                                        }`}>
+                                                        {format(date, 'd')}
+                                                    </div>
+                                                    {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-primary-600 dark:bg-primary-400 mt-0.5"></div>}
+                                                </>
+                                            )}
                                         </div>
                                     );
                                 })}
