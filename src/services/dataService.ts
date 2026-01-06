@@ -583,10 +583,13 @@ export const getTimeSlots = async (staffId: string, date: Date, duration: number
         const noticeThreshold = new Date(now.getTime() + minNoticeMinutes * 60000);
         const satisfiesNotice = slotStart >= noticeThreshold;
 
-        slots.push({
-            time: timeStr,
-            available: !isBusy && !overflowsBusinessHours && satisfiesNotice
-        });
+        // Strict Filtering: If it violates business rules (e.g. min notice) or is busy, DO NOT SHOW IT.
+        if (!isBusy && !overflowsBusinessHours && satisfiesNotice) {
+            slots.push({
+                time: timeStr,
+                available: true
+            });
+        }
 
         current = new Date(current.getTime() + interval * 60000);
     }
