@@ -106,11 +106,11 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
     };
 
     return (
-        <div className="group bg-white dark:bg-card rounded-[24px] shadow-sm border border-gray-100 dark:border-white/5 p-5 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-primary-500/30 transition-all duration-300 relative overflow-visible">
+        <div className="group bg-white dark:bg-card rounded-[24px] shadow-sm border border-gray-100 dark:border-white/5 p-3 sm:p-5 flex flex-col h-full hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-primary-500/30 transition-all duration-300 relative overflow-visible">
 
             {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-                <div className={`w-16 h-16 rounded-[1.2rem] bg-gradient-to-br from-primary-600 to-primary-500 text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-primary-500/20 overflow-hidden`}>
+            <div className="flex justify-between items-start mb-2 sm:mb-4">
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-[1.2rem] bg-gradient-to-br from-primary-600 to-primary-500 text-white flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-500/20 overflow-hidden`}>
                     {hasAvatar ? (
                         <Image src={staff.avatar!} alt={staff.name} width={64} height={64} className="w-full h-full object-cover" unoptimized />
                     ) : (
@@ -121,8 +121,8 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
             </div>
 
             {/* Info & Status */}
-            <div className="mb-4">
-                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1 leading-snug">{staff.name}</h3>
+            <div className="mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mb-0.5 sm:mb-1 leading-snug">{staff.name}</h3>
                 {/* Dynamic Status */}
                 {getStatusIndicator()}
 
@@ -135,8 +135,8 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
             </div>
 
             {/* Services */}
-            <div className="mb-4 flex-1">
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Services Offered</p>
+            <div className="mb-3 sm:mb-4 flex-1">
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 sm:mb-3">Services Offered</p>
                 <div className="flex flex-wrap gap-2">
                     {specialtyServices.length > 0 ? (
                         <>
@@ -158,11 +158,11 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
             </div>
 
             {/* Actions */}
-            <div className="mt-auto flex flex-col gap-2">
+            <div className="mt-auto flex flex-col gap-1.5 sm:gap-2">
                 {onSchedule && (
                     <button
                         onClick={() => onSchedule(staff)}
-                        className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-primary-500/20 active:scale-95 transition-all text-center"
+                        className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2.5 sm:py-4 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-lg shadow-primary-500/20 active:scale-95 transition-all text-center"
                     >
                         View Schedule
                     </button>
@@ -171,10 +171,10 @@ export default function StaffCard({ staff, services, onEdit, onSchedule, onDelet
                 {onEdit && (
                     <button
                         onClick={() => onEdit(staff)}
-                        className="w-full h-[52px] px-6 rounded-2xl border border-gray-100 dark:border-white/10 text-gray-900 dark:text-gray-100 font-bold hover:bg-gray-50 dark:hover:bg-white/5 flex items-center justify-center gap-3 active:scale-95 transition-all shadow-sm"
+                        className="w-full h-10 sm:h-[52px] px-6 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-white/10 text-gray-900 dark:text-gray-100 font-bold hover:bg-gray-50 dark:hover:bg-white/5 flex items-center justify-center gap-2 sm:gap-3 active:scale-95 transition-all shadow-sm"
                     >
-                        <Edit2 className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm">Edit</span>
+                        <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+                        <span className="text-xs sm:text-sm">Edit</span>
                     </button>
                 )}
 

@@ -158,7 +158,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
     // Determine Status Colors
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'NEW': return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800';
+            case 'NEW': return 'bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-800';
             case 'STEADY': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
             case 'INACTIVE': return 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800';
             default: return 'bg-gray-100 text-gray-700 border-gray-200';
@@ -172,10 +172,10 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                 {/* Title Row */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-none mb-1">
+                        <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight mb-2">
                             {isStaffView ? 'My Clients' : 'Client Intelligence'}
                         </h1>
-                        <p className="text-gray-500 font-medium text-sm flex items-center gap-1.5">
+                        <p className="text-gray-500 dark:text-gray-400 font-medium text-sm flex items-center gap-1.5">
                             <Users className="w-3.5 h-3.5" />
                             {clients.length} Registered Profiles
                         </p>
@@ -185,22 +185,20 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                 {/* Controls Row */}
                 <div className="flex items-center gap-3">
                     <div className="flex-1 relative group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search clients..."
-                            className="w-full pl-12 pr-6 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all outline-none shadow-sm dark:text-white"
-                            style={{ backgroundColor: '#ffffff' }}
+                            className="w-full pl-12 pr-6 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none shadow-sm dark:text-white"
                         />
                     </div>
                     <div className="relative">
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value as any)}
-                            className="appearance-none pl-4 pr-10 py-3.5 bg-white !bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none shadow-sm cursor-pointer"
-                            style={{ backgroundColor: '#ffffff' }}
+                            className="appearance-none pl-4 pr-10 py-3.5 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-700 dark:text-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none shadow-sm cursor-pointer"
                         >
                             <option value="ALL">All Statuses</option>
                             <option value="NEW">New</option>
@@ -219,12 +217,11 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                         <div
                             key={client.id}
                             onClick={() => setSelectedClient(client)}
-                            className="bg-white !bg-white dark:bg-card p-5 rounded-[24px] shadow-sm hover:shadow-xl hover:shadow-purple-500/5 dark:shadow-none border border-gray-100 dark:border-white/5 transition-all cursor-pointer active:scale-[0.99]"
-                            style={{ backgroundColor: '#ffffff' }}
+                            className="bg-white dark:bg-white/5 p-3 sm:p-5 rounded-[24px] shadow-sm hover:shadow-xl hover:shadow-primary-500/5 dark:shadow-none border border-gray-100 dark:border-white/10 transition-all cursor-pointer active:scale-[0.99]"
                         >
                             {/* Header: Avatar and Badge */}
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="w-16 h-16 rounded-[1.2rem] bg-gradient-to-br from-[#A855F7] to-[#d946ef] text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-purple-500/20">
+                            <div className="flex justify-between items-start mb-2 sm:mb-4">
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[1.2rem] bg-gradient-to-br from-primary-600 to-primary-500 text-white flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-500/20">
                                     {getInitials(client.name)}
                                 </div>
                                 <span className={`px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest border ${getStatusColor(client.status)}`}>
@@ -233,46 +230,46 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                             </div>
 
                             {/* Info: Name and Credentials */}
-                            <div className="mb-4">
-                                <h3 className="text-xl font-black text-gray-900 dark:text-white leading-tight mb-1">
+                            <div className="mb-3 sm:mb-4">
+                                <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white leading-tight mb-0.5 sm:mb-1">
                                     {client.name}
                                 </h3>
-                                <div className="text-xs font-medium text-gray-400 truncate max-w-[200px]">
+                                <div className="text-[10px] sm:text-xs font-medium text-gray-400 truncate max-w-[200px]">
                                     {client.email || (client.phone ? client.phone : 'No credentials')}
                                 </div>
                             </div>
                             {client.isDuplicate && (
-                                <span className="px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1 mb-4">
+                                <span className="px-2.5 py-1 rounded-[10px] text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/5 flex items-center gap-1 mb-4">
                                     <Copy className="w-3 h-3" />
                                     Duplicate
                                 </span>
                             )}
 
                             {/* Metrics Row */}
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div className="p-3 rounded-2xl border border-gray-100 dark:border-white/5 relative z-10" style={{ backgroundColor: '#F9FAFB' }}>
-                                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
-                                    <div className="text-base font-black text-gray-900 dark:text-gray-900">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
+                                <div className="p-2 sm:p-3 rounded-2xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/10 relative z-10">
+                                    <div className="text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1">Total Revenue</div>
+                                    <div className="text-sm sm:text-base font-black text-gray-900 dark:text-white">
                                         ${client.totalSpend.toLocaleString()}
                                     </div>
                                 </div>
-                                <div className="p-3 rounded-2xl border border-gray-100 dark:border-white/5 relative z-10" style={{ backgroundColor: '#F9FAFB' }}>
-                                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Session Count</div>
-                                    <div className="text-base font-black text-gray-900 dark:text-gray-900">
+                                <div className="p-2 sm:p-3 rounded-2xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/10 relative z-10">
+                                    <div className="text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1">Session Count</div>
+                                    <div className="text-sm sm:text-base font-black text-gray-900 dark:text-white">
                                         {client.visits} Visits
                                     </div>
                                 </div>
                             </div>
 
                             {/* View Profile Button */}
-                            <button className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm transition-colors shadow-lg shadow-purple-500/20 mb-4">
+                            <button className="w-full py-2 sm:py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-[10px] sm:text-sm transition-colors shadow-lg shadow-primary-500/20 mb-3 sm:mb-4">
                                 VIEW PROFILE
                             </button>
 
                             {/* Recency & Intelligence Footer */}
-                            <div className="flex items-center justify-between pt-2">
-                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400">
-                                    <Calendar className="w-4 h-4 text-gray-300" />
+                            <div className="flex items-center justify-between pt-1 sm:pt-2">
+                                <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400">
+                                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-300" />
                                     <span>Last Booked: {client.lastVisit !== '0' ? format(parseISO(client.lastVisit), 'MMM d, yyyy') : 'Never'}</span>
                                 </div>
 
@@ -282,7 +279,7 @@ export default function ClientManager({ appointments, services, isStaffView = fa
                                     </span>
                                 )}
                                 {client.status === 'NEW' && (
-                                    <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded-lg">
+                                    <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded-lg">
                                         1st Booking
                                     </span>
                                 )}
