@@ -11,8 +11,7 @@ import WeeklyCalendar from '@/components/admin/WeeklyCalendar';
 import RescheduleModal from '@/components/admin/RescheduleModal';
 import BlockModal from '@/components/admin/BlockModal';
 import CreateAppointmentModal from '@/components/admin/CreateAppointmentModal';
-import ProfileManager from '@/components/admin/ProfileManager';
-import SettingsManager from '@/components/admin/SettingsManager';
+import UnifiedSettings from '@/components/admin/UnifiedSettings';
 import AdminNav from '@/components/admin/AdminNav';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import BrandingInjector from '@/components/BrandingInjector';
@@ -64,7 +63,7 @@ const MOCK_STATS = [
 ];
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients'>('operations');
+    const [activeTab, setActiveTab] = useState<'operations' | 'analytics' | 'settings' | 'services' | 'team' | 'clients'>('operations');
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [services, setServices] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
@@ -116,7 +115,7 @@ export default function AdminDashboard() {
             if (!orgId) return;
 
             const now = new Date();
-            const startStr = format(new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
+            const startStr = format(new Date(now.getTime() - 1825 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
             const endStr = format(new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
 
             const [fetchedApts, fetchedServices, fetchedStaff, fetchedAvailability] = await Promise.all([
@@ -165,7 +164,7 @@ export default function AdminDashboard() {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const tabParam = params.get('tab');
-            if (tabParam && ['operations', 'analytics', 'settings', 'profile', 'invites', 'services', 'team', 'clients'].includes(tabParam)) {
+            if (tabParam && ['operations', 'analytics', 'settings', 'invites', 'services', 'team', 'clients'].includes(tabParam)) {
                 setActiveTab(tabParam as any);
             }
         }
@@ -215,7 +214,14 @@ export default function AdminDashboard() {
         newDate: string,
         newTime: string,
         newStaffId: string,
-        options: { notes?: string; durationMinutes?: number; bufferMinutes?: number }
+        options: {
+            notes?: string;
+            durationMinutes?: number;
+            bufferMinutes?: number;
+            clientName?: string;
+            clientEmail?: string;
+            clientPhone?: string;
+        }
     ) => {
         const originalApt = appointments.find(a => a.id === id);
         const oldStaffId = originalApt?.staffId;
@@ -224,7 +230,10 @@ export default function AdminDashboard() {
             date: newDate,
             timeSlot: newTime,
             staffId: newStaffId,
-            notes: options.notes
+            notes: options.notes,
+            clientName: options.clientName,
+            clientEmail: options.clientEmail,
+            clientPhone: options.clientPhone
         });
         await loadDashboardData();
         // Notify Staff
@@ -396,7 +405,7 @@ export default function AdminDashboard() {
 
     if (isUnauthorized) {
         return (
-            <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-white overflow-hidden relative">
+            <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-white overflow-hidden relative pb-[10vh]">
                 <div className="flex flex-col items-center gap-6 animate-pulse">
                     <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
                         <Lock className="w-8 h-8 text-primary-400" />
@@ -410,10 +419,13 @@ export default function AdminDashboard() {
         );
     }
 
-    // Dynamic Branding Style
-    const brandingStyle = currentOrg?.primary_color ? {
-        '--brand-primary': currentOrg.primary_color,
-    } as React.CSSProperties : {};
+    // Dynamic Branding Style - Prioritize personal admin color for dashboard
+    const displayColor = userProfile?.settings?.admin_color || currentOrg?.primary_color || '#a855f7';
+
+    const brandingStyle = {
+        '--primary-color': displayColor,
+        '--brand-primary': displayColor,
+    } as React.CSSProperties;
 
     return (
         <div
@@ -422,7 +434,7 @@ export default function AdminDashboard() {
         >
             <AmbientBackground />
             <div className="absolute inset-0 ambient-mesh pointer-events-none fixed z-0" />
-            <BrandingInjector primaryColor={currentOrg?.primary_color} />
+            <BrandingInjector primaryColor={displayColor} />
             {/* Desktop Sidebar (Fixed) */}
             <AdminSidebar
                 activeTab={activeTab}
@@ -448,6 +460,7 @@ export default function AdminDashboard() {
                                         staff={staff}
                                         services={services}
                                         businessHours={currentOrg?.business_hours}
+                                        holidays={currentOrg?.settings?.scheduling?.holidays}
                                         onSelectSlot={handleSelectSlot}
                                         onAppointmentClick={handleAppointmentClick}
                                         onAppointmentUpdate={handleAppointmentDrop}
@@ -507,18 +520,7 @@ export default function AdminDashboard() {
                                     appointments={appointments}
                                     services={services}
                                     staff={staff}
-                                />
-                            </div>
-                        )
-                    }
-
-                    {
-                        activeTab === 'profile' && currentUser && (
-                            <div className="animate-in fade-in duration-300">
-                                <ProfileManager
-                                    user={currentUser}
-                                    profile={userProfile}
-                                    onUpdate={loadDashboardData}
+                                    primaryColor={displayColor}
                                 />
                             </div>
                         )
@@ -526,12 +528,12 @@ export default function AdminDashboard() {
 
                     {
                         activeTab === 'settings' && currentOrg && (
-                            <div className="animate-in fade-in duration-300">
-                                <SettingsManager
-                                    org={currentOrg}
-                                    onUpdate={(updated) => {
-                                        setCurrentOrg(updated);
-                                    }}
+                            <div className="flex-1 flex flex-col h-full animate-in fade-in duration-300">
+                                <UnifiedSettings
+                                    org={currentOrg!}
+                                    user={currentUser}
+                                    profile={userProfile}
+                                    onUpdate={loadDashboardData}
                                 />
                             </div>
                         )
@@ -556,9 +558,11 @@ export default function AdminDashboard() {
                             setSelectedAppointment(null);
                         }}
                         services={services}
+                        availability={availability}
                         staff={staff}
                         slotInterval={currentOrg?.slot_interval}
                         businessHours={currentOrg?.business_hours}
+                        holidays={currentOrg?.settings?.scheduling?.holidays}
                     />
 
                     <BlockModal
@@ -583,6 +587,7 @@ export default function AdminDashboard() {
                         preselectedStaffId={createSelection.staffId || undefined}
                         slotInterval={currentOrg?.slot_interval}
                         businessHours={currentOrg?.business_hours}
+                        holidays={currentOrg?.settings?.scheduling?.holidays}
                     />
                 </div>
             </main >

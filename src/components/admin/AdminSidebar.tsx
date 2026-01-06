@@ -1,11 +1,11 @@
-import { Calendar, Users, BarChart3, Settings, User, ExternalLink, Key, Briefcase, Contact } from 'lucide-react';
+import { Calendar, Users, BarChart3, Settings, ExternalLink, Key, Briefcase, Contact } from 'lucide-react';
 import { Organization } from '@/types';
 import Image from 'next/image';
 import DarkModeToggle from '../DarkModeToggle';
 
 interface AdminSidebarProps {
-    activeTab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients';
-    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'profile' | 'invites' | 'services' | 'team' | 'clients') => void;
+    activeTab: 'operations' | 'analytics' | 'settings' | 'services' | 'team' | 'clients';
+    setActiveTab: (tab: 'operations' | 'analytics' | 'settings' | 'services' | 'team' | 'clients') => void;
     currentOrg: Organization | null;
 }
 
@@ -17,10 +17,9 @@ export default function AdminSidebar({ activeTab, setActiveTab, currentOrg }: Ad
 
     const managementItems = [
         { id: 'team', label: 'Team Members', icon: Users },
-        { id: 'clients', label: 'Clients', icon: Contact },
         { id: 'services', label: 'Services', icon: Briefcase },
-        { id: 'settings', label: 'Business Ops', icon: Settings },
-        { id: 'profile', label: 'Profile Settings', icon: User },
+        { id: 'clients', label: 'Clients', icon: Contact },
+        { id: 'settings', label: 'Settings', icon: Settings },
     ] as const;
 
     return (
