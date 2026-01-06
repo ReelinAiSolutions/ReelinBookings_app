@@ -92,55 +92,73 @@ function LoginForm() {
 
     if (view === 'SELECTION') {
         return (
-            <div className="min-h-screen bg-white flex flex-col justify-center px-6 py-12 lg:px-8">
-                <div className="sm:mx-auto sm:w-full sm:max-w-md animate-in zoom-in-95 duration-500">
-                    {/* Back to Landing Page */}
-                    <Link href="/" className="mb-8 flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">
-                        ← Back
-                    </Link>
+            <div className="min-h-screen bg-white relative overflow-hidden flex flex-col justify-center px-6 py-12 lg:px-8">
+                {/* Background Ambient Glows */}
+                <div className="absolute top-0 -left-20 w-[600px] h-[600px] bg-purple-200/40 rounded-full blur-[120px] pointer-events-none opacity-50 mix-blend-multiply" />
+                <div className="absolute bottom-0 -right-20 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] pointer-events-none opacity-50 mix-blend-multiply" />
 
-                    <div className="flex justify-center mb-10">
-                        <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center shadow-2xl shadow-primary-600/10 ring-1 ring-white/20">
-                            <Zap className="w-10 h-10 text-white" />
-                        </div>
+                <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-[480px] animate-in zoom-in-95 duration-500 fade-in">
+                    {/* Back to Landing Page */}
+                    <div className="absolute -top-24 left-0">
+                        <Link href="/" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors group">
+                            <span className="group-hover:-translate-x-1 transition-transform">←</span>
+                            Back to Home
+                        </Link>
                     </div>
 
-                    <h2 className="text-center text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
-                        Welcome Back
-                    </h2>
-                    <p className="text-center text-gray-500 mb-10 text-lg">
-                        Choose your portal to continue
-                    </p>
+                    <div className="flex flex-col items-center mb-12 text-center">
+                        <div className="w-24 h-24 bg-gray-900 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-purple-500/20 mb-10 rotate-3 transition-transform hover:rotate-6 duration-300 ring-4 ring-white">
+                            <Zap className="w-10 h-10 text-white fill-white" />
+                        </div>
 
-                    <div className="space-y-4">
-                        <Button
+                        <h2 className="text-5xl font-[950] text-gray-900 tracking-tight mb-4 leading-[0.9]">
+                            Welcome Back
+                        </h2>
+                        <p className="text-gray-500 text-lg font-medium max-w-sm">
+                            Choose your portal to continue
+                        </p>
+                    </div>
+
+                    <div className="space-y-5">
+                        <button
                             onClick={() => {
                                 setLoginRole('ADMIN');
                                 setView('LOGIN');
                             }}
-                            className="w-full h-16 text-lg font-bold bg-gray-900 hover:bg-black text-white rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-between px-6 group"
+                            className="w-full relative group overflow-hidden bg-[#8B5CF6] hover:bg-[#7C3AED] text-white p-1 rounded-[2rem] shadow-xl shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         >
-                            <span>Admin Login</span>
-                            <Lock className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors ml-4" />
-                        </Button>
+                            <div className="relative z-10 bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] h-20 rounded-[1.8rem] flex items-center justify-between px-8 border border-white/10">
+                                <div className="text-left">
+                                    <div className="font-[950] text-lg tracking-tight">Admin Login</div>
+                                    <div className="text-purple-100 text-xs font-bold uppercase tracking-wider opacity-80">Platform Control</div>
+                                </div>
+                                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                                    <Lock className="w-5 h-5 text-white" />
+                                </div>
+                            </div>
+                        </button>
 
-                        <Button
+                        <button
                             onClick={() => {
                                 setLoginRole('STAFF');
                                 setView('LOGIN');
                             }}
-                            className="w-full h-16 text-lg font-bold bg-primary-600 hover:bg-primary-700 text-white rounded-2xl shadow-lg hover:shadow-xl shadow-primary-600/20 transition-all flex items-center justify-between px-6 group"
+                            className="w-full relative group overflow-hidden bg-[#8B5CF6] hover:bg-[#7C3AED] text-white p-1 rounded-[2rem] shadow-xl shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         >
-                            <span>Team Member Login</span>
-                            <User className="w-5 h-5 text-primary-200 group-hover:text-white transition-colors ml-4" />
-                        </Button>
+                            <div className="relative z-10 bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] h-20 rounded-[1.8rem] flex items-center justify-between px-8 border border-white/10">
+                                <div className="text-left">
+                                    <div className="font-[950] text-lg tracking-tight">Team Member Login</div>
+                                    <div className="text-purple-100 text-xs font-bold uppercase tracking-wider opacity-80">Schedule & Clients</div>
+                                </div>
+                                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                                    <User className="w-5 h-5 text-white" />
+                                </div>
+                            </div>
+                        </button>
 
-
-
-                        <div className="pt-6 text-center">
-                            <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                                Streamline your schedule. Grow your client base.<br />
-                                The professional booking platform for modern service businesses.
+                        <div className="pt-10 text-center">
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest leading-relaxed opacity-60">
+                                Streamline your schedule. Grow your client base.
                             </p>
                         </div>
                     </div>
