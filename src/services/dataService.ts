@@ -214,6 +214,9 @@ export const getStaff = async (orgId: string): Promise<Staff[]> => {
         .from('staff')
         .select(`
             *,
+            profiles:user_id (
+                avatar_url
+            ),
             staff_services (
                 service_id
             )
@@ -230,7 +233,8 @@ export const getStaff = async (orgId: string): Promise<Staff[]> => {
         userId: item.user_id,
         name: item.name,
         role: item.role,
-        avatar: item.avatar_url,
+        // Use staff specific avatar if set, otherwise fallback to linked user profile avatar
+        avatar: item.avatar_url || item.profiles?.avatar_url || '',
         email: item.email,
         specialties: item.staff_services?.map((ss: any) => ss.service_id) || []
     }));
