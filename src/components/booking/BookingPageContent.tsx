@@ -380,16 +380,16 @@ export default function BookingPageContent({ slug }: { slug: string }) {
             setBookingComplete(true);
         } catch (error: any) {
             console.error("Booking failed", error);
+            console.error("Booking failed details:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
             // Handle specific overlap error from the new RPC
             if (error.message && error.message.includes('Time slot is no longer available')) {
                 toast("Someone just booked this slot! Please choose another time.", "error");
                 // Refresh slots
                 setSelectedTime(null);
-                // Trigger reload via re-fetching (handled by realtime or manual trigger if needed)
-                // Assuming realtime will catch the INSERT, but we can force it:
-                // We'll let the realtime subscription handle the refresh
+            } else if (error.message && error.message.includes('too close to now')) {
+                toast("This time slot is too soon (minimum notice required). Please choose a later time.", "error");
             } else {
-                toast("Failed to book appointment. Please try again.", "error");
+                toast(error.message || "Failed to book appointment. Please try again.", "error");
             }
         } finally {
             setIsBooking(false);
