@@ -176,9 +176,10 @@ function LoginForm() {
 
             <div className="relative z-10 w-full max-w-md animate-in zoom-in-95 duration-500">
                 {/* Back Button */}
+                {/* Back Button (Fixed on Mobile) */}
                 <button
                     onClick={() => setView('SELECTION')}
-                    className="mb-8 inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors group"
+                    className="fixed top-6 left-6 z-50 lg:static lg:mb-8 lg:z-auto inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors group bg-white/50 backdrop-blur-sm p-2 rounded-lg lg:bg-transparent lg:p-0"
                 >
                     <span className="group-hover:-translate-x-1 transition-transform">←</span>
                     Back
