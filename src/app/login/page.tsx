@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Lock, Mail, AlertCircle, User, Zap } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import FullPageLoader from '@/components/ui/FullPageLoader';
 
 
 function LoginForm() {
@@ -32,22 +33,7 @@ function LoginForm() {
     }, []);
 
     if (isInitialLoad) {
-        return (
-            <div className="min-h-screen bg-white flex items-center justify-center pb-[10vh]">
-                <div className="flex flex-col items-center gap-6">
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-primary-100 rounded-full blur-xl animate-pulse"></div>
-                        <Image src="/icon-180.png" alt="Reelin Bookings" width={96} height={96} className="relative object-contain" />
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <h2 className="text-sm font-bold text-gray-900 tracking-widest uppercase">Reelin Bookings</h2>
-                        <div className="w-32 h-1 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-primary-600 w-1/3 animate-[loading_1s_ease-in-out_infinite]"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+        return <FullPageLoader />;
     }
 
     const handleLogin = async (e: React.FormEvent) => {
