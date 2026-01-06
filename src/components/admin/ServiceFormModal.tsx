@@ -69,16 +69,82 @@ export default function ServiceFormModal({ isOpen, onClose, onSave, editingServi
         }
     }, [editingService, isOpen]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Mobile-friendly image compression
+    const compressImage = async (file: File): Promise<File> => {
+        return new Promise((resolve, reject) => {
+            const maxWidth = 1200;
+            const maxHeight = 1200;
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height *= maxWidth / width));
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width *= maxHeight / height));
+                            height = maxHeight;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            reject(new Error('Canvas is empty'));
+                            return;
+                        }
+                        const compressedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now(),
+                        });
+                        resolve(compressedFile);
+                    }, 'image/jpeg', 0.8);
+                };
+                img.onerror = (error) => reject(error);
+            };
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Create a preview URL
-            const objectUrl = URL.createObjectURL(file);
-            setImagePreview(objectUrl);
-            setSelectedFile(file);
+            setIsLoading(true); // Show loading while compressing
+            try {
+                // Compress if larger than 500KB or strictly if larger than 1MB
+                let fileToProcess = file;
+                if (file.size > 500 * 1024) {
+                    console.log(`original size: ${file.size}`);
+                    fileToProcess = await compressImage(file);
+                    console.log(`compressed size: ${fileToProcess.size}`);
+                }
 
-            // Clean up memory
-            return () => URL.revokeObjectURL(objectUrl);
+                // Create a preview URL
+                const objectUrl = URL.createObjectURL(fileToProcess);
+                setImagePreview(objectUrl);
+                setSelectedFile(fileToProcess);
+
+                // Clean up memory
+                return () => URL.revokeObjectURL(objectUrl);
+            } catch (err) {
+                console.error("Compression failed", err);
+                alert("Failed to process image. Please try a different photo.");
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 

@@ -51,6 +51,18 @@ export default function ServiceSelection({ services, onSelect }: ServiceSelectio
                                     {/* 1. Subtle Selection Gradient (only on hover) */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[24px]" />
 
+                                    {/* Service Image (If present) */}
+                                    {service.imageUrl && (
+                                        <div className="relative w-[calc(100%+2rem)] -mt-4 -mx-4 mb-4 h-32 overflow-hidden rounded-t-[22px]">
+                                            <img
+                                                src={service.imageUrl}
+                                                alt={service.name}
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                        </div>
+                                    )}
+
                                     <div className="relative z-10 flex flex-col h-full">
                                         <div className="flex justify-between items-start w-full mb-3">
                                             <div className="flex-1 mr-3">
